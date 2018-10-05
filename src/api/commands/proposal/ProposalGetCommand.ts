@@ -14,6 +14,8 @@ import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
+import {SearchOrder} from '../../enums/SearchOrder';
+import {ProposalType} from '../../enums/ProposalType';
 
 export class ProposalGetCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -37,12 +39,15 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Proposal> {
-        if (data.params.length < 1) {
-            throw new MessageException('Expected proposal hash but received no params.');
-        }
         const proposalHash = data.params[0];
+        return await this.proposalService.findOneByHash(proposalHash, true);
+    }
 
-        return await this.proposalService.findOneByHash(proposalHash);
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Expected proposalHash but received no params.');
+        }
+        return data;
     }
 
     public help(): string {

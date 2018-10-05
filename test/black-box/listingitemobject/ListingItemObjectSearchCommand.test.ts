@@ -2,129 +2,96 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { api } from '../lib/api';
+import * from 'jest';
+import * as _ from 'lodash';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ListingItemObjectType } from '../../../src/api/enums/ListingItemObjectType';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-
-import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-import * as listingItemTemplateCreateRequestBasic3 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ListingItemObjectSearchCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const itemObjectCommand = Commands.ITEMOBJECT_ROOT.commandName;
-    const searchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
+    const itemObjectsearchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
 
-    let defaultMarket;
-
-    // TODO: use data from test/testdata/...
-    // listingitemobjects are being worked on and once done this should be moved to testdata
-    const testData = listingItemTemplateCreateRequestBasic1;
-    testData.listingItemObjects = [{
-        type: ListingItemObjectType.CHECKBOX,
-        description: 'Test description checkbox',
-        order: 1,
-        searchable: true
-    }, {
-        type: ListingItemObjectType.TABLE,
-        description: 'Test description table',
-        order: 2
-    }, {
-        type: ListingItemObjectType.DROPDOWN,
-        description: 'Test description dropdown',
-        order: 7
-    }];
-
-    const testDataTwo = listingItemTemplateCreateRequestBasic2;
-    testDataTwo.listingItemObjects = [{
-        type: ListingItemObjectType.CHECKBOX,
-        description: 'Test description checkbox 2 CHECKBOX',
-        order: 1
-    }, {
-        type: ListingItemObjectType.TABLE,
-        description: 'Test description table 2',
-        order: 2
-    }, {
-        type: ListingItemObjectType.DROPDOWN,
-        description: 'Test description dropdown 2',
-        order: 7
-    }];
+    let listingItemObjects: resources.ListingItemObject[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // set hash
-        testData.hash = ObjectHash.getHash(testData, HashableObjectType.LISTINGITEM);
-        testDataTwo.hash = ObjectHash.getHash(testDataTwo, HashableObjectType.LISTINGITEM);
 
-        defaultMarket = await testUtil.getDefaultMarket();
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
 
-        testData.market_id = defaultMarket.id;
-        testDataTwo.market_id = defaultMarket.id;
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                    // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplates[];
 
-        // create listing item
-        await testUtil.addData(CreatableModel.LISTINGITEM, testData);
-        await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
-
+        listingItemObjects = listingItemTemplates[0].ListingItemObjects;
     });
 
-    test('Should fail to search ListingItemObject for the null searchString', async () => {
-        // search listing item objects
-        const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(400);
+    test('Should fail to search ListingItemObject when missing the searchString', async () => {
+        const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing searchString.');
     });
 
     test('Should search empty ListingItemObject for the invalid string search', async () => {
-        // search listing item objects
-        const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'dapp']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand, 'dapp']);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
         expect(result.length).toBe(0);
     });
 
-    test('Should return 2 ListingItemObjects searched by type', async () => {
-        // search listing item objects
-        const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, ListingItemObjectType.CHECKBOX]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(2);
-        expect(result[0].type).toBe(ListingItemObjectType.CHECKBOX);
-        expect(result[1].type).toBe(ListingItemObjectType.CHECKBOX);
+    test('Should return ListingItemObjects searched by type', async () => {
+
+        const type: ListingItemObjectType = listingItemObjects[0].type;
+        const typeCount = _.sumBy(listingItemObjects, lio => (lio.type === type ? 1 : 0));
+
+        const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand, type]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const results: any = res.getBody()['result'];
+
+        expect(results.length).toBe(typeCount);
+        for (const result of results) {
+            expect(result.type).toBe(type);
+        }
     });
 
-    test('Should return all ListingItemObjects searched by Test text with type or description', async () => {
-        // search listing item objects
-        const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'Test']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(6);
-        expect(result[0].description).toMatch('Test');
-        expect(result[0].searchable).toBe(1);
-        expect(result[1].searchable).toBe(0);
-    });
+    test('Should return all ListingItemObjects searched by description', async () => {
+        const description: ListingItemObjectType = listingItemObjects[0].description;
+        const descriptionCount = _.sumBy(listingItemObjects, lio => (lio.description === description ? 1 : 0));
 
-    test('Should return all ListingItemObjects matching with given search string in listing item object type or description', async () => {
-        // search listing item objects
-        const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'CHECKBOX']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(2);
-        expect(result[0].type).toMatch('CHECKBOX');
-        expect(result[0].description).toContain('checkbox');
-        expect(result[1].type).toMatch('CHECKBOX');
-        expect(result[1].description).toContain('checkbox');
-        expect(result[0].searchable).toBe(1);
-        expect(result[1].searchable).toBe(0);
+        const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand, description]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const results: any = res.getBody()['result'];
+
+        expect(results.length).toBe(descriptionCount);
+        for (const result of results) {
+            expect(result.description).toBe(description);
+        }
     });
 
 });

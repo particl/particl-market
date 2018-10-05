@@ -43,8 +43,6 @@ export class ItemLocationService {
 
     @validate()
     public async create(@request(ItemLocationCreateRequest) data: ItemLocationCreateRequest): Promise<ItemLocation> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -62,7 +60,6 @@ export class ItemLocationService {
 
         // finally find and return the created itemLocation
         const result = await this.findOne(itemLocation.Id);
-        this.log.debug('itemLocationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

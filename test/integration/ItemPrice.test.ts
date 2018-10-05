@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -23,7 +24,6 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
-import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';

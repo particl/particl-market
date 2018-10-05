@@ -92,15 +92,13 @@ export class MessageProcessor implements MessageProcessorInterface {
                         + ' : ' + smsgMessage.status
                         + ' : ' + smsgMessage.msgid);
 
-                    this.log.debug('SENDING: ', eventType);
+                    // this.log.debug('SENDING: ', eventType);
 
                     // send event to the eventTypes processor
-                    this.eventEmitter.emit(eventType, {
-                        smsgMessage,
-                        marketplaceMessage
-                    });
+                    this.eventEmitter.emit(eventType, marketplaceEvent);
 
                     // send event to cli
+                    // todo: send marketplaceEvent
                     this.eventEmitter.emit(Events.Cli, {
                         message: eventType,
                         data: marketplaceMessage
@@ -113,7 +111,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                 this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
                 this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
-                this.log.debug('PROCESSING: ' + smsgMessage.msgid + 'PARSING FAILED');
+                this.log.debug('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
 
                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
             }
@@ -129,7 +127,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     public schedulePoll(pollingInterval: number = this.DEFAULT_INTERVAL): void {
 
-        this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
+        // this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
 
 /*
         this.timeout = setTimeout(

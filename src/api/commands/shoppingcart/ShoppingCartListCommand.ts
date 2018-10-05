@@ -32,26 +32,43 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
 
     /**
      * data.params[]:
-     *  [0]: profileId || profileName
+     *  [0]: profileId
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<ShoppingCart>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCart>> {
-        let profile;
+        return await this.shoppingCartService.findAllByProfileId(data.params[0]);
+    }
 
-        // if data.params[0] is number then find by profileId else find
-        if (typeof data.params[0] === 'number') {
-            profile = await this.profileService.findOne(data.params[0]);
-        } else {
-            profile = await this.profileService.findOneByName(data.params[0]);
-            if (profile === null) {
-                this.log.warn(`Profile with the name = ${data.params[0]} was not found!`);
-                throw new MessageException(`Profile with the name = ${data.params[0]} was not found!`);
-            }
+    /**
+     * data.params[]:
+     *  [0]: profileId || profileName
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length === 0) {
+            throw new MessageException('Missing profileId or profileName.');
         }
-        return this.shoppingCartService.findAllByProfile(profile.id);
+
+        if (typeof data.params[0] === 'number') {
+            return await this.profileService.findOne(data.params[0])
+                .then(async value => {
+                    const profile = value.toJSON();
+                    data.params[0] = profile.id;
+                    return data;
+                });
+        } else {
+            return await this.profileService.findOneByName(data.params[0])
+                .then(async value => {
+                    const profile = value.toJSON();
+                    data.params[0] = profile.id;
+                    return data;
+                });
+        }
     }
 
     public usage(): string {

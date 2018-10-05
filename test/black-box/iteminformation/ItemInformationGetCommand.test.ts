@@ -2,31 +2,31 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemInformationGetCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInfoGetSubCommand = Commands.ITEMINFORMATION_GET.commandName;
 
-    let createdListingItemTemplate;
+    let createdListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
-        const profileId = defaultProfile.id;
-
         const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
-        const marketId = defaultMarket.id;
 
-        // add item template
-        // todo: use generate
-        // create listing item
         const generateListingItemTemplateParams = new GenerateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -37,11 +37,17 @@ describe('ItemInformationGetCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            profileId, // profileId
+            defaultProfile.id, // profileId
             false,  // generateListingItem
-            marketId   // marketId
+            defaultMarket.id   // marketId
         ]).toParamsArray();
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 2, true, generateListingItemTemplateParams);
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
         createdListingItemTemplate = listingItemTemplates[0];
     });
 

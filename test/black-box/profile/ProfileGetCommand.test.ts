@@ -2,79 +2,75 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
-import { api, rpc } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ProfileGetCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PROFILE_ROOT.commandName;
-    const subCommand = Commands.PROFILE_GET.commandName;
 
-    const keys = [
-        'id', 'name', 'updatedAt', 'createdAt'
-    ];
+    const profileCommand = Commands.PROFILE_ROOT.commandName;
+    const profileGetCommand = Commands.PROFILE_GET.commandName;
 
-    const profileName = 'DEFAULT-TEST-PROFILE';
-    const profileAddress = 'DEFAULT-TEST-ADDRESS';
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
 
-    let createdId;
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        defaultMarket = await testUtil.getDefaultMarket();
+        defaultProfile = await testUtil.getDefaultProfile();
+
     });
 
     test('Should return one Profile by id', async () => {
-        // created profile
-        const res = await rpc(method, [Commands.PROFILE_ADD.commandName, profileName, profileAddress]);
-        // call rpc api
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectDataRpc(keys);
-        const result: object = res.getBody()['result'];
-        createdId = result['id'];
-        // get profile
-        const resMain = await rpc(method, [subCommand, createdId]);
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(createdId);
-        expect(resultMain.name).toBe(profileName);
-        expect(resultMain.address).toBe(profileAddress);
-        expect(resultMain.CryptocurrencyAddresses).toBeDefined();
-        expect(resultMain.FavoriteItems).toBeDefined();
-        expect(resultMain.ShippingAddresses).toBeDefined();
-        expect(resultMain.ShoppingCart).toBeDefined();
+
+        const result: resources.Profile = res.getBody()['result'];
+        expect(result.id).toBe(defaultProfile.id);
+        expect(result.name).toBe(defaultProfile.name);
+        expect(result.address).toBe(defaultProfile.address);
+        expect(result.CryptocurrencyAddresses).toBeDefined();
+        expect(result.FavoriteItems).toBeDefined();
+        expect(result.ShippingAddresses).toBeDefined();
+        expect(result.ShoppingCart).toBeDefined();
     });
 
     test('Should return one Profile by name', async () => {
-        const resMain = await rpc(method, [subCommand, profileName]);
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(createdId);
-        expect(resultMain.name).toBe(profileName);
-        expect(resultMain.address).toBe(profileAddress);
-        expect(resultMain.CryptocurrencyAddresses).toBeDefined();
-        expect(resultMain.FavoriteItems).toBeDefined();
-        expect(resultMain.ShippingAddresses).toBeDefined();
-        expect(resultMain.ShoppingCart).toBeDefined();
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.name]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.id).toBe(defaultProfile.id);
+        expect(result.name).toBe(defaultProfile.name);
+        expect(result.address).toBe(defaultProfile.address);
+        expect(result.CryptocurrencyAddresses).toBeDefined();
+        expect(result.FavoriteItems).toBeDefined();
+        expect(result.ShippingAddresses).toBeDefined();
+        expect(result.ShoppingCart).toBeDefined();
     });
 
     test('Should fail to return Profile with invalid name', async () => {
-        const resMain = await rpc(method, [subCommand, 'profileName']);
-        resMain.expectJson();
-        resMain.expectStatusCode(404);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain).toBeNull();
-    });
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 'invalid_profile_name']);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier invalid_profile_name does not exist`);
+   });
 
     test('Should fail to return Profile with invalid id', async () => {
-        const resMain = await rpc(method, [subCommand, 123123]);
-        resMain.expectJson();
-        resMain.expectStatusCode(404);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 123123]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier 123123 does not exist`);
     });
 
 });

@@ -12,7 +12,7 @@ let proc: ChildProcess;
 /**
  * Spawns the application in a seperate process
  */
-exports.start = () => {
+exports.start = (envArgs: any) => {
     const p = path.join(__dirname, 'app.js');
     const environment = {
         APPDATA: process.env.APPDATA,
@@ -23,7 +23,10 @@ exports.start = () => {
         ELECTRON_RUN_AS_NODE: true
     };
 
-    proc = spawn(process.execPath, [p], { env: environment });
+    const envAdditional = envArgs && typeof envArgs === 'object' && envArgs.constructor === Object ? envArgs : {};
+    const envActual = {...environment, ...envAdditional};
+
+    proc = spawn(process.execPath, [p], { env: envActual });
     return proc;
 };
 

@@ -61,7 +61,7 @@ export class ItemImageService {
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async createFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+    public async createFromFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
         // TODO: how am i supposed to know what imageFile contains? add type to it
 
         // Read the file data in

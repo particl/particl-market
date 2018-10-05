@@ -2,17 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Market } from '../../src/api/models/Market';
-
 import { MarketService } from '../../src/api/services/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/MarketUpdateRequest';

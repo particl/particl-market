@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-import { VoteRepository } from '../repositories/VoteRepository';
 import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { SmsgService } from './SmsgService';
@@ -32,7 +31,7 @@ import { ProposalType } from '../enums/ProposalType';
 import { ProposalOptionResult } from '../models/ProposalOptionResult';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
 export class VoteActionService {
 
@@ -105,7 +104,8 @@ export class VoteActionService {
 
                 const proposal: resources.Proposal = proposalModel.toJSON();
 
-                if (_.isEmpty(proposal.ProposalResult)) {
+                // just make sure we have one
+                if (_.isEmpty(proposal.ProposalResults)) {
                     throw new MessageException('ProposalResult should not be empty!');
                 }
 
@@ -114,11 +114,10 @@ export class VoteActionService {
 
                 if (voteMessage && proposal.blockEnd >= currentBlock) {
                     const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-                    // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+                    this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
-                    const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
+                    const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
-                    /*
                     // todo: extract method
                     if (proposal.type === ProposalType.ITEM_VOTE) {
                         if (await this.shouldRemoveListingItem(proposalResult)) {
@@ -135,7 +134,6 @@ export class VoteActionService {
                             }
                         }
                     }
-                    */
                     // TODO: do whatever else needs to be done
 
                     return SmsgMessageStatus.PROCESSED;
@@ -147,50 +145,6 @@ export class VoteActionService {
                 return SmsgMessageStatus.WAITING;
             });
 
-    }
-
-    /**
-     *
-     * @param {number} proposalResultId
-     * @returns {Promise<"resources".ProposalResult>}
-     */
-    public async updateProposalResult(proposalResultId: number): Promise<resources.ProposalResult> {
-
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-
-        // get the proposal
-        // const proposalModel = await this.proposalService.findOne(proposalId);
-        // const proposal = proposalModel.toJSON();
-
-        // this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
-
-        let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
-        let proposalResult = proposalResultModel.toJSON();
-
-        // first update the block in ProposalResult
-        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            block: currentBlock
-        } as ProposalResultUpdateRequest);
-        proposalResult = proposalResultModel.toJSON();
-
-        // then loop through ProposalOptionResults and update values
-        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
-            // get the votes
-            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
-            const proposalOption = proposalOptionModel.toJSON();
-
-            // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
-            // this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
-
-            // update
-            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
-                weight: proposalOption.Votes.length,
-                voters: proposalOption.Votes.length
-            } as ProposalOptionResultUpdateRequest);
-        }
-
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        return proposalResultModel.toJSON();
     }
 
     /**
@@ -232,7 +186,7 @@ export class VoteActionService {
 
         let lastVote: any;
         try {
-            const lastVoteModel = await this.voteService.findOneByVoterAndProposal(voteMessage.voter, proposal.id);
+            const lastVoteModel = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id);
             lastVote = lastVoteModel.toJSON();
         } catch (ex) {
             lastVote = null;

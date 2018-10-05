@@ -2,15 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemInformationUpdateCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInfoUpdateSubCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
 
@@ -23,15 +29,14 @@ describe('ItemInformationUpdateCommand', () => {
         }
     };
 
-    let createdListingItemTemplateId;
-    let createdListingItemTemplateId2;
+    let createdListingItemTemplateId: resources.ListingItemTemplate;
+    let createdListingItemTemplateId2: resources.ListingItemTemplate;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
-        const profileId = defaultProfile.id;
 
+        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
         const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
-        const marketId = defaultMarket.id;
 
         // get category
         const itemCategoryList: any = await testUtil.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
@@ -49,11 +54,17 @@ describe('ItemInformationUpdateCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            profileId, // profileId
+            defaultProfile.id, // profileId
             false,  // generateListingItem
-            marketId   // marketId
+            defaultMarket.id   // marketId
         ]).toParamsArray();
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 2, true, generateListingItemTemplateParams);
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
         createdListingItemTemplateId = listingItemTemplates[0].id;
         createdListingItemTemplateId2 = listingItemTemplates[1].id;
     });
@@ -213,8 +224,14 @@ describe('ItemInformationUpdateCommand', () => {
     test('Should update ItemInformation', async () => {
         // update item information
 
-        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoUpdateSubCommand, createdListingItemTemplateId,
-            testDataListingItemTemplate.title, testDataListingItemTemplate.shortDescription, testDataListingItemTemplate.longDescription, testDataListingItemTemplate.itemCategory.id]);
+        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [
+            itemInfoUpdateSubCommand,
+            createdListingItemTemplateId,
+            testDataListingItemTemplate.title,
+            testDataListingItemTemplate.shortDescription,
+            testDataListingItemTemplate.longDescription,
+            testDataListingItemTemplate.itemCategory.id
+        ]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];

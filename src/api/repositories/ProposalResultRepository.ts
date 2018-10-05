@@ -28,18 +28,18 @@ export class ProposalResultRepository {
 
     // we can have multiple of these in the future
     public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
-        return this.ProposalResultModel.fetchByProposalHash(hash, withRelated);
+        return await this.ProposalResultModel.fetchByProposalHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {
-        return this.ProposalResultModel.fetchById(id, withRelated);
+        return await this.ProposalResultModel.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<ProposalResult> {
         const proposalResult = this.ProposalResultModel.forge<ProposalResult>(data);
         try {
             const proposalResultCreated = await proposalResult.save();
-            return this.ProposalResultModel.fetchById(proposalResultCreated.id);
+            return await this.ProposalResultModel.fetchById(proposalResultCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the proposalResult!', error);
         }
@@ -49,7 +49,7 @@ export class ProposalResultRepository {
         const proposalResult = this.ProposalResultModel.forge<ProposalResult>({ id });
         try {
             const proposalResultUpdated = await proposalResult.save(data, { patch: true });
-            return this.ProposalResultModel.fetchById(proposalResultUpdated.id);
+            return await this.ProposalResultModel.fetchById(proposalResultUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the proposalResult!', error);
         }

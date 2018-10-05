@@ -30,6 +30,10 @@ export class ProposalResultService {
         return this.proposalResultRepo.findAll();
     }
 
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
+        return await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {
         const proposalResult = await this.proposalResultRepo.findOne(id, withRelated);
         if (proposalResult === null) {
@@ -41,7 +45,7 @@ export class ProposalResultService {
 
     public async findOneByProposalHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
         const proposalResult = await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
-        this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+        // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
 
         if (proposalResult === null) {
             this.log.warn(`ProposalResult with the hash=${hash} was not found!`);

@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -15,8 +14,6 @@ import { AddressListCommand } from '../commands/address/AddressListCommand';
 import { AddressAddCommand } from '../commands/address/AddressAddCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
-
-import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -33,8 +30,10 @@ import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
 
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
-import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+
+import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
@@ -145,6 +144,11 @@ import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 
+import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
+import { SettingListCommand } from '../commands/setting/SettingListCommand';
+import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
+import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
+import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -162,6 +166,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
+
+        @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
+
+        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
@@ -244,13 +255,14 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
-
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
+        @inject(Types.Command) @named(Targets.Command.setting.SettingGetCommand) private settingGetCommand: SettingGetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingListCommand) private settingListCommand: SettingListCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRemoveCommand) private settingRemoveCommand: SettingRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingSetCommand) private settingSetCommand: SettingSetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRootCommand) private settingRootCommand: SettingRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartAddCommand) private shoppingCartAddCommand: ShoppingCartAddCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartUpdateCommand) private shoppingCartUpdateCommand: ShoppingCartUpdateCommand,
@@ -300,6 +312,13 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+
+        this.commands.push(adminCommand);
+
+        this.commands.push(dataAddCommand);
+        this.commands.push(dataCleanCommand);
+        this.commands.push(dataGenerateCommand);
+        this.commands.push(dataRootCommand);
 
         this.commands.push(escrowRootCommand);
         this.commands.push(escrowAddCommand);
@@ -382,13 +401,14 @@ export class RpcCommandFactory {
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
-        this.commands.push(dataAddCommand);
-        this.commands.push(dataCleanCommand);
-        this.commands.push(dataGenerateCommand);
-        this.commands.push(dataRootCommand);
-
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+
+        this.commands.push(settingGetCommand);
+        this.commands.push(settingListCommand);
+        this.commands.push(settingRemoveCommand);
+        this.commands.push(settingSetCommand);
+        this.commands.push(settingRootCommand);
 
         this.commands.push(shoppingCartAddCommand);
         this.commands.push(shoppingCartUpdateCommand);

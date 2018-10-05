@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -14,7 +13,6 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-// tslint:enable:max-line-length
 
 describe('Happy Buy Flow', () => {
 
@@ -24,31 +22,25 @@ describe('Happy Buy Flow', () => {
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
-
     const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
-
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
-
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
     const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
-
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
-
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
-
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let sellerProfile: resources.Profile;
@@ -228,6 +220,10 @@ describe('Happy Buy Flow', () => {
         log.debug('listingItemTemplatesSellerNode[0].hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
+
+        if (result.ListingItemTemplate === null) {
+            log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
+        }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         // sometimes result.ListingItemTemplate is null!!!
 
@@ -408,19 +404,15 @@ describe('Happy Buy Flow', () => {
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
-            bidOnSellerNode.ListingItem.hash,
             bidOnSellerNode.id
         ];
 
         const response: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
-        log.debug('response:', JSON.stringify(response, null, 2));
-
         response.expectJson();
         response.expectStatusCode(200);
 
         // make sure we got the expected result from sending the bid
         const result: any = response.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
@@ -488,7 +480,7 @@ describe('Happy Buy Flow', () => {
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
-        log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
+        // log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -995,6 +987,5 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-
 
 });

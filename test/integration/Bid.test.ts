@@ -2,20 +2,18 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { BidService } from '../../src/api/services/BidService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { BidDataService } from '../../src/api/services/BidDataService';
-
 import { Bid } from '../../src/api/models/Bid';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
-
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -23,7 +21,6 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-
 import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -38,7 +35,6 @@ import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
-
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

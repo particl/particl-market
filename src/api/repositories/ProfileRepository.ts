@@ -22,7 +22,7 @@ export class ProfileRepository {
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
-        return this.findOneByName('DEFAULT', withRelated);
+        return await this.findOneByName('DEFAULT', withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
@@ -31,22 +31,22 @@ export class ProfileRepository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Profile> {
-        return this.ProfileModel.fetchById(id, withRelated);
+        return await this.ProfileModel.fetchById(id, withRelated);
     }
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
-        return this.ProfileModel.fetchByName(name, withRelated);
+        return await this.ProfileModel.fetchByName(name, withRelated);
     }
 
     public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
-        return this.ProfileModel.fetchByAddress(name, withRelated);
+        return await this.ProfileModel.fetchByAddress(name, withRelated);
     }
 
     public async create(data: any): Promise<Profile> {
         const profile = this.ProfileModel.forge<Profile>(data);
         try {
             const profileCreated = await profile.save();
-            return this.ProfileModel.fetchById(profileCreated.id);
+            return await this.ProfileModel.fetchById(profileCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the profile!', error);
         }
@@ -56,7 +56,7 @@ export class ProfileRepository {
         const profile = this.ProfileModel.forge<Profile>({ id });
         try {
             const profileUpdated = await profile.save(data, { patch: true });
-            return this.ProfileModel.fetchById(profileUpdated.id);
+            return await this.ProfileModel.fetchById(profileUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the profile!', error);
         }

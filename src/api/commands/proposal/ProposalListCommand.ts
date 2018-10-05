@@ -33,11 +33,11 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
-     * command description
+     * data.params[]:
      * [0] startBlock | *, optional
      * [1] endBlock | *, optional
-     * [2] order, optional
-     * [3] type, optional
+     * [2] type, optional
+     * [3] order, optional
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -45,21 +45,14 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Proposal>> {
-        const withRelated = true;
-        const searchParams = this.getSearchParams(data.params);
-        return await this.proposalService.searchBy(searchParams, withRelated);
-    }
+        const searchParams = {
+            startBlock: data.params[0],
+            endBlock: data.params[1],
+            type: data.params[2],
+            order: data.params[3]
+        } as ProposalSearchParams;
 
-    public help(): string {
-        return this.getName() + ' <startBlock> <endBlock> <order> <type> ';
-    }
-
-    public description(): string {
-        return 'Command for retrieving proposals. ';
-    }
-
-    public example(): string {
-        return this.getName() + ' 1 100000000 ASC ';
+        return await this.proposalService.searchBy(searchParams, true);
     }
 
     /**
@@ -68,36 +61,38 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * list 100 * -> return all proposals ending after block 100
      * list 100 200 -> return all which are active and closed between 100 200
      *
-     * [0] startBlock |*, optional
-     * [1] endBlock |*, optional
-     * [2] type |*, optional
-     * [3] order, optional
+     * data.params[]:
+     * [0] startBlock | *, optional
+     * [1] endBlock | *, optional
+     * [2] order, optional
+     * [3] type, optional
      *
-     * @param {any[]} params
-     * @returns {ProposalSearchParams}
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
      */
-    private getSearchParams(params: any[]): ProposalSearchParams {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
         let order: SearchOrder = SearchOrder.ASC;
         let type: ProposalType;
         let startBlock: number | string = '*';
         let endBlock: number | string = '*';
 
-        if (!_.isEmpty(params)) {
-            startBlock = params.shift();
+        if (!_.isEmpty(data.params)) {
+            startBlock = data.params.shift();
             if (typeof startBlock === 'string' && startBlock !== '*') {
                 throw new MessageException('startBlock must be a number or *.');
             }
         }
 
-        if (!_.isEmpty(params)) {
-            endBlock = params.shift();
+        if (!_.isEmpty(data.params)) {
+            endBlock = data.params.shift();
             if (typeof endBlock === 'string' && endBlock !== '*') {
                 throw new MessageException('endBlock must be a number or *.');
             }
         }
 
-        if (!_.isEmpty(params)) {
-            type = params.shift();
+        if (!_.isEmpty(data.params)) {
+            type = data.params.shift();
             if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
                 type = ProposalType.ITEM_VOTE;
             } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
@@ -109,8 +104,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             type = ProposalType.PUBLIC_VOTE; // default
         }
 
-        if (!_.isEmpty(params)) {
-            order = params.shift();
+        if (!_.isEmpty(data.params)) {
+            order = data.params.shift();
             if (order.toUpperCase() === SearchOrder.DESC.toString()) {
                 order = SearchOrder.DESC;
             } else {
@@ -120,14 +115,24 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             order = SearchOrder.ASC; // default
         }
 
-        const searchParams = {
-            startBlock,
-            endBlock,
-            order,
-            type
-        } as ProposalSearchParams;
-
-        this.log.debug('ProposalSearchParams: ', JSON.stringify(searchParams, null, 2));
-        return searchParams;
+        data.params = [];
+        data.params[0] = startBlock;
+        data.params[1] = endBlock;
+        data.params[2] = type;
+        data.params[3] = order;
+        return data;
     }
+
+    public help(): string {
+        return this.getName() + ' <startBlock> <endBlock> <type> <order> ';
+    }
+
+    public description(): string {
+        return 'Command for retrieving proposals. ';
+    }
+
+    public example(): string {
+        return this.getName() + ' 1 100000000 ITEM_VOTE ASC ';
+    }
+
 }

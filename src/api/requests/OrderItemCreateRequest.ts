@@ -16,14 +16,14 @@ export class OrderItemCreateRequest extends RequestBody {
     @IsNotEmpty()
     public itemHash: string;
 
-    @IsNotEmpty()
-    public bid_id: number;
-
     @IsEnum(OrderStatus)
     @IsNotEmpty()
     public status: OrderStatus;
 
     public orderItemObjects: OrderItemObjectCreateRequest[];
+
+    @IsNotEmpty()
+    public bid_id: number;
 
     @IsNotEmpty()
     public order_id: number;

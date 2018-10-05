@@ -14,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -49,6 +50,17 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             category: data.params[4],
             searchString: data.params[5] || ''
         } as ListingItemTemplateSearchParams);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 4) {
+            throw new MessageException('Missing parameters.');
+        }
+        // TODO:
+        // - is order valid?
+        // - profile exists?
+        // - category exists?
+        return data;
     }
 
     public usage(): string {

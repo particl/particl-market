@@ -68,7 +68,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      * @param {RpcRequest} data
      * @returns {Promise<void>}
      */
-    public async validate(data: RpcRequest): Promise<void> {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 4) {
             throw new MessageException('Missing parameters.');
@@ -83,6 +83,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             throw new MessageException(`Default category can't be updated or deleted.`);
         }
 
+        return data;
     }
 
     public usage(): string {

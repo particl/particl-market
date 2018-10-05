@@ -8,15 +8,12 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { ListingItem } from '../models/ListingItem';
-
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
 import { ItemCategoryService } from './ItemCategoryService';
-
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
-
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
@@ -30,21 +27,18 @@ import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
-
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ProposalFactory } from '../factories/ProposalFactory';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { ProposalType } from '../enums/ProposalType';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalService } from './ProposalService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { VoteFactory } from '../factories/VoteFactory';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
+import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../models/FlaggedItem';
+import { FlaggedItemService } from './FlaggedItemService';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -71,9 +65,8 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -85,7 +78,7 @@ export class ListingItemActionService {
      * post a ListingItem based on a given ListingItem as ListingItemMessage
      *
      * @param data
-     * @returns {Promise<void>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
@@ -174,35 +167,19 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
-            /*
-            // TODO: Proposals related to ListingItems should wait for processing until ListingItem is received
-            // as we no longer have proposalHash in the ListingItemMessage
-
-            // if proposal for the listingitem exists:
-            // - update relation and vote
-            await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
+            const proposal = await this.proposalService.findOneByItemHash(listingItem.hash)
                 .then(async proposalModel => {
-                    const proposal: resources.Proposal = proposalModel.toJSON();
-
-                    // update the proposal relation
-                    if (listingItemMessage.proposalHash) {
-                        await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
-                    }
-
-                    // TODO: skipping this too since the wallet could be locked
-                    // await this.voteForListingItemProposal(proposal, market);
+                    return proposalModel.toJSON();
                 })
                 .catch(reason => {
-                    // there is no proposal yet
-                    this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
                     return null;
                 });
-            */
 
-            // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
-            // } else {
-            //    throw new MessageException('ListingItem is allready voted off the market.');
-            // }
+            if (proposal) {
+                // if proposal for the listingitem is found, create flaggeditem
+                const flaggedItem = await this.createFlaggedItemForProposal(proposal);
+                // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+            }
 
             // todo: there should be no need for these two updates, set the relations up in the createRequest
             // update the template relation
@@ -217,7 +194,7 @@ export class ListingItemActionService {
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
-            this.log.debug('saved listingItem:', listingItem.hash);
+            this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
             return SmsgMessageStatus.PROCESSED;
 
         } else {
@@ -227,34 +204,23 @@ export class ListingItemActionService {
 
     /**
      *
-     * @param {"resources".ProposalResult} proposalResult
-     * @returns {Promise<boolean>}
+     * @param {module:resources.Proposal} proposal
+     * @returns {Promise<module:resources.FlaggedItem>}
      */
-    private async voteForListingItemProposal(proposal: resources.Proposal, market: resources.Market): Promise<boolean> {
+    public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
+        // if listingitem exists && theres no relation -> add relation to listingitem
 
-        // todo: remove this later
-        const profileModel = await this.profileService.getDefault();
-        const profile: resources.Profile = profileModel.toJSON();
+        const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
-        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
-            return option.optionId === 1;
-        });
+        const flaggedItemCreateRequest = {
+            listing_item_id: listingItem.id,
+            proposal_id: proposal.id,
+            reason: proposal.description
+        } as FlaggedItemCreateRequest;
 
-        if (proposalOption) {
-            const currentBlock: number = await this.coreRpcService.getBlockCount();
-            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-                profile, currentBlock);
-
-            const msg: MarketplaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
-                mpaction: voteMessage
-            };
-
-            const smsgSendResponse: SmsgSendResponse = await this.smsgService.smsgSend(profile.address, market.address, msg, false);
-            return smsgSendResponse.error === undefined ? false : true;
-        } else {
-            throw new MessageException('Could not find ProposalOption to vote for.');
-        }
+        const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
+        return flaggedItemModel.toJSON();
     }
 
     /**
@@ -280,48 +246,6 @@ export class ListingItemActionService {
         } else {
             return true;
         }
-    }
-
-    /**
-     *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @returns {Promise<ProposalMessage>}
-     */
-    private async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
-                                        profile: resources.Profile): Promise<ProposalMessage> {
-
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
-
-        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
-            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile);
-
-        return proposalMessage;
-
-    }
-
-    /**
-     *
-     * @param {ProposalMessage} proposalMessage
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @param {"resources".Market} market
-     * @returns {Promise<SmsgSendResponse>}
-     */
-    private async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
-                               market: resources.Market): Promise<SmsgSendResponse> {
-
-        const msg: MarketplaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: proposalMessage
-        };
-
-        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
-        this.log.debug('postProposal(), response: ', response);
-        return response;
-
     }
 
     /**
@@ -393,12 +317,13 @@ export class ListingItemActionService {
         this.log.info('Configuring EventListeners ');
 
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);
             await this.processListingItemReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })
                 .catch(async reason => {
+                    this.log.debug('ERRORED event: ', JSON.stringify(event, null, 2));
                     this.log.error('ERROR: ListingItemMessage processing failed.', reason);
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });

@@ -25,6 +25,7 @@ export class CoreRpcService {
 
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
+    private DEFAULT_REGTEST_PORT = 19792;
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
@@ -187,6 +188,20 @@ export class CoreRpcService {
             params.push(outputs);
         }
         return await this.call('signrawtransactionwithwallet', params);
+    }
+
+    /**
+     * ﻿combinerawtransaction ["hexstring",...]
+     *
+     * Combine multiple partially signed transactions into one transaction.
+     * The combined transaction may be another partially signed transaction or a fully signed transaction
+     *
+     * @param {string} hexstring
+     * @param {any[]} outputs
+     * @returns {Promise<any>}
+     */
+    public async combineRawTransaction(hexstrings: string[]): Promise<any> {
+        return await this.call('combinerawtransaction', [hexstrings]);
     }
 
     /**
@@ -356,7 +371,7 @@ export class CoreRpcService {
 
         if (logCall) {
             // TODO: handle [object Object]
-            this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
+            this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
@@ -420,9 +435,15 @@ export class CoreRpcService {
         // this.log.debug('process.env.TESTNET:', process.env.TESTNET);
 
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
-        const port = (Environment.isTestnet() ?
-            (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
-            (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
+        const port = process.env.RPC_PORT ?
+            process.env.RPC_PORT :
+            (Environment.isRegtest() ?
+                (process.env.REGTEST_PORT ? process.env.REGTEST_PORT : this.DEFAULT_REGTEST_PORT) :
+                (Environment.isTestnet() ?
+                    (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
+                    (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
+                )
+            );
         return 'http://' + host + ':' + port;
     }
 

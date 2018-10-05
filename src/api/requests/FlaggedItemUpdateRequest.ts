@@ -9,7 +9,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class FlaggedItemUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public listingItemId: number;
+    public reason: string;
 
 }
 // tslint:enable:variable-name

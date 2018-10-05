@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -49,6 +53,7 @@ export const Targets = {
         ProposalOption: 'ProposalOption',
         ProposalOptionResult: 'ProposalOptionResult',
         ProposalResult: 'ProposalResult',
+        Setting: 'Setting',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
@@ -97,6 +102,7 @@ export const Targets = {
         ProposalOptionResultRepository: 'ProposalOptionResultRepository',
         ProposalRepository: 'ProposalRepository',
         ProposalResultRepository: 'ProposalResultRepository',
+        SettingRepository: 'SettingRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
@@ -155,6 +161,7 @@ export const Targets = {
         ProposalOptionService: 'ProposalOptionService',
         ProposalResultService: 'ProposalResultService',
         ProposalService: 'ProposalService',
+        SettingService: 'SettingService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
@@ -232,7 +239,6 @@ export const Targets = {
             ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
-            ItemInformationAddCommand: 'ItemInformationAddCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
             ItemInformationRootCommand: 'ItemInformationRootCommand',
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
@@ -301,6 +307,13 @@ export const Targets = {
             ProposalRootCommand: 'ProposalRootCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
+        setting: {
+            SettingGetCommand: 'SettingGetCommand',
+            SettingListCommand: 'SettingListCommand',
+            SettingRemoveCommand: 'SettingRemoveCommand',
+            SettingRootCommand: 'SettingRootCommand',
+            SettingSetCommand: 'SettingSetCommand'
+        },
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',

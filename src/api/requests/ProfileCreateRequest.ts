@@ -6,6 +6,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { AddressCreateRequest } from './AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from './CryptocurrencyAddressCreateRequest';
+import {SettingCreateRequest} from './SettingCreateRequest';
 
 // tslint:disable:variable-name
 export class ProfileCreateRequest extends RequestBody {
@@ -19,6 +20,7 @@ export class ProfileCreateRequest extends RequestBody {
     // related
     public shippingAddresses: AddressCreateRequest[];    // shipping addresses
     public cryptocurrencyAddresses: CryptocurrencyAddressCreateRequest[];    // cryptocurrency addresses
+    public settings: SettingCreateRequest[];    // settings
 
 }
 // tslint:enable:variable-name

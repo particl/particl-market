@@ -2,36 +2,39 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('DataGenerateCommand', () => {
 
-    // NOTE: skipped testing ListingItemTemplate generation, since currently they generate the same data
-    // using the same functions as are used for ListingItems
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.DATA_ROOT.commandName;
-    const subCommand = Commands.DATA_GENERATE.commandName;
 
-    const withRelated = true;
+    const dataCommand = Commands.DATA_ROOT.commandName;
+    const dataGenerateCommand = Commands.DATA_GENERATE.commandName;
+
+    const WITH_RELATED = true;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
     });
 
-    test('Should generate one profile with no related data', async () => {
+    test('Should generate one Profile with no related data', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             false,  // generateShippingAddresses
             false   // generateCryptocurrencyAddresses
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.PROFILE, 1, withRelated].concat(generateProfileParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.PROFILE, 1, WITH_RELATED].concat(generateProfileParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -42,14 +45,14 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).toHaveLength(0);
     });
 
-    test('Should generate one profile with ShippingAddresses', async () => {
+    test('Should generate one Profile with ShippingAddresses', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             true,  // generateShippingAddresses
             false   // generateCryptocurrencyAddresses
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.PROFILE, 1, withRelated].concat(generateProfileParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.PROFILE, 1, WITH_RELATED].concat(generateProfileParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -60,14 +63,14 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).toHaveLength(0);
     });
 
-    test('Should generate one profile with CryptocurrencyAddresses', async () => {
+    test('Should generate one Profile with CryptocurrencyAddresses', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             false,  // generateShippingAddresses
             true   // generateCryptocurrencyAddresses
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.PROFILE, 1, withRelated].concat(generateProfileParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.PROFILE, 1, WITH_RELATED].concat(generateProfileParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -78,13 +81,13 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).not.toBeUndefined();
     });
 
-    test('Should generate two profiles', async () => {
+    test('Should generate two Profiles', async () => {
         const generateProfileParams = new GenerateProfileParams([
             true,  // generateShippingAddresses
             true   // generateCryptocurrencyAddresses
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.PROFILE, 2, withRelated].concat(generateProfileParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.PROFILE, 2, WITH_RELATED].concat(generateProfileParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -108,7 +111,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -133,7 +136,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -161,7 +164,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -189,7 +192,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -217,7 +220,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -246,7 +249,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -277,7 +280,7 @@ describe('DataGenerateCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -296,9 +299,6 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice, MessagingInformation and ListingItemObjects', async () => {
-        /*
-
-        TODO: ListingItemObjects generation not implemented yet
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -311,7 +311,7 @@ describe('DataGenerateCommand', () => {
             true    // generateListingItemObjects
         ]).toParamsArray();
 
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, WITH_RELATED].concat(generateListingItemParams));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -325,29 +325,6 @@ describe('DataGenerateCommand', () => {
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();
         expect(result[0].MessagingInformation).not.toHaveLength(0);
         expect(result[0].ListingItemObjects).not.toHaveLength(0);
-        */
+
     });
-
-    test('Should generate one ListingItem having ActionMessage', async () => {
-
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result).toHaveLength(1);
-        expect(result[0].ActionMessages).not.toHaveLength(0);
-    });
-
 });

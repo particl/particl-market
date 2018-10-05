@@ -2,15 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemCategorySearchCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.CATEGORY_ROOT.commandName;
-    const subCommand = Commands.CATEGORY_SEARCH.commandName;
+
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categorySearchCommand = Commands.CATEGORY_SEARCH.commandName;
 
     const parentCategory = {
         id: 0,
@@ -26,7 +31,7 @@ describe('ItemCategorySearchCommand', () => {
             description: 'Sample Category Description 1',
             parent_item_category_id: 'cat_ROOT'
         };
-        await rpc(Commands.CATEGORY_ROOT.commandName, [
+        await testUtil.rpc(Commands.CATEGORY_ROOT.commandName, [
             Commands.CATEGORY_ADD.commandName,
             categoryData.name,
             categoryData.description,
@@ -38,7 +43,7 @@ describe('ItemCategorySearchCommand', () => {
     test('Should find ItemCategories, when search string matches', async () => {
 
         //  find categories
-        const res = await rpc(method, [subCommand, 'Sample']);
+        const res = await testUtil.rpc(categoryCommand, [categorySearchCommand, 'Sample']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -48,7 +53,7 @@ describe('ItemCategorySearchCommand', () => {
 
     test('Should fail to search iItemCategories because theres no search string', async () => {
         //  find categories
-        const res = await rpc(method, [subCommand]);
+        const res = await testUtil.rpc(categoryCommand, [categorySearchCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -57,7 +62,7 @@ describe('ItemCategorySearchCommand', () => {
 
     test('Should find get any ItemCategories when the search string doesnt match', async () => {
         //  find categories
-        const res = await rpc(method, [subCommand, 'NOTFOUNDCATEGORY']);
+        const res = await testUtil.rpc(categoryCommand, [categorySearchCommand, 'NOTFOUNDCATEGORY']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

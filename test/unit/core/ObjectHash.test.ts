@@ -40,7 +40,7 @@ describe('ObjectHash', () => {
         expect.assertions(1);
         const itemImageData = listingItemTemplateBasic1.ItemInformation.ItemImages[0].ItemImageDatas[0];
         const itemImageHash = ObjectHash.getHash(itemImageData, HashableObjectType.ITEMIMAGE);
-        expect(itemImageHash).toBe('ed06cccab6f1dd1004ec21429058a72efa0beb6e9ba3606b16450e928bdb3e14');
+        expect(itemImageHash).toBe('a92d346ba2a6c1850f1d04d88f3b0fe75cfafbb4acc6ad08a11a7bba8f18793a');
     });
 
     test('Should return different hashes for objects that have different values', async () => {

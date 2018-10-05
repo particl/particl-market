@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
@@ -15,14 +14,14 @@ import { GenerateListingItemParams } from '../../../src/api/requests/params/Gene
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
 describe('BidSearchCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
 
     const bidCommand =  Commands.BID_ROOT.commandName;
-    const searchCommand = Commands.BID_SEARCH.commandName;
+    const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -35,11 +34,8 @@ describe('BidSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile again
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', JSON.stringify(defaultProfile, null, 2));
-
-        // get default market
         defaultMarket = await testUtil.getDefaultMarket();
 
        // create listing item
@@ -54,8 +50,6 @@ describe('BidSearchCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        log.debug('generateListingItemParams: ', JSON.stringify(generateListingItemParams, null, 2));
-
         // create listing item for testing
         listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
@@ -67,7 +61,10 @@ describe('BidSearchCommand', () => {
     });
 
     test('Should return empty result because Bids do not exist for the given ListingItem', async () => {
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, listingItems[0].hash]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItems[0].hash
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -76,19 +73,20 @@ describe('BidSearchCommand', () => {
 
     test('Should fail to search for Bids because invalid ListingItem.hash', async () => {
         // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, 'INVALID HASH']);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            'INVALID HASH'
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
     test('Should fail to search for Bids because invalid paging params', async () => {
         // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, 'invalid page']);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid page']);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('parameter page should be a number.');
     });
 
@@ -109,10 +107,10 @@ describe('BidSearchCommand', () => {
             true,
             bidGenerateParams);
 
-        log.debug('bids: ', JSON.stringify(bids, null, 2));
+        // log.debug('bids: ', JSON.stringify(bids, null, 2));
 
         // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -139,7 +137,10 @@ describe('BidSearchCommand', () => {
             true,
             bidGenerateParams);
 
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, listingItems[0].hash]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItems[0].hash
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -149,18 +150,24 @@ describe('BidSearchCommand', () => {
     });
 
     test('Should return all two Bids when searching without any params', async () => {
-        const res: any = await rpc(bidCommand, [searchCommand]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
+        expect(result[1].action).toBe(BidMessageType.MPA_BID);
+        expect(result[1].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
     // TODO: add test where bids are searched using bid.OrderItems status
     test('Should search Bids by ListingItem.hash and Bid.status and find one', async () => {
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, listingItems[0].hash, BidMessageType.MPA_BID]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItems[0].hash,
+            BidMessageType.MPA_BID
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -171,7 +178,7 @@ describe('BidSearchCommand', () => {
 
     test('Should search Bids by ListingItem.hash, Bid.status and Bid.bidder and find one', async () => {
         const bidSearchCommandParams = [
-            searchCommand,
+            bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
             BidMessageType.MPA_BID,
@@ -179,7 +186,7 @@ describe('BidSearchCommand', () => {
             defaultProfile.address
         ];
 
-        const res: any = await rpc(bidCommand, bidSearchCommandParams);
+        const res: any = await testUtil.rpc(bidCommand, bidSearchCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -191,16 +198,23 @@ describe('BidSearchCommand', () => {
 
     test('Should fail to search Bids because invalid BidMessageType enum', async () => {
         // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, listingItems[0].hash, 'INVALID STATUS']);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItems[0].hash,
+            'INVALID STATUS'
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Invalid status.');
     });
 
     test('Should return empty search result because Bid with status MPA_REJECT does not exist', async () => {
         // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, PAGE, PAGE_LIMIT, ORDERING, listingItems[0].hash, BidMessageType.MPA_REJECT]);
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItems[0].hash,
+            BidMessageType.MPA_REJECT
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

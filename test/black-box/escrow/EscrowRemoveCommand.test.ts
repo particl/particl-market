@@ -2,27 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
 import * as resources from 'resources';
-import {GenerateListingItemTemplateParams} from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('EscrowRemoveCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowRemoveCommand = Commands.ESCROW_REMOVE.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-
     let createdListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
@@ -58,14 +57,14 @@ describe('EscrowRemoveCommand', () => {
     });
 
     test('Should destroy Escrow', async () => {
-        const destroyDataRes: any = await rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
-        destroyDataRes.expectJson();
-        destroyDataRes.expectStatusCode(200);
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
     });
 
     test('Should fail destroy Escrow because already been destroyed', async () => {
-        const destroyDataRes: any = await rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
-        destroyDataRes.expectJson();
-        destroyDataRes.expectStatusCode(404);
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
+        res.expectJson();
+        res.expectStatusCode(404);
     });
 });

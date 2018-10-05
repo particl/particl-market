@@ -22,6 +22,7 @@ declare module 'resources' {
         Bids: Bid[];
         ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
+        FlaggedItem: FlaggedItem;
 
         createdAt: Date;
         updatedAt: Date;

@@ -48,6 +48,10 @@ export class ProposalRepository {
         return this.ProposalModel.fetchByHash(hash, withRelated);
     }
 
+    public async findOneByItemHash(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByItemHash(itemHash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {
         return this.ProposalModel.fetchById(id, withRelated);
     }

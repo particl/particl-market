@@ -2,32 +2,27 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 import { ItemLocationService } from '../../src/api/services/ItemLocationService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemLocation } from '../../src/api/models/ItemLocation';
-import { ListingItem } from '../../src/api/models/ListingItem';
-import { ItemInformation } from '../../src/api/models/ItemInformation';
-
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
 import * as resources from 'resources';
 import { ProfileService } from '../../src/api/services/ProfileService';
-
-import * as listingItemCreateRequestWithoutItemLocation from '../testdata/createrequest/listingItemCreateRequestWithoutItemLocation.json';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 
 describe('ItemLocation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -51,7 +46,6 @@ describe('ItemLocation', () => {
     let itemInformation;
 
     const testData = {
-        item_information_id: null,
         region: 'South Africa',
         address: 'asdf, asdf, asdf',
         locationMarker: {
@@ -97,19 +91,33 @@ describe('ItemLocation', () => {
         defaultMarket = defaultMarketModel.toJSON();
 
         // create ListingItem without ItemLocation
-        listingItemCreateRequestWithoutItemLocation.market_id = defaultMarket.id;
-        listingItemCreateRequestWithoutItemLocation.seller = defaultProfile.address;
-        const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestWithoutItemLocation);
-        createdListingItem = createdListingItemModel1.toJSON();
-        log.debug('createdListingItem1: ', createdListingItem.id);
-        log.debug('createdListingItem1: ', createdListingItem.hash);
+        const generateParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            true,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
+            true,                               // generateMessagingInformation
+            false,                              // generateListingItemObjects
+            false,                              // generateObjectDatas
+            null,                               // listingItemTemplateHash
+            defaultProfile.address              // seller
+        ]).toParamsArray();
 
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0];
         itemInformation = createdListingItem.ItemInformation;
-    });
 
+        await itemLocationService.destroy(itemInformation.ItemLocation.id);
+        const listingItemModel = await listingItemService.findOne(createdListingItem.id);
+        createdListingItem = listingItemModel.toJSON();
 
-    afterAll(async () => {
-        //
     });
 
     test('Should throw ValidationException because there is no item_information_id', async () => {
@@ -143,7 +151,7 @@ describe('ItemLocation', () => {
         );
     });
 
-    test('Should list ItemLocations with our new create one', async () => {
+    test('Should list ItemLocations with our newly created one', async () => {
         const itemLocationCollection = await itemLocationService.findAll();
         const itemLocation = itemLocationCollection.toJSON();
         expect(itemLocation.length).toBe(1);
@@ -189,16 +197,16 @@ describe('ItemLocation', () => {
 
     test('Should delete the ItemLocation', async () => {
         expect.assertions(3);
-        // delete listing item
+        // delete ListingItem
         await listingItemService.destroy(createdListingItem.id);
         await listingItemService.findOne(createdListingItem.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdListingItem.id))
         );
-        // delete itemInformation
+        // delete ItemInformation
         await itemInformationService.findOne(itemInformation.id).catch(e =>
             expect(e).toEqual(new NotFoundException(itemInformation.id))
         );
-        // delete item location
+        // delete ItemLocation
         await itemLocationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

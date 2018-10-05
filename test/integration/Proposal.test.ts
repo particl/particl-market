@@ -8,12 +8,9 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Proposal } from '../../src/api/models/Proposal';
-
 import { ProposalService } from '../../src/api/services/ProposalService';
 import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
@@ -39,10 +36,13 @@ describe('Proposal', () => {
         submitter: 'pasdfasfsdfad',
         blockStart: 1000,
         blockEnd: 1010,
-        // hash: 'asdf',
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal x title',
-        description: 'proposal to x'
+        description: 'proposal to x',
+        expiryTime: 4,
+        postedAt: new Date().getTime(),
+        expiredAt: new Date().getTime() + 100000000,
+        receivedAt: new Date().getTime()
     } as ProposalCreateRequest;
 
     const testDataOptions = [{
@@ -57,13 +57,11 @@ describe('Proposal', () => {
         submitter: 'pqwer',
         blockStart: 1212,
         blockEnd: 1313,
-        // hash: 'newhash',
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y'
     } as ProposalUpdateRequest;
 
-    let testDataHash;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -75,20 +73,14 @@ describe('Proposal', () => {
         await testDataService.clean();
     });
 
-    afterAll(async () => {
-        //
-    });
-
-    test('Should throw ValidationException because we want to create a empty proposal', async () => {
+    test('Should throw ValidationException because we want to create a empty Proposal', async () => {
         expect.assertions(1);
-        await proposalService.create({}).catch(e =>
+        await proposalService.create({} as ProposalCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new proposal', async () => {
-
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
+    test('Should create a new Proposal', async () => {
 
         const proposalModel: Proposal = await proposalService.create(testData);
         const result = proposalModel.toJSON();
@@ -96,7 +88,6 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -106,59 +97,49 @@ describe('Proposal', () => {
         // todo: should test that creating proposal with options works too..
     });
 
-    test('Should list proposals with our new create one', async () => {
+    test('Should list Proposals with our newly created one', async () => {
         const proposalCollection = await proposalService.findAll();
         const proposal = proposalCollection.toJSON();
         expect(proposal.length).toBe(1);
 
         const result = proposal[0];
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
     });
 
-    test('Should return one proposal', async () => {
+    test('Should return one Proposal', async () => {
         const proposalModel: Proposal = await proposalService.findOne(createdId);
         const result = proposalModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
     });
 
-    test('Should update the proposal', async () => {
+    test('Should update the Proposal', async () => {
 
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
         const proposalModel: Proposal = await proposalService.update(createdId, testDataUpdated);
         const result = proposalModel.toJSON();
 
-        // test the values
         expect(result.submitter).toBe(testDataUpdated.submitter);
         expect(result.blockStart).toBe(testDataUpdated.blockStart);
         expect(result.blockEnd).toBe(testDataUpdated.blockEnd);
         expect(result.submitter).toBe(testDataUpdated.submitter);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
     });
 
-    test('Should delete the proposal', async () => {
+    test('Should delete the Proposal', async () => {
         expect.assertions(1);
         await proposalService.destroy(createdId);
         await proposalService.findOne(createdId).catch(e =>
@@ -169,7 +150,6 @@ describe('Proposal', () => {
     test('Should create a new Proposal with ProposalOptions', async () => {
 
         testData.options = testDataOptions;
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
@@ -179,7 +159,6 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -193,7 +172,6 @@ describe('Proposal', () => {
         testData.options = testDataOptions;
         testData.blockStart = 1005;
         testData.blockEnd = 1015;
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
@@ -203,7 +181,6 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -212,7 +189,7 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should search proposals open after block 1000', async () => {
+    test('Should search Proposals open after block 1000', async () => {
 
         const searchParams = {
             startBlock: 1000,
@@ -226,7 +203,7 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(2);
     });
 
-    test('Should search proposals open after and at block 1010', async () => {
+    test('Should search Proposals open after and at block 1010', async () => {
 
         const searchParams = {
             startBlock: 1010,
@@ -240,7 +217,7 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(2);
     });
 
-    test('Should search proposals open after and at block 1011', async () => {
+    test('Should search Proposals open after and at block 1011', async () => {
 
         const searchParams = {
             startBlock: 1011,
@@ -254,7 +231,7 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(1);
     });
 
-    test('Should search proposals closed before or at block 1010', async () => {
+    test('Should search Proposals closed before or at block 1010', async () => {
 
         const searchParams = {
             startBlock: '*',
@@ -271,7 +248,6 @@ describe('Proposal', () => {
     test('Should create another Proposal with type ITEM_VOTE', async () => {
 
         testData.type = ProposalType.ITEM_VOTE;
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
@@ -281,7 +257,6 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -290,7 +265,7 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should search proposals with type ITEM_VOTE', async () => {
+    test('Should search Proposals with type ITEM_VOTE', async () => {
 
         const searchParams = {
             startBlock: '*',

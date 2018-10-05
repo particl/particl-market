@@ -26,8 +26,8 @@ export class ShoppingCartRepository {
         return list as Bookshelf.Collection<ShoppingCart>;
     }
 
-    public async findAllByProfile(searchParam: number): Promise<Bookshelf.Collection<ShoppingCart>> {
-        const list = await this.ShoppingCartModel.fetchAllByProfile(searchParam);
+    public async findAllByProfileId(profileId: number): Promise<Bookshelf.Collection<ShoppingCart>> {
+        const list = await this.ShoppingCartModel.fetchAllByProfileId(profileId);
         return list as Bookshelf.Collection<ShoppingCart>;
     }
 
