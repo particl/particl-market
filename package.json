@@ -114,7 +114,7 @@
     "ts-enums": "0.0.6",
     "tslib": "^1.7.1",
     "web-request": "^1.0.7",
-    "winston": "^2.3.1"
+    "winston": "^2.4.4"
   },
   "jest": {
     "transform": {
