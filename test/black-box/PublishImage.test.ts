@@ -36,6 +36,7 @@ describe('/publish-image', () => {
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation

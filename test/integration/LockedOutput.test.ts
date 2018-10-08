@@ -101,6 +101,7 @@ describe('LockedOutput', () => {
         // generate ListingItemTemplate with ListingItem to sell
         const templateGenerateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false,  // generateItemImages
             true,   // generatePaymentInformation

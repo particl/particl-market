@@ -23,6 +23,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     public generateListingItemObjects = true;
 
     // GenerateItemInformationParamsInterface
+    public generateItemLocation = true;
     public generateShippingDestinations = true;
     public generateItemImages = true;
 
@@ -40,17 +41,18 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     /**
      * generateParams[]:
      * [0]: generateItemInformation
-     * [1]: generateShippingDestinations
-     * [2]: generateItemImages
-     * [3]: generatePaymentInformation
-     * [4]: generateEscrow
-     * [5]: generateItemPrice
-     * [6]: generateMessagingInformation
-     * [7]: generateListingItemObjects
-     * [8]: generateObjectDatas
-     * [9]: listingItemTemplateHash
-     * [10]: seller
-     * [10]: categoryId
+     * [1]: generateItemLocation
+     * [2]: generateShippingDestinations
+     * [3]: generateItemImages
+     * [4]: generatePaymentInformation
+     * [5]: generateEscrow
+     * [6]: generateItemPrice
+     * [7]: generateMessagingInformation
+     * [8]: generateListingItemObjects
+     * [9]: generateObjectDatas
+     * [10]: listingItemTemplateHash
+     * [11]: seller
+     * [12]: categoryId
      *
      * TODO: add proposal generation
      *
@@ -60,23 +62,25 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
         // set params only if there are some -> by default all are true
         if (!_.isEmpty(generateParams) ) {
             this.generateItemInformation        = generateParams[0] ? true : false;
-            this.generateShippingDestinations   = generateParams[1] ? true : false;
-            this.generateItemImages             = generateParams[2] ? true : false;
-            this.generatePaymentInformation     = generateParams[3] ? true : false;
-            this.generateEscrow                 = generateParams[4] ? true : false;
-            this.generateItemPrice              = generateParams[5] ? true : false;
-            this.generateMessagingInformation   = generateParams[6] ? true : false;
-            this.generateListingItemObjects     = generateParams[7] ? true : false;
-            this.generateObjectDatas            = generateParams[8] ? true : false;
-            this.listingItemTemplateHash        = generateParams[9] ? generateParams[9] : null;
-            this.seller                         = generateParams[10] ? generateParams[10] : null;
-            this.categoryId                     = generateParams[11] ? generateParams[11] : null;
+            this.generateItemLocation           = generateParams[1] ? true : false;
+            this.generateShippingDestinations   = generateParams[2] ? true : false;
+            this.generateItemImages             = generateParams[3] ? true : false;
+            this.generatePaymentInformation     = generateParams[4] ? true : false;
+            this.generateEscrow                 = generateParams[5] ? true : false;
+            this.generateItemPrice              = generateParams[6] ? true : false;
+            this.generateMessagingInformation   = generateParams[7] ? true : false;
+            this.generateListingItemObjects     = generateParams[8] ? true : false;
+            this.generateObjectDatas            = generateParams[9] ? true : false;
+            this.listingItemTemplateHash        = generateParams[10] ? generateParams[10] : null;
+            this.seller                         = generateParams[11] ? generateParams[11] : null;
+            this.categoryId                     = generateParams[12] ? generateParams[12] : null;
         }
     }
 
     public toParamsArray(): any[] {
         return [
             this.generateItemInformation,
+            this.generateItemLocation,
             this.generateShippingDestinations,
             this.generateItemImages,
             this.generatePaymentInformation,

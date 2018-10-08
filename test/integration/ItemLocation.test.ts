@@ -93,6 +93,7 @@ describe('ItemLocation', () => {
         // create ListingItem without ItemLocation
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation
+            true,                               // generateItemLocation
             true,                               // generateShippingDestinations
             false,                              // generateItemImages
             true,                               // generatePaymentInformation

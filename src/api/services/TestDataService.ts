@@ -91,11 +91,13 @@ import { VoteActionService } from './VoteActionService';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalActionService } from './ProposalActionService';
-import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
-import {BidDataValue} from '../enums/BidDataValue';
-import {SettingCreateRequest} from '../requests/SettingCreateRequest';
-import {ItemVote} from '../enums/ItemVote';
-import {Proposal} from '../models/Proposal';
+import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
+import { BidDataValue } from '../enums/BidDataValue';
+import { SettingCreateRequest } from '../requests/SettingCreateRequest';
+import { ItemVote } from '../enums/ItemVote';
+import { Proposal } from '../models/Proposal';
+import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
+import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 
 export class TestDataService {
 
@@ -899,7 +901,7 @@ export class TestDataService {
         return listingItemCreateRequest;
     }
 
-    private generateShippingDestinationsData(amount: number): any[] {
+    private generateShippingDestinationsData(amount: number): ShippingDestinationCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             items.push({
@@ -910,7 +912,20 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemImagesData(amount: number): any[] {
+    private generateItemLocationData(): any {
+        return {
+            region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+            address: Faker.address.streetAddress(),
+            locationMarker: {
+                markerTitle: Faker.lorem.word(),
+                markerText: Faker.lorem.sentence(),
+                lat: Faker.address.latitude(),
+                lng: Faker.address.longitude()
+            }
+        };
+    }
+
+    private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             const item = {
@@ -938,6 +953,10 @@ export class TestDataService {
             ? this.generateItemImagesData(_.random(1, 5))
             : [];
 
+        const itemLocation = generateParams.generateItemLocation
+            ? this.generateItemLocationData()
+            : undefined;
+
         const itemCategory = {} as ItemCategoryUpdateRequest;
         if (generateParams.categoryId) {
             itemCategory.id = generateParams.categoryId;
@@ -950,16 +969,7 @@ export class TestDataService {
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
             itemCategory,
-            itemLocation: {
-                region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
-                address: Faker.address.streetAddress(),
-                locationMarker: {
-                    markerTitle: Faker.lorem.word(),
-                    markerText: Faker.lorem.sentence(),
-                    lat: Faker.address.latitude(),
-                    lng: Faker.address.longitude()
-                }
-            },
+            itemLocation,
             shippingDestinations,
             itemImages
         } as ItemInformationCreateRequest;
@@ -978,7 +988,7 @@ export class TestDataService {
                     seller: _.random(1, 100)
                 }
             } as EscrowCreateRequest
-            : {};
+            : undefined;
 
         const itemPrice = generateParams.generateItemPrice
             ? {
@@ -993,7 +1003,7 @@ export class TestDataService {
                     address: await this.coreRpcService.getNewAddress()
                 }
             } as ItemPriceCreateRequest
-            : {};
+            : undefined;
 
         const paymentInformation = {
             type: PaymentType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
