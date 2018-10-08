@@ -215,7 +215,7 @@ describe('OrderItemStatus', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -223,10 +223,10 @@ describe('OrderItemStatus', () => {
             '[0].action',
             BidMessageType.MPA_BID.toString()
         );
-        bidSearchRes.expectJson();
-        bidSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
@@ -234,7 +234,7 @@ describe('OrderItemStatus', () => {
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         bidOnBuyerNode = result[0];
 
@@ -266,18 +266,6 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
-        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
-/*
-myOrderItems:  0=[[
-  {
-    "listingItemHash": "6f946aa36fc78047e904f497b3ec8561d849fa1c1e8c74f3dd11ce09c4ea8d5f",
-    "bidType": "MPA_BID",
-    "orderStatus": "",
-    "buyer": "ppUFRUL576kMr9pG41BtjXAy3ZN9fiEBTK",
-    "seller": "pXqEPTgARKWDyvVZ5qtjQB4ujthPQ1K7K7"
-  }
-]]
-*/
         log.debug('==> Correct status got from buyer node.');
 
     });
@@ -507,7 +495,7 @@ myOrderItems:  0=[[
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         bidOnBuyerNode = result[0];
 

@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/juha/Work/particl/particl-market/test/black-box/itemlocation/ItemLocationAddCommand.test.ts">
-        <testCase name="ItemLocationAddCommand Should not create ItemLocation without country" duration="9"/>
-        <testCase name="ItemLocationAddCommand Should create ItemLocation" duration="85"/>
-        <testCase name="ItemLocationAddCommand Should create ItemLocation if ItemLocation already exist for listingItemtemplate" duration="37"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/black-box/itemlocation/ItemLocationUpdateCommand.test.ts">
-        <testCase name="ItemLocationUpdateCommand Should update ItemLocation and set null location marker fields" duration="37"/>
-        <testCase name="ItemLocationUpdateCommand Should update ItemLocation" duration="48"/>
-        <testCase name="ItemLocationUpdateCommand Should fail because we want to update without Country code" duration="7"/>
-        <testCase name="ItemLocationUpdateCommand Should fail because we want to update without address not valid" duration="4"/>
-        <testCase name="ItemLocationUpdateCommand Should not update ItemLocation because ItemInformation is related with ListingItem" duration="192"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/black-box/itemlocation/ItemLocationRemoveCommand.test.ts">
-        <testCase name="ItemLocationRemoveCommand Should remove ItemLocation" duration="30"/>
-        <testCase name="ItemLocationRemoveCommand Should fail to remove ItemLocation because its already removed" duration="26"/>
-        <testCase name="ItemLocationRemoveCommand Should not remove ItemLocation because ItemInformation is related with ListingItem" duration="122"/>
-        <testCase name="ItemLocationRemoveCommand Should fail to remove ItemLocation if ItemInformation not exist" duration="53"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/black-box/orderitem/OrderItemStatus.test.ts">
+        <testCase name="OrderItemStatus Post ListingItemTemplate to create ListingItem" duration="50570"/>
+        <testCase name="OrderItemStatus Should return an empty list since there are no Bids or Orders yet" duration="5033"/>
+        <testCase name="OrderItemStatus Should post a Bid for a ListingItem" duration="340"/>
+        <testCase name="OrderItemStatus Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID" duration="5043"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_BID)" duration="5071"/>
+        <testCase name="OrderItemStatus SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID" duration="15095"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_BID)" duration="5085"/>
+        <testCase name="OrderItemStatus SELLER POSTS MPA_ACCEPT" duration="5639"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5066"/>
+        <testCase name="OrderItemStatus Order should have been created on seller node after posting the MPA_ACCEPT" duration="10069"/>
+        <testCase name="OrderItemStatus BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT" duration="15085"/>
+        <testCase name="OrderItemStatus Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW" duration="5054"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5081"/>
     </file>
 </testExecutions>
