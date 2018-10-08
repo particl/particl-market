@@ -341,7 +341,7 @@ describe('ListingItem', () => {
         createdListingItem1 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should findAll ListingItems consisting of the previously created one', async () => {
         const listingItemCollection = await listingItemService.findAll();
@@ -381,7 +381,7 @@ describe('ListingItem', () => {
         createdListingItem2 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
@@ -396,7 +396,7 @@ describe('ListingItem', () => {
         log.debug('updated ListingItem.id:', updatedListingItem1.id);
 
         expectListingItemFromCreateRequest(updatedListingItem1, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the previously updated ListingItem', async () => {
         expect.assertions(22);
@@ -421,7 +421,7 @@ describe('ListingItem', () => {
         createdListingItem2 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the ListingItem with ItemInformation', async () => {
         expect.assertions(6);
@@ -443,7 +443,7 @@ describe('ListingItem', () => {
         createdListingItem2 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the ListingItem with ItemInformation and PaymentInformation', async () => {
         expect.assertions(12);
@@ -480,7 +480,7 @@ describe('ListingItem', () => {
 
         expectListingItemFromCreateRequest(createdListingItem3, testDataToSave);
         expect(createdListingItem3.ListingItemTemplate.id).toBe(listingItemTemplate.Id);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete ListingItem with relation to ListingItemTemplate', async () => {
         expect.assertions(22);

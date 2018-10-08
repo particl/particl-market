@@ -36,7 +36,7 @@
     "console": "npm run ts-node:fast -- ./src/console/lib/console.ts",
     "console:dev": "npm run ts-node -- ./src/console/lib/console.ts",
     "console:help": "npm run ts-node:fast -- ./src/console/lib/console.ts --help",
-    "lint": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -p tsconfig.json -t stylish 'src/**/*.ts'",
+    "lint": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish 'src/**/*.ts'",
     "transpile": "./node_modules/.bin/tsc",
     "clean": "npm run banner clean && npm run clean:dist",
     "clean:dist": "./node_modules/.bin/trash './dist'",
@@ -121,18 +121,21 @@
     "transform": {
       ".(ts|tsx)": "<rootDir>/test/preprocessor.js"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx)$",
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js",
+      "jsx",
       "json",
       "node"
     ],
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts",
     "mapCoverage": true,
-    "collectCoverageFrom": ["src/**/*.ts"],
+    "collectCoverageFrom": [
+      "src/**/*.ts"
+    ],
     "testResultsProcessor": "jest-sonar-reporter"
   },
   "jestSonar": {
@@ -156,7 +159,7 @@
     "@types/handlebars": "^4.0.33",
     "@types/helmet": "0.0.35",
     "@types/inquirer": "^0.0.35",
-    "@types/jest": "^20.0.2",
+    "@types/jest": "^23.3.3",
     "@types/jsonwebtoken": "^7.2.2",
     "@types/knex": "0.0.52",
     "@types/lodash": "^4.14.68",
