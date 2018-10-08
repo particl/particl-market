@@ -1,601 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ListingItemTemplate.test.ts">
-        <testCase name="ListingItemTemplate Should throw ValidationException because we want to create a empty ListingItemTemplate" duration="7"/>
-        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate" duration="111612">
-            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
-    at pTimeout (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
-    at Timeout.setTimeout [as _onTimeout] (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
-    at ontimeout (timers.js:460:11)
-    at tryOnTimeout (timers.js:298:5)
-    at Timer.listOnTimeout (timers.js:261:5)]]></failure>
-        </testCase>
-        <testCase name="ListingItemTemplate Should findAll ListingItemTemplates consisting of the previously created one" duration="13">
-            <failure message="TypeError: Cannot read property &apos;hash&apos; of undefined"><![CDATA[TypeError: Cannot read property 'hash' of undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/ListingItemTemplate.test.ts:276:62)
-    at Generator.next (<anonymous>)
-    at fulfilled (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:93:62)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="ListingItemTemplate Should findOne ListingItemTemplate using id" duration="0">
-            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/ListingItemTemplate.test.ts:279:111)
-    at Generator.next (<anonymous>)
-    at /Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:96:75
-    at new Promise (<anonymous>)
-    at Object.__awaiter (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:92:16)
-    at Object.test (/Users/juha/Work/particl/particl-market/test/integration/ListingItemTemplate.test.ts:278:71)
-    at Object.asyncFn (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
-    at resolve (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
-    at new Promise (<anonymous>)
-    at mapper (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
-    at Promise.resolve.then.el (/Users/juha/Work/particl/particl-market/node_modules/p-map/index.js:42:16)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="113"/>
-        <testCase name="ListingItemTemplate Should create a second ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="14"/>
-        <testCase name="ListingItemTemplate Should update previously created ListingItemTemplate" duration="35719"/>
-        <testCase name="ListingItemTemplate Should delete the previously updated ListingItemTemplate" duration="171"/>
-        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without PaymentInformation, MessagingInformation and ListingItemObjects" duration="78572"/>
-        <testCase name="ListingItemTemplate Should delete the ListingItemTemplate with ItemInformation" duration="240"/>
-        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without MessagingInformation and ListingItemObjects" duration="73501"/>
-        <testCase name="ListingItemTemplate Should delete the ListingItemTemplate with ItemInformation and PaymentInformation" duration="268"/>
-        <testCase name="ListingItemTemplate Should create ListingItem with relation to ListingItemTemplate" duration="56726"/>
-        <testCase name="ListingItemTemplate Should not delete ListingItemTemplate having relation to ListingItem" duration="29"/>
-        <testCase name="ListingItemTemplate Should update ListingItemTemplate correctly when removing data" duration="82503"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/Command.test.ts">
+        <testCase name="Command Should return correct instance for Command" duration="4"/>
+        <testCase name="Command Should return correct toString for Command" duration="1"/>
+        <testCase name="Command Should return correct propName, description, commandName and isRoot for Command" duration="2"/>
+        <testCase name="Command Should return correct childCommands for Command" duration="2"/>
+        <testCase name="Command Should return all types of Commands and all root Commands" duration="1"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ListingItem.test.ts">
-        <testCase name="ListingItem Should throw ValidationException because we want to create a empty listing item" duration="3"/>
-        <testCase name="ListingItem Should create a new ListingItem" duration="69388"/>
-        <testCase name="ListingItem Should findAll ListingItems consisting of the previously created one" duration="1"/>
-        <testCase name="ListingItem Should findOne ListingItem using id" duration="13"/>
-        <testCase name="ListingItem Should findOne ListingItem using hash" duration="14"/>
-        <testCase name="ListingItem Should create a new ListingItem without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="27"/>
-        <testCase name="ListingItem Should update previously created ListingItem" duration="27405"/>
-        <testCase name="ListingItem Should delete the previously updated ListingItem" duration="103"/>
-        <testCase name="ListingItem Should create a new ListingItem without PaymentInformation, MessagingInformation and ListingItemObjects" duration="68818"/>
-        <testCase name="ListingItem Should delete the ListingItem with ItemInformation" duration="200"/>
-        <testCase name="ListingItem Should create a new ListingItem without MessagingInformation and ListingItemObjects" duration="68838"/>
-        <testCase name="ListingItem Should delete the ListingItem with ItemInformation and PaymentInformation" duration="212"/>
-        <testCase name="ListingItem Should create ListingItem with relation to ListingItemTemplate" duration="109876">
-            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
-    at pTimeout (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
-    at Timeout.setTimeout [as _onTimeout] (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
-    at ontimeout (timers.js:460:11)
-    at tryOnTimeout (timers.js:298:5)
-    at Timer.listOnTimeout (timers.js:261:5)]]></failure>
-        </testCase>
-        <testCase name="ListingItem Should delete ListingItem with relation to ListingItemTemplate" duration="0">
-            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/ListingItem.test.ts:348:62)
-    at Generator.next (<anonymous>)
-    at /Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:96:75
-    at new Promise (<anonymous>)
-    at Object.__awaiter (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:92:16)
-    at Object.test (/Users/juha/Work/particl/particl-market/test/integration/ListingItem.test.ts:346:90)
-    at Object.asyncFn (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
-    at resolve (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
-    at new Promise (<anonymous>)
-    at mapper (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
-    at Promise.resolve.then.el (/Users/juha/Work/particl/particl-market/node_modules/p-map/index.js:42:16)
-    at <anonymous>]]></failure>
-            <failure message="Error: expect.assertions(22)"><![CDATA[Error: expect.assertions(22)
-
-Expected 22 assertions to be called but only received zero assertion calls.
-    at addAssertionErrors (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
-    at Spec.attr.resultCallback (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
-    at complete (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
-    at queueRunnerFactory.then (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="ListingItem Should delete expired ListingItem" duration="14122"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/extendExpressResponse.test.ts">
+        <testCase name="extendExpressResponse Should have all the response helpers" duration="3"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format" duration="2"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format with a message" duration="0"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format with a links" duration="1"/>
+        <testCase name="extendExpressResponse created Should create to correct response format" duration="3"/>
+        <testCase name="extendExpressResponse found Should create to correct response format" duration="1"/>
+        <testCase name="extendExpressResponse destroyed Should create to correct response format" duration="0"/>
+        <testCase name="extendExpressResponse failed Should create to correct response format" duration="0"/>
+        <testCase name="extendExpressResponse updated Should create to correct response format" duration="1"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/TestData.test.ts">
-        <testCase name="TestDataService Should create default data if seed=true" duration="703"/>
-        <testCase name="TestDataService Should not create default data if seed=false" duration="59"/>
-        <testCase name="TestDataService Should create ListingItemTemplate" duration="69858"/>
-        <testCase name="TestDataService Should throw error message when passed model is invalid for create" duration="1"/>
-        <testCase name="TestDataService Should generate single Profile" duration="453"/>
-        <testCase name="TestDataService Should generate single Profile using withRelated=false and return only ids" duration="264"/>
-        <testCase name="TestDataService Check generateActionMessages from ListingItem" duration="54973"/>
-        <testCase name="TestDataService Should generate three Profiles" duration="882"/>
-        <testCase name="TestDataService Should generate ListingItemTemplate using GenerateListingItemTemplateParams" duration="761"/>
-        <testCase name="TestDataService Should throw error message when passed model is invalid for generate" duration="1"/>
-        <testCase name="TestDataService Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem" duration="56144"/>
-        <testCase name="TestDataService Should generate Bid using GenerateBidParams, with a relation to existing ListingItem" duration="41853">
-            <failure message="Error: expect(received).toEqual(expected)"><![CDATA[Error: expect(received).toEqual(expected)
-
-Expected value to equal:
-  {}
-Received:
-  undefined
-
-Difference:
-
-  Comparing two different types of values. Expected object but received undefined.
-    at expectGenerateBid (/Users/juha/Work/particl/particl-market/test/integration/TestData.test.ts:115:60)
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/TestData.test.ts:413:9)
-    at Generator.next (<anonymous>)
-    at fulfilled (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:93:62)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="TestDataService Should generate Order using GenerateOrderParams, with a relation to existing ListingItem" duration="82962"/>
-        <testCase name="TestDataService Should cleanup all tables" duration="705"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/RequestBody.test.ts">
+        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="3"/>
+        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="0"/>
+        <testCase name="RequestBody validate Should pass if no validators are defined" duration="49"/>
+        <testCase name="RequestBody validate Should pass if no validators are defined" duration="4"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/SmsgMessage.test.ts">
-        <testCase name="SmsgMessage Should create a new SmsgMessage from listingItemMessage" duration="15"/>
-        <testCase name="SmsgMessage Should create a new SmsgMessage from proposalMessage" duration="44"/>
-        <testCase name="SmsgMessage Should create a new SmsgMessage from voteMessage" duration="5"/>
-        <testCase name="SmsgMessage Should throw ValidationException because we want to create a empty SmsgMessage" duration="1"/>
-        <testCase name="SmsgMessage Should list all SmsgMessages" duration="2"/>
-        <testCase name="SmsgMessage Should find one SmsgMessage using id" duration="2"/>
-        <testCase name="SmsgMessage Should find one SmsgMessage using msgid" duration="1"/>
-        <testCase name="SmsgMessage Should update the SmsgMessage" duration="8"/>
-        <testCase name="SmsgMessage Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD]" duration="3"/>
-        <testCase name="SmsgMessage Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD]" duration="2"/>
-        <testCase name="SmsgMessage Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW" duration="2"/>
-        <testCase name="SmsgMessage Should search for SmsgMessages: empty [] should find all" duration="2"/>
-        <testCase name="SmsgMessage Should update SmsgMessage status to SmsgMessageStatus.PROCESSING" duration="3"/>
-        <testCase name="SmsgMessage Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW" duration="1"/>
-        <testCase name="SmsgMessage Should delete the SmsgMessage" duration="5"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/Exception.test.ts">
+        <testCase name="Exception Should have the correct properties" duration="4"/>
+        <testCase name="Exception Should have the correct properties" duration="1"/>
+        <testCase name="Exception Should return a string with the code, name and message of the exception" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Bid.test.ts">
-        <testCase name="Bid Should throw ValidationException because listing_item_id is null" duration="2"/>
-        <testCase name="Bid Should not return any Bids for listingItem.id and bidder" duration="10"/>
-        <testCase name="Bid Should create a new Bid for ListingItem that is being sold by local Profile" duration="19"/>
-        <testCase name="Bid Should create a new Bid for ListingItem that is being bought by local Profile" duration="39"/>
-        <testCase name="Bid Should return one Bid for listingItem.id" duration="11"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (MPA_BID)" duration="9"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (MPA_ACCEPT)" duration="5"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (AWAITING_ESCROW)" duration="5"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and title" duration="6"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and shortDescription" duration="4"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and longDescription" duration="5"/>
-        <testCase name="Bid Should not find Bids by listingItem.id and status (AWAITING_ESCROW) and title" duration="1"/>
-        <testCase name="Bid Should return one Bid for listingItem.id and bidder" duration="8"/>
-        <testCase name="Bid Should return one Bid for listingItem.hash" duration="6"/>
-        <testCase name="Bid Should return two Bids for bidder" duration="5"/>
-        <testCase name="Bid Should throw ValidationException because we want to create a empty Bid" duration="0"/>
-        <testCase name="Bid Should list Bids with our new create one" duration="2"/>
-        <testCase name="Bid Should return one Bid" duration="4"/>
-        <testCase name="Bid Should throw ValidationException because there is no listing_item_id" duration="1"/>
-        <testCase name="Bid Should update the Bid" duration="11"/>
-        <testCase name="Bid Should delete the first Bid" duration="3"/>
-        <testCase name="Bid Should not delete the second Bid, since theres a relation to OrderItem" duration="3"/>
-        <testCase name="Bid Should delete the second Bid" duration="18"/>
-        <testCase name="Bid Should not have BidData because bid has been deleted" duration="1"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/exceptionHandler.test.ts">
+        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code and body" duration="1"/>
+        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code" duration="1"/>
+        <testCase name="exceptionHandler Should fail, because it is a system error with 500" duration="1"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemInformation.test.ts">
-        <testCase name="ItemInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="2"/>
-        <testCase name="ItemInformation Should create a new ItemInformation" duration="38426"/>
-        <testCase name="ItemInformation Should throw ValidationException because we want to create a empty item information" duration="0"/>
-        <testCase name="ItemInformation Should list item informations with our new create one" duration="3"/>
-        <testCase name="ItemInformation Should return one item information" duration="6"/>
-        <testCase name="ItemInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="1"/>
-        <testCase name="ItemInformation Should update the item information" duration="37018"/>
-        <testCase name="ItemInformation Should delete the item information" duration="67"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/Environment.test.ts">
+        <testCase name="Environment getName() should return the test env" duration="1"/>
+        <testCase name="Environment isTest() should be true" duration="1"/>
+        <testCase name="Environment isDevelopment() should be false" duration="1"/>
+        <testCase name="Environment isProduction() should be false" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/PriceTicker.test.ts">
-        <testCase name="PriceTicker Should create a new PriceTicker" duration="7"/>
-        <testCase name="PriceTicker Should throw ValidationException because we want to create a empty PriceTicker" duration="1"/>
-        <testCase name="PriceTicker Should list PriceTicker with our new create one" duration="10"/>
-        <testCase name="PriceTicker Should return one PriceTicker" duration="3"/>
-        <testCase name="PriceTicker Should update the PriceTicker" duration="7"/>
-        <testCase name="PriceTicker Should get PriceTicker by symbol" duration="1"/>
-        <testCase name="PriceTicker Should get no record, if we try to get priceticker by non existing symbol" duration="0"/>
-        <testCase name="PriceTicker Should get updated priceticker if timestamp is older passing currency in UPPER case" duration="3"/>
-        <testCase name="PriceTicker Should get updated priceticker if timestamp is older passing currency in LOWER case" duration="2"/>
-        <testCase name="PriceTicker Should delete the PriceTicker" duration="2"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ShippingZips.test.ts">
+        <testCase name="ShippingZips isCountryCodeSupported() should return true for all our non-standard (valid) country codes" duration="3"/>
+        <testCase name="ShippingZips isCountryCodeSupported() should return false for all our invalid country codes." duration="2"/>
+        <testCase name="ShippingZips validate() should return true for all non-standard country codes and their zips." duration="3"/>
+        <testCase name="ShippingZips validate() should return true for all our valid ZIP/postal-code / country code combinations" duration="0"/>
+        <testCase name="ShippingZips validate() should return false for all our invalid ZIP/postal-code / country code combinations" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/ListingItemMessageProcessor.test.ts">
-        <testCase name="ListingItemMessage Should process MarketplaceEvent containing ListingItemMessage" duration="181"/>
-        <testCase name="ListingItemMessage Should process MarketplaceEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate" duration="155"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ObjectHash.test.ts">
+        <testCase name="ObjectHash Should get hash for listingItemTemplate" duration="9"/>
+        <testCase name="ObjectHash Should get hash for listingItemTemplate missing most of its data" duration="2"/>
+        <testCase name="ObjectHash Should get hash for ItemImage" duration="1"/>
+        <testCase name="ObjectHash Should return different hashes for objects that have different values" duration="5"/>
+        <testCase name="ObjectHash getHash() should return same hashes for objects that have same values in different orders" duration="6"/>
+        <testCase name="ObjectHash getHash() on an object should return the same hash every time" duration="100"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ShippingDestination.test.ts">
-        <testCase name="ShippingDestination Should fail to create and throw ValidationException because there is no item_information_id" duration="2"/>
-        <testCase name="ShippingDestination Should create a new shipping destination for template" duration="6"/>
-        <testCase name="ShippingDestination Should create a new shipping destination for listing item" duration="5"/>
-        <testCase name="ShippingDestination Should throw ValidationException because we want to create a empty shipping destination" duration="1"/>
-        <testCase name="ShippingDestination Should list shipping destinations" duration="3"/>
-        <testCase name="ShippingDestination Should return one shipping destination related to template" duration="4">
-            <failure message="Error: expect(object)[.not].toMatchObject(expected)"><![CDATA[Error: expect(object)[.not].toMatchObject(expected)
-
-received value must be an object.
-Received: undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/ShippingDestination.test.ts:130:52)
-    at Generator.next (<anonymous>)
-    at fulfilled (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:93:62)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="ShippingDestination Should return the other shipping destination related to listing item" duration="3">
-            <failure message="Error: expect(object)[.not].toMatchObject(expected)"><![CDATA[Error: expect(object)[.not].toMatchObject(expected)
-
-received value must be an object.
-Received: undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/ShippingDestination.test.ts:139:60)
-    at Generator.next (<anonymous>)
-    at fulfilled (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:93:62)
-    at <anonymous>]]></failure>
-        </testCase>
-        <testCase name="ShippingDestination Should fail to update and throw ValidationException because there is no item_information_id" duration="0"/>
-        <testCase name="ShippingDestination Should update the shipping destination related to template" duration="6"/>
-        <testCase name="ShippingDestination Should update the shipping destination related to listing item" duration="5"/>
-        <testCase name="ShippingDestination Should delete the shipping destination related to template" duration="24"/>
-        <testCase name="ShippingDestination Should delete the shipping destination related to listing item" duration="18"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ShippingCountries.test.ts">
+        <testCase name="ShippingCountries isValidCountryCode() should return true for all country codes" duration="26"/>
+        <testCase name="ShippingCountries isValidCountryCode() should return false for fake country codes" duration="1"/>
+        <testCase name="ShippingCountries isValidCountry() should return true for all countries" duration="20"/>
+        <testCase name="ShippingCountries isValidCountry() should return false for invalid countries" duration="0"/>
+        <testCase name="ShippingCountries isValidCountryCode() should return false for questionable country codes" duration="1"/>
+        <testCase name="ShippingCountries isValidCountry() should return false for questionable countries" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Profile.test.ts">
-        <testCase name="Profile Should throw ValidationException because we want to create a empty profile" duration="1"/>
-        <testCase name="Profile Should create a new profile with just delivery addresses" duration="19"/>
-        <testCase name="Profile Should list profiles with our new create one" duration="2"/>
-        <testCase name="Profile Should return one profile" duration="4"/>
-        <testCase name="Profile Should update the profile" duration="8"/>
-        <testCase name="Profile Should delete the profile" duration="14"/>
-        <testCase name="Profile Should create and delete a new profile with delivery addresses and cryptoaddresses" duration="163"/>
-        <testCase name="Profile Should create and delete a new profile with delivery addresses and cryptoaddresses and FavoriteItems" duration="150"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/BidFactory.test.ts">
+        <testCase name="BidFactory Should create BidMessages correctly" duration="7"/>
+        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest" duration="5"/>
+        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest with 9 bidData objects" duration="2"/>
+        <testCase name="BidFactory Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId" duration="2"/>
+        <testCase name="BidFactory Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_ACCEPT" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_CANCEL" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_REJECT" duration="1"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/BidAndEscrowMessaging.test.ts">
-        <testCase name="BidMessageProcessing Should process MarketplaceEvent containing MPA_BID BidMessage" duration="1">
-            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
-    at pTimeout (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
-    at Timeout.setTimeout [as _onTimeout] (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
-    at ontimeout (timers.js:460:11)
-    at tryOnTimeout (timers.js:298:5)
-    at Timer.listOnTimeout (timers.js:261:5)]]></failure>
-            <failure message="Error: expect(received).toBeDefined()"><![CDATA[Error: expect(received).toBeDefined()
-
-Expected value to be defined, instead received
-  undefined
-    at Object.<anonymous> (/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/BidAndEscrowMessaging.test.ts:139:29)
-    at Generator.next (<anonymous>)
-    at /Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:96:75
-    at new Promise (<anonymous>)
-    at Object.__awaiter (/Users/juha/Work/particl/particl-market/node_modules/tslib/tslib.js:92:16)
-    at Object.test (/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/BidAndEscrowMessaging.test.ts:137:89)
-    at Object.asyncFn (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
-    at resolve (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
-    at new Promise (<anonymous>)
-    at mapper (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
-    at Promise.resolve.then.el (/Users/juha/Work/particl/particl-market/node_modules/p-map/index.js:42:16)
-    at <anonymous>]]></failure>
-        </testCase>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/middlewares/AuthenticateMiddleware.test.ts">
+        <testCase name="AuthenticateMiddleware Should pass if correct authorization header is set" duration="6"/>
+        <testCase name="AuthenticateMiddleware Should fail when no authorization header is set" duration="1"/>
+        <testCase name="AuthenticateMiddleware Should fail when wrong authorization header is set" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemPrice.test.ts">
-        <testCase name="ItemPrice Should throw ValidationException because there is no payment_information_id" duration="2"/>
-        <testCase name="ItemPrice Should throw ValidationException because there is no currency" duration="1"/>
-        <testCase name="ItemPrice Should throw ValidationException because there is no basePrice" duration="1"/>
-        <testCase name="ItemPrice Should create a new item price" duration="16"/>
-        <testCase name="ItemPrice Should throw ValidationException because we want to create a empty item price" duration="1"/>
-        <testCase name="ItemPrice Should list item prices with our new create one" duration="3"/>
-        <testCase name="ItemPrice Should return one item price" duration="3"/>
-        <testCase name="ItemPrice Should throw ValidationException because there is no payment_information_id" duration="1"/>
-        <testCase name="ItemPrice Should update the item price" duration="14"/>
-        <testCase name="ItemPrice Should create a new item price missing shipping price" duration="13"/>
-        <testCase name="ItemPrice Should create a new item price missing cryptocurrency address" duration="16"/>
-        <testCase name="ItemPrice Should create a new item price missing shipping price and cryptocurrency address" duration="9"/>
-        <testCase name="ItemPrice Should delete the item price" duration="20"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ItemCategoryFactory.test.ts">
+        <testCase name="ItemCategoryFactory Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel" duration="6"/>
+        <testCase name="ItemCategoryFactory Should convert ListingItemCategory to categoryArray, 3 levels" duration="2"/>
+        <testCase name="ItemCategoryFactory Should convert ListingItemCategory to categoryArray, 5 levels" duration="2"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/SmsgMessageProcessor.test.ts">
-        <testCase name="MessageProcessor Should generate 100 ListingItemTemplates" duration="8926"/>
-        <testCase name="MessageProcessor Should process 100 SmsgMessages and set status PROCESSING" duration="23948"/>
-        <testCase name="MessageProcessor Should process 100 SmsgMessages and set status PROCESSED" duration="126018"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ActionMessageFactory.test.ts">
+        <testCase name="EscrowFactory Test ActionMessageFactory.getModel()" duration="12"/>
+        <testCase name="EscrowFactory Negative test ActionMessageFactory.getModel()" duration="2"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Order.test.ts">
-        <testCase name="Order Should create a new Order" duration="35"/>
-        <testCase name="Order Should throw ValidationException because we want to create a empty Order" duration="1"/>
-        <testCase name="Order Should list Orders with the newly created one" duration="2"/>
-        <testCase name="Order Should return one Order" duration="6"/>
-        <testCase name="Order Should delete the Order, related OrderItem and OrderItemObjects" duration="31"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/middlewares/PopulateUserMiddleware.test.ts">
+        <testCase name="PopulateUserMiddleware Should fail because no tokeninfo or user_id is given" duration="4"/>
+        <testCase name="PopulateUserMiddleware Should pass the database query and attache the user to the request object" duration="1"/>
+        <testCase name="PopulateUserMiddleware Should behave..." duration="1"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ProposalOptionResult.test.ts">
-        <testCase name="ProposalOptionResult Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="ProposalOptionResult Should throw ValidationException because we want to create a empty proposal option result" duration="1"/>
-        <testCase name="ProposalOptionResult Should create a new ProposalOptionResult" duration="13"/>
-        <testCase name="ProposalOptionResult Should list ProposalOptionResults with our new create one" duration="2"/>
-        <testCase name="ProposalOptionResult Should return one ProposalOptionResult" duration="3"/>
-        <testCase name="ProposalOptionResult Should update the ProposalOptionResult" duration="4"/>
-        <testCase name="ProposalOptionResult Should delete the ProposalOptionResult" duration="4"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ListingItemFactory.test.ts">
+        <testCase name="ListingItemFactory Should create ListingItemMessage" duration="33"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage" duration="12"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic1 data" duration="26"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1" duration="8"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic2 data" duration="19"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic2" duration="5"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic3 data" duration="13"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic3" duration="4"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/OrderItemObject.test.ts">
-        <testCase name="OrderItemObject Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="OrderItemObject Should create a new OrderItemObject" duration="4"/>
-        <testCase name="OrderItemObject Should throw ValidationException because we want to create a empty OrderItemObject" duration="0"/>
-        <testCase name="OrderItemObject Should list OrderItemObjects with our newly created one" duration="3"/>
-        <testCase name="OrderItemObject Should return one OrderItemObject" duration="2"/>
-        <testCase name="OrderItemObject Should update the OrderItemObject" duration="4"/>
-        <testCase name="OrderItemObject Should delete the OrderItemObject" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/FavoriteItem.test.ts">
-        <testCase name="FavoriteItem Should throw ValidationException because there is no related_id and empty" duration="1"/>
-        <testCase name="FavoriteItem Should create a new FavoriteItem" duration="18"/>
-        <testCase name="FavoriteItem Should list FavoriteItems with our new create one" duration="3"/>
-        <testCase name="FavoriteItem Should return one FavoriteItem" duration="10"/>
-        <testCase name="FavoriteItem Should throw ValidationException because there is no profile_id" duration="0"/>
-        <testCase name="FavoriteItem Should update the FavoriteItem" duration="16"/>
-        <testCase name="FavoriteItem Should throw because invalid profileId and itemId" duration="3"/>
-        <testCase name="FavoriteItem Should throw because invalid profileId" duration="1"/>
-        <testCase name="FavoriteItem Should throw because invalid itemId" duration="2"/>
-        <testCase name="FavoriteItem Should find FavoriteItem by profileId and itemId" duration="10"/>
-        <testCase name="FavoriteItem Should find FavoriteItems by profileId and withRelated = true" duration="10"/>
-        <testCase name="FavoriteItem Should delete the FavoriteItem" duration="17"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Proposal.test.ts">
-        <testCase name="Proposal Should throw ValidationException because we want to create a empty Proposal" duration="1"/>
-        <testCase name="Proposal Should create a new Proposal" duration="7"/>
-        <testCase name="Proposal Should list Proposals with our newly created one" duration="5"/>
-        <testCase name="Proposal Should return one Proposal" duration="2"/>
-        <testCase name="Proposal Should update the Proposal" duration="15"/>
-        <testCase name="Proposal Should delete the Proposal" duration="3"/>
-        <testCase name="Proposal Should create a new Proposal with ProposalOptions" duration="30"/>
-        <testCase name="Proposal Should create another Proposal with different blockStart and blockEnd" duration="20"/>
-        <testCase name="Proposal Should search Proposals open after block 1000" duration="5"/>
-        <testCase name="Proposal Should search Proposals open after and at block 1010" duration="3"/>
-        <testCase name="Proposal Should search Proposals open after and at block 1011" duration="3"/>
-        <testCase name="Proposal Should search Proposals closed before or at block 1010" duration="3"/>
-        <testCase name="Proposal Should create another Proposal with type ITEM_VOTE" duration="40"/>
-        <testCase name="Proposal Should search Proposals with type ITEM_VOTE" duration="2"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/LockedOutput.test.ts">
-        <testCase name="LockedOutput Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="LockedOutput Should create a new locked output" duration="5"/>
-        <testCase name="LockedOutput Should throw ValidationException because we want to create a empty locked output" duration="0"/>
-        <testCase name="LockedOutput Should list locked outputs with our new create one" duration="3"/>
-        <testCase name="LockedOutput Should return one locked output" duration="2"/>
-        <testCase name="LockedOutput Should update the locked output" duration="3"/>
-        <testCase name="LockedOutput Should delete the locked output" duration="2"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/OrderItem.test.ts">
-        <testCase name="OrderItem Should throw ValidationException because there is no related_id" duration="3"/>
-        <testCase name="OrderItem Should create a new OrderItem" duration="12"/>
-        <testCase name="OrderItem Should throw ValidationException because we want to create a empty OrderItem" duration="0"/>
-        <testCase name="OrderItem Should list OrderItems with our newly created one" duration="4"/>
-        <testCase name="OrderItem Should return one OrderItem" duration="5"/>
-        <testCase name="OrderItem Should update the OrderItem" duration="8"/>
-        <testCase name="OrderItem Should delete the OrderItem" duration="10"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemLocation.test.ts">
-        <testCase name="ItemLocation Should throw ValidationException because there is no item_information_id" duration="2"/>
-        <testCase name="ItemLocation Should create a new ItemLocation" duration="7"/>
-        <testCase name="ItemLocation Should throw ValidationException because we want to create a empty ItemLocation" duration="1"/>
-        <testCase name="ItemLocation Should list ItemLocations with our newly created one" duration="2"/>
-        <testCase name="ItemLocation Should return one ItemLocation" duration="2"/>
-        <testCase name="ItemLocation Should throw ValidationException because we are trying to update with no item_information_id" duration="1"/>
-        <testCase name="ItemLocation Should update the ItemLocation" duration="7"/>
-        <testCase name="ItemLocation Should delete the ItemLocation" duration="14"/>
-        <testCase name="ItemLocation Should not have LocationMarkers because ItemLocation has been deleted" duration="1"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/CurrencyPrice.test.ts">
-        <testCase name="CurrencyPrice Should create a new CurrencyPrice" duration="5"/>
-        <testCase name="CurrencyPrice Should get CurrencyPrice from db without updating the latest price from external service" duration="2"/>
-        <testCase name="CurrencyPrice Should throw ValidationException because we want to create a empty CurrencyPrice" duration="1"/>
-        <testCase name="CurrencyPrice Should list CurrencyPrices containing the previously created one" duration="3"/>
-        <testCase name="CurrencyPrice Should return the one created CurrencyPrice" duration="2"/>
-        <testCase name="CurrencyPrice Should update the CurrencyPrice" duration="11"/>
-        <testCase name="CurrencyPrice Should get CurrencyPrice with previously updated price" duration="3"/>
-        <testCase name="CurrencyPrice Should get CurrencyPrice from db and another one with updated price" duration="1539"/>
-        <testCase name="CurrencyPrice Should get CurrencyPrice from db passing currencies in UPPER case" duration="3"/>
-        <testCase name="CurrencyPrice Should get CurrencyPrice from db passing currencies in LOWER case" duration="3"/>
-        <testCase name="CurrencyPrice Should get updated CurrencyPrice passing currencies in LOWER case" duration="2014"/>
-        <testCase name="CurrencyPrice Should get currency price from db passing one currency in LOWER case and one in UPPER case" duration="100004">
-            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
-    at pTimeout (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
-    at Timeout.setTimeout [as _onTimeout] (/Users/juha/Work/particl/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
-    at ontimeout (timers.js:460:11)
-    at tryOnTimeout (timers.js:298:5)
-    at Timer.listOnTimeout (timers.js:261:5)]]></failure>
-        </testCase>
-        <testCase name="CurrencyPrice Should search currency price by from PART and to USD currency" duration="5"/>
-        <testCase name="CurrencyPrice Should return null search result because invalid from currency" duration="5"/>
-        <testCase name="CurrencyPrice Should return null search result because not supported to currency" duration="2"/>
-        <testCase name="CurrencyPrice Should return null search result because currency price does not exist in the db for the given to currency" duration="2"/>
-        <testCase name="CurrencyPrice Should delete the currency price" duration="4"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemImage.test.ts">
-        <testCase name="ItemImage Should throw ValidationException because there is no item_information_id" duration="2"/>
-        <testCase name="ItemImage Should create a new ItemImage" duration="9015"/>
-        <testCase name="ItemImage Should throw ValidationException because we want to create a empty ItemImage" duration="1"/>
-        <testCase name="ItemImage Should list ItemImages with our new create one" duration="2"/>
-        <testCase name="ItemImage Should return one ItemImage" duration="5"/>
-        <testCase name="ItemImage Should throw ValidationException because there is no item_information_id" duration="0"/>
-        <testCase name="ItemImage Should update the ItemImage" duration="16798"/>
-        <testCase name="ItemImage Should delete the ItemImage" duration="49"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Vote.test.ts">
-        <testCase name="Vote Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="Vote Should throw ValidationException because we want to create a empty vote" duration="1"/>
-        <testCase name="Vote Should create a new Vote" duration="6"/>
-        <testCase name="Vote Should list Votes with our newly created one" duration="3"/>
-        <testCase name="Vote Should return one Vote" duration="2"/>
-        <testCase name="Vote Should get a Vote by proposalId and voterAddress" duration="3"/>
-        <testCase name="Vote Should update the Vote" duration="4"/>
-        <testCase name="Vote Should delete the vote" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ProposalResult.test.ts">
-        <testCase name="ProposalResult Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="ProposalResult Should throw ValidationException because we want to create a empty proposal result" duration="1"/>
-        <testCase name="ProposalResult Should create a new ProposalResult" duration="5"/>
-        <testCase name="ProposalResult Should list ProposalResults with our newly created one" duration="1"/>
-        <testCase name="ProposalResult Should list all ProposalResults by proposalHash" duration="4"/>
-        <testCase name="ProposalResult Should return one ProposalResult by proposalHash" duration="4"/>
-        <testCase name="ProposalResult Should return one ProposalResult" duration="3"/>
-        <testCase name="ProposalResult Should update the ProposalResult" duration="4"/>
-        <testCase name="ProposalResult Should delete the ProposalResult" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/BidData.test.ts">
-        <testCase name="BidDatas Should throw ValidationException because there is no bid_id" duration="1"/>
-        <testCase name="BidDatas Should create a new BidData" duration="3"/>
-        <testCase name="BidDatas Should throw ValidationException because we want to create an empty BidData" duration="0"/>
-        <testCase name="BidDatas Should list BidDatas with our new create one" duration="4"/>
-        <testCase name="BidDatas Should return one bid data" duration="1"/>
-        <testCase name="BidDatas Should throw ValidationException because we want to update with out bid_id" duration="0"/>
-        <testCase name="BidDatas Should update the bid data" duration="3"/>
-        <testCase name="BidDatas Should delete the bid data" duration="16"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ShoppingCartItem.test.ts">
-        <testCase name="ShoppingCartList Should create a new ShoppingCartItem" duration="22"/>
-        <testCase name="ShoppingCartList Should throw ValidationException because we want to create a empty ShoppingCartItem" duration="1"/>
-        <testCase name="ShoppingCartList Should list ShoppingCartItem with our new create one" duration="3"/>
-        <testCase name="ShoppingCartList Should return one ShoppingCartItem" duration="10"/>
-        <testCase name="ShoppingCartList Should find ShoppingCartItems by shoppingCart.id" duration="13"/>
-        <testCase name="ShoppingCartList Should find ShoppingCartItems by shoppingCart.id and listingItem.id" duration="11"/>
-        <testCase name="ShoppingCartList Should clear all ShoppingCartItems of ShoppingCart by shoppingCart.id" duration="7"/>
-        <testCase name="ShoppingCartList Should delete the ShoppingCartItems" duration="25"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/MessagingInformation.test.ts">
-        <testCase name="MessagingInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="2"/>
-        <testCase name="MessagingInformation Should create a new MessagingInformation for ListingItemTemplate" duration="2"/>
-        <testCase name="MessagingInformation Should create a new MessagingInformation for ListingItem" duration="3"/>
-        <testCase name="MessagingInformation Should throw ValidationException because we want to create a empty MessagingInformation" duration="0"/>
-        <testCase name="MessagingInformation Should list MessagingInformations with our newly created ones" duration="4"/>
-        <testCase name="MessagingInformation Should return one MessagingInformation" duration="1"/>
-        <testCase name="MessagingInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="0"/>
-        <testCase name="MessagingInformation Should update the MessagingInformation" duration="3"/>
-        <testCase name="MessagingInformation Should delete the MessagingInformation" duration="13"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/PaymentInformation.test.ts">
-        <testCase name="PaymentInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="1"/>
-        <testCase name="PaymentInformation Should create a new payment information" duration="14"/>
-        <testCase name="PaymentInformation Should throw ValidationException because we want to create a empty payment information" duration="1"/>
-        <testCase name="PaymentInformation Should list payment informations with our new create one" duration="3"/>
-        <testCase name="PaymentInformation Should return one payment information" duration="3"/>
-        <testCase name="PaymentInformation Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="0"/>
-        <testCase name="PaymentInformation Should update the payment information" duration="16"/>
-        <testCase name="PaymentInformation Should delete the payment information" duration="9"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ProposalOption.test.ts">
-        <testCase name="ProposalOption Should throw ValidationException because there is no related_id" duration="2"/>
-        <testCase name="ProposalOption Should throw ValidationException because we want to create a empty ProposalOption" duration="0"/>
-        <testCase name="ProposalOption Should create a new ProposalOption" duration="10"/>
-        <testCase name="ProposalOption Should list ProposalOptions with our newly created one" duration="1"/>
-        <testCase name="ProposalOption Should return one ProposalOption" duration="2"/>
-        <testCase name="ProposalOption Should delete the ProposalOption" duration="2"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ListingItemObject.test.ts">
-        <testCase name="ListingItemObject Should throw ValidationException because we want to create a empty messaging information" duration="2"/>
-        <testCase name="ListingItemObject Should create a new listing item object" duration="13"/>
-        <testCase name="ListingItemObject Should throw ValidationException because we want to create a empty listing item object" duration="1"/>
-        <testCase name="ListingItemObject Should list listing item objects with our new create one" duration="3"/>
-        <testCase name="ListingItemObject Should return one listing item object" duration="3"/>
-        <testCase name="ListingItemObject Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="1"/>
-        <testCase name="ListingItemObject Should update the listing item object" duration="5"/>
-        <testCase name="ListingItemObject Should delete the listing item object" duration="95"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/FlaggedItem.test.ts">
-        <testCase name="FlaggedItem Should throw ValidationException because invalid request body" duration="1"/>
-        <testCase name="FlaggedItem Should create a new FlaggedItem" duration="6"/>
-        <testCase name="FlaggedItem Should list FlaggedItems with our newly created one" duration="2"/>
-        <testCase name="FlaggedItem Should return one FlaggedItem" duration="2"/>
-        <testCase name="FlaggedItem Should throw ValidationException because there is no reason" duration="1"/>
-        <testCase name="FlaggedItem Should update the FlaggedItem" duration="4"/>
-        <testCase name="FlaggedItem Should delete the FlaggedItem" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/LocationMarker.test.ts">
-        <testCase name="LocationMarker Should throw ValidationException because there is no item_location_id" duration="2"/>
-        <testCase name="LocationMarker Should create a new location marker" duration="5"/>
-        <testCase name="LocationMarker Should throw ValidationException because we want to create a empty location marker" duration="1"/>
-        <testCase name="LocationMarker Should list location markers with our new create one" duration="2"/>
-        <testCase name="LocationMarker Should return one location marker" duration="1"/>
-        <testCase name="LocationMarker Should throw ValidationException because there is no item_location_id" duration="1"/>
-        <testCase name="LocationMarker Should update the location marker" duration="2"/>
-        <testCase name="LocationMarker Should delete the location marker" duration="13"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemImageData.test.ts">
-        <testCase name="ItemImageData FIX THIS" duration="0"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ShippingPrice.test.ts">
-        <testCase name="ShippingPrice Should throw ValidationException because there is no item_price_id" duration="1"/>
-        <testCase name="ShippingPrice Should create a new shipping price" duration="4"/>
-        <testCase name="ShippingPrice Should throw ValidationException because we want to create a empty shipping price" duration="1"/>
-        <testCase name="ShippingPrice Should list shipping prices with our new create one" duration="5"/>
-        <testCase name="ShippingPrice Should return one shipping price" duration="2"/>
-        <testCase name="ShippingPrice Should throw ValidationException because there is no item_price_id" duration="0"/>
-        <testCase name="ShippingPrice Should update the shipping price" duration="8"/>
-        <testCase name="ShippingPrice Should delete the shipping price" duration="12"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ItemCategory.test.ts">
-        <testCase name="ItemCategory Should throw ValidationException because there is no name of Category" duration="1"/>
-        <testCase name="ItemCategory Should create a root item category" duration="5"/>
-        <testCase name="ItemCategory Should create a new item category" duration="5"/>
-        <testCase name="ItemCategory Should create a new child item category" duration="6"/>
-        <testCase name="ItemCategory Should create a two item categories with null keys" duration="12"/>
-        <testCase name="ItemCategory Should throw ValidationException because we want to create a empty item category" duration="1"/>
-        <testCase name="ItemCategory Should return one item category" duration="2"/>
-        <testCase name="ItemCategory Should update the item category" duration="4"/>
-        <testCase name="ItemCategory Should delete the item category" duration="19"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/EscrowRatio.test.ts">
-        <testCase name="EscrowRatio Should throw ValidationException because there is no escrow_id" duration="1"/>
-        <testCase name="EscrowRatio Should create a new escrow ratio" duration="3"/>
-        <testCase name="EscrowRatio Should throw ValidationException because we want to create a empty escrow ratio" duration="1"/>
-        <testCase name="EscrowRatio Should list escrow ratios with our new create one" duration="3"/>
-        <testCase name="EscrowRatio Should return one escrow ratio" duration="1"/>
-        <testCase name="EscrowRatio Should throw ValidationException because there is no escrow_id" duration="0"/>
-        <testCase name="EscrowRatio Should update the escrow ratio" duration="3"/>
-        <testCase name="EscrowRatio Should delete the escrow ratio" duration="15"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Escrow.test.ts">
-        <testCase name="Escrow Should throw ValidationException because there is no payment_information_id" duration="2"/>
-        <testCase name="Escrow Should create a new escrow" duration="14"/>
-        <testCase name="Escrow Should throw ValidationException because we want to create a empty escrow" duration="1"/>
-        <testCase name="Escrow Should list escrows with our new create one" duration="4"/>
-        <testCase name="Escrow Should return one escrow" duration="2"/>
-        <testCase name="Escrow Should throw ValidationException because there is no payment_information_id" duration="1"/>
-        <testCase name="Escrow Should update the escrow" duration="8"/>
-        <testCase name="Escrow Should delete the escrow" duration="11"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ListingItemObjectData.test.ts">
-        <testCase name="ListingItemObjectData Should create a new listing item object data" duration="3"/>
-        <testCase name="ListingItemObjectData Should throw ValidationException because we want to create a empty listing item object data" duration="1"/>
-        <testCase name="ListingItemObjectData Should list listing item object datas with our new create one" duration="3"/>
-        <testCase name="ListingItemObjectData Should return one listing item object data" duration="1"/>
-        <testCase name="ListingItemObjectData Should update the listing item object data" duration="5"/>
-        <testCase name="ListingItemObjectData Should delete the listing item object data" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Address.test.ts">
-        <testCase name="Address Should throw ValidationException because there is no profile_id" duration="2"/>
-        <testCase name="Address Should create a new address" duration="5"/>
-        <testCase name="Address Should throw ValidationException because we want to create an empty address" duration="1"/>
-        <testCase name="Address Should list addresses with our new create one" duration="4"/>
-        <testCase name="Address Should return one address" duration="9"/>
-        <testCase name="Address Should update the address" duration="5"/>
-        <testCase name="Address Should delete the address" duration="3"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Setting.test.ts">
-        <testCase name="Setting Should throw ValidationException because there is no related_id" duration="1"/>
-        <testCase name="Setting Should create a new Setting" duration="4"/>
-        <testCase name="Setting Should throw ValidationException because we want to create a empty Setting" duration="1"/>
-        <testCase name="Setting Should list Settings with our new create one" duration="3"/>
-        <testCase name="Setting Should find all Settings by profileId" duration="2"/>
-        <testCase name="Setting Should return one Setting using id" duration="2"/>
-        <testCase name="Setting Should return one Setting using key and profileId" duration="2"/>
-        <testCase name="Setting Should update the setting" duration="3"/>
-        <testCase name="Setting Should delete the setting" duration="2"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/CryptocurrencyAddress.test.ts">
-        <testCase name="CryptocurrencyAddress Should create a new cryptocurrency address related to profile" duration="3"/>
-        <testCase name="CryptocurrencyAddress Should create a new cryptocurrency address without a link to a profile" duration="3"/>
-        <testCase name="CryptocurrencyAddress Should throw ValidationException because we want to create a empty cryptocurrency address" duration="0"/>
-        <testCase name="CryptocurrencyAddress Should list cryptocurrency addresses with our new create one" duration="3"/>
-        <testCase name="CryptocurrencyAddress Should return one cryptocurrency address" duration="1"/>
-        <testCase name="CryptocurrencyAddress Should update the cryptocurrency address" duration="3"/>
-        <testCase name="CryptocurrencyAddress Should delete the cryptocurrency address" duration="2"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ShoppingCart.test.ts">
-        <testCase name="ShoppingCart Should list default ShoppingCarts" duration="2"/>
-        <testCase name="ShoppingCart Should create a new ShoppingCart" duration="5"/>
-        <testCase name="ShoppingCart Should throw ValidationException because we want to create a empty ShoppingCart" duration="1"/>
-        <testCase name="ShoppingCart Should list ShoppingCarts with our new create one" duration="1"/>
-        <testCase name="ShoppingCart Should return one ShoppingCart" duration="3"/>
-        <testCase name="ShoppingCart Should update the ShoppingCart" duration="1147"/>
-        <testCase name="ShoppingCart Should delete the ShoppingCart" duration="29"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/Market.test.ts">
-        <testCase name="Market Should get default market" duration="3"/>
-        <testCase name="Market Should create a new market" duration="3"/>
-        <testCase name="Market Should throw ValidationException because we want to create a empty market" duration="1"/>
-        <testCase name="Market Should list markets with our new create one" duration="3"/>
-        <testCase name="Market Should return one market" duration="1"/>
-        <testCase name="Market Should update the market" duration="3"/>
-        <testCase name="Market Should find market by address" duration="1"/>
-        <testCase name="Market Should delete the market" duration="4"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/ImageProcessing.test.ts">
+        <testCase name="ImageProcessing Test data should have metadata before processing" duration="10"/>
+        <testCase name="ImageProcessing convertToJPEG() should complain of invalid format" duration="15"/>
+        <testCase name="ImageProcessing convertToJPEG() should remove metadata" duration="0"/>
+        <testCase name="ImageProcessing convertToJPEG() should resize tall(er than wide, by the ratio in the static bounds) image to reach MAX height" duration="7397"/>
+        <testCase name="ImageProcessing resizeImageData() should resize wide(er than tall, by the ratio in the static bounds) image to reach MAX width" duration="13424"/>
+        <testCase name="ImageProcessing resizeImageToVersion() should resize tall(er than wide, by the ratio in the static bounds) image to thumbnail size" duration="166"/>
+        <testCase name="ImageProcessing resizeImageToVersion() should resize wide(er than tall, by the ratio in the static bounds) image to thumbnail size" duration="95"/>
     </file>
 </testExecutions>
