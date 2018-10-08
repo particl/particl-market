@@ -37,6 +37,7 @@
         "src/**/*"
     ],
     "exclude": [
+        "src/test/**/*",
         "knexfile.ts"
     ]
 }

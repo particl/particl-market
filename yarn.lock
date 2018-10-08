@@ -167,10 +167,10 @@
     "@types/rx" "*"
     "@types/through" "*"
 
-"@types/jest@^20.0.2":
-  version "20.0.2"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-20.0.2.tgz#86c751121fb53dbd39bb1a08c45083da13f2dc67"
-  integrity sha512-r9D5PKnwZiGcxkT7cej+7kq+pobFcCsj5TlWlO+AmlbwIo8u6vCWhGd0DPo8f7ANskwQaQ6vB6GqGN/DUoL3zQ==
+"@types/jest@^23.3.3":
+  version "23.3.3"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.3.3.tgz#246ebcc52771d2327bb8e37aa971b412d9dc4237"
+  integrity sha512-G6EBrbjWDfmIpYu8UcRBOhwtDiYaLj5N5jUR5rx0YvbKxRBhXPZVLUmtfShewSUNKiQwpHavpML69a2WMbIlEQ==
 
 "@types/jsonwebtoken@^7.2.2":
   version "7.2.2"
