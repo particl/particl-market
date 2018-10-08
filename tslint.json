@@ -83,6 +83,12 @@
         "no-commented-code": false,
         "no-big-function": false,
         "no-duplicate-string": false,
-        "no-identical-functions": false
+        "no-identical-functions": false,
+        "cognitive-complexity": [true, 45],/*default:15*/
+        "prefer-immediate-return": false,
+        "no-dead-store": false,
+        "parameters-max-number": [true, 10],
+        "no-redundant-boolean": false,
+        "no-use-of-empty-return-value": false /*turn on, there are bugs related to this*/
     }
 }

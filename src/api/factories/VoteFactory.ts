@@ -9,9 +9,9 @@ import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
-import {VoteCreateRequest} from '../requests/VoteCreateRequest';
-import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
-import {ProposalOptionService} from '../services/ProposalOptionService';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { ProposalOptionService } from '../services/ProposalOptionService';
 
 export class VoteFactory {
 
@@ -68,13 +68,10 @@ export class VoteFactory {
             weight
         } as VoteCreateRequest;
 
+        // TODO: remove the service from here
         const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
         voteRequest.proposal_option_id = option.id;
-        if (create) {
-            return voteRequest as VoteCreateRequest;
-        } else {
-            return voteRequest as VoteUpdateRequest;
-        }
+        return voteRequest;
     }
 
 }

@@ -39,6 +39,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -268,14 +269,13 @@ export class ListingItemActionService {
                     let foundOriginal = false;
                     const itemImage = itemImages[tmpIndexOfImages];
                     for (const tmpIndexOfData in itemImage.ItemImageDatas) {
-                        if (tmpIndexOfData) {
-                            if (itemImage.ItemImageDatas[tmpIndexOfData].imageVersion === 'ORIGINAL') {
-                                resizedImage = itemImage.ItemImageDatas[tmpIndexOfData].ItemImageDataContent.data;
-                                foundOriginal = true;
-                                indexOfData = tmpIndexOfData;
-                                // this.log.error('Found original. Continuing...');
-                                break;
-                            }
+                        if (tmpIndexOfData
+                            && itemImage.ItemImageDatas[tmpIndexOfData].imageVersion === ImageVersions.ORIGINAL.propName) {
+                            resizedImage = itemImage.ItemImageDatas[tmpIndexOfData].ItemImageDataContent.data;
+                            foundOriginal = true;
+                            indexOfData = tmpIndexOfData;
+                            // this.log.error('Found original. Continuing...');
+                            break;
                         }
                     }
                     if (!foundOriginal) {

@@ -259,7 +259,7 @@ export class ListingItemFactory {
         if (gps.marker_text) {
             locationMarker.markerText = gps.marker_text;
         }
-        return locationMarker as LocationMarkerCreateRequest;
+        return locationMarker;
     }
 
     private async getModelShippingDestinations(shippingDestinations: string[]): Promise<resources.ShippingDestination[]> {

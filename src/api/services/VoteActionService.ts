@@ -119,19 +119,19 @@ export class VoteActionService {
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
                     // todo: extract method
-                    if (proposal.type === ProposalType.ITEM_VOTE) {
-                        if (await this.shouldRemoveListingItem(proposalResult)) {
-                            // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                            const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
-                                .then(value => {
-                                    return value.Id;
-                                }).catch(reason => {
-                                    // ignore
-                                    return null;
-                                });
-                            if (listingItemId) {
-                                await this.listingItemService.destroy(listingItemId);
-                            }
+                    if (proposal.type === ProposalType.ITEM_VOTE
+                        && await this.shouldRemoveListingItem(proposalResult)) {
+
+                        // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                        const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
+                            .then(value => {
+                                return value.Id;
+                            }).catch(reason => {
+                                // ignore
+                                return null;
+                            });
+                        if (listingItemId) {
+                            await this.listingItemService.destroy(listingItemId);
                         }
                     }
                     // TODO: do whatever else needs to be done
@@ -199,7 +199,7 @@ export class VoteActionService {
         let voteModel;
         if (create) {
             // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
-            voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
+            voteModel = await this.voteService.create(voteRequest);
         } else {
             // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.update(lastVote.id, voteRequest as VoteUpdateRequest);

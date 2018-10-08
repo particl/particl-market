@@ -8,8 +8,10 @@ import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
 
+type AllowedMessageTypes = EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType;
+
 export interface ActionMessageInterface {
-    action: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType;
+    action: AllowedMessageTypes;
     item: string;
     objects?: any;
 }

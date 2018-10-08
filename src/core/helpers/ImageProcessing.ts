@@ -738,7 +738,7 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
     public static async convertToJPEG(imageRaw: string): Promise<string> {
         const buf = Buffer.from(imageRaw, 'base64');
         const image = await Jimp.read(buf);
-        const retval: any = await image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+        const retval: any = image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
           return buffer.toString('base64');
         });
         return retval;

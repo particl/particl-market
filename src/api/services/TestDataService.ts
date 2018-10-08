@@ -164,34 +164,34 @@ export class TestDataService {
             case CreatableModel.LISTINGITEMTEMPLATE: {
                 return await this.listingItemTemplateService.create(
                     body.data as ListingItemTemplateCreateRequest,
-                    body.timestampedHash) as Bookshelf.Model<ListingItemTemplate>;
+                    body.timestampedHash);
             }
             case CreatableModel.LISTINGITEM: {
-                return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<ListingItem>;
+                return await this.listingItemService.create(body.data as ListingItemCreateRequest);
             }
             case CreatableModel.ACTIONMESSAGE: {
-                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest) as Bookshelf.Model<ActionMessage>;
+                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest);
             }
             case CreatableModel.PROFILE: {
-                return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<Profile>;
+                return await this.profileService.create(body.data as ProfileCreateRequest);
             }
             case CreatableModel.ITEMCATEGORY: {
-                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<ItemCategory>;
+                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest);
             }
             case CreatableModel.FAVORITEITEM: {
-                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
+                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest);
             }
             case CreatableModel.ITEMINFORMATION: {
-                return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
+                return await this.itemInformationService.create(body.data as ItemInformationCreateRequest);
             }
             case CreatableModel.BID: {
-                return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
+                return await this.bidService.create(body.data as BidCreateRequest);
             }
             case CreatableModel.PAYMENTINFORMATION: {
-                return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest) as Bookshelf.Model<PaymentInformation>;
+                return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest);
             }
             case CreatableModel.ITEMIMAGE: {
-                return await this.itemImageService.create(body.data as ItemImageCreateRequest) as Bookshelf.Model<ItemImage>;
+                return await this.itemImageService.create(body.data as ItemImageCreateRequest);
             }
             default: {
                 throw new MessageException('Not implemented');

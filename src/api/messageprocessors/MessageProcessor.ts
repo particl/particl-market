@@ -24,6 +24,13 @@ import { SearchOrder } from '../enums/SearchOrder';
 import { SmsgMessage } from '../models/SmsgMessage';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
+import { VoteMessageInterface } from '../messages/VoteMessageInterface';
+import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
+
+type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -254,7 +261,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     private async getEventForMessageType(
-        messageType: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType):
+        messageType: AllowedMessageTypes):
         Promise<string | null> {
 
         switch (messageType) {

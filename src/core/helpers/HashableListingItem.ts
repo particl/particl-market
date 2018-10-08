@@ -10,6 +10,8 @@ import * as resources from 'resources';
 import { ListingItemCreateRequest } from '../../api/requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../../api/requests/ListingItemTemplateCreateRequest';
 
+type AllowedHashableTypes = resources.ListingItem | resources.ListingItemTemplate | ListingItemCreateRequest | ListingItemTemplateCreateRequest;
+
 export class HashableListingItem {
 
     public title: string;
@@ -22,8 +24,7 @@ export class HashableListingItem {
     public nullItemTimestamp: Date;
 
     // TODO: refactor
-    constructor(hashThis: resources.ListingItem | resources.ListingItemTemplate | ListingItemCreateRequest | ListingItemTemplateCreateRequest,
-                timestampedHash: boolean = false ) {
+    constructor(hashThis: AllowedHashableTypes, timestampedHash: boolean = false ) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {

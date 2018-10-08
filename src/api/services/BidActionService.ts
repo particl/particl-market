@@ -466,7 +466,8 @@ export class BidActionService {
         // create OutputData for buyer
         const buyerSelectedOutputs: Output[] = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
         const buyerOutputsSum = buyerSelectedOutputs.reduce((acc, obj) => {
-            const amount = obj.amount || 0; return acc + amount;
+            const amount = obj.amount || 0;
+            return acc + amount;
         }, 0);
         const buyerRequiredAmount = totalPrice * 2;
         const buyerSelectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
@@ -949,10 +950,11 @@ export class BidActionService {
                     bidders: [ bidder ],
                     ordering: SearchOrder.DESC
                 });
+
+                // TODO: oldBids.pop() does not return anything. this wont work.
                 const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
                 let oldBid: any = oldBids.pop();
                 if (!oldBid) {
-                    // throw new MessageException('Missing old bid.');
                     this.log.error('Missing old bid.');
                     return SmsgMessageStatus.WAITING;
                 }
@@ -1010,6 +1012,8 @@ export class BidActionService {
                     ordering: SearchOrder.DESC
                 });
                 const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+
+                // TODO: oldBids.pop() does not return anything. this wont work.
                 let oldBid: any = oldBids.pop();
                 if (!oldBid) {
                     throw new MessageException('Missing old bid.');
