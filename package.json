@@ -130,7 +130,15 @@
       "node"
     ],
     "testEnvironment": "node",
-    "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts"
+    "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts",
+    "mapCoverage": true,
+    "collectCoverageFrom": ["src/**/*.ts"],
+    "testResultsProcessor": "jest-sonar-reporter"
+  },
+  "jestSonar": {
+    "reportPath": "test/reports",
+    "reportFile": "test-report.xml",
+    "indent": 4
   },
   "license": "GPL-2.0",
   "devDependencies": {
@@ -162,11 +170,14 @@
     "cross-env": "^5.0.1",
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
+    "jest-sonar-reporter": "^2.0.0",
     "nodemon": "^1.11.0",
+    "sonarqube-scanner": "^2.1.1",
     "trash-cli": "^1.4.0",
     "ts-jest": "^20.0.7",
     "ts-node": "^3.2.0",
     "tslint": "5.11.0",
+    "tslint-sonarts": "^1.8.0",
     "typescript": "^2.4.1",
     "zombie": "^6.1.2"
   }
