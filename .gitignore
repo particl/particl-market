@@ -54,3 +54,5 @@ data/gui2_node_modules/*
 *.paw
 
 codeship*.yml
+.scannerwork
+

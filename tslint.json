@@ -1,7 +1,8 @@
 {
     "extends": [
         "tslint:recommended",
-        "tslint-clean-code"
+        "tslint-clean-code",
+        "tslint-sonarts"
     ],
     "rules": {
         "max-line-length": [
@@ -76,6 +77,12 @@
                 "ts"
             ]
         ],*/
-        "no-commented-out-code": false
+        /*"no-commented-out-code": true,*/
+
+        /*SONARTS, set these on...*/
+        "no-commented-code": false,
+        "no-big-function": false,
+        "no-duplicate-string": false,
+        "no-identical-functions": false
     }
 }
