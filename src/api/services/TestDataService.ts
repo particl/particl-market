@@ -496,15 +496,14 @@ export class TestDataService {
             {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
             {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
                 ',\"vout\":1,\"amount\":1.52497491}]'},
-            {dataId: 'ship.title', dataValue: 'title'},
-            {dataId: 'ship.firstName', dataValue: 'asdf'},
-            {dataId: 'ship.lastName', dataValue: 'asdf'},
-            {dataId: 'ship.addressLine1', dataValue: 'asdf'},
-            {dataId: 'ship.addressLine2', dataValue: 'asdf'},
-            {dataId: 'ship.city', dataValue: 'asdf'},
-            {dataId: 'ship.state', dataValue: ''},
-            {dataId: 'ship.zipCode', dataValue: '1234'},
-            {dataId: 'ship.country', dataValue: 'FI'}
+            {dataId: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_CITY, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_STATE, dataValue: ''},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, dataValue: '1234'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_COUNTRY, dataValue: 'FI'}
         ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {

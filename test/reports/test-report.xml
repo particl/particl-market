@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
     <file path="/Users/juha/Work/particl/particl-market/test/unit/api/Command.test.ts">
-        <testCase name="Command Should return correct instance for Command" duration="3"/>
-        <testCase name="Command Should return correct toString for Command" duration="1"/>
-        <testCase name="Command Should return correct propName, description, commandName and isRoot for Command" duration="1"/>
+        <testCase name="Command Should return correct instance for Command" duration="5"/>
+        <testCase name="Command Should return correct toString for Command" duration="2"/>
+        <testCase name="Command Should return correct propName, description, commandName and isRoot for Command" duration="2"/>
         <testCase name="Command Should return correct childCommands for Command" duration="2"/>
-        <testCase name="Command Should return all types of Commands and all root Commands" duration="0"/>
+        <testCase name="Command Should return all types of Commands and all root Commands" duration="1"/>
+    </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ShippingZips.test.ts">
+        <testCase name="ShippingZips isCountryCodeSupported() should return true for all our non-standard (valid) country codes" duration="2"/>
+        <testCase name="ShippingZips isCountryCodeSupported() should return false for all our invalid country codes." duration="3"/>
+        <testCase name="ShippingZips validate() should return true for all non-standard country codes and their zips." duration="3"/>
+        <testCase name="ShippingZips validate() should return true for all our valid ZIP/postal-code / country code combinations" duration="0"/>
+        <testCase name="ShippingZips validate() should return false for all our invalid ZIP/postal-code / country code combinations" duration="0"/>
+    </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/extendExpressResponse.test.ts">
+        <testCase name="extendExpressResponse Should have all the response helpers" duration="5"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format" duration="2"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format with a message" duration="0"/>
+        <testCase name="extendExpressResponse ok Should create to correct response format with a links" duration="1"/>
+        <testCase name="extendExpressResponse created Should create to correct response format" duration="1"/>
+        <testCase name="extendExpressResponse found Should create to correct response format" duration="1"/>
+        <testCase name="extendExpressResponse destroyed Should create to correct response format" duration="1"/>
+        <testCase name="extendExpressResponse failed Should create to correct response format" duration="3"/>
+        <testCase name="extendExpressResponse updated Should create to correct response format" duration="0"/>
+    </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/RequestBody.test.ts">
+        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="4"/>
+        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="1"/>
+        <testCase name="RequestBody validate Should pass if no validators are defined" duration="43"/>
+        <testCase name="RequestBody validate Should pass if no validators are defined" duration="4"/>
     </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/core/Environment.test.ts">
         <testCase name="Environment getName() should return the test env" duration="1"/>
@@ -13,102 +37,78 @@
         <testCase name="Environment isDevelopment() should be false" duration="0"/>
         <testCase name="Environment isProduction() should be false" duration="0"/>
     </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ShippingZips.test.ts">
-        <testCase name="ShippingZips isCountryCodeSupported() should return true for all our non-standard (valid) country codes" duration="4"/>
-        <testCase name="ShippingZips isCountryCodeSupported() should return false for all our invalid country codes." duration="3"/>
-        <testCase name="ShippingZips validate() should return true for all non-standard country codes and their zips." duration="6"/>
-        <testCase name="ShippingZips validate() should return true for all our valid ZIP/postal-code / country code combinations" duration="0"/>
-        <testCase name="ShippingZips validate() should return false for all our invalid ZIP/postal-code / country code combinations" duration="0"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/RequestBody.test.ts">
-        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="3"/>
-        <testCase name="RequestBody constructor Should construct with the given input and set all values" duration="0"/>
-        <testCase name="RequestBody validate Should pass if no validators are defined" duration="53"/>
-        <testCase name="RequestBody validate Should pass if no validators are defined" duration="4"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/exceptionHandler.test.ts">
-        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code and body" duration="3"/>
-        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code" duration="0"/>
-        <testCase name="exceptionHandler Should fail, because it is a system error with 500" duration="1"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/extendExpressResponse.test.ts">
-        <testCase name="extendExpressResponse Should have all the response helpers" duration="3"/>
-        <testCase name="extendExpressResponse ok Should create to correct response format" duration="2"/>
-        <testCase name="extendExpressResponse ok Should create to correct response format with a message" duration="0"/>
-        <testCase name="extendExpressResponse ok Should create to correct response format with a links" duration="3"/>
-        <testCase name="extendExpressResponse created Should create to correct response format" duration="1"/>
-        <testCase name="extendExpressResponse found Should create to correct response format" duration="2"/>
-        <testCase name="extendExpressResponse destroyed Should create to correct response format" duration="2"/>
-        <testCase name="extendExpressResponse failed Should create to correct response format" duration="1"/>
-        <testCase name="extendExpressResponse updated Should create to correct response format" duration="1"/>
-    </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/Exception.test.ts">
         <testCase name="Exception Should have the correct properties" duration="2"/>
         <testCase name="Exception Should have the correct properties" duration="1"/>
         <testCase name="Exception Should return a string with the code, name and message of the exception" duration="0"/>
     </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/core/api/exceptionHandler.test.ts">
+        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code and body" duration="4"/>
+        <testCase name="exceptionHandler Should fail, because it is a exception with the given error code" duration="1"/>
+        <testCase name="exceptionHandler Should fail, because it is a system error with 500" duration="1"/>
+    </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ObjectHash.test.ts">
-        <testCase name="ObjectHash Should get hash for listingItemTemplate" duration="7"/>
+        <testCase name="ObjectHash Should get hash for listingItemTemplate" duration="8"/>
         <testCase name="ObjectHash Should get hash for listingItemTemplate missing most of its data" duration="1"/>
         <testCase name="ObjectHash Should get hash for ItemImage" duration="1"/>
-        <testCase name="ObjectHash Should return different hashes for objects that have different values" duration="7"/>
+        <testCase name="ObjectHash Should return different hashes for objects that have different values" duration="8"/>
         <testCase name="ObjectHash getHash() should return same hashes for objects that have same values in different orders" duration="4"/>
-        <testCase name="ObjectHash getHash() on an object should return the same hash every time" duration="98"/>
+        <testCase name="ObjectHash getHash() on an object should return the same hash every time" duration="96"/>
     </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/core/ShippingCountries.test.ts">
         <testCase name="ShippingCountries isValidCountryCode() should return true for all country codes" duration="27"/>
         <testCase name="ShippingCountries isValidCountryCode() should return false for fake country codes" duration="1"/>
-        <testCase name="ShippingCountries isValidCountry() should return true for all countries" duration="17"/>
-        <testCase name="ShippingCountries isValidCountry() should return false for invalid countries" duration="0"/>
-        <testCase name="ShippingCountries isValidCountryCode() should return false for questionable country codes" duration="1"/>
-        <testCase name="ShippingCountries isValidCountry() should return false for questionable countries" duration="0"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/BidFactory.test.ts">
-        <testCase name="BidFactory Should create BidMessages correctly" duration="5"/>
-        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest" duration="2"/>
-        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest with 9 bidData objects" duration="2"/>
-        <testCase name="BidFactory Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId" duration="1"/>
-        <testCase name="BidFactory Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest" duration="0"/>
-        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_ACCEPT" duration="1"/>
-        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_CANCEL" duration="1"/>
-        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_REJECT" duration="1"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/middlewares/AuthenticateMiddleware.test.ts">
-        <testCase name="AuthenticateMiddleware Should pass if correct authorization header is set" duration="7"/>
-        <testCase name="AuthenticateMiddleware Should fail when no authorization header is set" duration="1"/>
-        <testCase name="AuthenticateMiddleware Should fail when wrong authorization header is set" duration="1"/>
-    </file>
-    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ActionMessageFactory.test.ts">
-        <testCase name="EscrowFactory Test ActionMessageFactory.getModel()" duration="14"/>
-        <testCase name="EscrowFactory Negative test ActionMessageFactory.getModel()" duration="3"/>
+        <testCase name="ShippingCountries isValidCountry() should return true for all countries" duration="21"/>
+        <testCase name="ShippingCountries isValidCountry() should return false for invalid countries" duration="1"/>
+        <testCase name="ShippingCountries isValidCountryCode() should return false for questionable country codes" duration="0"/>
+        <testCase name="ShippingCountries isValidCountry() should return false for questionable countries" duration="1"/>
     </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ItemCategoryFactory.test.ts">
         <testCase name="ItemCategoryFactory Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel" duration="5"/>
         <testCase name="ItemCategoryFactory Should convert ListingItemCategory to categoryArray, 3 levels" duration="1"/>
         <testCase name="ItemCategoryFactory Should convert ListingItemCategory to categoryArray, 5 levels" duration="1"/>
     </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/middlewares/AuthenticateMiddleware.test.ts">
+        <testCase name="AuthenticateMiddleware Should pass if correct authorization header is set" duration="7"/>
+        <testCase name="AuthenticateMiddleware Should fail when no authorization header is set" duration="1"/>
+        <testCase name="AuthenticateMiddleware Should fail when wrong authorization header is set" duration="1"/>
+    </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/api/middlewares/PopulateUserMiddleware.test.ts">
-        <testCase name="PopulateUserMiddleware Should fail because no tokeninfo or user_id is given" duration="4"/>
+        <testCase name="PopulateUserMiddleware Should fail because no tokeninfo or user_id is given" duration="6"/>
         <testCase name="PopulateUserMiddleware Should pass the database query and attache the user to the request object" duration="1"/>
-        <testCase name="PopulateUserMiddleware Should behave..." duration="1"/>
+        <testCase name="PopulateUserMiddleware Should behave..." duration="2"/>
+    </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ActionMessageFactory.test.ts">
+        <testCase name="EscrowFactory Test ActionMessageFactory.getModel()" duration="10"/>
+        <testCase name="EscrowFactory Negative test ActionMessageFactory.getModel()" duration="2"/>
+    </file>
+    <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/BidFactory.test.ts">
+        <testCase name="BidFactory Should create BidMessages correctly" duration="4"/>
+        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest" duration="1"/>
+        <testCase name="BidFactory Should convert BidMessage, action: MPA_BID to BidCreateRequest with 9 bidData objects" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId" duration="0"/>
+        <testCase name="BidFactory Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_ACCEPT" duration="0"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_CANCEL" duration="1"/>
+        <testCase name="BidFactory Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_REJECT" duration="1"/>
     </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/api/factory/ListingItemFactory.test.ts">
-        <testCase name="ListingItemFactory Should create ListingItemMessage" duration="37"/>
-        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage" duration="14"/>
-        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic1 data" duration="21"/>
-        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1" duration="8"/>
-        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic2 data" duration="18"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage" duration="27"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage" duration="12"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic1 data" duration="19"/>
+        <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1" duration="11"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic2 data" duration="17"/>
         <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic2" duration="4"/>
-        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic3 data" duration="12"/>
+        <testCase name="ListingItemFactory Should create ListingItemMessage with listingItemTemplateBasic3 data" duration="13"/>
         <testCase name="ListingItemFactory should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic3" duration="3"/>
     </file>
     <file path="/Users/juha/Work/particl/particl-market/test/unit/api/ImageProcessing.test.ts">
-        <testCase name="ImageProcessing Test data should have metadata before processing" duration="9"/>
-        <testCase name="ImageProcessing convertToJPEG() should complain of invalid format" duration="17"/>
+        <testCase name="ImageProcessing Test data should have metadata before processing" duration="7"/>
+        <testCase name="ImageProcessing convertToJPEG() should complain of invalid format" duration="13"/>
         <testCase name="ImageProcessing convertToJPEG() should remove metadata" duration="0"/>
-        <testCase name="ImageProcessing convertToJPEG() should resize tall(er than wide, by the ratio in the static bounds) image to reach MAX height" duration="7585"/>
-        <testCase name="ImageProcessing resizeImageData() should resize wide(er than tall, by the ratio in the static bounds) image to reach MAX width" duration="13343"/>
-        <testCase name="ImageProcessing resizeImageToVersion() should resize tall(er than wide, by the ratio in the static bounds) image to thumbnail size" duration="166"/>
-        <testCase name="ImageProcessing resizeImageToVersion() should resize wide(er than tall, by the ratio in the static bounds) image to thumbnail size" duration="117"/>
+        <testCase name="ImageProcessing convertToJPEG() should resize tall(er than wide, by the ratio in the static bounds) image to reach MAX height" duration="8384"/>
+        <testCase name="ImageProcessing resizeImageData() should resize wide(er than tall, by the ratio in the static bounds) image to reach MAX width" duration="14428"/>
+        <testCase name="ImageProcessing resizeImageToVersion() should resize tall(er than wide, by the ratio in the static bounds) image to thumbnail size" duration="200"/>
+        <testCase name="ImageProcessing resizeImageToVersion() should resize wide(er than tall, by the ratio in the static bounds) image to thumbnail size" duration="108"/>
     </file>
 </testExecutions>

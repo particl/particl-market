@@ -71,12 +71,12 @@ describe('ListingItemTemplate', async () => {
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
-    let createdListingItemTemplate1;
-    let createdListingItemTemplate2;
-    let createdListingItemTemplate3;
-    let createdListingItem1;
+    let createdListingItemTemplate1: resources.ListingItemTemplate;
+    let createdListingItemTemplate2: resources.ListingItemTemplate;
+    let createdListingItemTemplate3: resources.ListingItemTemplate;
+    let createdListingItem1: resources.ListingItem;
 
-    let updatedListingItemTemplate1;
+    let updatedListingItemTemplate1: resources.ListingItemTemplate;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -369,7 +369,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate1 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate1, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should findAll ListingItemTemplates consisting of the previously created one', async () => {
         const listingItemTemplateCollection = await listingItemTemplateService.findAll();
@@ -402,7 +402,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should create a second ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
@@ -423,7 +423,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
@@ -433,7 +433,7 @@ describe('ListingItemTemplate', async () => {
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the previously updated ListingItemTemplate', async () => {
         expect.assertions(21);
@@ -455,7 +455,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the ListingItemTemplate with ItemInformation', async () => {
         expect.assertions(6);
@@ -476,7 +476,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should delete the ListingItemTemplate with ItemInformation and PaymentInformation', async () => {
         expect.assertions(11);
@@ -519,7 +519,7 @@ describe('ListingItemTemplate', async () => {
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
         expect(createdListingItem1.ListingItemTemplate.id).toBe(createdListingItemTemplate3.id);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should not delete ListingItemTemplate having relation to ListingItem', async () => {
         expect.assertions(1);
@@ -557,6 +557,6 @@ describe('ListingItemTemplate', async () => {
         listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate1.id, testDataToUpdate);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
-    });
+    }, 600000); // timeout to 600s
 
 });

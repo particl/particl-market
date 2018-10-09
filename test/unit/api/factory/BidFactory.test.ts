@@ -8,6 +8,7 @@ import { LogMock } from '../../lib/LogMock';
 import { BidMessageType } from '../../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
 import { MessageException } from '../../../../src/api/exceptions/MessageException';
+import { BidDataValue } from '../../../../src/api/enums/BidDataValue';
 
 describe('BidFactory', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -45,14 +46,14 @@ describe('BidFactory', () => {
             item: 'f08f3d6e',
             objects: [
                 { id: 'colour', value: 'black' },
-                { id: 'ship.firstName', value: 'asdf' },
-                { id: 'ship.lastName', value: 'asdf' },
-                { id: 'ship.addressLine1', value: 'asdf' },
-                { id: 'ship.addressLine2', value: '' },
-                { id: 'ship.city', value: 'Helsinki' },
-                { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' },
-                { id: 'ship.country', value: 'FI' }
+                { id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: '' },
+                { id: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'Helsinki' },
+                { id: BidDataValue.SHIPPING_ADDRESS_STATE, value: '-' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234' },
+                { id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI' }
             ]
         } as BidMessage;
 
@@ -76,14 +77,14 @@ describe('BidFactory', () => {
                 id: 'size',
                 value: 'xl'
             },
-                { id: 'ship.firstName', value: 'asdf' },
-                { id: 'ship.lastName', value: 'asdf' },
-                { id: 'ship.addressLine1', value: 'asdf' },
-                { id: 'ship.addressLine2', value: '' },
-                { id: 'ship.city', value: 'Helsinki' },
-                { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' },
-                { id: 'ship.country', value: 'FI' }
+            { id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf' },
+            { id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf' },
+            { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf' },
+            { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: '' },
+            { id: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'Helsinki' },
+            { id: BidDataValue.SHIPPING_ADDRESS_STATE, value: '-' },
+            { id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234' },
+            { id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI' }
             ]
         } as BidMessage;
 
@@ -99,7 +100,7 @@ describe('BidFactory', () => {
     test('Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId', async () => {
 
         expect.assertions(1);
-        const listingItemId: number = undefined;
+        const listingItemId = undefined;
         const bidMessage = {
             action: BidMessageType.MPA_BID,
             item: 'f08f3d6e'
@@ -120,14 +121,14 @@ describe('BidFactory', () => {
             action: BidMessageType.MPA_ACCEPT,
             item: 'f08f3d6e',
             objects: [
-                { id: 'ship.firstName', value: 'asdf' },
-                { id: 'ship.lastName', value: 'asdf' },
-                { id: 'ship.addressLine1', value: 'asdf' },
-                { id: 'ship.addressLine2', value: '' },
-                { id: 'ship.city', value: 'Helsinki' },
-                { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' },
-                { id: 'ship.country', value: 'FI' }
+                { id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: '' },
+                { id: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'Helsinki' },
+                { id: BidDataValue.SHIPPING_ADDRESS_STATE, value: '-' },
+                { id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234' },
+                { id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI' }
             ]
         } as BidMessage;
 

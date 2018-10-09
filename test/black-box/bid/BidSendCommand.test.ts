@@ -14,6 +14,7 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 
 describe('BidSendCommand', () => {
 
@@ -134,21 +135,21 @@ describe('BidSendCommand', () => {
             listingItem2.hash,
             defaultProfile.id,
             false,
-            'ship.firstName',
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
-            'ship.lastName',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
             'Depp',
-            'ship.addressLine1',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1,
             '123 6th St',
-            'ship.addressLine2',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
             'Melbourne, FL 32904',
-            'ship.city',
+            BidDataValue.SHIPPING_ADDRESS_CITY,
             'Melbourne',
-            'ship.state',
+            BidDataValue.SHIPPING_ADDRESS_STATE,
             'Mel State',
-            'ship.country',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
             'Finland',
-            'ship.zipCode',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
             '85001'
         ];
 
@@ -162,26 +163,26 @@ describe('BidSendCommand', () => {
     });
 
 
-    test('Should not create bid with address from bidData without addressId', async () => {
+    test('Should not create bid with address from bidData without addressLine1', async () => {
 
         const bidSendCommandParams = [
             bidSendCommand,
             listingItem1.hash,
             defaultProfile.id,
             false,
-            'ship.firstName',
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
-            'ship.lastName',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
             'Depp',
-            'ship.addressLine2',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
             'Melbourne, FL 32904',
-            'ship.city',
+            BidDataValue.SHIPPING_ADDRESS_CITY,
             'Melbourne',
-            'ship.state',
+            BidDataValue.SHIPPING_ADDRESS_STATE,
             'Mel State',
-            'ship.country',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
             'Finland',
-            'ship.zipCode',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
             '85001'
         ];
 

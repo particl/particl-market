@@ -68,14 +68,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * [2]: addressId (from profile shipping addresses), number|false
      *                         if false, the address must be passed as bidData id/value pairs
      *                         in following format:
-     *                         'ship.firstName',
-     *                         'ship.lastName',
-     *                         'ship.addressLine1',
-     *                         'ship.addressLine2', (not required)
-     *                         'ship.city',
-     *                         'ship.state',
-     *                         'ship.country'
-     *                         'ship.zipCode',
+     *                         'shippingAddress.firstName',
+     *                         'shippingAddress.lastName',
+     *                         'shippingAddress.addressLine1',
+     *                         'shippingAddress.addressLine2', (not required)
+     *                         'shippingAddress.city',
+     *                         'shippingAddress.state',
+     *                         'shippingAddress.country'
+     *                         'shippingAddress.zipCode',
      * [3]: bidDataId, string
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
@@ -156,14 +156,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * [2]: addressId (from profile shipping addresses), number|false
      *                         if false, the address must be passed as bidData id/value pairs
      *                         in following format:
-     *                         'ship.firstName',
-     *                         'ship.lastName',
-     *                         'ship.addressLine1',
-     *                         'ship.addressLine2', (not required)
-     *                         'ship.city',
-     *                         'ship.state',
-     *                         'ship.country'
-     *                         'ship.zipCode',
+     *                         'shippingAddress.firstName',
+     *                         'shippingAddress.lastName',
+     *                         'shippingAddress.addressLine1',
+     *                         'shippingAddress.addressLine2', (not required)
+     *                         'shippingAddress.city',
+     *                         'shippingAddress.state',
+     *                         'shippingAddress.country'
+     *                         'shippingAddress.zipCode',
      * [3]: bidDataId, string
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
