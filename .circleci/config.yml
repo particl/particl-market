@@ -259,6 +259,13 @@ jobs:
       ## - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
+      - run: echo "NODE:"
+      - run: node --version
+      - run: echo "NPM:"
+      - run: npm --version
+      - run: echo "YARN:"
+      - run: yarn --version
+      - run: ls -al /app
       - run: npm run test:integration:pretty
       ## - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
 
