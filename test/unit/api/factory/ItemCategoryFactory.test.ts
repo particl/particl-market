@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';

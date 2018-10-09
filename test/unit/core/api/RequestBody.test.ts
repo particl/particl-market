@@ -2,9 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { RequestBody } from '../../../../src/core/api/RequestBody';
 import { IsNotEmpty } from 'class-validator';
-
 
 describe('RequestBody', () => {
     describe('constructor', () => {

@@ -2,9 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
-
 import { getDataSet, reduce } from 'iso3166-2-db';
+
 this.countryCodeList = reduce(getDataSet(), 'en');
 this.invalidCountryCodes = ['ASDF', 'A', 'ASD', '1', '11', 'Z1', 'Z11'];
 // Countries that never or no longer exist, lost their independence, or have changed their name.

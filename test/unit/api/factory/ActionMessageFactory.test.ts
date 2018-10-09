@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { ActionMessageFactory } from '../../../../src/api/factories/ActionMessageFactory';
 import { EscrowMessageType } from '../../../../src/api/enums/EscrowMessageType';
 import { BidMessageType } from '../../../../src/api/enums/BidMessageType';
