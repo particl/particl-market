@@ -60,6 +60,7 @@ describe('BidSendCommand', () => {
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false,   // generateItemImages
             true,   // generatePaymentInformation

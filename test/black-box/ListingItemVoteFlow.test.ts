@@ -108,6 +108,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // generate listingitemtemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
+            true,               // generateItemLocation
             true,               // generateShippingDestinations
             false,              // generateItemImages
             true,               // generatePaymentInformation

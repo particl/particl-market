@@ -75,6 +75,7 @@ describe('ShippingDestination', () => {
 
         let generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -95,6 +96,7 @@ describe('ShippingDestination', () => {
 
         generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,  // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation

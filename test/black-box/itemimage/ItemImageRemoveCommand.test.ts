@@ -57,6 +57,7 @@ describe('ItemImageRemoveCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             false,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
