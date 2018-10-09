@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/ProposalOptionResult.test.ts">
-        <testCase name="ProposalOptionResult Should throw ValidationException because there is no related_id" duration="3"/>
-        <testCase name="ProposalOptionResult Should throw ValidationException because we want to create a empty proposal option result" duration="1"/>
-        <testCase name="ProposalOptionResult Should create a new ProposalOptionResult" duration="15"/>
-        <testCase name="ProposalOptionResult Should list ProposalOptionResults with our new create one" duration="2"/>
-        <testCase name="ProposalOptionResult Should return one ProposalOptionResult" duration="3"/>
-        <testCase name="ProposalOptionResult Should update the ProposalOptionResult" duration="5"/>
-        <testCase name="ProposalOptionResult Should delete the ProposalOptionResult" duration="3"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/integration/messageprocessors/BidAndEscrowMessaging.test.ts">
+        <testCase name="BidMessageProcessing Should process MarketplaceEvent containing MPA_BID BidMessage" duration="655"/>
     </file>
 </testExecutions>

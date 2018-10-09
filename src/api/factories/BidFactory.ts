@@ -93,14 +93,14 @@ export class BidFactory {
 
             let address;
             if (bidMessage.action === BidMessageType.MPA_BID) {
-                const firstName = this.getValueFromBidDatas('ship.firstName', bidDatas);
-                const lastName = this.getValueFromBidDatas('ship.lastName', bidDatas);
-                const addressLine1 = this.getValueFromBidDatas('ship.addressLine1', bidDatas);
-                const addressLine2 = this.getValueFromBidDatas('ship.addressLine2', bidDatas);
-                const city = this.getValueFromBidDatas('ship.city', bidDatas);
-                const state = this.getValueFromBidDatas('ship.state', bidDatas);
-                const zipCode = this.getValueFromBidDatas('ship.zipCode', bidDatas);
-                const country = this.getValueFromBidDatas('ship.country', bidDatas);
+                const firstName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, bidDatas);
+                const lastName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_LAST_NAME, bidDatas);
+                const addressLine1 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, bidDatas);
+                const addressLine2 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, bidDatas);
+                const city = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_CITY, bidDatas);
+                const state = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_STATE, bidDatas);
+                const zipCode = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, bidDatas);
+                const country = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_COUNTRY, bidDatas);
 
                 address = {
                     firstName, lastName, addressLine1, addressLine2, city, state, zipCode, country
