@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import * as resources from 'resources';
-
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';

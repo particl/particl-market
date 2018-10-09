@@ -2,10 +2,11 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { AuthenticateMiddleware } from '../../../../src/api/middlewares/AuthenticateMiddleware';
 import { LogMock } from '../../lib/LogMock';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: './.env.test' });
+dotenv.config({ path: '.env.test' });
 
 describe('AuthenticateMiddleware', () => {
 

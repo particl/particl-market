@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../../src/core/helpers/ImageTriplet';
 import * as Jimp from 'jimp';
