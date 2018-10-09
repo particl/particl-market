@@ -14,6 +14,7 @@ import * as resources from 'resources';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { IdValuePair } from '../services/BidActionService';
+import { BidDataValue } from '../enums/BidDataValue';
 
 export class BidFactory {
 
