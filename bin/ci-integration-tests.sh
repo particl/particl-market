@@ -9,5 +9,5 @@ export RPCHOSTNAME=$6
 export MAINNET_PORT=$7
 export TESTNET_PORT=$8
 
-./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 30s
+# ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 30s
 npm run test:integration:pretty

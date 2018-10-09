@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/juha/Work/particl/particl-market/test/integration/TestData.test.ts">
-        <testCase name="TestDataService Should create default data if seed=true" duration="528"/>
-        <testCase name="TestDataService Should not create default data if seed=false" duration="72"/>
-        <testCase name="TestDataService Should create ListingItemTemplate" duration="25528"/>
-        <testCase name="TestDataService Should throw error message when passed model is invalid for create" duration="1"/>
-        <testCase name="TestDataService Should generate single Profile" duration="145"/>
-        <testCase name="TestDataService Should generate single Profile using withRelated=false and return only ids" duration="128"/>
-        <testCase name="TestDataService Check generateActionMessages from ListingItem" duration="26616"/>
-        <testCase name="TestDataService Should generate three Profiles" duration="658"/>
-        <testCase name="TestDataService Should generate ListingItemTemplate using GenerateListingItemTemplateParams" duration="640"/>
-        <testCase name="TestDataService Should throw error message when passed model is invalid for generate" duration="1"/>
-        <testCase name="TestDataService Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem" duration="93653"/>
-        <testCase name="TestDataService Should generate Bid using GenerateBidParams, with a relation to existing ListingItem" duration="13675"/>
-        <testCase name="TestDataService Should generate Order using GenerateOrderParams, with a relation to existing ListingItem" duration="64970"/>
-        <testCase name="TestDataService Should cleanup all tables" duration="631"/>
+    <file path="/Users/juha/Work/particl/particl-market/test/black-box/orderitem/OrderItemStatus.test.ts">
+        <testCase name="OrderItemStatus Post ListingItemTemplate to create ListingItem" duration="50570"/>
+        <testCase name="OrderItemStatus Should return an empty list since there are no Bids or Orders yet" duration="5033"/>
+        <testCase name="OrderItemStatus Should post a Bid for a ListingItem" duration="340"/>
+        <testCase name="OrderItemStatus Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID" duration="5043"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_BID)" duration="5071"/>
+        <testCase name="OrderItemStatus SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID" duration="15095"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_BID)" duration="5085"/>
+        <testCase name="OrderItemStatus SELLER POSTS MPA_ACCEPT" duration="5639"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5066"/>
+        <testCase name="OrderItemStatus Order should have been created on seller node after posting the MPA_ACCEPT" duration="10069"/>
+        <testCase name="OrderItemStatus BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT" duration="15085"/>
+        <testCase name="OrderItemStatus Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW" duration="5054"/>
+        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5081"/>
     </file>
 </testExecutions>

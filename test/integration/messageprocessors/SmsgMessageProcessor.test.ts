@@ -128,6 +128,7 @@ describe('MessageProcessor', () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false, // true,   // generateItemImages
             true,   // generatePaymentInformation

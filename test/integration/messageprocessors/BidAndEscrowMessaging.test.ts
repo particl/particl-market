@@ -119,6 +119,7 @@ describe('BidMessageProcessing', () => {
         // generate ListingItemTemplate with ListingItem to sell
         const templateGenerateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation

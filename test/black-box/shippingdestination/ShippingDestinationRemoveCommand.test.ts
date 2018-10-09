@@ -47,6 +47,7 @@ describe('ShippingDestinationRemoveCommand', () => {
 
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
+            true,               // generateItemLocation
             false,              // generateShippingDestinations
             false,              // generateItemImages
             true,               // generatePaymentInformation
@@ -83,6 +84,7 @@ describe('ShippingDestinationRemoveCommand', () => {
 
         generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
+            true,               // generateItemLocation
             true,               // generateShippingDestinations
             false,              // generateItemImages
             true,               // generatePaymentInformation

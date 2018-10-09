@@ -39,6 +39,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
     test('Should remove ListingItemTemplate', async () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -77,6 +78,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation

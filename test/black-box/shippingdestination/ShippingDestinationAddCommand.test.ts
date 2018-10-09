@@ -35,6 +35,7 @@ describe('ShippingDestinationAddCommand', () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,  // generateShippingDestinations
             false,   // generateItemImages
             true,   // generatePaymentInformation

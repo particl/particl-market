@@ -52,6 +52,7 @@ describe('ItemLocationUpdateCommand', () => {
 
     const generateListingItemParams = new GenerateListingItemParams([
         false,   // generateItemInformation
+        false,   // generateItemLocation
         false,   // generateShippingDestinations
         false,   // generateItemImages
         false,   // generatePaymentInformation
