@@ -15,7 +15,7 @@ import { Exception } from '../../core/api/Exception';
 
 
 export class MissingParamException extends Exception {
-    constructor(param?: string) {
-        super(404, 'Missing ${param}.');
+    constructor(param: string) {
+        super(404, `Missing ${param}.`);
     }
 }

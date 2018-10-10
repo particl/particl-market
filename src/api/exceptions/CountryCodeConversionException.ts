@@ -14,8 +14,8 @@
 import { Exception } from '../../core/api/Exception';
 
 
-export class CountryCodeConversionException extends Exception {
-    constructor(countryCode?: string) {
-        super(404, 'Country code <${countryCode}> was not valid!');
+export class InvalidCountryCodeException extends Exception {
+    constructor(countryCode: string) {
+        super(404, `Country code ${countryCode} was not valid!`);
     }
 }
