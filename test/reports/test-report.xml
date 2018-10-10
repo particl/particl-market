@@ -1,18 +1,669 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testExecutions version="1">
-    <file path="/Users/juha/Work/particl/particl-market/test/black-box/orderitem/OrderItemStatus.test.ts">
-        <testCase name="OrderItemStatus Post ListingItemTemplate to create ListingItem" duration="50570"/>
-        <testCase name="OrderItemStatus Should return an empty list since there are no Bids or Orders yet" duration="5033"/>
-        <testCase name="OrderItemStatus Should post a Bid for a ListingItem" duration="340"/>
-        <testCase name="OrderItemStatus Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID" duration="5043"/>
-        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_BID)" duration="5071"/>
-        <testCase name="OrderItemStatus SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID" duration="15095"/>
-        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_BID)" duration="5085"/>
-        <testCase name="OrderItemStatus SELLER POSTS MPA_ACCEPT" duration="5639"/>
-        <testCase name="OrderItemStatus Should get OrderItemStatus from seller node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5066"/>
-        <testCase name="OrderItemStatus Order should have been created on seller node after posting the MPA_ACCEPT" duration="10069"/>
-        <testCase name="OrderItemStatus BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT" duration="15085"/>
-        <testCase name="OrderItemStatus Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW" duration="5054"/>
-        <testCase name="OrderItemStatus Should get OrderItemStatus from buyer node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)" duration="5081"/>
+    <file path="/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemTemplate.test.ts">
+        <testCase name="ListingItemTemplate Should throw ValidationException because we want to create a empty ListingItemTemplate" duration="6"/>
+        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate" duration="88132"/>
+        <testCase name="ListingItemTemplate Should findAll ListingItemTemplates consisting of the previously created one" duration="4"/>
+        <testCase name="ListingItemTemplate Should findOne ListingItemTemplate using id" duration="95"/>
+        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="20"/>
+        <testCase name="ListingItemTemplate Should create a second ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="22"/>
+        <testCase name="ListingItemTemplate Should update previously created ListingItemTemplate" duration="74246"/>
+        <testCase name="ListingItemTemplate Should delete the previously updated ListingItemTemplate" duration="174"/>
+        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without PaymentInformation, MessagingInformation and ListingItemObjects" duration="89092"/>
+        <testCase name="ListingItemTemplate Should delete the ListingItemTemplate with ItemInformation" duration="135"/>
+        <testCase name="ListingItemTemplate Should create a new ListingItemTemplate without MessagingInformation and ListingItemObjects" duration="67876"/>
+        <testCase name="ListingItemTemplate Should delete the ListingItemTemplate with ItemInformation and PaymentInformation" duration="190"/>
+        <testCase name="ListingItemTemplate Should create ListingItem with relation to ListingItemTemplate" duration="2147367">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+        </testCase>
+        <testCase name="ListingItemTemplate Should not delete ListingItemTemplate having relation to ListingItem" duration="1358"/>
+        <testCase name="ListingItemTemplate Should update ListingItemTemplate correctly when removing data" duration="146383">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+        </testCase>
+    </file>
+    <file path="/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts">
+        <testCase name="ListingItem Should throw ValidationException because we want to create a empty listing item" duration="3">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;create&apos; of undefined"><![CDATA[TypeError: Cannot read property 'create' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:233:34)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:231:107)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(1)"><![CDATA[Error: expect.assertions(1)
+
+Expected one assertion to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should create a new ListingItem" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:237:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:235:59)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should findAll ListingItems consisting of the previously created one" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;findAll&apos; of undefined"><![CDATA[TypeError: Cannot read property 'findAll' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:244:64)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:243:96)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should findOne ListingItem using id" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;findOne&apos; of undefined"><![CDATA[TypeError: Cannot read property 'findOne' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:250:59)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:249:63)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should findOne ListingItem using hash" duration="0">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;findOneByHash&apos; of undefined"><![CDATA[TypeError: Cannot read property 'findOneByHash' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:255:59)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:254:65)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should create a new ListingItem without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:266:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:259:148)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should update previously created ListingItem" duration="3">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:274:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:272:72)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should delete the previously updated ListingItem" duration="3">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;destroy&apos; of undefined"><![CDATA[TypeError: Cannot read property 'destroy' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:284:34)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:282:76)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(22)"><![CDATA[Error: expect.assertions(22)
+
+Expected 22 assertions to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should create a new ListingItem without PaymentInformation, MessagingInformation and ListingItemObjects" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:293:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:287:131)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should delete the ListingItem with ItemInformation" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;destroy&apos; of undefined"><![CDATA[TypeError: Cannot read property 'destroy' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:302:34)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:300:78)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(6)"><![CDATA[Error: expect.assertions(6)
+
+Expected six assertions to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should create a new ListingItem without MessagingInformation and ListingItemObjects" duration="3">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:310:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:305:111)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should delete the ListingItem with ItemInformation and PaymentInformation" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;destroy&apos; of undefined"><![CDATA[TypeError: Cannot read property 'destroy' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:318:34)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:316:101)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(12)"><![CDATA[Error: expect.assertions(12)
+
+Expected twelve assertions to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should create ListingItem with relation to ListingItemTemplate" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:325:40)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:321:90)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should delete ListingItem with relation to ListingItemTemplate" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;destroy&apos; of undefined"><![CDATA[TypeError: Cannot read property 'destroy' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:348:34)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:346:90)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(22)"><![CDATA[Error: expect.assertions(22)
+
+Expected 22 assertions to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItem Should delete expired ListingItem" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:357:50)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItem.test.ts:351:61)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+    </file>
+    <file path="/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts">
+        <testCase name="ListingItemObject Should throw ValidationException because we want to create a empty messaging information" duration="26">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should create a new listing item object" duration="4">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;Id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'Id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts:76:72)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts:75:67)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should throw ValidationException because we want to create a empty listing item object" duration="14">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should list listing item objects with our new create one" duration="3864">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="Error: expect(received).toBe(expected)"><![CDATA[Error: expect(received).toBe(expected)
+
+Expected value to be (using ===):
+  4
+Received:
+  0
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts:97:42)
+    at Generator.next (<anonymous>)
+    at fulfilled (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:93:62)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should return one listing item object" duration="20">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="Error: Undefined binding(s) detected when compiling SELECT query: select &quot;listing_item_objects&quot;.* from &quot;listing_item_objects&quot; where &quot;id&quot; = ? limit ?"><![CDATA[Error: Undefined binding(s) detected when compiling SELECT query: select "listing_item_objects".* from "listing_item_objects" where "id" = ? limit ?
+    at QueryCompiler_SQLite3.toSQL (/Users/vladlazarus/Documents/particl-market/node_modules/knex/lib/query/compiler.js:131:13)
+    at Builder.toSQL (/Users/vladlazarus/Documents/particl-market/node_modules/knex/lib/query/builder.js:115:44)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/knex/lib/runner.js:56:32
+    at tryCatcher (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/util.js:16:23)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/using.js:185:26
+    at tryCatcher (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/util.js:16:23)
+    at Promise._settlePromiseFromHandler (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:512:31)
+    at Promise._settlePromise (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:569:18)
+    at Promise._settlePromise0 (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:614:10)
+    at Promise._settlePromises (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:693:18)
+    at Promise._fulfill (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:638:18)
+    at PromiseArray._resolve (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise_array.js:126:19)
+    at PromiseArray._promiseFulfilled (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise_array.js:144:14)
+    at Promise._settlePromise (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:574:26)
+    at Promise._settlePromise0 (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:614:10)
+    at Promise._settlePromises (/Users/vladlazarus/Documents/particl-market/node_modules/bluebird/js/release/promise.js:693:18)]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should throw ValidationException because there is no listing_item_id or listing_item_template_id" duration="45">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should update the listing item object" duration="16">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;Id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'Id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts:121:79)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObject.test.ts:120:65)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObject Should delete the listing item object" duration="67">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="NotFoundException: Entity with identifier undefined does not exist"><![CDATA[NotFoundException: Entity with identifier undefined does not exist
+    at new Exception (/Users/vladlazarus/Documents/particl-market/src/core/api/Exception.ts:24:15)
+    at new NotFoundException (/Users/vladlazarus/Documents/particl-market/src/api/exceptions/NotFoundException.ts:17:9)
+    at ListingItemObjectRepository.<anonymous> (/Users/vladlazarus/Documents/particl-market/src/api/repositories/ListingItemObjectRepository.ts:69:23)
+    at Generator.throw (<anonymous>)
+    at rejected (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:94:69)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(3)"><![CDATA[Error: expect.assertions(3)
+
+Expected three assertions to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+    </file>
+    <file path="/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts">
+        <testCase name="ListingItemObjectData Should create a new listing item object data" duration="3">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:68:68)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:67:72)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObjectData Should throw ValidationException because we want to create a empty listing item object data" duration="2">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;create&apos; of undefined"><![CDATA[TypeError: Cannot read property 'create' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:79:44)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:77:119)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(1)"><![CDATA[Error: expect.assertions(1)
+
+Expected one assertion to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObjectData Should list listing item object datas with our new create one" duration="8">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;findAll&apos; of undefined"><![CDATA[TypeError: Cannot read property 'findAll' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:82:84)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:81:89)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObjectData Should return one listing item object data" duration="5">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;findOne&apos; of undefined"><![CDATA[TypeError: Cannot read property 'findOne' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:92:79)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:91:70)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObjectData Should update the listing item object data" duration="1">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;id&apos; of undefined"><![CDATA[TypeError: Cannot read property 'id' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:108:75)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:107:70)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+        </testCase>
+        <testCase name="ListingItemObjectData Should delete the listing item object data" duration="11">
+            <failure message="Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL."><![CDATA[Error: Timeout - Async callback was not invoked within timeout specified by jasmine.DEFAULT_TIMEOUT_INTERVAL.
+    at pTimeout (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:53:21)
+    at Timeout.setTimeout [as _onTimeout] (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/p-timeout.js:21:44)
+    at ontimeout (timers.js:482:11)
+    at tryOnTimeout (timers.js:317:5)
+    at Timer.listOnTimeout (timers.js:277:5)]]></failure>
+            <failure message="TypeError: Cannot read property &apos;destroy&apos; of undefined"><![CDATA[TypeError: Cannot read property 'destroy' of undefined
+    at Object.<anonymous> (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:119:44)
+    at Generator.next (<anonymous>)
+    at /Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:96:75
+    at new Promise (<anonymous>)
+    at Object.__awaiter (/Users/vladlazarus/Documents/particl-market/node_modules/tslib/tslib.js:92:16)
+    at Object.test (/Users/vladlazarus/Documents/particl-market/test/integration/ListingItemObjectData.test.ts:117:70)
+    at Object.asyncFn (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine-async.js:68:30)
+    at resolve (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:38:12)
+    at new Promise (<anonymous>)
+    at mapper (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/queueRunner.js:31:21)
+    at Promise.resolve.then.el (/Users/vladlazarus/Documents/particl-market/node_modules/p-map/index.js:42:16)
+    at <anonymous>]]></failure>
+            <failure message="Error: expect.assertions(1)"><![CDATA[Error: expect.assertions(1)
+
+Expected one assertion to be called but only received zero assertion calls.
+    at addAssertionErrors (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:68:21)
+    at Spec.attr.resultCallback (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/setup-jest-globals.js:111:9)
+    at complete (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:108:10)
+    at queueRunnerFactory.then (/Users/vladlazarus/Documents/particl-market/node_modules/jest-jasmine2/build/jasmine/Spec.js:104:14)
+    at <anonymous>]]></failure>
+        </testCase>
     </file>
 </testExecutions>

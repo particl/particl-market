@@ -15,7 +15,7 @@ import { Exception } from '../../core/api/Exception';
 
 
 export class ModelNotFoundException extends Exception {
-    constructor(id?: number | string) {
-        super(404, `Model with identifier ${id} does not exist`);
+    constructor(name: string) {
+        super(404, 'Model with identifier ${name} not found.');
     }
 }
