@@ -116,7 +116,8 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier Country code <TEST> was not valid! does not exist`);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Invalid param state.`);
     });
 
     test('Should fail because we want to update with null state field', async () => {
@@ -133,8 +134,9 @@ describe('AddressUpdateCommand', () => {
             testDataUpdated.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Invalid param state.`);
     });
 
     test('Should fail because we want to update with undefined state field', async () => {
@@ -151,8 +153,9 @@ describe('AddressUpdateCommand', () => {
             testDataUpdated.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Invalid param state.`);
     });
 
     test('Should update the address with blank state field', async () => {
@@ -181,6 +184,45 @@ describe('AddressUpdateCommand', () => {
         expect(result.state).toBe('');
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
+    });
+
+    test('Should check countryCode validation', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            createdAddress.id,
+            testDataUpdated.title,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            testDataUpdated.state,
+            'WW',
+            testDataUpdated.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Country code WW was not found!`);
+    });
+
+
+    test('Should check countryName validation', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            createdAddress.id,
+            testDataUpdated.title,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            testDataUpdated.state,
+            'Atlantida',
+            testDataUpdated.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Country code ATLANTIDA was not found!`);
     });
 
 });

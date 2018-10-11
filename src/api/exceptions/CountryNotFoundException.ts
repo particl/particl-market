@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * ModelNotFoundException
+ * CountryNotFoundException
  * ----------------------------------------
  *
  * This should be used if a someone requests a
@@ -14,8 +14,8 @@
 import { Exception } from '../../core/api/Exception';
 
 
-export class ModelNotFoundException extends Exception {
-    constructor(name: string) {
-        super(404, `${name} not found.`);
+export class CountryNotFoundException extends Exception {
+    constructor(country: string) {
+        super(404, `Country ${country} was not found!`);
     }
 }

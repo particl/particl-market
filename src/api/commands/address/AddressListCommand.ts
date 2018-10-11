@@ -13,6 +13,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { AddressType } from '../../enums/AddressType';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
@@ -44,15 +46,21 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
         const profileId = data.params[0];
-        if (!profileId) {
-            throw new Error('No profileId for a command');
-        }
-
         const profile = await this.profileService.findOne(profileId, true);
         const type = data.params[1] ? data.params[1] : AddressType.SHIPPING_OWN;
 
         // Return SHIPPING_OWN addresses by default
         return profile.toJSON().ShippingAddresses.filter((address) => address.type === type);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        }
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId');
+        }
+        return data;
     }
 
     public usage(): string {

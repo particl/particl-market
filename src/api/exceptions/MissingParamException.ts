@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * MessageException
+ * MissingParamException
  * ----------------------------------------
  *
  * This should be used if a someone requests a

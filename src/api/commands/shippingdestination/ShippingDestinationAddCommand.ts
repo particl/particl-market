@@ -49,7 +49,7 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
 
         this.log.debug('data.params:', data.params);
         const listingItemTemplateId: number = data.params[0];
-        const countryCode: string = ShippingCountries.validate(this.log, data.params[1]);
+        const countryCode: string = ShippingCountries.convertAndValidate(data.params[1]);
         const shippingAvail: ShippingAvailability = this.validateShippingAvailability(data.params[2]);
 
         // make sure ItemInformation exists, fetch the ListingItemTemplate

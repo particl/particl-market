@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * MessageException
+ * InvalidParamException
  * ----------------------------------------
  *
  * This should be used if a someone requests a
@@ -16,6 +16,6 @@ import { Exception } from '../../core/api/Exception';
 
 export class InvalidParamException extends Exception {
     constructor(param: string) {
-        super(404, `Invalid ${param}.`);
+        super(404, `Invalid param ${param}.`);
     }
 }

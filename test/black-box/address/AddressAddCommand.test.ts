@@ -77,7 +77,8 @@ describe('AddressAddCommand', () => {
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1, testData.addressLine2,
+            testData.addressLine1,
+            testData.addressLine2,
             testData.city,
             testData.state,
             testData.country,
@@ -86,7 +87,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Entity with identifier Country code <TEST> was not valid! does not exist`);
+        expect(res.error.error.message).toBe(`Invalid param profileId.`);
     });
 
     test('Should fail to create Address because state is null', async () => {
@@ -103,10 +104,9 @@ describe('AddressAddCommand', () => {
             testData.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        // TODO: better errors
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        expect(res.error.error.message).toBe(`Invalid param state.`);
     });
 
     test('Should fail to create Address because state is undefined', async () => {
@@ -123,10 +123,27 @@ describe('AddressAddCommand', () => {
             testData.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        // TODO: better errors
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        expect(res.error.error.message).toBe(`Invalid param state.`);
+    });
+
+    test('Should fail to create Address because state is undefined', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Missing param zipCode.`);
     });
 
     test('Should create a new Address with blank state', async () => {
@@ -157,4 +174,42 @@ describe('AddressAddCommand', () => {
         expect(result.zipCode).toBe(testData.zipCode);
     });
 
+    test('Should check countryCode validation', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            'WW',
+            testData.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Country code WW was not found!`);
+    });
+
+
+    test('Should check countryName validation', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            'Atlantida',
+            testData.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Country code ATLANTIDA was not found!`);
+    });
 });
