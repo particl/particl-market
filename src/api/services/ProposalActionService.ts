@@ -236,7 +236,11 @@ export class ProposalActionService {
             })
             .catch(async reason => {
                 // proposal doesnt exist -> create Proposal
-                const createdProposalModel = await this.proposalService.create(proposalCreateRequest);
+                let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
+                const createdProposal = createdProposalModel.toJSON();
+                // also create the FlaggedItem
+                const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
+                createdProposalModel = await this.proposalService.findOne(createdProposal.id);
                 return createdProposalModel.toJSON();
             });
 
@@ -245,8 +249,8 @@ export class ProposalActionService {
         if (createVote) {
             const vote: resources.Vote = await this.createVote(proposal, ItemVote.REMOVE);
         }
-        const flaggedItem = await this.createFlaggedItemForProposal(proposal);
         proposalResult = await this.proposalService.recalculateProposalResult(proposal);
         return proposal;
+
     }
 }

@@ -222,7 +222,7 @@ describe('Happy Buy Flow', () => {
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
 
-        if (result.ListingItemTemplate === null) {
+        if (!result.ListingItemTemplate) {
             log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
         }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);

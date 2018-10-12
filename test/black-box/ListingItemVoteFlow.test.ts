@@ -246,7 +246,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_PROPOSAL_ADD');
+        log.debug('Node2 FLAGS LISTINGITEM / POSTS MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -288,7 +288,8 @@ describe('Happy ListingItem Vote Flow', () => {
         res.expectStatusCode(200);
 
         const result: resources.Proposal = res.getBody()['result'][0];
-        // log.debug('proposal:', JSON.stringify(result, null, 2));
+        log.debug('proposal:', JSON.stringify(result, null, 2));
+
         expect(result.title).toBe(listingItemNode1.hash);
         expect(result.description).toBe('reason for reporting');
 
@@ -343,14 +344,15 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.ProposalOptions[0].description).toBe(proposalNode1.ProposalOptions[0].description);
         expect(result.ProposalOptions[1].description).toBe(proposalNode1.ProposalOptions[1].description);
 
-        // log.debug('proposal:', JSON.stringify(result, null, 2));
+        log.debug('proposal:', JSON.stringify(result, null, 2));
 
         // Proposal should have a ProposalResult which has one Vote for removing the ListingItem
-        expect(result.ProposalResults.length).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults.length).toBe(2);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].weight).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].voters).toBe(1);
+        // we have two ProposalResults since the first one gets created before we receive the Proposal (since this node was the one calling item flag)
+        expect(result.ProposalResults.length).toBe(2);
+        expect(result.ProposalResults[1].ProposalOptionResults.length).toBe(2);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].weight).toBe(1);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].voters).toBe(1);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
         res = await testUtilNode2.rpc(listingItemCommand, [listingItemGetCommand, listingItemNode2.hash]);
