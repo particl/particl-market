@@ -335,7 +335,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         bidOnBuyerNode = result[0];
 
