@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { Exception, isException } from '../../../../src/core/api/Exception';
-
 
 describe('Exception', () => {
     test('Should have the correct properties', () => {

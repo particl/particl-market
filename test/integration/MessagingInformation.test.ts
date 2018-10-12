@@ -73,6 +73,7 @@ describe('MessagingInformation', () => {
 
         let generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,  // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -91,6 +92,7 @@ describe('MessagingInformation', () => {
 
         generateParams = new GenerateListingItemParams([
             false,   // generateItemInformation
+            false,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation

@@ -7,6 +7,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import * as resources from 'resources';
 
 describe('ItemLocationAddCommand', () => {
 
@@ -18,80 +20,98 @@ describe('ItemLocationAddCommand', () => {
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationAddCommand = Commands.ITEMLOCATION_ADD.commandName;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        }
-    };
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdTemplate: resources.ListingItemTemplate;
 
-    let createdTemplateId;
-    // let createdItemLocation;
-
-    const testData = [itemLocationAddCommand, 0, 'CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const countryCode = 'CN';
+    const address = 'USA';
+    const markerTitle = 'TITLE';
+    const markerDesc = 'DESCRIPTION';
+    const markerLat = 25.7;
+    const markerLng = 22.77;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // create profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
 
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
-        createdTemplateId = addListingItemTempRes.id;
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,                   // generateItemInformation
+            false,                  // generateItemLocation
+            true,                   // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            true,                   // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            defaultProfile.id,      // profileId
+            false,                  // generateListingItem
+            defaultMarket.id        // marketId
+        ]).toParamsArray();
+
+        // generate listingItemTemplate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplates[];
+        createdTemplate = listingItemTemplates[0];
+
+        expect(listingItemTemplates.length).toBe(1);
+
     });
 
     test('Should not create ItemLocation without country', async () => {
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Country code can\'t be blank.');
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing params.');
     });
 
     test('Should create ItemLocation', async () => {
-        // Add Item Location
-        testData[1] = createdTemplateId;
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand,
+            createdTemplate.id,
+            countryCode,
+            address,
+            markerTitle,
+            markerDesc,
+            markerLat,
+            markerLng
+        ]);
+        res.expectJson();
+        log.debug('result:', JSON.stringify(res, null, 2));
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
         expect(result.LocationMarker).toBeDefined();
-        expect(result.itemInformationId).toBeDefined();
-        expect(result.region).toBe(testData[2]);
-        expect(result.address).toBe(testData[3]);
-        expect(result.LocationMarker.markerTitle).toBe(testData[4]);
-        expect(result.LocationMarker.markerText).toBe(testData[5]);
-        expect(result.LocationMarker.lat).toBe(testData[6]);
-        expect(result.LocationMarker.lng).toBe(testData[7]);
+        expect(result.region).toBe(countryCode);
+        expect(result.address).toBe(address);
+        expect(result.LocationMarker.markerTitle).toBe(markerTitle);
+        expect(result.LocationMarker.markerText).toBe(markerDesc);
+        expect(result.LocationMarker.lat).toBe(markerLat);
+        expect(result.LocationMarker.lng).toBe(markerLng);
     });
 
     test('Should create ItemLocation if ItemLocation already exist for listingItemtemplate', async () => {
-        // Add Item Location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe(`ItemLocation with the listingItemTemplateId=${testData[1]} already exists`);
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand,
+            createdTemplate.id,
+            countryCode,
+            address,
+            markerTitle,
+            markerDesc,
+            markerLat,
+            markerLng
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`ItemLocation for the listingItemTemplateId=${createdTemplate.id} already exists!`);
     });
 
-    test('Should create ItemLocation if ItemInformation not exist', async () => {
-        delete testDataListingItemTemplate.itemInformation;
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-
-        createdTemplateId = addListingItemTempRes.id;
-        testData[1] = createdTemplateId;
-        // Add Item Location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe(`ItemInformation with the listingItemTemplateId=${testData[1]} was not found!`);
-    });
 });

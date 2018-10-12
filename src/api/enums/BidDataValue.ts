@@ -21,12 +21,12 @@ export enum BidDataValue {
     RAW_TX = 'rawtx',
     ORDER_HASH = 'orderHash',
 
-    SHIPPING_ADDRESS_FIRST_NAME = 'ship.firstName',
-    SHIPPING_ADDRESS_LAST_NAME = 'ship.lastName',
-    SHIPPING_ADDRESS_ADDRESS_LINE1 = 'ship.addressLine1',
-    SHIPPING_ADDRESS_ADDRESS_LINE2 = 'ship.addressLine2',
-    SHIPPING_ADDRESS_CITY = 'ship.city',
-    SHIPPING_ADDRESS_STATE = 'ship.state',
-    SHIPPING_ADDRESS_ZIP_CODE = 'ship.zipCode',
-    SHIPPING_ADDRESS_COUNTRY = 'ship.country'
+    SHIPPING_ADDRESS_FIRST_NAME = 'shippingAddress.firstName',
+    SHIPPING_ADDRESS_LAST_NAME = 'shippingAddress.lastName',
+    SHIPPING_ADDRESS_ADDRESS_LINE1 = 'shippingAddress.addressLine1',
+    SHIPPING_ADDRESS_ADDRESS_LINE2 = 'shippingAddress.addressLine2',
+    SHIPPING_ADDRESS_CITY = 'shippingAddress.city',
+    SHIPPING_ADDRESS_STATE = 'shippingAddress.state',
+    SHIPPING_ADDRESS_ZIP_CODE = 'shippingAddress.zipCode',
+    SHIPPING_ADDRESS_COUNTRY = 'shippingAddress.country'
 }

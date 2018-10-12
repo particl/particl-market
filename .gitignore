@@ -36,6 +36,7 @@ coverage/
 !test/preprocessor.js
 
 test/testdata/test.json
+test/reports/*
 
 data/database/*
 data/uploads/*

@@ -45,6 +45,7 @@ describe('ItemImageAddCommand', () => {
 
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             false,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -64,6 +65,7 @@ describe('ItemImageAddCommand', () => {
 
         generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             true,   // generateItemImages
             false,   // generatePaymentInformation

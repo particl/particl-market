@@ -4,6 +4,10 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import {ItemCategoryCreateRequest} from './ItemCategoryCreateRequest';
+import {ItemLocationCreateRequest} from './ItemLocationCreateRequest';
+import {ShippingDestinationCreateRequest} from './ShippingDestinationCreateRequest';
+import {ItemImageCreateRequest} from './ItemImageCreateRequest';
 
 // tslint:disable:variable-name
 export class ItemInformationCreateRequest extends RequestBody {

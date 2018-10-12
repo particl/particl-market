@@ -142,7 +142,8 @@ export class BidActionService {
         // todo: propably something that we should check earlier
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
         // todo: this could also be caused by of some other error, while saving the item
-        if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
+        if (!listingItem.PaymentInformation.ItemPrice
+            || !(typeof listingItem.PaymentInformation.ItemPrice.basePrice === 'number' && listingItem.PaymentInformation.ItemPrice.basePrice >= 0)) {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }

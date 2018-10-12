@@ -90,6 +90,7 @@ describe('BidDatas', () => {
 
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation
+            true,                               // generateItemLocation
             true,                               // generateShippingDestinations
             false,                              // generateItemImages
             true,                               // generatePaymentInformation

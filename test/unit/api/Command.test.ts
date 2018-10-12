@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Command } from '../../../src/api/commands/Command';
 
