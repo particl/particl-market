@@ -512,7 +512,7 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
 
-        log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
+        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem1 = listingItemModel.toJSON();
