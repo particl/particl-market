@@ -90,7 +90,7 @@ export class ProposalActionService {
         );
 
         // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
-        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, null);
+        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
             await this.processItemVoteProposal(proposalCreateRequest, false);
         }

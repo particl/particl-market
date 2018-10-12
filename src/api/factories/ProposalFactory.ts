@@ -81,8 +81,7 @@ export class ProposalFactory {
      * @param {ProposalMessage} proposalMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async getModel(proposalMessage: ProposalMessage, smsgMessage: resources.SmsgMessage | null): Promise<ProposalCreateRequest> {
-
+    public async getModel(proposalMessage: ProposalMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
 
         const smsgData: any = {
             expiryTime: Number.MAX_SAFE_INTEGER,
