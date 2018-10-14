@@ -25,7 +25,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-    let categoryResult: resources.ItemCategory;
+    let category: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -33,15 +33,17 @@ describe('ListingItemTemplateAddCommand', () => {
         // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
+
+        // todo: test with existing category, not a custom one
+        const categoryResult = await testUtil.rpc(categoryCommand, [categoryAddCommand, 'templateCategory', 'category for Template', 'cat_ROOT']);
+        categoryResult.expectJson();
+        categoryResult.expectStatusCode(200);
+        category = categoryResult.getBody()['result'];
+
+
     });
 
     test('Should create a new ListingItemTemplate with Profile + ItemInformation + PaymentInformation', async () => {
-
-        // todo: test with existing category, not a custom one
-        categoryResult = await testUtil.rpc(categoryCommand, [categoryAddCommand, 'templateCategory', 'category for Template', 'cat_ROOT']);
-        categoryResult.expectJson();
-        categoryResult.expectStatusCode(200);
-        categoryResult = categoryResult.getBody()['result'];
 
         const testData = [
             templateAddCommand,
@@ -49,7 +51,7 @@ describe('ListingItemTemplateAddCommand', () => {
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
             'Long description',             // [3]: long description
-            categoryResult.id,              // [4]: categoryID
+            category.id,              // [4]: categoryID
             PaymentType.SALE,               // [5]: payment type
             Currency.PARTICL,               // [6]: currency
             10.1234,                        // [7]: base price
@@ -87,11 +89,11 @@ describe('ListingItemTemplateAddCommand', () => {
 
         const testData = [
             templateAddCommand,
-            defaultProfile.id,                     // [0]: profile_id
+            defaultProfile.id,              // [0]: profile_id
             'Test Title 2',                 // [1]: title
             'test short description 2',     // [2]: short description
             'Long description 2',           // [3]: long description
-            categoryResult.id,              // [4]: categoryID
+            category.id,                    // [4]: categoryID
             PaymentType.SALE,               // [5]: payment type
             Currency.PARTICL,               // [6]: currency
             10.1234,                        // [7]: base price
@@ -104,12 +106,6 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result).hasOwnProperty('Profile');
-        expect(result).hasOwnProperty('ItemInformation');
-        expect(result).hasOwnProperty('PaymentInformation');
-        expect(result).hasOwnProperty('MessagingInformation');
-        expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItems');
         expect(result.Profile.id).toBe(testData[1]);
         expect(result.ItemInformation.title).toBe(testData[2]);
         expect(result.ItemInformation.shortDescription).toBe(testData[3]);
@@ -120,7 +116,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[8]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[9]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[10]);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).not.toBeDefined();
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress).not.toBeDefined();
 
     });
 
@@ -130,4 +126,5 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
     });
+
 });

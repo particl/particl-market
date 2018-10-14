@@ -190,7 +190,7 @@ describe('BidSendCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing required param: ship.addressLine1');
+        expect(res.error.error.message).toBe('Missing required param: ' + BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1);
     });
 
     test('Should throw exception for invalid profile', async () => {

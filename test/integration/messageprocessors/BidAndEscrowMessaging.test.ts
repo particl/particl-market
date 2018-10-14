@@ -35,7 +35,7 @@ import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
-import {BidDataValue} from 'src/api/enums/BidDataValue';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 
 
 describe('BidMessageProcessing', () => {
@@ -264,7 +264,7 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe('FI');
         expect(result.ShippingAddress.zipCode).toBe('1234');
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(20);
+        expect(result.BidDatas).toHaveLength(19);
 
         const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
         listingItem = createdListingItemModel.toJSON();

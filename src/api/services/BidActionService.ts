@@ -882,9 +882,8 @@ export class BidActionService {
                         // update the bid locally
                         const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
                         // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
-                        const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
+                        let updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
                         let updatedBid: resources.Bid = updatedBidModel.toJSON();
-                        // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
                         // create the order from the bid
                         const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
@@ -900,8 +899,11 @@ export class BidActionService {
                         if (orderHash !== order.hash) {
                             throw new MessageException('Created Order.hash does not match with the received orderHash.');
                         }
-                        await updatedBidModel.fetch({withRelated: ['OrderItem']});
+
+                        updatedBidModel = await this.bidService.findOne(updatedBid.id);
                         updatedBid = updatedBidModel.toJSON();
+                        this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+
                         // TODO: do whatever else needs to be done
 
                         // this.log.debug('processAcceptBidReceivedEvent(), updatedBid: ', JSON.stringify(updatedBid, null, 2));
