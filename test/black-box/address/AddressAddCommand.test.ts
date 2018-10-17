@@ -87,7 +87,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param profileId.`);
+        expect(res.error.error.message).toBe(`Invalid profileId.`);
     });
 
     test('Should fail to create Address because state is null', async () => {
@@ -106,7 +106,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param state.`);
+        expect(res.error.error.message).toBe(`Invalid state.`);
     });
 
     test('Should fail to create Address because state is undefined', async () => {
@@ -125,7 +125,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param state.`);
+        expect(res.error.error.message).toBe(`Invalid state.`);
     });
 
     test('Should fail to create Address because state is undefined', async () => {
@@ -143,7 +143,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Missing param zipCode.`);
+        expect(res.error.error.message).toBe(`Missing zipCode.`);
     });
 
     test('Should create a new Address with blank state', async () => {

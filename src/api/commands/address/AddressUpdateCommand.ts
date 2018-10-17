@@ -17,6 +17,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { ZipCodeNotFoundException } from '../../exceptions/ZipCodeNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
@@ -61,7 +62,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         // Validate ZIP code
         const zipCodeStr = data.params[9];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
-            throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
+            throw new ZipCodeNotFoundException(zipCodeStr);
         }
 
         return this.addressService.update(data.params[0], {
@@ -78,61 +79,61 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (!data.params[0]) {
+        if (data.params.length < 1) {
             throw new MissingParamException('addressId');
         }
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('addressId');
         }
-        if (!data.params[1]) {
+        if (data.params.length < 2) {
             throw new MissingParamException('title');
         }
         if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('title');
         }
-        if (!data.params[2]) {
+        if (data.params.length < 3) {
             throw new MissingParamException('firstName');
         }
         if (typeof data.params[2] !== 'string') {
             throw new InvalidParamException('firstName');
         }
-        if (!data.params[3]) {
+        if (data.params.length < 4) {
             throw new MissingParamException('lastName');
         }
         if (typeof data.params[3] !== 'string') {
             throw new InvalidParamException('lastName');
         }
-        if (!data.params[4]) {
+        if (data.params.length < 5) {
             throw new MissingParamException('addressLine1');
         }
         if (typeof data.params[4] !== 'string') {
             throw new InvalidParamException('addressLine1');
         }
-        if (!data.params[5]) {
+        if (data.params.length < 6) {
             throw new MissingParamException('addressLine2');
         }
         if (typeof data.params[5] !== 'string') {
             throw new InvalidParamException('addressLine2');
         }
-        if (!data.params[6]) {
+        if (data.params.length < 7) {
             throw new MissingParamException('city');
         }
         if (typeof data.params[6] !== 'string') {
             throw new InvalidParamException('city');
         }
-        if (!data.params[7]) {
+        if (data.params.length < 8) {
             throw new MissingParamException('state');
         }
-        if (typeof data.params[7] !== 'string') {
+        if (typeof data.params[7] !== 'string' && data.params[7] !== '') {
             throw new InvalidParamException('state');
         }
-        if (!data.params[8]) {
+        if (data.params.length < 9) {
             throw new MissingParamException('country');
         }
         if (typeof data.params[8] !== 'string') {
             throw new InvalidParamException('country');
         }
-        if (!data.params[9]) {
+        if (data.params.length < 10) {
             throw new MissingParamException('zipCode');
         }
         if (typeof data.params[9] !== 'string') {

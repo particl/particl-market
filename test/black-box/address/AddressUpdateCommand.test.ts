@@ -117,7 +117,7 @@ describe('AddressUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param state.`);
+        expect(res.error.error.message).toBe(`Invalid addressId.`);
     });
 
     test('Should fail because we want to update with null state field', async () => {
@@ -136,7 +136,7 @@ describe('AddressUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param state.`);
+        expect(res.error.error.message).toBe(`Invalid state.`);
     });
 
     test('Should fail because we want to update with undefined state field', async () => {
@@ -155,7 +155,7 @@ describe('AddressUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid param state.`);
+        expect(res.error.error.message).toBe(`Invalid state.`);
     });
 
     test('Should update the address with blank state field', async () => {

@@ -117,7 +117,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Entity with identifier Country code <INVALID-COUNTRY-CODE> was not valid! does not exist');
+        expect(res.error.error.message).toBe(`Country code INVALID-COUNTRY-CODE was not found!`);
     });
 
     test('Should fail to remove ShippingDestination using invalid itemTemplateId', async () => {

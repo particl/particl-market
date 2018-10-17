@@ -125,7 +125,7 @@ describe('ItemLocationUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Entity with identifier Country code <USA> was not valid! does not exist');
+        expect(res.error.error.message).toBe(`Country code USA was not found!`);
     });
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
