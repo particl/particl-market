@@ -70,6 +70,10 @@ export class VoteActionService {
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
             senderProfile, currentBlock);
 
+        if (proposal.type === ProposalType.ITEM_VOTE && proposal.blockEnd >= currentBlock) {
+            await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
+        }
+
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: voteMessage
