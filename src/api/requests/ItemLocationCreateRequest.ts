@@ -4,6 +4,7 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { LocationMarkerCreateRequest } from './LocationMarkerCreateRequest';
 
 // tslint:disable:variable-name
 export class ItemLocationCreateRequest extends RequestBody {
@@ -16,7 +17,7 @@ export class ItemLocationCreateRequest extends RequestBody {
 
     public address: string;
 
-    public locationMarker;
+    public locationMarker: LocationMarkerCreateRequest;
 
 }
 // tslint:enable:variable-name

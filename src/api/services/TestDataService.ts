@@ -91,11 +91,13 @@ import { VoteActionService } from './VoteActionService';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalActionService } from './ProposalActionService';
-import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
-import {BidDataValue} from '../enums/BidDataValue';
-import {SettingCreateRequest} from '../requests/SettingCreateRequest';
-import {ItemVote} from '../enums/ItemVote';
-import {Proposal} from '../models/Proposal';
+import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
+import { BidDataValue } from '../enums/BidDataValue';
+import { SettingCreateRequest } from '../requests/SettingCreateRequest';
+import { ItemVote } from '../enums/ItemVote';
+import { Proposal } from '../models/Proposal';
+import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
+import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 
 export class TestDataService {
 
@@ -164,34 +166,34 @@ export class TestDataService {
             case CreatableModel.LISTINGITEMTEMPLATE: {
                 return await this.listingItemTemplateService.create(
                     body.data as ListingItemTemplateCreateRequest,
-                    body.timestampedHash) as Bookshelf.Model<ListingItemTemplate>;
+                    body.timestampedHash);
             }
             case CreatableModel.LISTINGITEM: {
-                return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<ListingItem>;
+                return await this.listingItemService.create(body.data as ListingItemCreateRequest);
             }
             case CreatableModel.ACTIONMESSAGE: {
-                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest) as Bookshelf.Model<ActionMessage>;
+                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest);
             }
             case CreatableModel.PROFILE: {
-                return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<Profile>;
+                return await this.profileService.create(body.data as ProfileCreateRequest);
             }
             case CreatableModel.ITEMCATEGORY: {
-                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<ItemCategory>;
+                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest);
             }
             case CreatableModel.FAVORITEITEM: {
-                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
+                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest);
             }
             case CreatableModel.ITEMINFORMATION: {
-                return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
+                return await this.itemInformationService.create(body.data as ItemInformationCreateRequest);
             }
             case CreatableModel.BID: {
-                return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
+                return await this.bidService.create(body.data as BidCreateRequest);
             }
             case CreatableModel.PAYMENTINFORMATION: {
-                return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest) as Bookshelf.Model<PaymentInformation>;
+                return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest);
             }
             case CreatableModel.ITEMIMAGE: {
-                return await this.itemImageService.create(body.data as ItemImageCreateRequest) as Bookshelf.Model<ItemImage>;
+                return await this.itemImageService.create(body.data as ItemImageCreateRequest);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -494,15 +496,14 @@ export class TestDataService {
             {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
             {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
                 ',\"vout\":1,\"amount\":1.52497491}]'},
-            {dataId: 'ship.title', dataValue: 'title'},
-            {dataId: 'ship.firstName', dataValue: 'asdf'},
-            {dataId: 'ship.lastName', dataValue: 'asdf'},
-            {dataId: 'ship.addressLine1', dataValue: 'asdf'},
-            {dataId: 'ship.addressLine2', dataValue: 'asdf'},
-            {dataId: 'ship.city', dataValue: 'asdf'},
-            {dataId: 'ship.state', dataValue: ''},
-            {dataId: 'ship.zipCode', dataValue: '1234'},
-            {dataId: 'ship.country', dataValue: 'FI'}
+            {dataId: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_CITY, dataValue: 'asdf'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_STATE, dataValue: ''},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, dataValue: '1234'},
+            {dataId: BidDataValue.SHIPPING_ADDRESS_COUNTRY, dataValue: 'FI'}
         ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
@@ -782,7 +783,11 @@ export class TestDataService {
         if (withRelated) {
             return items;
         } else {
-            return await items.map(item => item.id);
+            const itemIds: number[] = [];
+            for (const item of items) {
+                itemIds.push(item.id);
+            }
+            return itemIds;
         }
     }
 
@@ -895,7 +900,7 @@ export class TestDataService {
         return listingItemCreateRequest;
     }
 
-    private generateShippingDestinationsData(amount: number): any[] {
+    private generateShippingDestinationsData(amount: number): ShippingDestinationCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             items.push({
@@ -906,7 +911,20 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemImagesData(amount: number): any[] {
+    private generateItemLocationData(): any {
+        return {
+            region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+            address: Faker.address.streetAddress(),
+            locationMarker: {
+                markerTitle: Faker.lorem.word(),
+                markerText: Faker.lorem.sentence(),
+                lat: Faker.address.latitude(),
+                lng: Faker.address.longitude()
+            }
+        };
+    }
+
+    private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             const item = {
@@ -934,6 +952,10 @@ export class TestDataService {
             ? this.generateItemImagesData(_.random(1, 5))
             : [];
 
+        const itemLocation = generateParams.generateItemLocation
+            ? this.generateItemLocationData()
+            : undefined;
+
         const itemCategory = {} as ItemCategoryUpdateRequest;
         if (generateParams.categoryId) {
             itemCategory.id = generateParams.categoryId;
@@ -946,16 +968,7 @@ export class TestDataService {
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
             itemCategory,
-            itemLocation: {
-                region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
-                address: Faker.address.streetAddress(),
-                locationMarker: {
-                    markerTitle: Faker.lorem.word(),
-                    markerText: Faker.lorem.sentence(),
-                    lat: Faker.address.latitude(),
-                    lng: Faker.address.longitude()
-                }
-            },
+            itemLocation,
             shippingDestinations,
             itemImages
         } as ItemInformationCreateRequest;
@@ -974,7 +987,7 @@ export class TestDataService {
                     seller: _.random(1, 100)
                 }
             } as EscrowCreateRequest
-            : {};
+            : undefined;
 
         const itemPrice = generateParams.generateItemPrice
             ? {
@@ -989,7 +1002,7 @@ export class TestDataService {
                     address: await this.coreRpcService.getNewAddress()
                 }
             } as ItemPriceCreateRequest
-            : {};
+            : undefined;
 
         const paymentInformation = {
             type: PaymentType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),

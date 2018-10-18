@@ -35,6 +35,8 @@ export class Logger {
     private static Adapter: interfaces.LoggerAdapterConstructor;
     private static Adapters: Map<string, interfaces.LoggerAdapterConstructor> = new Map();
 
+    // tslint:disable:no-ignored-return
+    // tslint:disable:no-misleading-array-reverse
     private static parsePathToScope(filepath: string): string {
         if (filepath.indexOf(path.sep) >= 0) {
             // split and reverse filepath
@@ -55,6 +57,8 @@ export class Logger {
         }
         return filepath;
     }
+    // tslint:enable:no-misleading-array-reverse
+    // tslint:enable:no-ignored-return
 
     private scope: string;
     private adapter: interfaces.LoggerAdapter;

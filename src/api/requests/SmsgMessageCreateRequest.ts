@@ -11,11 +11,13 @@ import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
+type AllowedMessageTypes = EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+
 // tslint:disable:variable-name
 export class SmsgMessageCreateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+    public type: AllowedMessageTypes;
 
     @IsNotEmpty()
     public status: SmsgMessageStatus;

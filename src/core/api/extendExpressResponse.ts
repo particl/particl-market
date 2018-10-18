@@ -100,12 +100,12 @@ function prepareMessage(value?: string): any {
     if (value) {
         return { message: value };
     }
-    return;
+    // return;
 }
 
 function prepareLinks(values?: myExpress.ResponseLinks[]): any {
     if (values) {
         return { links: values };
     }
-    return;
+    // return;
 }

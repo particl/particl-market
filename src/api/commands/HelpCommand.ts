@@ -69,6 +69,12 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         throw new NotFoundException(`Command not found.`);
     }
 
+    public help(): string {
+        return this.usage() + '\n'
+            + '    <command>                - [optional] String - Command that we want to view help for. \n'
+            + '    <subCommand>             - [optional] String - Subcommand that we want to view help for. ';
+    }
+
     public _generateHelp( commands: string[], rpcCommandFactory: RpcCommandFactory, command: any ): string {
         if ( commands.length === 0 ) {
             let retStr = '';
@@ -114,17 +120,11 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         return this.getName() + ' [<command> [<subCommand> [...]]]  -  ' + this.description();
     }
 
-    public help(): string {
-        return this.usage() + '\n'
-            + '    <command>                - [optional] String - Command that we want to view help for. \n'
-            + '    <subCommand>             - [optional] String - Subcommand that we want to view help for. ';
+    public description(): string {
+        return 'Shows help for a command.';
     }
 
     public example(): string {
         return this.getName() + ' help listingitem';
-    }
-
-    public description(): string {
-        return 'Shows help for a command.';
     }
 }

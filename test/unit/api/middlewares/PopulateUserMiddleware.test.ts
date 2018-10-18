@@ -2,9 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { PopulateUserMiddleware } from '../../../../src/api/middlewares/PopulateUserMiddleware';
 import { LogMock } from '../../lib/LogMock';
-
 
 describe('PopulateUserMiddleware', () => {
 

@@ -83,6 +83,7 @@ export class ShippingCountries {
      * Convert country to country code, if valid country.
      * If country code and invalid, throw exception and print to log.
      * TODO: remove log
+     * TODO: validate is not a method that should make conversion from country to countryCode
      *
      * @param log
      * @param countryCode

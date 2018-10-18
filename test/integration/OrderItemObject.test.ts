@@ -94,6 +94,7 @@ describe('OrderItemObject', () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
+            true,                   // generateItemLocation
             true,                   // generateShippingDestinations
             false,                  // generateItemImages
             true,                   // generatePaymentInformation
@@ -195,9 +196,9 @@ describe('OrderItemObject', () => {
         const orderItemObjectCollection = await orderItemObjectService.findAll();
         const orderItemObjects = orderItemObjectCollection.toJSON();
 
-        expect(orderItemObjects.length).toBe(19);
+        expect(orderItemObjects.length).toBe(18);
 
-        const result = orderItemObjects[18];
+        const result = orderItemObjects[17];
 
         expect(result.dataId).toBe(testData.dataId);
         expect(result.dataValue).toBe(testData.dataValue);

@@ -28,7 +28,7 @@ export class GenerateActionMessageParams implements GenerateActionMessageParamsI
     public seller: string | null = null;
 
     // generate MessageObjects. dataId will be equal to 'seller' and dataValue to seller.
-    public generateMessageObjectsAmount: number | number = 0;
+    public generateMessageObjectsAmount = 0;
 
     // generate MessageEscrow - doesn't generate if generateMessageEscrow = false
     // pass empty params in this case.

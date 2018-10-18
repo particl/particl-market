@@ -36,6 +36,7 @@ coverage/
 !test/preprocessor.js
 
 test/testdata/test.json
+test/reports/*
 
 data/database/*
 data/uploads/*
@@ -54,3 +55,5 @@ data/gui2_node_modules/*
 *.paw
 
 codeship*.yml
+.scannerwork
+

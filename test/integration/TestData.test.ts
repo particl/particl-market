@@ -146,7 +146,6 @@ describe('TestDataService', () => {
             if (bidGenerateParams.listingItemHash) {
                 expect(result.ListingItem.hash).toBe(bidGenerateParams.listingItemHash);
             }
-            expect(result.ListingItem.ListingItemTemplate).toEqual({});
         }
 
         if (shouldHaveBidDatas) {
@@ -251,8 +250,9 @@ describe('TestDataService', () => {
         } as TestDataCreateRequest);
 
         const result = createdListingItemTemplate.toJSON();
-        const listingItemTemplate = await listingItemTemplateService.findAll();
-        expect(listingItemTemplate).toHaveLength(1);
+
+        const listingItemTemplates = await listingItemTemplateService.findAll();
+        expect(listingItemTemplates).toHaveLength(1);
 
         expect(result.hash).not.toBeNull();
         expect(result.Profile.name).toBe(defaultProfile.name);
@@ -269,10 +269,8 @@ describe('TestDataService', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.markerText);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.lng);
-        expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemInformation.ItemImages).toHaveLength(5);
-        expect(result.ItemInformation.listingItemId).toBe(null);
-        expect(result.ItemInformation.listingItemTemplateId).toBe(result.id);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(listingItemTemplateCreateRequestBasic1.itemInformation.shippingDestinations.length);
+        expect(result.ItemInformation.ItemImages).toHaveLength(listingItemTemplateCreateRequestBasic1.itemInformation.itemImages.length);
 
         expect(result.PaymentInformation.type).toBe(listingItemTemplateData.paymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(listingItemTemplateData.paymentInformation.escrow.type);
@@ -286,9 +284,8 @@ describe('TestDataService', () => {
 
         expect(result.MessagingInformation[0].protocol).toBe(listingItemTemplateData.messagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(listingItemTemplateData.messagingInformation[0].publicKey);
-        expect(result.MessagingInformation[0].listingItemId).toBe(null);
         // tslint:enable:max-line-length
-    });
+    }, 600000); // timeout to 600s
 
     test('Should throw error message when passed model is invalid for create', async () => {
         expect.assertions(1);
@@ -318,7 +315,7 @@ describe('TestDataService', () => {
 
         profiles = await profileService.findAll();
         expect(profiles).toHaveLength(1);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should generate single Profile using withRelated=false and return only ids', async () => {
         await testDataService.clean(false);
@@ -336,7 +333,7 @@ describe('TestDataService', () => {
         const createdProfile = profile.toJSON();
         expectGenerateProfile(createdProfile, true, false, true, true);
 
-    });
+    }, 600000); // timeout to 600s
 
 
     test('Check generateActionMessages from ListingItem', async () => {
@@ -394,7 +391,7 @@ describe('TestDataService', () => {
         expect(actionMessages[0].MessageObjects[0].actionMessageId).toBe(actionMessages[0].id);
         expect(actionMessages[0].MessageObjects[0].dataId).toBe('seller');
         expect(actionMessages[0].MessageObjects[0].dataValue).toBe(defaultProfile.address);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should generate three Profiles', async () => {
         await testDataService.clean(false);
@@ -407,13 +404,14 @@ describe('TestDataService', () => {
 
         const profile = await profileService.findAll();
         expect(profile).toHaveLength(3);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should generate ListingItemTemplate using GenerateListingItemTemplateParams', async () => {
         await testDataService.clean(true);
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false,   // generateItemImages
             true,   // generatePaymentInformation
@@ -431,8 +429,9 @@ describe('TestDataService', () => {
             generateParams: generateListingItemTemplateParams
         } as TestDataGenerateRequest);
 
-        // TODO: expects
-    });
+        expect(listingItemTemplates).toHaveLength(1);
+
+    }, 600000); // timeout to 600s
 
     test('Should throw error message when passed model is invalid for generate', async () => {
         expect.assertions(1);
@@ -471,7 +470,7 @@ describe('TestDataService', () => {
         const bid = generatedBids[0];
 
         expectGenerateBid(bidGenerateParams, bid, true, true);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
         await testDataService.clean(true);
@@ -511,7 +510,7 @@ describe('TestDataService', () => {
         expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
 
-    });
+    }, 600000); // timeout to 600s
 
     test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
         await testDataService.clean(true);
@@ -551,8 +550,7 @@ describe('TestDataService', () => {
 
         expectGenerateOrder(orderGenerateParams, order);
 
-
-    });
+    }, 600000); // timeout to 600s
 
     test('Should cleanup all tables', async () => {
 

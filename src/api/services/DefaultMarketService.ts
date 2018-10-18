@@ -54,7 +54,7 @@ export class DefaultMarketService {
     public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
         let newMarketModel = await this.marketService.findByAddress(market.address);
         if (newMarketModel === null) {
-            newMarketModel = await this.marketService.create(market as MarketCreateRequest);
+            newMarketModel = await this.marketService.create(market);
             this.log.debug('created new default Market: ', JSON.stringify(newMarketModel, null, 2));
         } else {
             newMarketModel = await this.marketService.update(newMarketModel.Id, market as MarketUpdateRequest);

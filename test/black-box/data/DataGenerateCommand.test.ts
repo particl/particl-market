@@ -102,6 +102,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             false,   // generateItemInformation
+            false,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -127,6 +128,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -155,6 +157,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             false,   // generatePaymentInformation
@@ -183,6 +186,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -211,6 +215,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -240,6 +245,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -271,6 +277,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -302,6 +309,7 @@ describe('DataGenerateCommand', () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation

@@ -14,6 +14,7 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 
 describe('BidSendCommand', () => {
 
@@ -60,6 +61,7 @@ describe('BidSendCommand', () => {
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false,   // generateItemImages
             true,   // generatePaymentInformation
@@ -133,21 +135,21 @@ describe('BidSendCommand', () => {
             listingItem2.hash,
             defaultProfile.id,
             false,
-            'ship.firstName',
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
-            'ship.lastName',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
             'Depp',
-            'ship.addressLine1',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1,
             '123 6th St',
-            'ship.addressLine2',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
             'Melbourne, FL 32904',
-            'ship.city',
+            BidDataValue.SHIPPING_ADDRESS_CITY,
             'Melbourne',
-            'ship.state',
+            BidDataValue.SHIPPING_ADDRESS_STATE,
             'Mel State',
-            'ship.country',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
             'Finland',
-            'ship.zipCode',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
             '85001'
         ];
 
@@ -161,26 +163,26 @@ describe('BidSendCommand', () => {
     });
 
 
-    test('Should not create bid with address from bidData without addressId', async () => {
+    test('Should not create bid with address from bidData without addressLine1', async () => {
 
         const bidSendCommandParams = [
             bidSendCommand,
             listingItem1.hash,
             defaultProfile.id,
             false,
-            'ship.firstName',
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
-            'ship.lastName',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
             'Depp',
-            'ship.addressLine2',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
             'Melbourne, FL 32904',
-            'ship.city',
+            BidDataValue.SHIPPING_ADDRESS_CITY,
             'Melbourne',
-            'ship.state',
+            BidDataValue.SHIPPING_ADDRESS_STATE,
             'Mel State',
-            'ship.country',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
             'Finland',
-            'ship.zipCode',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
             '85001'
         ];
 
@@ -188,7 +190,7 @@ describe('BidSendCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing required param: ship.addressLine1');
+        expect(res.error.error.message).toBe('Missing required param: ' + BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1);
     });
 
     test('Should throw exception for invalid profile', async () => {

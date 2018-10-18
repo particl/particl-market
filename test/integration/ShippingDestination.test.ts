@@ -25,6 +25,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/params/Generat
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import * as resources from 'resources';
 
 describe('ShippingDestination', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -52,10 +53,10 @@ describe('ShippingDestination', () => {
         shippingAvailability: ShippingAvailability.SHIPS
     } as ShippingDestinationUpdateRequest;
 
-    let createdListingItem;
-    let createdListingItemTemplate;
-    let createdTemplateShippingDestinationId;
-    let createdListingItemShippingDestinationId;
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let destinationForListingItemTemplate: resources.ShippingDestination;
+    let destinationForListingItem: resources.ShippingDestination;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -74,6 +75,7 @@ describe('ShippingDestination', () => {
 
         let generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,   // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -90,10 +92,11 @@ describe('ShippingDestination', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
+        listingItem = listingItems[0];
 
         generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             false,  // generateShippingDestinations
             false,   // generateItemImages
             false,   // generatePaymentInformation
@@ -110,7 +113,7 @@ describe('ShippingDestination', () => {
             withRelated: true,                          // return model
             generateParams                              // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
     });
 
     afterAll(async () => {
@@ -124,36 +127,36 @@ describe('ShippingDestination', () => {
         );
     });
 
-    test('Should create a new shipping destination for template', async () => {
+    test('Should create a new ShippingDestination for ListingItemTemplate', async () => {
 
-        testData.item_information_id = createdListingItemTemplate.ItemInformation.id;
+        testData.item_information_id = listingItemTemplate.ItemInformation.id;
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.create(testData);
-        createdTemplateShippingDestinationId = shippingDestinationModel.Id;
-        const result = shippingDestinationModel.toJSON();
+        destinationForListingItemTemplate = shippingDestinationModel.toJSON();
+        const result = destinationForListingItemTemplate;
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
     });
 
-    test('Should create a new shipping destination for listing item', async () => {
+    test('Should create a new ShippingDestination for ListingItem', async () => {
 
-        testData.item_information_id = createdListingItem.ItemInformation.id;
+        testData.item_information_id = listingItem.ItemInformation.id;
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.create(testData);
-        createdListingItemShippingDestinationId = shippingDestinationModel.Id;
-        const result = shippingDestinationModel.toJSON();
+        destinationForListingItem = shippingDestinationModel.toJSON();
+        const result = destinationForListingItem;
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
     });
 
-    test('Should throw ValidationException because we want to create a empty shipping destination', async () => {
+    test('Should throw ValidationException because we want to create a empty ShippingDestination', async () => {
         expect.assertions(1);
         await shippingDestinationService.create({} as ShippingDestinationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list shipping destinations', async () => {
+    test('Should list ShippingDestination', async () => {
         const shippingDestinationCollection = await shippingDestinationService.findAll();
         const shippingDestination = shippingDestinationCollection.toJSON();
         expect(shippingDestination.length).toBe(2);
@@ -164,65 +167,63 @@ describe('ShippingDestination', () => {
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
     });
 
-    test('Should return one shipping destination related to template', async () => {
-        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.findOne(createdTemplateShippingDestinationId);
+    test('Should return one ShippingDestination related to ListingItemTemplate', async () => {
+        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.findOne(destinationForListingItemTemplate.id);
         const result = shippingDestinationModel.toJSON();
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
-        expect(result.ItemInformation.ListingItem).toMatchObject({});
         expect(result.ItemInformation.ListingItemTemplate).toBeDefined();
     });
 
-    test('Should return the other shipping destination related to listing item', async () => {
-        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.findOne(createdListingItemShippingDestinationId);
+    test('Should return the other ShippingDestination related to ListingItem', async () => {
+        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.findOne(destinationForListingItem.id);
         const result = shippingDestinationModel.toJSON();
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
         expect(result.ItemInformation.ListingItem).toBeDefined();
-        expect(result.ItemInformation.ListingItemTemplate).toMatchObject({});
     });
 
     test('Should fail to update and throw ValidationException because there is no item_information_id', async () => {
         expect.assertions(1);
-        await shippingDestinationService.update(createdListingItemShippingDestinationId, testDataUpdated).catch(e =>
+        await shippingDestinationService.update(destinationForListingItem.id, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should update the shipping destination related to template', async () => {
-        testDataUpdated.item_information_id = createdListingItemTemplate.ItemInformation.id;
-        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(createdTemplateShippingDestinationId, testDataUpdated);
+    test('Should update the ShippingDestination related to ListingItemTemplate', async () => {
+        testDataUpdated.item_information_id = listingItemTemplate.ItemInformation.id;
+        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(destinationForListingItemTemplate.id, testDataUpdated);
         const result = shippingDestinationModel.toJSON();
 
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.shippingAvailability).toBe(testDataUpdated.shippingAvailability);
     });
 
-    test('Should update the shipping destination related to listing item', async () => {
-        testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(createdListingItemShippingDestinationId, testDataUpdated);
+    test('Should update the ShippingDestination related to ListingItem', async () => {
+        testDataUpdated.item_information_id = listingItem.ItemInformation.id;
+        const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(destinationForListingItem.id, testDataUpdated);
         const result = shippingDestinationModel.toJSON();
 
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.shippingAvailability).toBe(testDataUpdated.shippingAvailability);
     });
 
-    test('Should delete the shipping destination related to template', async () => {
+    test('Should delete the ShippingDestination related to ListingItemTemplate', async () => {
         expect.assertions(5);
-        await shippingDestinationService.destroy(createdTemplateShippingDestinationId);
-        await shippingDestinationService.findOne(createdTemplateShippingDestinationId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdTemplateShippingDestinationId))
+        await shippingDestinationService.destroy(destinationForListingItemTemplate.id);
+        await shippingDestinationService.findOne(destinationForListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(destinationForListingItemTemplate.id))
         );
 
         // delete listing-item-template
-        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
-        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
         );
 
-        const ItemInformation = createdListingItemTemplate.ItemInformation;
+        const ItemInformation = listingItemTemplate.ItemInformation;
         await itemInformationService.findOne(ItemInformation.id).catch(e =>
             expect(e).toEqual(new NotFoundException(ItemInformation.id))
         );
@@ -241,21 +242,20 @@ describe('ShippingDestination', () => {
         );
     });
 
-    test('Should delete the shipping destination related to listing item', async () => {
+    test('Should delete the ShippingDestination related to ListingItem', async () => {
         expect.assertions(5);
 
-        await shippingDestinationService.destroy(createdListingItemShippingDestinationId);
-        await shippingDestinationService.findOne(createdListingItemShippingDestinationId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemShippingDestinationId))
+        await shippingDestinationService.destroy(destinationForListingItem.id);
+        await shippingDestinationService.findOne(destinationForListingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(destinationForListingItem.id))
         );
 
-        // delete listing-item
-        await listingItemService.destroy(createdListingItem.id);
-        await listingItemService.findOne(createdListingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItem.id))
+        await listingItemService.destroy(listingItem.id);
+        await listingItemService.findOne(listingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.id))
         );
 
-        const ItemInformation = createdListingItem.ItemInformation;
+        const ItemInformation = listingItem.ItemInformation;
         await itemInformationService.findOne(ItemInformation.id).catch(e =>
             expect(e).toEqual(new NotFoundException(ItemInformation.id))
         );
@@ -263,12 +263,10 @@ describe('ShippingDestination', () => {
         const createdItemLocation = ItemInformation.ItemLocation;
         const createdLocationMarker = ItemInformation.ItemLocation.LocationMarker;
 
-        // itemLocation
         await itemLocationService.findOne(createdItemLocation.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdItemLocation.id))
         );
 
-        // LocationMarker
         await locationMarkerService.findOne(createdLocationMarker.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdLocationMarker.id))
         );

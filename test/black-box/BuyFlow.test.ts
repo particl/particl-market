@@ -90,6 +90,7 @@ describe('Happy Buy Flow', () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             false,   // generateItemImages
             true,   // generatePaymentInformation
@@ -221,7 +222,7 @@ describe('Happy Buy Flow', () => {
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
 
-        if (result.ListingItemTemplate === null) {
+        if (!result.ListingItemTemplate) {
             log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
         }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
@@ -334,7 +335,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         bidOnBuyerNode = result[0];
 
@@ -557,7 +558,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         // todo: check for correct biddata
         bidOnBuyerNode = result[0];

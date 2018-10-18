@@ -90,6 +90,7 @@ describe('BidDatas', () => {
 
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation
+            true,                               // generateItemLocation
             true,                               // generateShippingDestinations
             false,                              // generateItemImages
             true,                               // generatePaymentInformation
@@ -161,8 +162,8 @@ describe('BidDatas', () => {
         const bidData = bidDataCollection.toJSON();
 
         log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
-        expect(bidData.length).toBe(19);
-        const result = bidData[18];
+        expect(bidData.length).toBe(18);
+        const result = bidData[17];
 
         // test the values
         expect(result.dataId).toBe(testDataUpdated.dataId);

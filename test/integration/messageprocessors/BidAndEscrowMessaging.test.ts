@@ -35,6 +35,7 @@ import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 
 
 describe('BidMessageProcessing', () => {
@@ -119,6 +120,7 @@ describe('BidMessageProcessing', () => {
         // generate ListingItemTemplate with ListingItem to sell
         const templateGenerateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
+            true,   // generateItemLocation
             true,   // generateShippingDestinations
             true,   // generateItemImages
             true,   // generatePaymentInformation
@@ -197,15 +199,14 @@ describe('BidMessageProcessing', () => {
                 {id: 'pubkeys', value: '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]'},
                 {id: 'changeaddr', value: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
                 {id: 'change', value: 96.52477491},
-                {id: 'ship.title', value: 'title'},
-                {id: 'ship.firstName', value: 'asdf'},
-                {id: 'ship.lastName', value: 'asdf'},
-                {id: 'ship.addressLine1', value: 'asdf'},
-                {id: 'ship.addressLine2', value: 'asdf'},
-                {id: 'ship.city', value: 'asdf'},
-                {id: 'ship.state', value: ''},
-                {id: 'ship.zipCode', value: '1234'},
-                {id: 'ship.country', value: 'FI'}
+                {id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf'},
+                {id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf'},
+                {id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf'},
+                {id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: 'asdf'},
+                {id: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'asdf'},
+                {id: BidDataValue.SHIPPING_ADDRESS_STATE, value: ''},
+                {id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234'},
+                {id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI'}
             ]
         );
 
@@ -263,7 +264,7 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe('FI');
         expect(result.ShippingAddress.zipCode).toBe('1234');
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(20);
+        expect(result.BidDatas).toHaveLength(19);
 
         const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
         listingItem = createdListingItemModel.toJSON();

@@ -16,7 +16,9 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
+import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
+
+type AllowedMessageTypes = EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
 
 export class SmsgMessageFactory {
 
@@ -103,8 +105,7 @@ export class SmsgMessageFactory {
         return parsed;
     }
 
-    private getType(marketplaceMessage: MarketplaceMessage):
-        EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string {
+    private getType(marketplaceMessage: MarketplaceMessage): AllowedMessageTypes {
 
         if (marketplaceMessage.item) {
             // in case of ListingItemMessage

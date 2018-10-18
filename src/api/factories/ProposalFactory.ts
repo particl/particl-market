@@ -81,7 +81,21 @@ export class ProposalFactory {
      * @param {ProposalMessage} proposalMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async getModel(proposalMessage: ProposalMessage, smsgMessage: resources.SmsgMessage): Promise<ProposalCreateRequest> {
+    public async getModel(proposalMessage: ProposalMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
+
+        const smsgData: any = {
+            expiryTime: Number.MAX_SAFE_INTEGER,
+            postedAt: Number.MAX_SAFE_INTEGER,
+            expiredAt: Number.MAX_SAFE_INTEGER,
+            receivedAt: Number.MAX_SAFE_INTEGER
+        };
+
+        if (smsgMessage) {
+            smsgData.expiryTime = smsgMessage.daysretention;
+            smsgData.postedAt = smsgMessage.sent;
+            smsgData.expiredAt = smsgMessage.expiration;
+            smsgData.receivedAt = smsgMessage.received;
+        }
 
         const proposalCreateRequest = {
             submitter: proposalMessage.submitter,
@@ -92,11 +106,8 @@ export class ProposalFactory {
             title: proposalMessage.title,
             description: proposalMessage.description,
             item: proposalMessage.item,
-            expiryTime: smsgMessage.daysretention,
-            postedAt: smsgMessage.sent,
-            expiredAt: smsgMessage.expiration,
-            receivedAt: smsgMessage.received,
-            options: proposalMessage.options as ProposalOptionCreateRequest[]
+            options: proposalMessage.options as ProposalOptionCreateRequest[],
+            ...smsgData
         } as ProposalCreateRequest;
 
         const correctHash = ObjectHash.getHash(proposalCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);

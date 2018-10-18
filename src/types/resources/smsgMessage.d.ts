@@ -9,6 +9,8 @@ import {VoteMessageType} from '../../api/enums/VoteMessageType';
 import {ListingItemMessageType} from '../../api/enums/ListingItemMessageType';
 import {ProposalMessageType} from '../../api/enums/ProposalMessageType';
 
+type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
+
 declare module 'resources' {
 
     interface SmsgMessage {
@@ -28,7 +30,7 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType; // | string;
+        type: AllowedMessageTypes; // | string;
         status: SmsgMessageStatus;
 
         createdAt: Date;

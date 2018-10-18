@@ -142,7 +142,8 @@ export class BidActionService {
         // todo: propably something that we should check earlier
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
         // todo: this could also be caused by of some other error, while saving the item
-        if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
+        if (!listingItem.PaymentInformation.ItemPrice
+            || !(typeof listingItem.PaymentInformation.ItemPrice.basePrice === 'number' && listingItem.PaymentInformation.ItemPrice.basePrice >= 0)) {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
@@ -322,7 +323,7 @@ export class BidActionService {
 
         if (utxoIdxs.length) {
             selectedOutputsSum = 0;
-            utxoIdxs.forEach( utxoIdx => {
+            for (const utxoIdx of utxoIdxs) {
                 const utxo: any = unspentOutputs[utxoIdx];
                 selectedOutputs.push({
                     txid: utxo.txid,
@@ -330,7 +331,7 @@ export class BidActionService {
                     amount: utxo.amount
                 });
                 selectedOutputsSum += utxo.amount;
-            });
+            }
         }
 
         selectedOutputsChangeAmount = +(selectedOutputsSum - adjustedRequiredAmount).toFixed(8);
@@ -466,7 +467,8 @@ export class BidActionService {
         // create OutputData for buyer
         const buyerSelectedOutputs: Output[] = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
         const buyerOutputsSum = buyerSelectedOutputs.reduce((acc, obj) => {
-            const amount = obj.amount || 0; return acc + amount;
+            const amount = obj.amount || 0;
+            return acc + amount;
         }, 0);
         const buyerRequiredAmount = totalPrice * 2;
         const buyerSelectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
@@ -880,9 +882,8 @@ export class BidActionService {
                         // update the bid locally
                         const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
                         // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
-                        const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
+                        let updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
                         let updatedBid: resources.Bid = updatedBidModel.toJSON();
-                        // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
                         // create the order from the bid
                         const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
@@ -898,8 +899,11 @@ export class BidActionService {
                         if (orderHash !== order.hash) {
                             throw new MessageException('Created Order.hash does not match with the received orderHash.');
                         }
-                        await updatedBidModel.fetch({withRelated: ['OrderItem']});
+
+                        updatedBidModel = await this.bidService.findOne(updatedBid.id);
                         updatedBid = updatedBidModel.toJSON();
+                        this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+
                         // TODO: do whatever else needs to be done
 
                         // this.log.debug('processAcceptBidReceivedEvent(), updatedBid: ', JSON.stringify(updatedBid, null, 2));
@@ -949,10 +953,11 @@ export class BidActionService {
                     bidders: [ bidder ],
                     ordering: SearchOrder.DESC
                 });
+
+                // TODO: oldBids.pop() does not return anything. this wont work.
                 const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
                 let oldBid: any = oldBids.pop();
                 if (!oldBid) {
-                    // throw new MessageException('Missing old bid.');
                     this.log.error('Missing old bid.');
                     return SmsgMessageStatus.WAITING;
                 }
@@ -1010,6 +1015,8 @@ export class BidActionService {
                     ordering: SearchOrder.DESC
                 });
                 const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+
+                // TODO: oldBids.pop() does not return anything. this wont work.
                 let oldBid: any = oldBids.pop();
                 if (!oldBid) {
                     throw new MessageException('Missing old bid.');
