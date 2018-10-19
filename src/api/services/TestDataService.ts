@@ -717,13 +717,13 @@ export class TestDataService {
         const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
 
         const currentblock: number = await this.coreRpcService.getBlockCount();
-        const blockStart = generateParams.generatePastProposal
+        /*const blockStart = generateParams.generatePastProposal
             ? _.random(1, (currentblock / 2), false)
             : _.random(currentblock + 100, currentblock + 1000, false);
 
         const blockEnd = generateParams.generatePastProposal
             ? _.random((currentblock / 2) + 100, currentblock - 1000, false)
-            : _.random(currentblock + 1001, currentblock + 2000, false);
+            : _.random(currentblock + 1001, currentblock + 2000, false);*/
 
         // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
         // this.log.debug('currentblock: ', currentblock);
@@ -732,8 +732,6 @@ export class TestDataService {
 
         const proposalCreateRequest = {
             submitter,
-            blockStart,
-            blockEnd,
             type,
             item,
             title,

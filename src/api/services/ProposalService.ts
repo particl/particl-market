@@ -133,8 +133,6 @@ export class ProposalService {
 
         // set new values
         proposal.Submitter = body.submitter;
-        proposal.BlockStart = body.blockStart;
-        proposal.BlockEnd = body.blockEnd;
         proposal.ExpiryTime = body.expiryTime;
         proposal.PostedAt = body.postedAt;
         proposal.ExpiredAt = body.expiredAt;

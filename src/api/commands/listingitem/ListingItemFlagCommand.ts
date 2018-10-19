@@ -68,14 +68,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         // TODO: refactor these to startTime and endTime
         // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
+        /*const blockStart: number = await this.coreRpcService.getBlockCount();
+        const blockEnd: number = blockStart + (daysRetention * 24 * 30);*/
 
-        if (typeof blockStart !== 'number') {
+        /*if (typeof blockStart !== 'number') {
             throw new MessageException('blockStart needs to be a number.');
         } else if (typeof blockEnd !== 'number') {
             throw new MessageException('blockEnd needs to be a number.');
-        }
+        }*/
 
         const profileModel = await this.profileService.findOne(profileId) // throws if not found
             .catch(reason => {
@@ -92,8 +92,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         return await this.proposalActionService.send(
             proposalTitle,
             proposalDescription,
-            blockStart,
-            blockEnd,
             daysRetention,
             optionsList,
             profile,

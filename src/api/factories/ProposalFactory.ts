@@ -32,7 +32,7 @@ export class ProposalFactory {
      * @returns {Promise<BidMessage>}
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
-                            proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
+                            proposalDescription: string, options: string[],
                             senderProfile: resources.Profile, itemHash: string | null = null): Promise<ProposalMessage> {
 
         const submitter = senderProfile.address;
@@ -57,8 +57,6 @@ export class ProposalFactory {
         const message: ProposalMessage = {
             action: proposalMessageType,
             submitter,
-            blockStart,
-            blockEnd,
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
@@ -99,8 +97,7 @@ export class ProposalFactory {
 
         const proposalCreateRequest = {
             submitter: proposalMessage.submitter,
-            blockStart: proposalMessage.blockStart,
-            blockEnd: proposalMessage.blockEnd,
+            daysRetention: smsgData.daysRetention,
             hash: proposalMessage.hash,
             type: proposalMessage.type,
             title: proposalMessage.title,

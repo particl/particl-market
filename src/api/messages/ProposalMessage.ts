@@ -15,8 +15,6 @@ export class ProposalMessage extends MessageBody implements ProposalMessageInter
     @IsEnum(BidMessageType)
     public action: ProposalMessageType;
     public submitter: string;
-    public blockStart: number;
-    public blockEnd: number;
     public title: string;
     public description: string;
     public options: any[];

@@ -38,10 +38,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [0] profileId
      * [1] proposalTitle
      * [2] proposalDescription
-     * [3] blockStart TODO: blockStart and blockEnd should be replaced with daysRetention
-     * [4] blockEnd
-     * [5] estimateFee
-     * [6] option1Description
+     * [3] daysRetention
+     * [4] estimateFee
+     * [5] option1Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -52,7 +51,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         // todo add validation in separate function..
-        if (data.params.length < 8) {
+        if (data.params.length < 7) {
             throw new MessageException('Expected more params.');
         }
 
@@ -60,16 +59,13 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const profileId = data.params.shift();
         const proposalTitle = data.params.shift();
         const proposalDescription = data.params.shift();
-        const blockStart = data.params.shift();
-        const blockEnd = data.params.shift();
+        const daysRetention = data.params.shift();
         const estimateFee = data.params.shift();
 
         if (typeof profileId !== 'number') {
             throw new MessageException('profileId needs to be a number.');
-        } else if (typeof blockStart !== 'number') {
-            throw new MessageException('blockStart needs to be a number.');
-        } else if (typeof blockEnd !== 'number') {
-            throw new MessageException('blockEnd needs to be a number.');
+        } else if (typeof daysRetention !== 'number') {
+            throw new MessageException('daysRetention needs to be a number.');
         } else if (typeof estimateFee !== 'boolean') {
             throw new MessageException('estimateFee needs to be a boolean.');
         }
@@ -96,8 +92,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const optionsList: string[] = data.params;
 
         // todo: get rid of the blocks
-        const daysRetention = Math.ceil((blockEnd - blockStart) / (24 * 30));
-        return await this.proposalActionService.send(proposalTitle, proposalDescription, blockStart, blockEnd,
+        return await this.proposalActionService.send(proposalTitle, proposalDescription,
             daysRetention, optionsList, profile, market, null, estimateFee);
     }
 
@@ -111,8 +106,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             + '    <profileId>              - number, ID of the Profile. \n'
             + '    <proposalTitle>          - string, Title for the Proposal. \n'
             + '    <proposalDescription>    - string, Description for the Proposal. \n'
-            + '    <blockStart>             - number, Start Block for the Voting. \n'
-            + '    <blockEnd>               - number, End Block for the Voting. \n'
+            + '    <daysRetentions>         - number, Days retention. \n'
             + '    <estimateFee>            - boolean, Just estimate the Fee, dont post the Proposal. \n'
             + '    <optionNDescription>     - string, ProposalOption description. ';
     }

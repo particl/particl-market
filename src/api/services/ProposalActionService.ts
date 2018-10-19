@@ -74,7 +74,7 @@ export class ProposalActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(proposalTitle: string, proposalDescription: string,
-                      blockStart: number, blockEnd: number, daysRetention: number, options: string[],
+                      daysRetention: number, options: string[],
                       senderProfile: resources.Profile, marketplace: resources.Market, itemHash: string | null = null,
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
@@ -82,8 +82,6 @@ export class ProposalActionService {
             ProposalMessageType.MP_PROPOSAL_ADD,
             proposalTitle,
             proposalDescription,
-            blockStart,
-            blockEnd,
             options,
             senderProfile,
             itemHash

@@ -12,10 +12,6 @@ export class ProposalUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
     public submitter: string;
-    @IsNotEmpty()
-    public blockStart: number;
-    @IsNotEmpty()
-    public blockEnd: number;
 
     // in days
     // @IsNotEmpty()

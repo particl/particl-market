@@ -41,7 +41,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
                 }
 
-                if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
+                // TODO: Redo me with expiry time
+                /*if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
                     // search all ending after options.startBlock
                     qb.where('proposals.block_end', '>', options.startBlock - 1);
 
@@ -53,10 +54,10 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                     // search all ending after startBlock, starting before endBlock
                     qb.where('proposals.block_start', '<', options.endBlock + 1);
                     qb.andWhere('proposals.block_end', '>', options.startBlock - 1);
-                }
+                }*/
 
             })
-            .orderBy('block_start', options.order);
+            .orderBy('expiry_time', options.order);
 
         if (withRelated) {
             return await proposalCollection.fetchAll({
@@ -105,12 +106,6 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Submitter(): string { return this.get('submitter'); }
     public set Submitter(value: string) { this.set('submitter', value); }
-
-    public get BlockStart(): number { return this.get('blockStart'); }
-    public set BlockStart(value: number) { this.set('blockStart', value); }
-
-    public get BlockEnd(): number { return this.get('blockEnd'); }
-    public set BlockEnd(value: number) { this.set('blockEnd', value); }
 
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
