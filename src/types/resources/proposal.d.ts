@@ -9,8 +9,6 @@ declare module 'resources' {
     interface Proposal {
         id: number;
         submitter: string;
-        blockStart: number;
-        blockEnd: number;
         hash: string;
         item: string;
         type: ProposalType;

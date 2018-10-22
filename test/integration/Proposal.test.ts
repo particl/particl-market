@@ -192,8 +192,8 @@ describe('Proposal', () => {
     test('Should search Proposals open after block 1000', async () => {
 
         const searchParams = {
-            startBlock: 1000,
-            endBlock: '*',
+            startTime: 1000, // TODO: Fix me
+            endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -206,8 +206,8 @@ describe('Proposal', () => {
     test('Should search Proposals open after and at block 1010', async () => {
 
         const searchParams = {
-            startBlock: 1010,
-            endBlock: '*',
+            startTime: 1010, // TODO: Fix me
+            endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -218,10 +218,9 @@ describe('Proposal', () => {
     });
 
     test('Should search Proposals open after and at block 1011', async () => {
-
         const searchParams = {
-            startBlock: 1011,
-            endBlock: '*',
+            startTime: 1011, // TODO: Fix me
+            endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -234,8 +233,8 @@ describe('Proposal', () => {
     test('Should search Proposals closed before or at block 1010', async () => {
 
         const searchParams = {
-            startBlock: '*',
-            endBlock: 1010,
+            startTime: '*',
+            endTime: 1010, // TODO: Fix me
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -255,8 +254,8 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.startTime).toBe(testData.startTime);
+        expect(result.endTime).toBe(testData.endTime);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -268,8 +267,8 @@ describe('Proposal', () => {
     test('Should search Proposals with type ITEM_VOTE', async () => {
 
         const searchParams = {
-            startBlock: '*',
-            endBlock: '*',
+            startTime: '*',
+            endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.ITEM_VOTE
         } as ProposalSearchParams;

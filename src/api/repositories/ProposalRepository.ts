@@ -36,8 +36,8 @@ export class ProposalRepository {
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
-            startBlock: '*',
-            endBlock: '*',
+            startTime: '*',
+            endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;

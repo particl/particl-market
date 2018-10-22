@@ -51,7 +51,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         // todo add validation in separate function..
-        if (data.params.length < 7) {
+        if (data.params.length < 6) {
+            this.log.warn('Expected more params.');
             throw new MessageException('Expected more params.');
         }
 
@@ -63,10 +64,13 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const estimateFee = data.params.shift();
 
         if (typeof profileId !== 'number') {
+            this.log.warn('profileId needs to be a number.');
             throw new MessageException('profileId needs to be a number.');
         } else if (typeof daysRetention !== 'number') {
+            this.log.warn('daysRetention needs to be a number.');
             throw new MessageException('daysRetention needs to be a number.');
         } else if (typeof estimateFee !== 'boolean') {
+            this.log.warn('estimateFee needs to be a boolean.');
             throw new MessageException('estimateFee needs to be a boolean.');
         }
 
@@ -84,7 +88,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         let market: resources.Market;
         const marketModel = await this.marketService.getDefault();
         if (!marketModel) {
-            throw new MessageException(`Default market doesn't exist!`);
+            this.log.warn('Default market doesn\'t exist!');
+            throw new MessageException('Default market doesn\'t exist!');
         }
         market = marketModel.toJSON();
 
@@ -97,7 +102,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <estimateFee> '
+        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <daysRetention> <estimateFee> '
             + '<option1Description> ... <optionNDescription> ';
     }
 
@@ -116,6 +121,6 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return this.getName() + ' proposal post 1 "A question of sets" "The set of all sets contains itself?" 0 1000000 YES NO';
+        return this.getName() + ' proposal post 1 "A question of sets" "The set of all sets contains itself?" 1 false YES NO';
     }
 }

@@ -66,17 +66,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
 
-        // TODO: refactor these to startTime and endTime
-        // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
-        /*const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);*/
-
-        /*if (typeof blockStart !== 'number') {
-            throw new MessageException('blockStart needs to be a number.');
-        } else if (typeof blockEnd !== 'number') {
-            throw new MessageException('blockEnd needs to be a number.');
-        }*/
-
         const profileModel = await this.profileService.findOne(profileId) // throws if not found
             .catch(reason => {
                 this.log.error('ERROR:', reason);

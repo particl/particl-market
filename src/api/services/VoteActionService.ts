@@ -66,9 +66,8 @@ export class VoteActionService {
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-            senderProfile, currentBlock);
+            senderProfile);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -109,11 +108,12 @@ export class VoteActionService {
                     throw new MessageException('ProposalResult should not be empty!');
                 }
 
-                const currentBlock: number = await this.coreRpcService.getBlockCount();
+                // const currentBlock: number = await this.coreRpcService.getBlockCount();
+                const daysRetention = proposal.expiryTime;
                 // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
-                if (voteMessage && proposal.blockEnd >= currentBlock) {
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
+                if (voteMessage && event.smsgMessage.daysretention >= 1) {
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, daysRetention, 1);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -181,7 +181,7 @@ export class VoteActionService {
      * @param {number} weight
      * @returns {Promise<"resources".Vote>}
      */
-    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, currentBlock: number,
+    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, daysRetention: number,
                                      weight: number): Promise<resources.Vote> {
 
         let lastVote: any;
@@ -194,7 +194,7 @@ export class VoteActionService {
         const create: boolean = lastVote == null;
 
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, currentBlock, weight, create);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, daysRetention, weight, create);
 
         let voteModel;
         if (create) {

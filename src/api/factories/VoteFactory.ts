@@ -32,12 +32,11 @@ export class VoteFactory {
      * @returns {Promise<VoteMessage>}
      */
     public async getMessage(voteMessageType: VoteMessageType, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                            senderProfile: resources.Profile, currentBlock: number): Promise<VoteMessage> {
+                            senderProfile: resources.Profile): Promise<VoteMessage> {
 
         const proposalHash = proposal.hash;
         const optionId = proposalOption.optionId;
         const voter = senderProfile.address;
-        const block = currentBlock;
         const weight = 1;
 
         return {
@@ -45,7 +44,6 @@ export class VoteFactory {
             proposalHash,
             optionId,
             voter,
-            block,
             weight
         } as VoteMessage;
     }
@@ -54,17 +52,17 @@ export class VoteFactory {
      *
      * @param {VoteMessage} voteMessage
      * @param {"resources".Proposal} proposal
-     * @param {number} block
+     * @param {number} daysRetention
      * @param {number} weight
      * @param {boolean} create
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
-    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, block: number, weight: number,
+    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, daysRetention: number, weight: number,
                           create: boolean): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const voteRequest = {
             voter: voteMessage.voter,
-            block,
+            daysRetention,
             weight
         } as VoteCreateRequest;
 

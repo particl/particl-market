@@ -681,13 +681,13 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const randomBoolean: boolean = Math.random() >= 0.5;
             const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
-            const block = _.random(proposal.blockStart, proposal.blockEnd);
+            const daysRetention = proposal.expiryTime;
             const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
                 voter,
-                block,
+                daysRetention,
                 weight: 1
             } as VoteCreateRequest;
 

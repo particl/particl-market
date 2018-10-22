@@ -42,19 +42,19 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                 }
 
                 // TODO: Redo me with expiry time
-                /*if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
+                if (typeof options.startTime === 'number' && typeof options.endTime === 'string') {
                     // search all ending after options.startBlock
-                    qb.where('proposals.block_end', '>', options.startBlock - 1);
+                    qb.where('proposals.posted_at', '>', options.startTime - 1);
 
-                } else if (typeof options.startBlock === 'string' && typeof options.endBlock === 'number') {
+                } else if (typeof options.startTime === 'string' && typeof options.endTime === 'number') {
                     // search all ending before block
-                    qb.where('proposals.block_end', '<', options.endBlock + 1);
+                    qb.where('proposals.expired_at', '<', options.endTime + 1);
 
-                } else if (typeof options.startBlock === 'number' && typeof options.endBlock === 'number') {
+                } else if (typeof options.startTime === 'number' && typeof options.endTime === 'number') {
                     // search all ending after startBlock, starting before endBlock
-                    qb.where('proposals.block_start', '<', options.endBlock + 1);
-                    qb.andWhere('proposals.block_end', '>', options.startBlock - 1);
-                }*/
+                    qb.where('proposals.posted_at', '<', options.endTime + 1);
+                    qb.andWhere('proposals.expired_at', '>', options.startTime - 1);
+                }
 
             })
             .orderBy('expiry_time', options.order);

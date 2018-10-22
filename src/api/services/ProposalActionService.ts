@@ -177,7 +177,7 @@ export class ProposalActionService {
      */
     private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
 
-        const currentBlock = await this.coreRpcService.getBlockCount();
+        // const currentBlock = await this.coreRpcService.getBlockCount();
         const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
             return option.description === itemVote;
         });
@@ -194,7 +194,7 @@ export class ProposalActionService {
         const voteRequest: VoteCreateRequest = {
             proposal_option_id: proposalOption.id,
             voter: createdProposal.submitter,
-            block: currentBlock,
+            daysRetention: createdProposal.expiryTime, // For as long as the proposal exists
             weight: 1
         } as VoteCreateRequest;
 
