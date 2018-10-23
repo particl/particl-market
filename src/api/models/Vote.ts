@@ -56,9 +56,6 @@ export class Vote extends Bookshelf.Model<Vote> {
     public get Voter(): string { return this.get('voter'); }
     public set Voter(value: string) { this.set('voter', value); }
 
-    public get DaysRetention(): number { return this.get('daysRetention'); }
-    public set DaysRetention(value: number) { this.set('daysRetention', value); }
-
     public get Weight(): number { return this.get('weight'); }
     public set Weight(value: number) { this.set('weight', value); }
 

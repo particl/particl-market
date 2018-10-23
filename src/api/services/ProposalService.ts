@@ -93,6 +93,7 @@ export class ProposalService {
 
         // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
+        this.log.error('ProposalService.create(): proposal = ' + JSON.stringify(proposal, null, 2));
 
         // TODO: remove skipOptions
         // skipOptions is just for tests

@@ -11,6 +11,15 @@ export class ProfileUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public name: string;
 
+    @IsNotEmpty()
+    public postedAt: number;
+
+    @IsNotEmpty()
+    public receivedAt: number;
+
+    @IsNotEmpty()
+    public expiredAt: number;
+
     public address: string;
 }
 // tslint:enable:variable-name

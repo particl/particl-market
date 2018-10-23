@@ -15,9 +15,11 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('proposal_options').onDelete('cascade');
 
             table.string('voter').notNullable();
-            table.integer('days_retention').notNullable();
             table.integer('weight').notNullable();
 
+            table.timestamp('posted_at').defaultTo(db.fn.now());
+            table.timestamp('received_at').defaultTo(db.fn.now());
+            table.timestamp('expired_at').defaultTo(db.fn.now());
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

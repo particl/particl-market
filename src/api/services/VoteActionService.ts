@@ -109,11 +109,10 @@ export class VoteActionService {
                 }
 
                 // const currentBlock: number = await this.coreRpcService.getBlockCount();
-                const daysRetention = proposal.expiryTime;
                 // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
                 if (voteMessage && event.smsgMessage.daysretention >= 1) {
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, daysRetention, 1);
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, 1);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -181,7 +180,7 @@ export class VoteActionService {
      * @param {number} weight
      * @returns {Promise<"resources".Vote>}
      */
-    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, daysRetention: number,
+    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
                                      weight: number): Promise<resources.Vote> {
 
         let lastVote: any;
@@ -194,7 +193,7 @@ export class VoteActionService {
         const create: boolean = lastVote == null;
 
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, daysRetention, weight, create);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposal.postedAt, weight, create);
 
         let voteModel;
         if (create) {

@@ -15,7 +15,13 @@ export class VoteCreateRequest extends RequestBody {
     public voter: string;
 
     @IsNotEmpty()
-    public daysRetention: number;
+    public postedAt: number;
+
+    @IsNotEmpty()
+    public receivedAt: number;
+
+    @IsNotEmpty()
+    public expiredAt: number;
 
     @IsNotEmpty()
     public weight: number;

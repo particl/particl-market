@@ -63,7 +63,7 @@ export class ProposalRepository {
             return this.ProposalModel.fetchById(proposalCreated.id);
         } catch (error) {
             this.log.error('error:', error);
-            throw new DatabaseException('Could not create the proposal!', error);
+            throw new DatabaseException('Could not create the proposal!' + error, error);
         }
     }
 
@@ -73,7 +73,7 @@ export class ProposalRepository {
             const proposalUpdated = await proposal.save(data, { patch: true });
             return this.ProposalModel.fetchById(proposalUpdated.id);
         } catch (error) {
-            throw new DatabaseException('Could not update the proposal!', error);
+            throw new DatabaseException('Could not update the proposal!' + error, error);
         }
     }
 

@@ -34,8 +34,6 @@ describe('Proposal', () => {
 
     const testData = {
         submitter: 'pasdfasfsdfad',
-        blockStart: 1000,
-        blockEnd: 1010,
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x',
@@ -55,8 +53,6 @@ describe('Proposal', () => {
 
     const testDataUpdated = {
         submitter: 'pqwer',
-        blockStart: 1212,
-        blockEnd: 1313,
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y'
@@ -83,17 +79,17 @@ describe('Proposal', () => {
     test('Should create a new Proposal', async () => {
 
         const proposalModel: Proposal = await proposalService.create(testData);
+        createdId = proposalModel.Id;
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
 
         createdId = result.id;
-
         // todo: should test that creating proposal with options works too..
     });
 
@@ -104,8 +100,8 @@ describe('Proposal', () => {
 
         const result = proposal[0];
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
@@ -117,8 +113,8 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
@@ -126,13 +122,17 @@ describe('Proposal', () => {
     });
 
     test('Should update the Proposal', async () => {
+        testDataUpdated.expiryTime = 4;
+        testDataUpdated.postedAt = new Date().getTime();
+        testDataUpdated.expiredAt = new Date().getTime() + 100000000;
+        testDataUpdated.receivedAt = new Date().getTime();
 
         const proposalModel: Proposal = await proposalService.update(createdId, testDataUpdated);
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testDataUpdated.submitter);
-        expect(result.blockStart).toBe(testDataUpdated.blockStart);
-        expect(result.blockEnd).toBe(testDataUpdated.blockEnd);
+        expect(result.postedAt).toBe(testDataUpdated.postedAt);
+        expect(result.expiredAt).toBe(testDataUpdated.expiredAt);
         expect(result.submitter).toBe(testDataUpdated.submitter);
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.title).toBe(testDataUpdated.title);
@@ -157,8 +157,8 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -167,11 +167,14 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should create another Proposal with different blockStart and blockEnd', async () => {
+    test('Should create another Proposal with different postedAt and expiredAt', async () => {
 
         testData.options = testDataOptions;
-        testData.blockStart = 1005;
-        testData.blockEnd = 1015;
+        testData.expiryTime = 1;
+        testData.title = 'A new title otherwise we get an SQL UNIQUE constraint error because of proposal.hash being same.';
+        testData.postedAt = new Date().getTime() + 1010;
+        testData.expiredAt = new Date().getTime() + 1015;
+        testData.receivedAt = new Date().getTime() + 1010;
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
@@ -179,8 +182,8 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.blockStart).toBe(testData.blockStart);
-        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -189,37 +192,10 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should search Proposals open after block 1000', async () => {
+    test('Should search Proposals open after postedAt time', async () => {
 
         const searchParams = {
-            startTime: 1000, // TODO: Fix me
-            endTime: '*',
-            order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
-        } as ProposalSearchParams;
-
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
-        const proposals = proposalCollection.toJSON();
-        expect(proposals).toHaveLength(2);
-    });
-
-    test('Should search Proposals open after and at block 1010', async () => {
-
-        const searchParams = {
-            startTime: 1010, // TODO: Fix me
-            endTime: '*',
-            order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
-        } as ProposalSearchParams;
-
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
-        const proposals = proposalCollection.toJSON();
-        expect(proposals).toHaveLength(2);
-    });
-
-    test('Should search Proposals open after and at block 1011', async () => {
-        const searchParams = {
-            startTime: 1011, // TODO: Fix me
+            startTime: testData.postedAt, // TODO: Fix me
             endTime: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
@@ -230,11 +206,53 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(1);
     });
 
-    test('Should search Proposals closed before or at block 1010', async () => {
+    test('Should search Proposals open after postedAt time + 10', async () => {
+
+        const searchParams = {
+            startTime: testData.postedAt + 10, // TODO: Fix me
+            endTime: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(0);
+    });
+
+    test('Should search Proposals closed before or at expiredAt - 10', async () => {
 
         const searchParams = {
             startTime: '*',
-            endTime: 1010, // TODO: Fix me
+            endTime: testData.expiredAt - 10, // TODO: Fix me
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(0);
+    });
+
+    test('Should search Proposals closed before or at expiredAt', async () => {
+
+        const searchParams = {
+            startTime: '*',
+            endTime: testData.expiredAt + 10, // TODO: Fix me
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(1);
+    });
+
+    test('Should search Proposals closed before or at expiredAt + 10', async () => {
+
+        const searchParams = {
+            startTime: '*',
+            endTime: testData.expiredAt + 10, // TODO: Fix me
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -254,8 +272,8 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.startTime).toBe(testData.startTime);
-        expect(result.endTime).toBe(testData.endTime);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
