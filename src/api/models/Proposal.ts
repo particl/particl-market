@@ -44,7 +44,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                 // TODO: Redo me with expiry time
                 if (typeof options.startTime === 'number' && typeof options.endTime === 'string') {
                     // search all ending after options.startBlock
-                    qb.where('proposals.posted_at', '>', options.startTime - 1);
+                    qb.where('proposals.start_time', '>', options.startTime - 1);
 
                 } else if (typeof options.startTime === 'string' && typeof options.endTime === 'number') {
                     // search all ending before block
@@ -52,7 +52,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
                 } else if (typeof options.startTime === 'number' && typeof options.endTime === 'number') {
                     // search all ending after startBlock, starting before endBlock
-                    qb.where('proposals.posted_at', '<', options.endTime + 1);
+                    qb.where('proposals.start_time', '<', options.endTime + 1);
                     qb.andWhere('proposals.expired_at', '>', options.startTime - 1);
                 }
 
@@ -121,6 +121,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
+
+    public get StartTime(): Date { return this.get('startTime'); }
+    public set StartTime(value: Date) { this.set('startTime', value); }
 
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }

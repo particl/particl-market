@@ -35,6 +35,8 @@ import { ItemVote } from '../enums/ItemVote';
 import { FlaggedItemService } from './FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { ProfileService } from './ProfileService';
 
 export class ProposalActionService {
 
@@ -51,6 +53,7 @@ export class ProposalActionService {
                 @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
                 @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
                 @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
+                @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
                 @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
                 @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
@@ -189,14 +192,18 @@ export class ProposalActionService {
             throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
         }
 
+        const voteWeight = 1;
         // TODO: use VoteFactory
         // TODO: replace block with time
-        const voteRequest: VoteCreateRequest = {
+        /*const voteRequest: VoteCreateRequest = {
             proposal_option_id: proposalOption.id,
             voter: createdProposal.submitter,
-            daysRetention: createdProposal.expiryTime, // For as long as the proposal exists
-            weight: 1
-        } as VoteCreateRequest;
+            // daysRetention: createdProposal.expiryTime, // For as long as the proposal exists
+            weight: voteWeight
+        } as VoteCreateRequest;*/
+        const senderProfile: any = await this.profileService.findOneByAddress(createdProposal.submitter);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, senderProfile);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, voteWeight, false);
 
         const createdVoteModel = await this.voteService.create(voteRequest);
         return createdVoteModel.toJSON();

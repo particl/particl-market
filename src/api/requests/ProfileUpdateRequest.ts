@@ -12,6 +12,9 @@ export class ProfileUpdateRequest extends RequestBody {
     public name: string;
 
     @IsNotEmpty()
+    public startTime: number;
+
+    @IsNotEmpty()
     public postedAt: number;
 
     @IsNotEmpty()

@@ -52,23 +52,42 @@ export class VoteFactory {
      *
      * @param {VoteMessage} voteMessage
      * @param {"resources".Proposal} proposal
-     * @param {number} daysRetention
      * @param {number} weight
      * @param {boolean} create
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
-    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, daysRetention: number, weight: number,
-                          create: boolean): Promise<VoteCreateRequest | VoteUpdateRequest> {
+    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, weight: number,
+                          create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+        // TODO: Check this. I'm copying what happens in ProposalFactory since I can't find where votes get their times.
+        const smsgData: any = {
+            startTime: Number.MAX_SAFE_INTEGER,
+            expiryTime: Number.MAX_SAFE_INTEGER,
+            postedAt: Number.MAX_SAFE_INTEGER,
+            expiredAt: Number.MAX_SAFE_INTEGER,
+            receivedAt: Number.MAX_SAFE_INTEGER
+        };
+
+        if (smsgMessage) {
+            smsgData.startTime = smsgMessage.sent;
+            smsgData.postedAt = smsgMessage.sent;
+            smsgData.receivedAt = smsgMessage.received;
+        }
+        smsgData.expiryTime = proposal.expiryTime;
+        smsgData.expiredAt = proposal.expiredAt;
 
         const voteRequest = {
             voter: voteMessage.voter,
-            daysRetention,
-            weight
+            weight,
+            startTime: proposal.postedAt,
+            ...smsgData
         } as VoteCreateRequest;
 
         // TODO: remove the service from here
         const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
         voteRequest.proposal_option_id = option.id;
+
+        this.log.error('VoteFactory.getModel(): voteRequest = ' + JSON.stringify(voteRequest, null, 2));
+
         return voteRequest;
     }
 

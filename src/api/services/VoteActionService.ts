@@ -112,7 +112,7 @@ export class VoteActionService {
                 // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
                 if (voteMessage && event.smsgMessage.daysretention >= 1) {
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, 1);
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, 1, event.smsgMessage);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -181,7 +181,7 @@ export class VoteActionService {
      * @returns {Promise<"resources".Vote>}
      */
     private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
-                                     weight: number): Promise<resources.Vote> {
+                                     weight: number, voteSmsg?: resources.SmsgMessage): Promise<resources.Vote> {
 
         let lastVote: any;
         try {
@@ -193,7 +193,7 @@ export class VoteActionService {
         const create: boolean = lastVote == null;
 
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposal.postedAt, weight, create);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, weight, create, voteSmsg);
 
         let voteModel;
         if (create) {
