@@ -15,7 +15,7 @@ export class VoteCreateRequest extends RequestBody {
     public voter: string;
 
     @IsNotEmpty()
-    public startTime: number;
+    public timeStart: number;
 
     @IsNotEmpty()
     public postedAt: number;

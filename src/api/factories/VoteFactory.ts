@@ -60,7 +60,7 @@ export class VoteFactory {
                           create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
         // TODO: Check this. I'm copying what happens in ProposalFactory since I can't find where votes get their times.
         const smsgData: any = {
-            startTime: Number.MAX_SAFE_INTEGER,
+            timeStart: Number.MAX_SAFE_INTEGER,
             expiryTime: Number.MAX_SAFE_INTEGER,
             postedAt: Number.MAX_SAFE_INTEGER,
             expiredAt: Number.MAX_SAFE_INTEGER,
@@ -68,7 +68,7 @@ export class VoteFactory {
         };
 
         if (smsgMessage) {
-            smsgData.startTime = smsgMessage.sent;
+            smsgData.timeStart = smsgMessage.sent;
             smsgData.postedAt = smsgMessage.sent;
             smsgData.receivedAt = smsgMessage.received;
         }
@@ -78,7 +78,6 @@ export class VoteFactory {
         const voteRequest = {
             voter: voteMessage.voter,
             weight,
-            startTime: proposal.postedAt,
             ...smsgData
         } as VoteCreateRequest;
 

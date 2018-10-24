@@ -42,18 +42,18 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                 }
 
                 // TODO: Redo me with expiry time
-                if (typeof options.startTime === 'number' && typeof options.endTime === 'string') {
+                if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
                     // search all ending after options.startBlock
-                    qb.where('proposals.start_time', '>', options.startTime - 1);
+                    qb.where('proposals.start_time', '>', options.timeStart - 1);
 
-                } else if (typeof options.startTime === 'string' && typeof options.endTime === 'number') {
+                } else if (typeof options.timeStart === 'string' && typeof options.timeEnd === 'number') {
                     // search all ending before block
-                    qb.where('proposals.expired_at', '<', options.endTime + 1);
+                    qb.where('proposals.expired_at', '<', options.timeEnd + 1);
 
-                } else if (typeof options.startTime === 'number' && typeof options.endTime === 'number') {
+                } else if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'number') {
                     // search all ending after startBlock, starting before endBlock
-                    qb.where('proposals.start_time', '<', options.endTime + 1);
-                    qb.andWhere('proposals.expired_at', '>', options.startTime - 1);
+                    qb.where('proposals.start_time', '<', options.timeEnd + 1);
+                    qb.andWhere('proposals.expired_at', '>', options.timeStart - 1);
                 }
 
             })
@@ -122,8 +122,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
-    public get StartTime(): Date { return this.get('startTime'); }
-    public set StartTime(value: Date) { this.set('startTime', value); }
+    public get TimeStart(): Date { return this.get('timeStart'); }
+    public set TimeStart(value: Date) { this.set('timeStart', value); }
 
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }

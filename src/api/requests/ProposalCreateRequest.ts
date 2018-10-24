@@ -14,7 +14,7 @@ export class ProposalCreateRequest extends RequestBody {
     public submitter: string;
 
     // @IsNotEmpty()
-    public startTime: number;
+    public timeStart: number;
     // in days
     // @IsNotEmpty()
     public expiryTime: number;

@@ -17,7 +17,7 @@ export class ProposalSearchParams extends RequestBody {
     @IsEnum(ProposalType)
     public type: ProposalType;
 
-    public startTime: number | string;
-    public endTime: number | string;
+    public timeStart: number | string;
+    public timeEnd: number | string;
 }
 // tslint:enable:variable-name

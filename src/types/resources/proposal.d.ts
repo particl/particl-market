@@ -14,7 +14,7 @@ declare module 'resources' {
         type: ProposalType;
         title: string;
         description: string;
-        startTime: number;
+        timeStart: number;
         expiryTime: number;
         receivedAt: number;
         postedAt: number;
