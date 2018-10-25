@@ -6,9 +6,8 @@
  * CountryNotFoundException
  * ----------------------------------------
  *
- * This should be used if a someone requests a
- * entity with a id, but there is no entity with this id in the
- * database, then we throw this exception.
+ * This should be used if country
+ * not found in country code conversion.
  */
 
 import { Exception } from '../../core/api/Exception';

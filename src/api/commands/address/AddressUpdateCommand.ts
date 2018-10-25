@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -15,11 +16,13 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingZips } from '../../../core/helpers/ShippingZips';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import * as resources from 'resources';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ZipCodeNotFoundException } from '../../exceptions/ZipCodeNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { AddressType } from '../../enums/AddressType';
 
 export class AddressUpdateCommand extends BaseCommand implements RpcCommandInterface<Address> {
 
@@ -136,7 +139,9 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         if (data.params.length < 10) {
             throw new MissingParamException('zipCode');
         }
-        if (typeof data.params[9] !== 'string') {
+        const type = data.params[9];
+        const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_ORDER, AddressType.SHIPPING_OWN];
+        if (type && !_.includes(validTypes, type)) {
             throw new InvalidParamException('zipCode');
         }
         return data;

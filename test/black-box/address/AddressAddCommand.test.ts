@@ -7,6 +7,9 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 import { AddressType } from '../../../src/api/enums/AddressType';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
@@ -87,7 +90,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid profileId.`);
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId').getMessage());
     });
 
     test('Should fail to create Address because state is null', async () => {
@@ -106,7 +109,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid state.`);
+        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
     test('Should fail to create Address because state is undefined', async () => {
@@ -125,7 +128,7 @@ describe('AddressAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Invalid state.`);
+        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
     test('Should fail to create Address because state is undefined', async () => {
@@ -142,8 +145,7 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Missing zipCode.`);
+        expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
     });
 
     test('Should create a new Address with blank state', async () => {
@@ -189,8 +191,7 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Country code WW was not found!`);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('WW').getMessage());
     });
 
 
@@ -209,7 +210,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Country code ATLANTIDA was not found!`);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('ATLANTIDA').getMessage());
     });
 });

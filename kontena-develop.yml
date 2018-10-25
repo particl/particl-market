@@ -7,7 +7,7 @@ services:
     image: ludx/particl:0.16
     instances: 1
     volumes:
-      - /root/data/particld-dev1:/root/.particl:cached
+      - /root/data/particld-dev1:/root/.particl
     environment:
       - CONF_TESTNET=1                  # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
@@ -27,7 +27,7 @@ services:
     image: ludx/particl:0.16
     instances: 1
     volumes:
-      - /root/data/particld-dev2:/root/.particl:cached
+      - /root/data/particld-dev2:/root/.particl
     environment:
       - CONF_TESTNET=1                  # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
