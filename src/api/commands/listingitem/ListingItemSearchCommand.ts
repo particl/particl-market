@@ -43,7 +43,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [8]: country, string, can be null
      *  [9]: shippingDestination, string, can be null
      *  [10]: searchString, string, can be null
-     *  [11]: withRelated, boolean
+     *  [11]: flagged, boolean, can be null
+     *  [12]: withRelated, boolean
      *
      * @param data
      * @returns {Promise<ListingItem>}
@@ -73,28 +74,25 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             shippingCountryCode = ShippingCountries.validate(this.log, data.params[9]);
         }
 
-        // TODO: this type search does not really make sense
-        // TODO: searching for items that youre buying or selling should be done with bid or orderitem search
-        // TODO: ...so remove type
         return await this.listingItemService.search({
             page: data.params[0] || 0,
             pageLimit: data.params[1] || 10, // default page limit 10
             order: data.params[2] || 'ASC',
             category: data.params[3],
-            type,
             profileId,
             minPrice: data.params[6],
             maxPrice: data.params[7],
             country: countryCode,
             shippingDestination: shippingCountryCode,
-            searchString: data.params[10] || ''
-        } as ListingItemSearchParams, data.params[11]);
+            searchString: data.params[10] || '',
+            flagged: data.params[11]
+        } as ListingItemSearchParams, data.params[12]);
     }
 
     // tslint:disable:max-line-length
     public usage(): string {
         return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
-        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]]';
+        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString> [<flagged> ]]]]]]]]]]]';
     }
 
     public help(): string {
@@ -130,6 +128,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                we want to search for. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
             + '                                find listing items by their titles. \n'
+            + '    <flagged>                - [optional] Boolean - Search for flagged or non-flagged \n'
+            + '                                listing items (default: true). \n'
             + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
     }
 

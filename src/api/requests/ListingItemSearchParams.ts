@@ -30,7 +30,7 @@ export class ListingItemSearchParams extends RequestBody {
     public shippingDestination: string;
     public searchString: string;
     public withRelated: boolean;
-
+    public flagged: boolean;
     public itemHash: string | null;
     public seller: string | null;
     public buyer: string | null;
@@ -48,7 +48,8 @@ export class ListingItemSearchParams extends RequestBody {
      *  [8]: country, string, can be null
      *  [9]: shippingDestination, string, can be null
      *  [10]: searchString, string, can be null
-     *  [11]: withRelated, boolean
+     *  [11]: flagged, boolean, can be null
+     *  [12]: withRelated, boolean
      */
     constructor(generateParams: any[] = []) {
         super(generateParams);
@@ -65,7 +66,8 @@ export class ListingItemSearchParams extends RequestBody {
         this.country                = generateParams[8] ? generateParams[8] : '';
         this.shippingDestination    = generateParams[9] ? generateParams[9] : '';
         this.searchString           = generateParams[10] ? generateParams[10] : '';
-        this.withRelated            = generateParams[11] ? generateParams[11] : true;
+        this.flagged                = generateParams[11] ? generateParams[11] : true;
+        this.withRelated            = generateParams[12] ? generateParams[12] : true;
         // }
         this.itemHash = null;
         this.seller = null;
@@ -86,6 +88,7 @@ export class ListingItemSearchParams extends RequestBody {
             this.country,
             this.shippingDestination,
             this.searchString,
+            this.flagged,
             this.withRelated
         ];
     }
