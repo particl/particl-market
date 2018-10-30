@@ -72,6 +72,7 @@ export class VoteActionService {
 
         if (proposal.type === ProposalType.ITEM_VOTE && proposal.blockEnd >= currentBlock) {
             await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
+            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
         }
 
         const msg: MarketplaceMessage = {

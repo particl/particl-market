@@ -245,7 +245,12 @@ export class ProposalActionService {
             });
 
         // finally, create ProposalResult, vote and recalculate proposalresult
-        let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+        let proposalResult: resources.ProposalResult = await this.proposalResultService.findOneByProposalHash(proposal.hash)
+            .then(proposalResultModel => proposalResultModel.toJSON())
+            .catch(async reason => {
+                const createdProposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+                return createdProposalResult;
+            });
 
         const hasVoted: boolean = await this.voteService.findOneByVoterAndProposalId(proposal.submitter, proposal.id)
             .then(vote => true)
