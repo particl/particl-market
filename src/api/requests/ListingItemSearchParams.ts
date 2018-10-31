@@ -66,7 +66,7 @@ export class ListingItemSearchParams extends RequestBody {
         this.country                = generateParams[8] ? generateParams[8] : '';
         this.shippingDestination    = generateParams[9] ? generateParams[9] : '';
         this.searchString           = generateParams[10] ? generateParams[10] : '';
-        this.flagged                = generateParams[11] ? generateParams[11] : true;
+        this.flagged                = generateParams[11] ? generateParams[11] : false;
         this.withRelated            = generateParams[12] ? generateParams[12] : true;
         // }
         this.itemHash = null;
