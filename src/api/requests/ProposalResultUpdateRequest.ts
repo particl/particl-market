@@ -12,7 +12,7 @@ export class ProposalResultUpdateRequest extends RequestBody {
     // public proposal_id: number;
 
     @IsNotEmpty()
-    public block: number;
+    public timeStart: number;
 
 }
 // tslint:enable:variable-name

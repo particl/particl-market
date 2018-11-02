@@ -161,14 +161,13 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
+        const timeStart: number = new Date().getTime();
 
         let proposalResultModel = await this.proposalResultService.create({
-            block: currentBlock,
+            timeStart,
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
 
-        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
         for (const proposalOption of proposal.ProposalOptions) {
             const proposalOptionResult = await this.proposalOptionResultService.create({
@@ -199,7 +198,7 @@ export class ProposalService {
      */
     public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
 
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
+        const timeStart: number = new Date().getTime();
 
         // get the proposal
         // const proposalModel = await this.proposalService.findOne(proposalId);
@@ -213,7 +212,7 @@ export class ProposalService {
 
         // first update the block in ProposalResult
         proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            block: currentBlock
+            timeStart
         } as ProposalResultUpdateRequest);
         proposalResult = proposalResultModel.toJSON();
 

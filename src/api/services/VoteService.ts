@@ -67,7 +67,7 @@ export class VoteService {
 
         // set new values
         vote.set('voter', body.voter);
-        vote.set('block', body.block);
+        vote.set('timeStart', body.timeStart);
         vote.set('weight', body.weight);
         vote.set('proposalOptionId', body.proposal_option_id);
 

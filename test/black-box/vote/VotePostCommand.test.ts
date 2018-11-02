@@ -25,7 +25,7 @@ describe('VotePostCommand', () => {
 
     let defaultProfile: resources.Profile;
     let proposal: resources.Proposal;
-    let currentBlock: number;
+    let timeStart: number;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -50,11 +50,9 @@ describe('VotePostCommand', () => {
 
         proposal = proposals[0];
 
-        // get current block
-        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        res.expectStatusCode(200);
-        currentBlock = res.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
+        // get current time
+        timeStart = new Date().getTime();
+        log.debug('currentBlock:', timeStart);
     });
 
     test('Should fail to post a Vote because it has too few args (0)', async () => {
@@ -189,7 +187,7 @@ describe('VotePostCommand', () => {
         log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.timeStart).toBeGreaterThanOrEqual(timeStart);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
@@ -225,7 +223,7 @@ describe('VotePostCommand', () => {
 
         const result: resources.Vote = res.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.timeStart).toBeGreaterThanOrEqual(timeStart);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);

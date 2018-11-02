@@ -84,7 +84,7 @@ export class ProposalResultService {
         // proposalResult = proposalResult.toJSON();
 
         // set new values
-        proposalResult.Block = body.block;
+        proposalResult.timeStart = body.timeStart;
 
         // update proposalResult record
         const updatedProposalResult = await this.proposalResultRepo.update(id, proposalResult.toJSON());

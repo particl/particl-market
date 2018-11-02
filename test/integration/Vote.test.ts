@@ -191,7 +191,7 @@ describe('Vote', () => {
 
         const testDataUpdated = {
             voter: defaultProfile.address,
-            block: 3,
+            timeStart: new Date().getTime() + 300, // TODO: Check this is right
             weight: 3
         } as VoteUpdateRequest;
 
@@ -200,7 +200,7 @@ describe('Vote', () => {
 
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
         expect(result.voter).toBe(testDataUpdated.voter);
-        expect(result.block).toBe(testDataUpdated.block);
+        expect(result.timeStart).toBe(testDataUpdated.timeStart);
         expect(result.weight).toBe(testDataUpdated.weight);
     });
 

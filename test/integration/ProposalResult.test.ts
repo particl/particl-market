@@ -42,11 +42,11 @@ describe('ProposalResult', () => {
     let createdProposalResult: resources.ProposalResult;
 
     const testData = {
-        block: 1
+        timeStart: new Date().getTime()
     } as ProposalResultCreateRequest;
 
     const testDataUpdated = {
-        block: 2
+        timeStart: testData.timeStart + 1000;
     } as ProposalResultUpdateRequest;
 
     beforeAll(async () => {

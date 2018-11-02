@@ -687,7 +687,6 @@ export class TestDataService {
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
                 voter,
-                daysRetention,
                 weight: 1
             } as VoteCreateRequest;
 

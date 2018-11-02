@@ -37,7 +37,6 @@ describe('Proposal', () => {
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x',
-        expiryTime: 4,
         postedAt: new Date().getTime(),
         expiredAt: new Date().getTime() + 100000000,
         receivedAt: new Date().getTime()
@@ -195,8 +194,8 @@ describe('Proposal', () => {
     test('Should search Proposals open after postedAt time', async () => {
 
         const searchParams = {
-            startTime: testData.postedAt, // TODO: Fix me
-            endTime: '*',
+            timeStart: testData.postedAt, // TODO: Fix me
+            timeEnd: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -209,8 +208,8 @@ describe('Proposal', () => {
     test('Should search Proposals open after postedAt time + 10', async () => {
 
         const searchParams = {
-            startTime: testData.postedAt + 10, // TODO: Fix me
-            endTime: '*',
+            timeStart: testData.postedAt + 10, // TODO: Fix me
+            timeEnd: '*',
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -223,8 +222,8 @@ describe('Proposal', () => {
     test('Should search Proposals closed before or at expiredAt - 10', async () => {
 
         const searchParams = {
-            startTime: '*',
-            endTime: testData.expiredAt - 10, // TODO: Fix me
+            timeStart: '*',
+            timeEnd: testData.expiredAt - 10, // TODO: Fix me
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -237,8 +236,8 @@ describe('Proposal', () => {
     test('Should search Proposals closed before or at expiredAt', async () => {
 
         const searchParams = {
-            startTime: '*',
-            endTime: testData.expiredAt + 10, // TODO: Fix me
+            timeStart: '*',
+            timeEnd: testData.expiredAt + 10, // TODO: Fix me
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -251,8 +250,8 @@ describe('Proposal', () => {
     test('Should search Proposals closed before or at expiredAt + 10', async () => {
 
         const searchParams = {
-            startTime: '*',
-            endTime: testData.expiredAt + 10, // TODO: Fix me
+            timeStart: '*',
+            timeEnd: testData.expiredAt + 10, // TODO: Fix me
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -285,8 +284,8 @@ describe('Proposal', () => {
     test('Should search Proposals with type ITEM_VOTE', async () => {
 
         const searchParams = {
-            startTime: '*',
-            endTime: '*',
+            timeStart: '*',
+            timeEnd: '*',
             order: SearchOrder.ASC,
             type: ProposalType.ITEM_VOTE
         } as ProposalSearchParams;

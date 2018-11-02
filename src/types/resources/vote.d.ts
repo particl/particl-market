@@ -9,7 +9,6 @@ declare module 'resources' {
         voter: string;
         weight: number;
         ProposalOption: ProposalOption;
-        timeStart: number;
         receivedAt: number;
         postedAt: number;
         expiredAt: number;

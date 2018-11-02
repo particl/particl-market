@@ -74,7 +74,8 @@ export class VoteActionService {
             mpaction: voteMessage
         };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false);
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
+                                         Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
     }
 
     /**
@@ -181,7 +182,7 @@ export class VoteActionService {
      * @returns {Promise<"resources".Vote>}
      */
     private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
-                                     weight: number, voteSmsg?: resources.SmsgMessage): Promise<resources.Vote> {
+                                     weight: number, voteSmsg: resources.SmsgMessage): Promise<resources.Vote> {
 
         let lastVote: any;
         try {
