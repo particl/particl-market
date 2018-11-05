@@ -98,6 +98,7 @@ import { ItemVote } from '../enums/ItemVote';
 import { Proposal } from '../models/Proposal';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
+import {IsNotEmpty} from 'class-validator';
 
 export class TestDataService {
 
@@ -681,13 +682,15 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const randomBoolean: boolean = Math.random() >= 0.5;
             const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
-            const daysRetention = proposal.expiryTime;
             const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
                 voter,
-                weight: 1
+                weight: 1,
+                postedAt: new Date().getTime(),
+                receivedAt: new Date().getTime(),
+                expiredAt: new Date().getTime() + 100000000
             } as VoteCreateRequest;
 
             const voteModel = await this.voteService.create(voteCreateRequest);
@@ -736,6 +739,7 @@ export class TestDataService {
             title,
             description,
             expiryTime: 4,
+            timeStart: new Date().getTime(),
             postedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 100000000,
             receivedAt: new Date().getTime()
