@@ -61,7 +61,6 @@ export class VoteFactory {
                           create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const smsgData: any = {
-            expiryTime: Number.MAX_SAFE_INTEGER,
             postedAt: Number.MAX_SAFE_INTEGER,
             expiredAt: Number.MAX_SAFE_INTEGER,
             receivedAt: Number.MAX_SAFE_INTEGER
@@ -70,7 +69,6 @@ export class VoteFactory {
         if (smsgMessage) {
             smsgData.postedAt = smsgMessage.sent;
             smsgData.receivedAt = smsgMessage.received;
-            smsgData.expiryTime = smsgMessage.daysretention;
         }
         smsgData.expiredAt = proposal.expiredAt;
 

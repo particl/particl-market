@@ -13,11 +13,8 @@ export class ProposalUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public submitter: string;
 
-    // @IsNotEmpty()
+    @IsNotEmpty()
     public timeStart: number;
-    // in days
-    // @IsNotEmpty()
-    public expiryTime: number;
     // @IsNotEmpty()
     public postedAt: number;
     // @IsNotEmpty()

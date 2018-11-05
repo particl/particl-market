@@ -738,7 +738,6 @@ export class TestDataService {
             item,
             title,
             description,
-            expiryTime: 4,
             timeStart: new Date().getTime(),
             postedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 100000000,

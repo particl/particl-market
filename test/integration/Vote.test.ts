@@ -14,18 +14,14 @@ import { Vote } from '../../src/api/models/Vote';
 import { VoteService } from '../../src/api/services/VoteService';
 import { VoteCreateRequest } from '../../src/api/requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../src/api/requests/VoteUpdateRequest';
-import { ProposalType } from '../../src/api/enums/ProposalType';
-import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
-import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
-import {ProfileService} from '../../src/api/services/ProfileService';
-import {MarketService} from '../../src/api/services/MarketService';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateProposalParams} from '../../src/api/requests/params/GenerateProposalParams';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {IsNotEmpty} from 'class-validator';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('Vote', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

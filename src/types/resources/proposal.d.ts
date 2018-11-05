@@ -16,7 +16,6 @@ declare module 'resources' {
         description: string;
 
         timeStart: number;
-        expiryTime: number;
         receivedAt: number;
         postedAt: number;
         expiredAt: number;

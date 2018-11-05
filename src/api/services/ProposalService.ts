@@ -133,15 +133,16 @@ export class ProposalService {
 
         // set new values
         proposal.Submitter = body.submitter;
-        proposal.ExpiryTime = body.expiryTime;
-        proposal.PostedAt = body.postedAt;
-        proposal.ExpiredAt = body.expiredAt;
-        proposal.ReceivedAt = body.receivedAt;
         proposal.Hash = body.hash;
         proposal.Item = body.item;
         proposal.Type = body.type;
         proposal.Title = body.title;
         proposal.Description = body.description;
+
+        proposal.TimeStart = body.timeStart;
+        proposal.PostedAt = body.postedAt;
+        proposal.ExpiredAt = body.expiredAt;
+        proposal.ReceivedAt = body.receivedAt;
 
         // update proposal record
         const updatedProposal = await this.proposalRepo.update(id, proposal.toJSON());

@@ -193,14 +193,6 @@ export class ProposalActionService {
         }
 
         const voteWeight = 1;
-        // TODO: use VoteFactory
-        // TODO: replace block with time
-        /*const voteRequest: VoteCreateRequest = {
-            proposal_option_id: proposalOption.id,
-            voter: createdProposal.submitter,
-            // daysRetention: createdProposal.expiryTime, // For as long as the proposal exists
-            weight: voteWeight
-        } as VoteCreateRequest;*/
         const senderProfile: any = await this.profileService.findOneByAddress(createdProposal.submitter);
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, senderProfile);
         const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, voteWeight, false);

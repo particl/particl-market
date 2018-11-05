@@ -18,7 +18,6 @@ exports.up = (db: Knex): Promise<any> => {
             table.text('description').nullable();
 
             table.timestamp('time_start').notNullable();
-            table.integer('expiry_time').unsigned().notNullable(); // not really needed?
             table.integer('posted_at').notNullable();
             table.integer('received_at').notNullable();
             table.integer('expired_at').notNullable();
