@@ -12,7 +12,6 @@ import { ProposalResultRepository } from '../repositories/ProposalResultReposito
 import { ProposalResult } from '../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
-// import { ProposalService } from '../services/ProposalService';
 
 export class ProposalResultService {
 
@@ -60,16 +59,8 @@ export class ProposalResultService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ProposalResult, body: ', JSON.stringify(body, null, 2));
 
-        // TODO: extract and remove related models from request
-        // const proposalResultRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the proposalResult
         const proposalResult = await this.proposalResultRepo.create(body);
-
-        // TODO: create related models
-        // proposalResultRelated._id = proposalResult.Id;
-        // await this.proposalResultRelatedService.create(proposalResultRelated);
 
         // finally find and return the created proposalResult
         const newProposalResult = await this.findOne(proposalResult.id);
@@ -84,7 +75,7 @@ export class ProposalResultService {
         // proposalResult = proposalResult.toJSON();
 
         // set new values
-        proposalResult.timeStart = body.timeStart;
+        proposalResult.calculatedAt = body.calculatedAt;
 
         // update proposalResult record
         const updatedProposalResult = await this.proposalResultRepo.update(id, proposalResult.toJSON());

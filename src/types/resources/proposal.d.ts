@@ -14,11 +14,13 @@ declare module 'resources' {
         type: ProposalType;
         title: string;
         description: string;
+
         timeStart: number;
         expiryTime: number;
         receivedAt: number;
         postedAt: number;
         expiredAt: number;
+
         createdAt: Date;
         updatedAt: Date;
         ProposalOptions: ProposalOption[];

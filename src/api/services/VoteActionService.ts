@@ -78,8 +78,8 @@ export class VoteActionService {
             mpaction: voteMessage
         };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
-                                         Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
+        const daysRetention = Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false, daysRetention);
     }
 
     /**

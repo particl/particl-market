@@ -161,13 +161,14 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const timeStart: number = new Date().getTime();
+        const calculatedAt: number = new Date().getTime();
 
         let proposalResultModel = await this.proposalResultService.create({
-            timeStart,
+            calculatedAt,
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
 
+        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
         for (const proposalOption of proposal.ProposalOptions) {
             const proposalOptionResult = await this.proposalOptionResultService.create({
@@ -198,7 +199,7 @@ export class ProposalService {
      */
     public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
 
-        const timeStart: number = new Date().getTime();
+        const calculatedAt: number = new Date().getTime();
 
         // get the proposal
         // const proposalModel = await this.proposalService.findOne(proposalId);
@@ -210,9 +211,10 @@ export class ProposalService {
         let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
         let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
-        // first update the block in ProposalResult
+        // TODO: rather than update, we should create new ProposalResult
+        // first update the calculatedAt in ProposalResult
         proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            timeStart
+            calculatedAt
         } as ProposalResultUpdateRequest);
         proposalResult = proposalResultModel.toJSON();
 
