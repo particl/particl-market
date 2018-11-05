@@ -3,19 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * InvalidParamException
+ * CountryNotFoundException
  * ----------------------------------------
  *
- *
- * This should be used if the command that
- * was called has invalid parameter
+ * This should be used if country
+ * not found in country code conversion.
  */
 
 import { Exception } from '../../core/api/Exception';
 
 
-export class InvalidParamException extends Exception {
-    constructor(param: string) {
-        super(404, `Invalid ${param}.`);
+export class CountryNotFoundException extends Exception {
+    constructor(country: string) {
+        super(404, `Country ${country} was not found!`);
     }
 }

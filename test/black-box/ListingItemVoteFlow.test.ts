@@ -347,12 +347,13 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('proposal:', JSON.stringify(result, null, 2));
 
         // Proposal should have a ProposalResult which has one Vote for removing the ListingItem
-        // we have two ProposalResults since the first one gets created before we receive the Proposal (since this node was the one calling item flag)
-        expect(result.ProposalResults.length).toBe(2);
-        expect(result.ProposalResults[1].ProposalOptionResults.length).toBe(2);
-        expect(result.ProposalResults[1].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
-        expect(result.ProposalResults[1].ProposalOptionResults[1].weight).toBe(1);
-        expect(result.ProposalResults[1].ProposalOptionResults[1].voters).toBe(1);
+        // we have one ProposalResult: it gets created before we receive the Proposal (since this node was the one calling item flag),
+        //      and we ignore the received one as it already exists
+        expect(result.ProposalResults.length).toBe(1);
+        expect(result.ProposalResults[0].ProposalOptionResults.length).toBe(2);
+        expect(result.ProposalResults[0].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
+        expect(result.ProposalResults[0].ProposalOptionResults[1].weight).toBe(1);
+        expect(result.ProposalResults[0].ProposalOptionResults[1].voters).toBe(1);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
         res = await testUtilNode2.rpc(listingItemCommand, [listingItemGetCommand, listingItemNode2.hash]);
@@ -463,7 +464,7 @@ describe('Happy ListingItem Vote Flow', () => {
         const res: any = await testUtilNode1.rpc(proposalCommand, [proposalResultCommand, proposalNode1.hash]);
         res.expectStatusCode(200);
         const proposalResult = res.getBody()['result'];
-        log.debug('NODE1 proposalResult:', proposalResult);
+        log.debug('NODE1 proposalResult:', JSON.stringify(proposalResult, null, 2));
 
 
         const result: any = res.getBody()['result'];

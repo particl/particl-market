@@ -92,7 +92,7 @@ export class ProposalActionService {
         // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
-            await this.processItemVoteProposal(proposalCreateRequest, false);
+            await this.processItemVoteProposal(proposalCreateRequest);
         }
 
         const msg: MarketplaceMessage = {
@@ -133,7 +133,7 @@ export class ProposalActionService {
         let proposal: resources.Proposal;
 
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
-            proposal = await this.processItemVoteProposal(proposalCreateRequest, true);
+            proposal = await this.processItemVoteProposal(proposalCreateRequest);
 
         } else { // else (ProposalType.PUBLIC_VOTE)
 
@@ -220,7 +220,7 @@ export class ProposalActionService {
         });
     }
 
-    private async processItemVoteProposal(proposalCreateRequest: ProposalCreateRequest, createVote: boolean = true): Promise<resources.Proposal> {
+    private async processItemVoteProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
         const proposal: resources.Proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item)
             .then(async existingProposalModel => {
                 // Proposal already exists (for some unexplicable reason), so we use it
@@ -245,8 +245,17 @@ export class ProposalActionService {
             });
 
         // finally, create ProposalResult, vote and recalculate proposalresult
-        let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-        if (createVote) {
+        let proposalResult: resources.ProposalResult = await this.proposalResultService.findOneByProposalHash(proposal.hash)
+            .then(proposalResultModel => proposalResultModel.toJSON())
+            .catch(async reason => {
+                const createdProposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+                return createdProposalResult;
+            });
+
+        const hasVoted: boolean = await this.voteService.findOneByVoterAndProposalId(proposal.submitter, proposal.id)
+            .then(vote => true)
+            .catch(reason => false);
+        if (!hasVoted) {
             const vote: resources.Vote = await this.createVote(proposal, ItemVote.REMOVE);
         }
         proposalResult = await this.proposalService.recalculateProposalResult(proposal);
