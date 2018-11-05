@@ -46,7 +46,7 @@ export class DefaultProfileService {
                 if (newProfile.address === 'ERROR_NO_ADDRESS') {
                     this.log.debug('updating default profile');
                     newProfile.address = await this.profileService.getNewAddress();
-                    return await this.profileService.update(newProfile.id, profile);
+                    return await this.profileService.update(newProfile.id, newProfile);
                 } else {
                     return value;
                 }

@@ -6,6 +6,9 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
 import * as resources from 'resources';
 
 describe('AddressUpdateCommand', () => {
@@ -116,7 +119,7 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier Country code <TEST> was not valid! does not exist`);
+        expect(res.error.error.message).toBe(new InvalidParamException('addressId').getMessage());
     });
 
     test('Should fail because we want to update with null state field', async () => {
@@ -133,8 +136,8 @@ describe('AddressUpdateCommand', () => {
             testDataUpdated.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
     test('Should fail because we want to update with undefined state field', async () => {
@@ -151,8 +154,8 @@ describe('AddressUpdateCommand', () => {
             testDataUpdated.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
     test('Should update the address with blank state field', async () => {
@@ -181,6 +184,43 @@ describe('AddressUpdateCommand', () => {
         expect(result.state).toBe('');
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
+    });
+
+    test('Should check countryCode validation - fail with country code not found', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            createdAddress.id,
+            testDataUpdated.title,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            testDataUpdated.state,
+            'WW',
+            testDataUpdated.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('WW').getMessage());
+    });
+
+
+    test('Should check countryName validation', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            createdAddress.id,
+            testDataUpdated.title,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            testDataUpdated.state,
+            'Atlantida',
+            testDataUpdated.zipCode
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('ATLANTIDA').getMessage());
     });
 
 });

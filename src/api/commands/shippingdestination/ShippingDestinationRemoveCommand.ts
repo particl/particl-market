@@ -64,7 +64,7 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        countryCode = ShippingCountries.validate(this.log, countryCode);
+        countryCode = ShippingCountries.convertAndValidate(countryCode);
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();

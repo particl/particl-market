@@ -51,7 +51,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
         // If countryCode is country code, validate, and possibly throw error.
         if (data.params[1]) {
             let countryCode: string = data.params[1];
-            countryCode = ShippingCountries.validate(this.log, countryCode);
+            countryCode = ShippingCountries.convertAndValidate(countryCode);
 
             const itemInformation = await this.getItemInformation(listingItemTemplateId);
 
