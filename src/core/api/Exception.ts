@@ -31,4 +31,8 @@ export class Exception extends Error {
     public toString(): string {
         return `${this.code} - ${this.constructor.name}:${this.message}`;
     }
+
+    public getMessage(): string {
+        return `${this.message}`;
+    }
 }
