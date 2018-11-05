@@ -8,10 +8,13 @@ declare module 'resources' {
         id: number;
         voter: string;
         weight: number;
-        ProposalOption: ProposalOption;
-        receivedAt: number;
+
         postedAt: number;
+        receivedAt: number;
         expiredAt: number;
+
+        ProposalOption: ProposalOption;
+
         createdAt: Date;
         updatedAt: Date;
     }

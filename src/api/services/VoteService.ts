@@ -67,8 +67,12 @@ export class VoteService {
 
         // set new values
         vote.set('voter', body.voter);
-        vote.set('timeStart', body.timeStart);
         vote.set('weight', body.weight);
+
+        vote.set('postedAt', body.postedAt);
+        vote.set('receivedAt', body.receivedAt);
+        vote.set('expiredAt', body.expiredAt);
+
         vote.set('proposalOptionId', body.proposal_option_id);
 
         // update vote record

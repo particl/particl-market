@@ -17,7 +17,6 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('voter').notNullable();
             table.integer('weight').notNullable();
 
-            table.timestamp('expiry_time').unsigned().notNullable();
             table.timestamp('posted_at').notNullable();
             table.timestamp('received_at').notNullable();
             table.timestamp('expired_at').notNullable();

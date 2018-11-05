@@ -54,11 +54,12 @@ export class VoteFactory {
      * @param {"resources".Proposal} proposal
      * @param {number} weight
      * @param {boolean} create
+     * @param smsgMessage
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
     public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, weight: number,
                           create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
-        // TODO: Check this. I'm copying what happens in ProposalFactory since I can't find where votes get their times.
+
         const smsgData: any = {
             expiryTime: Number.MAX_SAFE_INTEGER,
             postedAt: Number.MAX_SAFE_INTEGER,
