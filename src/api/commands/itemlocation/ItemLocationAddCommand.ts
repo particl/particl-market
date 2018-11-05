@@ -108,7 +108,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         } else {
             // If countryCode is country, convert to countryCode.
             // If countryCode is country code, validate, and possibly throw error.
-            data.params[1] = ShippingCountries.validate(this.log, data.params[1]);
+            data.params[1] = ShippingCountries.convertAndValidate(data.params[1]);
         }
 
         if (typeof data.params[2] !== 'string') { // address should be string

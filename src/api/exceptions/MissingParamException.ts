@@ -3,12 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * MessageException
+ * MissingParamException
  * ----------------------------------------
  *
- * This should be used if a someone requests a
- * entity with a id, but there is no entity with this id in the
- * database, then we throw this exception.
+ *
+ * This should be used if the command that
+ * was called is missing a parameter.
  */
 
 import { Exception } from '../../core/api/Exception';
