@@ -139,10 +139,12 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         if (data.params.length < 10) {
             throw new MissingParamException('zipCode');
         }
-        const type = data.params[9];
-        const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_ORDER, AddressType.SHIPPING_OWN];
-        if (type && !_.includes(validTypes, type)) {
-            throw new InvalidParamException('zipCode');
+        if (data.params[10]) {
+            const type = data.params[10];
+            const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_ORDER, AddressType.SHIPPING_OWN];
+            if (type && !_.includes(validTypes, type)) {
+                throw new InvalidParamException('zipCode');
+            }
         }
         return data;
     }
