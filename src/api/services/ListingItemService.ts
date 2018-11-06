@@ -348,6 +348,7 @@ export class ListingItemService {
     public async destroy(id: number): Promise<void> {
         const listingItemModel = await this.findOne(id, true);
         if (!listingItemModel) {
+            this.log.error('Item listing does not exist. id = ' + id);
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
         const listingItem = listingItemModel.toJSON();

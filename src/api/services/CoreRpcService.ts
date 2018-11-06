@@ -62,6 +62,14 @@ export class CoreRpcService {
         return await this.call('getnetworkinfo', [], false);
     }
 
+    public async getAddressBalance(address: string): Promise<any> {
+        return await this.call('getaddressbalance', [address]);
+    }
+
+    public async getAddressBalanceMulti(addresses: string[]): Promise<any> {
+        return await this.call('getaddressbalance', addresses);
+    }
+
     /**
      * ﻿Returns a new Particl address for receiving payments, key is saved in wallet.
      *

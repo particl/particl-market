@@ -32,19 +32,17 @@ export class VoteFactory {
      * @returns {Promise<VoteMessage>}
      */
     public async getMessage(voteMessageType: VoteMessageType, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                            senderProfile: resources.Profile): Promise<VoteMessage> {
+                            senderAddress: string): Promise<VoteMessage> {
 
         const proposalHash = proposal.hash;
         const optionId = proposalOption.optionId;
-        const voter = senderProfile.address;
-        const weight = 1;
+        const voter = senderAddress;
 
         return {
             action: voteMessageType,
             proposalHash,
             optionId,
-            voter,
-            weight
+            voter
         } as VoteMessage;
     }
 

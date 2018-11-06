@@ -192,18 +192,12 @@ export class ProposalActionService {
             throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
         }
 
-        const voteWeight = 1;
-        // TODO: use VoteFactory
-        // TODO: replace block with time
-        /*const voteRequest: VoteCreateRequest = {
-            proposal_option_id: proposalOption.id,
-            voter: createdProposal.submitter,
-            // daysRetention: createdProposal.expiryTime, // For as long as the proposal exists
-            weight: voteWeight
-        } as VoteCreateRequest;*/
-        const senderProfile: any = await this.profileService.findOneByAddress(createdProposal.submitter);
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, senderProfile);
-        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, voteWeight, false);
+        const weight = await this.voteService.getVoteWeight(createdProposal.submitter);
+        // We need to pass proposer profile
+        // If we are not the proposer we won't have their profile on file
+        // What do?
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, createdProposal.submitter);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, weight, false /*, voteSmsg*/);
 
         const createdVoteModel = await this.voteService.create(voteRequest);
         return createdVoteModel.toJSON();

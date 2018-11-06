@@ -67,7 +67,7 @@ export class VoteActionService {
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-            senderProfile);
+            senderProfile.address);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -102,7 +102,7 @@ export class VoteActionService {
         return await this.proposalService.findOneByHash(voteMessage.proposalHash)
             .then(async proposalModel => {
 
-                const proposal: resources.Proposal = proposalModel.toJSON();
+                const proposal = proposalModel.toJSON();
 
                 // just make sure we have one
                 if (_.isEmpty(proposal.ProposalResults)) {
@@ -113,7 +113,8 @@ export class VoteActionService {
                 // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
                 if (voteMessage && event.smsgMessage.daysretention >= 1) {
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, 1, event.smsgMessage);
+                    const weight = await this.voteService.getVoteWeight(voteMessage.voter);
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight, event.smsgMessage);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -123,7 +124,7 @@ export class VoteActionService {
                         && await this.shouldRemoveListingItem(proposalResult)) {
 
                         // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                        const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
+                        const listingItemId = await this.listingItemService.findOne(proposal.FlaggedItem.listingItemId, false)
                             .then(value => {
                                 return value.Id;
                             }).catch(reason => {
@@ -133,6 +134,8 @@ export class VoteActionService {
                         if (listingItemId) {
                             await this.listingItemService.destroy(listingItemId);
                         }
+                    } else {
+                        this.log.debug('No item destroyed.');
                     }
                     // TODO: do whatever else needs to be done
 
@@ -162,15 +165,20 @@ export class VoteActionService {
         });
 
         // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-        // at minimum, a total of 10 votes
-        // at minimum, 30% of votes saying remove
+        // at minimum, a total of env.MINIMUM_REQUIRED_VOTES votes
+        // at minimum, 50% of votes saying remove
 
-        if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
-            && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
-            return true;
-        } else {
-            return false;
+        this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
+        if (removeOptionResult && okOptionResult) {
+            const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
+            if (totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000)
+                && ((removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight)) > 0.5)) {
+                this.log.debug('Item should be destroyed');
+                return true;
+            }
         }
+        this.log.debug('Item should NOT be destroyed');
+        return false;
     }
 
     /**

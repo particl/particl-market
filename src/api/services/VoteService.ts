@@ -12,6 +12,7 @@ import { VoteRepository } from '../repositories/VoteRepository';
 import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { CoreRpcService } from './CoreRpcService';
 
 export class VoteService {
 
@@ -19,9 +20,23 @@ export class VoteService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.VoteRepository) public voteRepo: VoteRepository,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async getVoteWeight(voter: string): Promise<number> {
+        let voteWeight;
+        try {
+            const tmpWeight = await this.coreRpcService.getAddressBalance(voter);
+            this.log.debug('Vote getaddressbalance retval = ' + JSON.stringify(tmpWeight, null, 2));
+            voteWeight = tmpWeight.balance;
+        } catch (ex) {
+            this.log.error('ERROR getting vote weight; ex = ' + JSON.stringify(ex));
+            voteWeight = 1;
+        }
+        return voteWeight;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Vote>> {
@@ -67,7 +82,6 @@ export class VoteService {
 
         // set new values
         vote.set('voter', body.voter);
-        vote.set('timeStart', body.timeStart);
         vote.set('weight', body.weight);
         vote.set('proposalOptionId', body.proposal_option_id);
 
