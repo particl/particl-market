@@ -39,8 +39,10 @@ describe('Happy Vote Flow', () => {
     let proposalNode1: resources.Proposal;
     let proposalNode2: resources.Proposal;
 
-    let currentBlock: number;
     const estimateFee = false;
+    const daysRetention = 3;
+    let testTimeStamp = new Date().getTime();
+
     const proposalTitle = Faker.lorem.words();
     const proposalDescription = Faker.lorem.paragraph();
 
@@ -66,10 +68,6 @@ describe('Happy Vote Flow', () => {
         log.debug('marketNode1: ', JSON.stringify(marketNode1, null, 2));
         log.debug('marketNode2: ', JSON.stringify(marketNode2, null, 2));
 
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
     });
 
     test('Post Proposal from node1', async () => {
@@ -80,16 +78,12 @@ describe('Happy Vote Flow', () => {
 
         await testUtilNode1.waitFor(5);
 
-        const blockStart = currentBlock;
-        const blockEnd = currentBlock + 10;
-
         const response: any = await testUtilNode1.rpc(proposalCommand, [
             proposalPostCommand,
             profileNode1.id,
             proposalTitle,
             proposalDescription,
-            blockStart,
-            blockEnd,
+            daysRetention,
             estimateFee,
             'YES',
             'NO'
@@ -158,8 +152,11 @@ describe('Happy Vote Flow', () => {
         const result: resources.Proposal = response.getBody()['result'];
         expect(result.title).toBe(proposalNode1.title);
         expect(result.description).toBe(proposalNode1.description);
-        expect(result.blockStart).toBe(proposalNode1.blockStart);
-        expect(result.blockEnd).toBe(proposalNode1.blockEnd);
+        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
+
         expect(result.ProposalOptions[0].description).toBe(proposalNode1.ProposalOptions[0].description);
         expect(result.ProposalOptions[1].description).toBe(proposalNode1.ProposalOptions[1].description);
 
@@ -171,6 +168,7 @@ describe('Happy Vote Flow', () => {
     test('Post Vote1 from node1', async () => {
 
         expect(sent).toEqual(true);
+        testTimeStamp = new Date().getTime();
 
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_VOTE_ADD (default profile)');
@@ -187,12 +185,6 @@ describe('Happy Vote Flow', () => {
 
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
-
-        // update currentBlock
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
 
     });
 
@@ -219,7 +211,11 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
+
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(profileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[0].optionId);
@@ -254,6 +250,7 @@ describe('Happy Vote Flow', () => {
     test('Post Vote2 from node2', async () => {
 
         expect(sent).toEqual(true);
+        testTimeStamp = new Date().getTime();
 
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -271,11 +268,6 @@ describe('Happy Vote Flow', () => {
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
 
-        // update currentBlock
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
     });
 
     test('Receive Vote2 on node2', async () => {
@@ -301,7 +293,10 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(profileNode2.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode2.ProposalOptions[0].optionId);
