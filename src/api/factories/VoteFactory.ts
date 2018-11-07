@@ -27,16 +27,16 @@ export class VoteFactory {
     /**
      *
      * @param {VoteMessageType} voteMessageType
-     * @param {string} itemHash
-     * @param {IdValuePair[]} idValuePairObjects
+     * @param proposal
+     * @param proposalOption
+     * @param voter
      * @returns {Promise<VoteMessage>}
      */
     public async getMessage(voteMessageType: VoteMessageType, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                            senderProfile: resources.Profile): Promise<VoteMessage> {
+                            voter: string): Promise<VoteMessage> {
 
         const proposalHash = proposal.hash;
         const optionId = proposalOption.optionId;
-        const voter = senderProfile.address;
         const weight = 1;
 
         return {
@@ -52,37 +52,35 @@ export class VoteFactory {
      *
      * @param {VoteMessage} voteMessage
      * @param {"resources".Proposal} proposal
+     * @param proposalOption
      * @param {number} weight
      * @param {boolean} create
      * @param smsgMessage
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
-    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, weight: number,
-                          create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
+                          weight: number, create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
-            expiredAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER
+            receivedAt: Number.MAX_SAFE_INTEGER,
+            expiredAt: Number.MAX_SAFE_INTEGER
         };
 
         if (smsgMessage) {
             smsgData.postedAt = smsgMessage.sent;
             smsgData.receivedAt = smsgMessage.received;
+            smsgData.expiredAt = smsgMessage.expiration;
         }
-        smsgData.expiredAt = proposal.expiredAt;
 
         const voteRequest = {
+            proposal_option_id: proposalOption.id,
             voter: voteMessage.voter,
             weight,
             ...smsgData
         } as VoteCreateRequest;
 
-        // TODO: remove the service from here
-        const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
-        voteRequest.proposal_option_id = option.id;
-
-        // this.log.error('VoteFactory.getModel(): voteRequest = ' + JSON.stringify(voteRequest, null, 2));
+        // this.log.debug('getModel(), voteRequest:', JSON.stringify(voteRequest, null, 2));
 
         return voteRequest;
     }

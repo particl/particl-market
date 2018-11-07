@@ -66,7 +66,7 @@ export class VoteActionService {
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderProfile);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderProfile.address);
 
         if (proposal.type === ProposalType.ITEM_VOTE && proposal.expiredAt >= new Date().getTime()) {
             await this.createOrUpdateVote(voteMessage, proposal, 1);
@@ -197,8 +197,20 @@ export class VoteActionService {
         }
         const create: boolean = lastVote == null;
 
+        // find the ProposalOption
+        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.optionId === voteMessage.optionId;
+        });
+
+        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
+
+        if (!proposalOption) {
+            this.log.warn('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+            throw new MessageException('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+        }
+
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, weight, create, voteSmsgMessage);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, create, voteSmsgMessage);
 
         let voteModel;
         if (create) {

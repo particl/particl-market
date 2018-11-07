@@ -93,6 +93,7 @@ export class ProposalActionService {
         // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
+            // this.log.debug('send(), proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
             await this.processItemVoteProposal(proposalCreateRequest);
         }
 
@@ -180,7 +181,6 @@ export class ProposalActionService {
      */
     private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
 
-        // const currentBlock = await this.coreRpcService.getBlockCount();
         const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
             return option.description === itemVote;
         });
@@ -193,9 +193,8 @@ export class ProposalActionService {
         }
 
         const voteWeight = 1;
-        const senderProfile: any = await this.profileService.findOneByAddress(createdProposal.submitter);
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, senderProfile);
-        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, voteWeight, false);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, createdProposal.submitter);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, proposalOption, voteWeight, false);
 
         const createdVoteModel = await this.voteService.create(voteRequest);
         return createdVoteModel.toJSON();
@@ -217,14 +216,24 @@ export class ProposalActionService {
         });
     }
 
+    /**
+     * TODO: naming of this function doesnt make sense
+     *
+     * @param proposalCreateRequest
+     */
     private async processItemVoteProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
         const proposal: resources.Proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item)
             .then(async existingProposalModel => {
                 // Proposal already exists (for some unexplicable reason), so we use it
+                // this same function is called from send() and from processProposalReceivedEvent
+                // => if the proposal is yours, it's allready created in send
                 const existingProposal: resources.Proposal = existingProposalModel.toJSON();
-                if (proposalCreateRequest.postedAt &&
-                        (proposalCreateRequest.postedAt < existingProposal.postedAt)) { // update to use the one that was sent first
+                if (proposalCreateRequest.postedAt
+                    && (proposalCreateRequest.postedAt < existingProposal.postedAt)) {
+                    // update to use the one that was sent first
                     // incoming was posted before the existing -> update existing with incoming data
+                    // TODO: WTF there should always be just one incoming?
+                    // + the one created locally in send should not have postedAt field!!
                     const updatedProposalModel = await this.proposalService.update(existingProposal.id, proposalCreateRequest);
                     return updatedProposalModel.toJSON();
                 } else {
@@ -232,14 +241,22 @@ export class ProposalActionService {
                 }
             })
             .catch(async reason => {
+                // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
                 // proposal doesnt exist -> create Proposal
                 let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
                 const createdProposal = createdProposalModel.toJSON();
+                // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
+
                 // also create the FlaggedItem
                 const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
+                // this.log.debug('processItemVoteProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+
                 createdProposalModel = await this.proposalService.findOne(createdProposal.id);
                 return createdProposalModel.toJSON();
             });
+
+        // proposal is now either updated or created...
+        // this.log.debug('processItemVoteProposal(), final proposal:', JSON.stringify(proposal, null, 2));
 
         // finally, create ProposalResult, vote and recalculate proposalresult
         let proposalResult: resources.ProposalResult = await this.proposalResultService.findOneByProposalHash(proposal.hash)

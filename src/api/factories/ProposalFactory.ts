@@ -26,9 +26,12 @@ export class ProposalFactory {
 
     /**
      *
-     * @param {BidMessageType} bidMessageType
+     * @param proposalMessageType
+     * @param proposalTitle
+     * @param proposalDescription
+     * @param options
+     * @param senderProfile
      * @param {string} itemHash
-     * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
@@ -85,13 +88,14 @@ export class ProposalFactory {
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
             expiredAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER
+            receivedAt: Number.MAX_SAFE_INTEGER,
+            timeStart: Number.MAX_SAFE_INTEGER
         };
 
         if (smsgMessage) {
             smsgData.postedAt = smsgMessage.sent;
-            smsgData.expiredAt = smsgMessage.expiration;
             smsgData.receivedAt = smsgMessage.received;
+            smsgData.expiredAt = smsgMessage.expiration;
             smsgData.timeStart = smsgMessage.sent;
         }
 
