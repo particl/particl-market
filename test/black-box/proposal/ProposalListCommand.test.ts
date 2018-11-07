@@ -29,7 +29,7 @@ describe('ProposalListCommand', () => {
     let pastProposals: resources.Proposal[];
     let activeProposals: resources.Proposal[];
 
-    let testTimeStamp = new Date().getTime();
+    const testTimeStamp = new Date().getTime();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
