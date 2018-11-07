@@ -211,9 +211,8 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
-        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
         expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
 
         expect(result.weight).toBe(1);

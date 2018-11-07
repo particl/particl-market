@@ -60,7 +60,8 @@ describe('Happy ListingItem Vote Flow', () => {
     let voteNode2: resources.Vote;
     let proposalResultNode1: resources.ProposalResult;
 
-    let currentBlock: number;
+    let testTimeStamp = new Date().getTime();
+
     const DAYS_RETENTION = 2;
 
     beforeAll(async () => {
@@ -139,10 +140,6 @@ describe('Happy ListingItem Vote Flow', () => {
         const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
     });
 
     test('Post ListingItemTemplate to the default marketplace', async () => {
@@ -394,12 +391,6 @@ describe('Happy ListingItem Vote Flow', () => {
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
 
-        // update currentBlock
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
-
     });
 
     test('Receive Vote1 on node1', async () => {
@@ -427,7 +418,9 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: resources.Vote = response.getBody()['result'];
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(voterProfileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
@@ -449,23 +442,11 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(3);
-/*
-        const response: any = await testUtilNode1.rpcWaitFor(
-            proposalCommand,
-            [proposalResultCommand, proposalNode1.hash],
-            8 * 60,
-            200,
-            'ProposalOptionResults[0].voters',
-            2
-        );
-        response.expectJson();
-        response.expectStatusCode(200);
-*/
+
         const res: any = await testUtilNode1.rpc(proposalCommand, [proposalResultCommand, proposalNode1.hash]);
         res.expectStatusCode(200);
         const proposalResult = res.getBody()['result'];
         log.debug('NODE1 proposalResult:', JSON.stringify(proposalResult, null, 2));
-
 
         const result: any = res.getBody()['result'];
         expect(result.ProposalOptionResults[0].voters).toBe(0);
@@ -533,11 +514,8 @@ describe('Happy ListingItem Vote Flow', () => {
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
 
-        // update currentBlock
-        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
+        // update testTimeStamp
+        testTimeStamp = new Date().getTime();
     });
 
     test('Receive Vote2 on node2', async () => {
@@ -567,7 +545,9 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: resources.Vote = response.getBody()['result'];
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
+        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(voterProfileNode2.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
