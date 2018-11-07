@@ -65,12 +65,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
         let countryCode: string | null = null;
         if (data.params[8]) {
-            countryCode = ShippingCountries.validate(this.log, data.params[8]);
+            countryCode = ShippingCountries.convertAndValidate(data.params[8]);
         }
 
         let shippingCountryCode: string | null = null;
         if (data.params[9]) {
-            shippingCountryCode = ShippingCountries.validate(this.log, data.params[9]);
+            shippingCountryCode = ShippingCountries.convertAndValidate(data.params[9]);
         }
 
         // TODO: this type search does not really make sense

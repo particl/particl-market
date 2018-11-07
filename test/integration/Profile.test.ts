@@ -63,7 +63,7 @@ describe('Profile', () => {
             country: 'Sweden',
             zipCode: '85001',
             type: AddressType.SHIPPING_OWN
-        } as AddressCreateRequest, {
+        }, {
             firstName: 'Johnny',
             lastName: 'Depp',
             title: 'Tite',
@@ -74,7 +74,7 @@ describe('Profile', () => {
             country: 'Finland',
             zipCode: '85001',
             type: AddressType.SHIPPING_OWN
-        } as AddressCreateRequest] as any
+        }] as AddressCreateRequest[]
     } as ProfileCreateRequest;
 
     // TODO: move to file or generate

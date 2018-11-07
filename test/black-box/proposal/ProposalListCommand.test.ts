@@ -29,7 +29,7 @@ describe('ProposalListCommand', () => {
     let pastProposals: resources.Proposal[];
     let activeProposals: resources.Proposal[];
 
-    let currentBlock: 0;
+    const testTimeStamp = new Date().getTime();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -68,10 +68,6 @@ describe('ProposalListCommand', () => {
             generateActiveProposalParams    // what kind of data to generate
         ) as resources.Proposal[];
 
-        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        currentBlock = res.getBody()['result'];
-        // log.debug('currentBlock:', currentBlock);
-
     });
 
     test('Should list all Proposals', async () => {
@@ -85,7 +81,7 @@ describe('ProposalListCommand', () => {
     });
 
     test('Should list past Proposals', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', currentBlock]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', testTimeStamp]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -95,7 +91,7 @@ describe('ProposalListCommand', () => {
     });
 
     test('Should list active Proposals', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, currentBlock, '*']);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, testTimeStamp, '*']);
         res.expectJson();
         res.expectStatusCode(200);
 

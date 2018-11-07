@@ -21,11 +21,9 @@ describe('VotePostCommand', () => {
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let proposal: resources.Proposal;
-    let currentBlock: number;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -50,11 +48,6 @@ describe('VotePostCommand', () => {
 
         proposal = proposals[0];
 
-        // get current block
-        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        res.expectStatusCode(200);
-        currentBlock = res.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
     });
 
     test('Should fail to post a Vote because it has too few args (0)', async () => {
@@ -170,7 +163,7 @@ describe('VotePostCommand', () => {
         expect(result.result).toEqual('Sent.');
     });
 
-    test('Should find the posted Vote', async () => {
+    test('Should find the posted Vote locally immediately after posting', async () => {
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
@@ -186,14 +179,15 @@ describe('VotePostCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.Vote = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
+
+    // TODO: should add a test that posted vote has correct fields after its received/processed
 
     test('Should post a new Vote with different optionId', async () => {
         const res: any = await testUtil.rpc(voteCommand, [
@@ -225,7 +219,6 @@ describe('VotePostCommand', () => {
 
         const result: resources.Vote = res.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);

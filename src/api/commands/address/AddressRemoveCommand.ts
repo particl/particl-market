@@ -11,6 +11,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressService } from '../../services/AddressService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class AddressRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -27,7 +29,7 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
 
     /**
      * data.params[]:
-     *  [0]: address id
+     *  [0]: addressId
      *
      * @param data
      * @param rpcCommandFactory
@@ -36,6 +38,16 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<void> {
         return await this.addressService.destroy(data.params[0]);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('addressId');
+        }
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('addressId');
+        }
+        return data;
     }
 
     public usage(): string {

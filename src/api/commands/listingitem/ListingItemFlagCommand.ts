@@ -24,6 +24,7 @@ import { ListingItemActionService } from '../../services/ListingItemActionServic
 import { ItemVote } from '../../enums/ItemVote';
 import { ProposalFactory } from '../../factories/ProposalFactory';
 import * as _ from 'lodash';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -66,34 +67,17 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
 
-        // TODO: refactor these to startTime and endTime
-        // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
-
-        if (typeof blockStart !== 'number') {
-            throw new MessageException('blockStart needs to be a number.');
-        } else if (typeof blockEnd !== 'number') {
-            throw new MessageException('blockEnd needs to be a number.');
-        }
-
-        const profileModel = await this.profileService.findOne(profileId) // throws if not found
-            .catch(reason => {
-                this.log.error('ERROR:', reason);
-                throw new MessageException('Profile not found.');
-            });
+        const profileModel = await this.profileService.findOne(profileId); // throws if not found
         const profile: resources.Profile = profileModel.toJSON();
 
         // Get the default market.
-        // TODO: We might want to let users specify this later.
+        // TODO: this should be a command parameter
         const marketModel = await this.marketService.getDefault(); // throws if not found
         const market: resources.Market = marketModel.toJSON();
 
         return await this.proposalActionService.send(
             proposalTitle,
             proposalDescription,
-            blockStart,
-            blockEnd,
             daysRetention,
             optionsList,
             profile,
@@ -123,7 +107,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         }
 
         let listingItemModel: ListingItem;
-        if (typeof data.params[0] === 'number') {
+        if (typeof data.params[0] !== 'string') {
             throw new MessageException('Invalid listingItemHash.');
         } else {
             listingItemModel = await this.listingItemService.findOneByHash(data.params[0])

@@ -133,17 +133,16 @@ export class ProposalService {
 
         // set new values
         proposal.Submitter = body.submitter;
-        proposal.BlockStart = body.blockStart;
-        proposal.BlockEnd = body.blockEnd;
-        proposal.ExpiryTime = body.expiryTime;
-        proposal.PostedAt = body.postedAt;
-        proposal.ExpiredAt = body.expiredAt;
-        proposal.ReceivedAt = body.receivedAt;
         proposal.Hash = body.hash;
         proposal.Item = body.item;
         proposal.Type = body.type;
         proposal.Title = body.title;
         proposal.Description = body.description;
+
+        proposal.TimeStart = body.timeStart;
+        proposal.PostedAt = body.postedAt;
+        proposal.ExpiredAt = body.expiredAt;
+        proposal.ReceivedAt = body.receivedAt;
 
         // update proposal record
         const updatedProposal = await this.proposalRepo.update(id, proposal.toJSON());
@@ -163,10 +162,10 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
+        const calculatedAt: number = new Date().getTime();
 
         let proposalResultModel = await this.proposalResultService.create({
-            block: currentBlock,
+            calculatedAt,
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
 
@@ -201,7 +200,7 @@ export class ProposalService {
      */
     public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
 
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
+        const calculatedAt: number = new Date().getTime();
 
         // get the proposal
         // const proposalModel = await this.proposalService.findOne(proposalId);
@@ -213,9 +212,10 @@ export class ProposalService {
         let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
         let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
-        // first update the block in ProposalResult
+        // TODO: rather than update, we should create new ProposalResult
+        // first update the calculatedAt in ProposalResult
         proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            block: currentBlock
+            calculatedAt
         } as ProposalResultUpdateRequest);
         proposalResult = proposalResultModel.toJSON();
 

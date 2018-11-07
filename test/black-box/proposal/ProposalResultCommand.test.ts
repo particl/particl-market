@@ -25,7 +25,7 @@ describe('ProposalResultCommand', () => {
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
 
-    let currentBlock: 0;
+    let testTimeStamp = new Date().getTime();
     const voteCount = 50;
 
     beforeAll(async () => {
@@ -52,12 +52,6 @@ describe('ProposalResultCommand', () => {
         ) as resources.Proposal[];
 
         proposal = proposals[0];
-
-        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        currentBlock = res.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
-
-
     });
 
     test('Should return ProposalResult', async () => {
@@ -65,11 +59,11 @@ describe('ProposalResultCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
+        const result: resources.ProposalResult = res.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
 
-        expect(result.block).toBe(currentBlock);
+        expect(result.calculatedAt).toBeGreaterThan(testTimeStamp);
         expect(result.ProposalOptionResults[0].voters).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[0].voters + result.ProposalOptionResults[1].voters).toBe(voteCount);

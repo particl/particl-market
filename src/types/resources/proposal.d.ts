@@ -9,17 +9,17 @@ declare module 'resources' {
     interface Proposal {
         id: number;
         submitter: string;
-        blockStart: number;
-        blockEnd: number;
         hash: string;
         item: string;
         type: ProposalType;
         title: string;
         description: string;
-        expiryTime: number;
+
+        timeStart: number;
         receivedAt: number;
         postedAt: number;
         expiredAt: number;
+
         createdAt: Date;
         updatedAt: Date;
         ProposalOptions: ProposalOption[];

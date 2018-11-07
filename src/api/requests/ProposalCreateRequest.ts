@@ -12,14 +12,9 @@ export class ProposalCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public submitter: string;
-    @IsNotEmpty()
-    public blockStart: number;
-    @IsNotEmpty()
-    public blockEnd: number;
 
-    // in days
-    // @IsNotEmpty()
-    public expiryTime: number;
+    @IsNotEmpty()
+    public timeStart: number;
     // @IsNotEmpty()
     public postedAt: number;
     // @IsNotEmpty()

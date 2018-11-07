@@ -51,8 +51,8 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get Block(): number { return this.get('block'); }
-    public set Block(value: number) { this.set('block', value); }
+    public get CalculatedAt(): number { return this.get('calculatedAt'); }
+    public set CalculatedAt(value: number) { this.set('calculatedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
