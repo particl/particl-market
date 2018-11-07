@@ -227,6 +227,7 @@ describe('Happy Buy Flow', () => {
         }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         // sometimes result.ListingItemTemplate is null!!!
+        // ...and sometimes missing a price
 
         // store ListingItem for later tests
         listingItemReceivedSellerNode = result;

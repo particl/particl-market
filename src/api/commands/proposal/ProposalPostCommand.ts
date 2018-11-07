@@ -51,7 +51,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         // todo add validation in separate function..
-        if (data.params.length < 6) {
+        if (data.params.length < 7) {
             this.log.warn('Expected more params.');
             throw new MessageException('Expected more params.');
         }
