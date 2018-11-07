@@ -131,23 +131,6 @@ describe('AddressAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
-    test('Should fail to create Address because state is undefined', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-            testData.state,
-            testData.country,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
-    });
-
     test('Should create a new Address with blank state', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             defaultProfile.id,
