@@ -26,8 +26,6 @@ describe('VoteGetCommand', () => {
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
 
-    let testTimeStamp = new Date().getTime();
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
