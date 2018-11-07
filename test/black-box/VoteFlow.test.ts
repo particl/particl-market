@@ -41,7 +41,7 @@ describe('Happy Vote Flow', () => {
 
     const estimateFee = false;
     const daysRetention = 3;
-    let testTimeStamp = new Date().getTime();
+    const testTimeStamp = new Date().getTime();
 
     const proposalTitle = Faker.lorem.words();
     const proposalDescription = Faker.lorem.paragraph();
@@ -168,7 +168,6 @@ describe('Happy Vote Flow', () => {
     test('Post Vote1 from node1', async () => {
 
         expect(sent).toEqual(true);
-        testTimeStamp = new Date().getTime();
 
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_VOTE_ADD (default profile)');
@@ -249,7 +248,6 @@ describe('Happy Vote Flow', () => {
     test('Post Vote2 from node2', async () => {
 
         expect(sent).toEqual(true);
-        testTimeStamp = new Date().getTime();
 
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -292,7 +290,6 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
         expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
         expect(result.postedAt).toBeGreaterThan(testTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
