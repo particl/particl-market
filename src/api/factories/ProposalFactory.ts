@@ -26,13 +26,16 @@ export class ProposalFactory {
 
     /**
      *
-     * @param {BidMessageType} bidMessageType
+     * @param proposalMessageType
+     * @param proposalTitle
+     * @param proposalDescription
+     * @param options
+     * @param senderProfile
      * @param {string} itemHash
-     * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
-                            proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
+                            proposalDescription: string, options: string[],
                             senderProfile: resources.Profile, itemHash: string | null = null): Promise<ProposalMessage> {
 
         const submitter = senderProfile.address;
@@ -57,8 +60,6 @@ export class ProposalFactory {
         const message: ProposalMessage = {
             action: proposalMessageType,
             submitter,
-            blockStart,
-            blockEnd,
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
@@ -79,28 +80,27 @@ export class ProposalFactory {
     /**
      *
      * @param {ProposalMessage} proposalMessage
+     * @param smsgMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
     public async getModel(proposalMessage: ProposalMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
 
         const smsgData: any = {
-            expiryTime: Number.MAX_SAFE_INTEGER,
             postedAt: Number.MAX_SAFE_INTEGER,
             expiredAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER
+            receivedAt: Number.MAX_SAFE_INTEGER,
+            timeStart: Number.MAX_SAFE_INTEGER
         };
 
         if (smsgMessage) {
-            smsgData.expiryTime = smsgMessage.daysretention;
             smsgData.postedAt = smsgMessage.sent;
-            smsgData.expiredAt = smsgMessage.expiration;
             smsgData.receivedAt = smsgMessage.received;
+            smsgData.expiredAt = smsgMessage.expiration;
+            smsgData.timeStart = smsgMessage.sent;
         }
 
         const proposalCreateRequest = {
             submitter: proposalMessage.submitter,
-            blockStart: proposalMessage.blockStart,
-            blockEnd: proposalMessage.blockEnd,
             hash: proposalMessage.hash,
             type: proposalMessage.type,
             title: proposalMessage.title,

@@ -40,7 +40,8 @@ export class VoteRepository {
             const voteCreated = await vote.save();
             return this.VoteModel.fetchById(voteCreated.id);
         } catch (error) {
-            throw new DatabaseException('Could not create the vote! ' + error, error);
+            this.log.error('Could not create the vote! ' + error);
+            throw new DatabaseException('Could not create the vote!' + error, error);
         }
     }
 

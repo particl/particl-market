@@ -14,17 +14,14 @@ import { Vote } from '../../src/api/models/Vote';
 import { VoteService } from '../../src/api/services/VoteService';
 import { VoteCreateRequest } from '../../src/api/requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../src/api/requests/VoteUpdateRequest';
-import { ProposalType } from '../../src/api/enums/ProposalType';
-import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
-import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
-import {ProfileService} from '../../src/api/services/ProfileService';
-import {MarketService} from '../../src/api/services/MarketService';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateProposalParams} from '../../src/api/requests/params/GenerateProposalParams';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('Vote', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -117,8 +114,10 @@ describe('Vote', () => {
     test('Should throw ValidationException because there is no related_id', async () => {
         const testData = {
             voter: defaultProfile.address,
-            block: 2,
-            weight: 2
+            weight: 2,
+            postedAt: new Date().getTime(),
+            receivedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 1000000
         } as VoteCreateRequest;
 
         expect.assertions(1);
@@ -138,8 +137,10 @@ describe('Vote', () => {
         const testData = {
             proposal_option_id: createdProposal.ProposalOptions[0].id,
             voter: defaultProfile.address,
-            block: 1,
-            weight: 1
+            weight: 1,
+            postedAt: new Date().getTime(),
+            receivedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 1000000
         } as VoteCreateRequest;
 
         const voteModel: Vote = await voteService.create(testData);
@@ -148,7 +149,9 @@ describe('Vote', () => {
 
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
         expect(result.voter).toBe(testData.voter);
-        expect(result.block).toBe(testData.block);
+        expect(result.postedAt).toBe(testData.postedAt);
+        expect(result.receivedAt).toBe(testData.receivedAt);
+        expect(result.expiredAt).toBe(testData.expiredAt);
         expect(result.weight).toBe(testData.weight);
     });
 
@@ -191,8 +194,10 @@ describe('Vote', () => {
 
         const testDataUpdated = {
             voter: defaultProfile.address,
-            block: 3,
-            weight: 3
+            weight: 3,
+            postedAt: new Date().getTime(),
+            receivedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 1000000
         } as VoteUpdateRequest;
 
         const voteModel: Vote = await voteService.update(createdVote.id, testDataUpdated);
@@ -200,7 +205,9 @@ describe('Vote', () => {
 
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
         expect(result.voter).toBe(testDataUpdated.voter);
-        expect(result.block).toBe(testDataUpdated.block);
+        expect(result.postedAt).toBe(testDataUpdated.postedAt);
+        expect(result.receivedAt).toBe(testDataUpdated.receivedAt);
+        expect(result.expiredAt).toBe(testDataUpdated.expiredAt);
         expect(result.weight).toBe(testDataUpdated.weight);
     });
 

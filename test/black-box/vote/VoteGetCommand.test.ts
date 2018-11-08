@@ -26,8 +26,6 @@ describe('VoteGetCommand', () => {
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
 
-    let currentBlock: 0;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -64,12 +62,6 @@ describe('VoteGetCommand', () => {
         const result: any = votePostRes.getBody()['result'];
         expect(result.result).toEqual('Sent.');
 
-        // get current block
-        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
-
     });
 
     test('Should return Vote', async () => {
@@ -89,7 +81,6 @@ describe('VoteGetCommand', () => {
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
@@ -109,12 +100,6 @@ describe('VoteGetCommand', () => {
         const votePostResult: any = votePostRes.getBody()['result'];
         expect(votePostResult.result).toEqual('Sent.');
 
-        // get current block
-        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
-
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
@@ -131,7 +116,6 @@ describe('VoteGetCommand', () => {
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);

@@ -70,7 +70,9 @@ describe('AddressListCommand', () => {
     test('Should return code 500 when no profile is given', async () => {
         const res = await testUtil.rpc(addressCommand, [addressListCommand]);
         res.expectJson();
-        res.expectStatusCode(500);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Missing profileId.`);
     });
 
     test('Should list one address for default profile id', async () => {
