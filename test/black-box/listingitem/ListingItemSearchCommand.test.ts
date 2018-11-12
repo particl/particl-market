@@ -25,6 +25,8 @@ describe('ListingItemSearchCommand', () => {
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const itemFlagCommand = Commands.ITEM_FLAG.commandName;
+    const itemGetCommand = Commands.ITEM_GET.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -462,6 +464,27 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
+    });
+
+    test('Should search for flagged listing items', async () => {
+        // flag item
+        let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem.hash,
+            defaultProfile.id
+        ]);
+        // make sure we got the expected result from posting the proposal
+        const result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
+
+        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
+        params.flagged = true;
+        res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        res.expectJson();
+        res.expectStatusCode(200);
+        const resMain: any = res.getBody()['result'];
+
+        expect(resMain.length).toBe(1);
+        expect(resMain[0].hash).toBe(createdListingItem.hash);
     });
 
 });

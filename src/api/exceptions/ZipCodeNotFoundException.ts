@@ -3,19 +3,17 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * InvalidParamException
+ * ZipCodeNotFoundException
  * ----------------------------------------
  *
- *
- * This should be used if the command that
- * was called has invalid parameter
+ * This should be used if zip code not found.
  */
 
 import { Exception } from '../../core/api/Exception';
 
 
-export class InvalidParamException extends Exception {
-    constructor(param: string) {
-        super(404, `Invalid ${param}.`);
+export class ZipCodeNotFoundException extends Exception {
+    constructor(zipCode: string) {
+        super(404, `ZipCode ${zipCode} was not found!`);
     }
 }

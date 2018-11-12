@@ -89,7 +89,7 @@ describe('ShippingDestinationAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Entity with identifier Country code <' + invalidShippingCountry + '> was not valid! does not exist');
+        expect(res.error.error.message).toBe(`Country code ` + invalidShippingCountry + ` was not found!`);
     });
 
     test('Should fail to add ShippingDestination using invalid ShippingAvailability', async () => {

@@ -12,7 +12,7 @@ export class ProposalResultCreateRequest extends RequestBody {
     public proposal_id: number;
 
     @IsNotEmpty()
-    public block: number;
+    public calculatedAt: number;
 
 }
 // tslint:enable:variable-name

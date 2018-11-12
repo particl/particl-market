@@ -22,8 +22,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     ];
 
     /**
-     * list * 100 -> return all proposals which ended before block 100
-     * list 100 * -> return all proposals ending after block 100
+     * list * 100 -> return all proposals which ended before 100
+     * list 100 * -> return all proposals ending after 100
      * list 100 200 -> return all which are active and closed between 100 200
      *
      * @param {ProposalSearchParams} options
@@ -41,22 +41,22 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
                 }
 
-                if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
-                    // search all ending after options.startBlock
-                    qb.where('proposals.block_end', '>', options.startBlock - 1);
+                if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
+                    // search all ending after options.timeStart
+                    qb.where('proposals.expired_at', '>', options.timeStart - 1);
 
-                } else if (typeof options.startBlock === 'string' && typeof options.endBlock === 'number') {
-                    // search all ending before block
-                    qb.where('proposals.block_end', '<', options.endBlock + 1);
+                } else if (typeof options.timeStart === 'string' && typeof options.timeEnd === 'number') {
+                    // search all ending before options.timeEnd
+                    qb.where('proposals.expired_at', '<', options.timeEnd + 1);
 
-                } else if (typeof options.startBlock === 'number' && typeof options.endBlock === 'number') {
-                    // search all ending after startBlock, starting before endBlock
-                    qb.where('proposals.block_start', '<', options.endBlock + 1);
-                    qb.andWhere('proposals.block_end', '>', options.startBlock - 1);
+                } else if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'number') {
+                    // search all ending after options.timeStart, starting before options.timeEnd
+                    qb.where('proposals.time_start', '<', options.timeEnd + 1);
+                    qb.andWhere('proposals.expired_at', '>', options.timeStart - 1);
                 }
 
             })
-            .orderBy('block_start', options.order);
+            .orderBy('time_start', options.order);
 
         if (withRelated) {
             return await proposalCollection.fetchAll({
@@ -106,12 +106,6 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Submitter(): string { return this.get('submitter'); }
     public set Submitter(value: string) { this.set('submitter', value); }
 
-    public get BlockStart(): number { return this.get('blockStart'); }
-    public set BlockStart(value: number) { this.set('blockStart', value); }
-
-    public get BlockEnd(): number { return this.get('blockEnd'); }
-    public set BlockEnd(value: number) { this.set('blockEnd', value); }
-
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
@@ -127,8 +121,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
-    public get ExpiryTime(): number { return this.get('expiryTime'); }
-    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+    public get TimeStart(): Date { return this.get('timeStart'); }
+    public set TimeStart(value: Date) { this.set('timeStart', value); }
 
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }

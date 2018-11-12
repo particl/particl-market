@@ -66,16 +66,20 @@ export class VoteActionService {
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-            senderProfile, currentBlock);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderProfile.address);
+
+        if (proposal.type === ProposalType.ITEM_VOTE && proposal.expiredAt >= new Date().getTime()) {
+            await this.createOrUpdateVote(voteMessage, proposal, 1);
+            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+        }
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: voteMessage
         };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false);
+        const daysRetention = Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false, daysRetention);
     }
 
     /**
@@ -109,11 +113,11 @@ export class VoteActionService {
                     throw new MessageException('ProposalResult should not be empty!');
                 }
 
-                const currentBlock: number = await this.coreRpcService.getBlockCount();
+                // const currentBlock: number = await this.coreRpcService.getBlockCount();
                 // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
-                if (voteMessage && proposal.blockEnd >= currentBlock) {
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
+                if (voteMessage && event.smsgMessage.daysretention >= 1) {
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, 1, event.smsgMessage);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -177,12 +181,12 @@ export class VoteActionService {
      *
      * @param {VoteMessage} voteMessage
      * @param {"resources".Proposal} proposal
-     * @param {number} currentBlock
      * @param {number} weight
+     * @param voteSmsgMessage
      * @returns {Promise<"resources".Vote>}
      */
-    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, currentBlock: number,
-                                     weight: number): Promise<resources.Vote> {
+    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
+                                     weight: number, voteSmsgMessage?: resources.SmsgMessage): Promise<resources.Vote> {
 
         let lastVote: any;
         try {
@@ -193,8 +197,20 @@ export class VoteActionService {
         }
         const create: boolean = lastVote == null;
 
+        // find the ProposalOption
+        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.optionId === voteMessage.optionId;
+        });
+
+        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
+
+        if (!proposalOption) {
+            this.log.warn('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+            throw new MessageException('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+        }
+
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, currentBlock, weight, create);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, create, voteSmsgMessage);
 
         let voteModel;
         if (create) {

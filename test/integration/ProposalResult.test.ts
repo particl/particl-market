@@ -42,11 +42,11 @@ describe('ProposalResult', () => {
     let createdProposalResult: resources.ProposalResult;
 
     const testData = {
-        block: 1
+        calculatedAt: new Date().getTime()
     } as ProposalResultCreateRequest;
 
     const testDataUpdated = {
-        block: 2
+        calculatedAt: testData.calculatedAt + 1000
     } as ProposalResultUpdateRequest;
 
     beforeAll(async () => {
@@ -122,7 +122,7 @@ describe('ProposalResult', () => {
 
     test('Should throw ValidationException because we want to create a empty proposal result', async () => {
         expect.assertions(1);
-        await proposalResultService.create({}).catch(e =>
+        await proposalResultService.create({} as ProposalResultCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -137,7 +137,7 @@ describe('ProposalResult', () => {
         // test the values
         expect(createdProposalResult.Proposal).toBeDefined();
         expect(createdProposalResult.Proposal.id).toBe(createdProposal.id);
-        expect(createdProposalResult.block).toBe(testData.block);
+        expect(createdProposalResult.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should list ProposalResults with our newly created one', async () => {
@@ -173,11 +173,11 @@ describe('ProposalResult', () => {
 
     test('Should return one ProposalResult', async () => {
         const proposalResultModel: ProposalResult = await proposalResultService.findOne(createdProposalResult.id);
-        const result = proposalResultModel.toJSON();
+        const result: resources.ProposalResult = proposalResultModel.toJSON();
 
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(createdProposal.id);
-        expect(result.block).toBe(testData.block);
+        expect(result.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should update the ProposalResult', async () => {
@@ -186,7 +186,7 @@ describe('ProposalResult', () => {
 
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(createdProposal.id);
-        expect(result.block).toBe(testDataUpdated.block);
+        expect(result.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should delete the ProposalResult', async () => {

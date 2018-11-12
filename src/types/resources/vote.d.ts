@@ -7,9 +7,14 @@ declare module 'resources' {
     interface Vote {
         id: number;
         voter: string;
-        block: number;
         weight: number;
+
+        postedAt: number;
+        receivedAt: number;
+        expiredAt: number;
+
         ProposalOption: ProposalOption;
+
         createdAt: Date;
         updatedAt: Date;
     }

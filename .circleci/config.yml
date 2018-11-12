@@ -1,3 +1,5 @@
+version: 2
+
 
 # -------------------------------------------------------------------
 #   WORKFLOWS
@@ -94,6 +96,10 @@ workflows:
             - hodl
 
 
+# -------------------------------------------------------------------
+#   BRANCH ENV VARS
+# -------------------------------------------------------------------
+
 defaults: &defaults
   working_directory: ~/dappshell
 
@@ -112,18 +118,12 @@ commonenv: &commonenv
   DEFAULT_MARKETPLACE_ADDRESS: pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA
 
 
-# -------------------------------------------------------------------
-#   BRANCH ENV VARS
-# -------------------------------------------------------------------
-
-
-version: 2
-jobs:
 
 # -------------------------------------------------------------------
 #   FEATURE JOB
 # -------------------------------------------------------------------
 
+jobs:
   # builds the feature branch
   build_feature:
     <<: *defaults
@@ -418,7 +418,7 @@ jobs:
 
       # build the app image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH$CIRCLE_SHA1" -f Dockerfile.ci .
+      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
 
       - persist_to_workspace:

@@ -14,10 +14,16 @@ export class VoteUpdateRequest extends RequestBody {
     public voter: string;
 
     @IsNotEmpty()
-    public block: number;
+    public weight: number;
 
     @IsNotEmpty()
-    public weight: number;
+    public postedAt: number;
+
+    @IsNotEmpty()
+    public receivedAt: number;
+
+    @IsNotEmpty()
+    public expiredAt: number;
 
 }
 // tslint:enable:variable-name

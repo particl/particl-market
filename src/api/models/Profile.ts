@@ -60,11 +60,11 @@ export class Profile extends Bookshelf.Model<Profile> {
     public get Address(): string { return this.get('address'); }
     public set Address(value: string) { this.set('address', value); }
 
-    public get UpdatedAt(): Date { return this.get('updatedAt'); }
-    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
-
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+    public get UpdatedAt(): Date { return this.get('updatedAt'); }
+    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public ShippingAddresses(): Collection<Address> {
         return this.hasMany(Address, 'profile_id', 'id');

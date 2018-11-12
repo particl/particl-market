@@ -162,7 +162,6 @@ describe('ListingItemFlagCommand', () => {
         expect(listingItem.FlaggedItem.Proposal.title).toBe(createdListingItem1.hash);
     }, 600000); // timeout to 600s
 
-
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         // add flagged item by item id
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,

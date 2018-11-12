@@ -34,8 +34,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     * [0] startBlock | *, optional
-     * [1] endBlock | *, optional
+     * [0] timeStart | *, optional
+     * [1] timeEnd | *, optional
      * [2] type, optional
      * [3] order, optional
      *
@@ -46,8 +46,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
-            startBlock: data.params[0],
-            endBlock: data.params[1],
+            timeStart: data.params[0],
+            timeEnd: data.params[1],
             type: data.params[2],
             order: data.params[3]
         } as ProposalSearchParams;
@@ -124,7 +124,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <startBlock> <endBlock> <type> <order> ';
+        return this.getName() + ' <timeStart> <endTime> <type> <order> ';
     }
 
     public description(): string {
@@ -132,7 +132,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return this.getName() + ' 1 100000000 ITEM_VOTE ASC ';
+        return this.getName() + ' * 1540200116000 ITEM_VOTE ASC ';
     }
 
 }

@@ -11,17 +11,15 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('submitter').notNullable();
-            table.integer('block_start').notNullable();
-            table.integer('block_end').notNullable();
             table.string('hash').notNullable().unique();
             table.string('item').nullable();   // item hash
             table.string('type').notNullable();
             table.text('title').nullable();
             table.text('description').nullable();
 
-            table.integer('expiry_time').unsigned();
-            table.integer('received_at').notNullable();
+            table.timestamp('time_start').notNullable();
             table.integer('posted_at').notNullable();
+            table.integer('received_at').notNullable();
             table.integer('expired_at').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
