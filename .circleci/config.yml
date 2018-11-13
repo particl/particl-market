@@ -447,7 +447,7 @@ jobs:
           name: apt-get updates
           ##curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
           command: |
-            curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+            curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt-get update
             sudo apt-get install gcc-4.9 g++-4.9 nodejs
