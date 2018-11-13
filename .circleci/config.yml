@@ -175,7 +175,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -227,7 +227,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
     steps:
@@ -274,7 +274,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
     steps:
@@ -314,7 +314,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
     steps:
@@ -431,7 +431,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -483,7 +483,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -523,7 +523,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -563,7 +563,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -680,7 +680,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -733,7 +733,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -775,7 +775,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
@@ -817,7 +817,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:latest
+      image: circleci/classic:201808-01
     environment:
       <<: *commonenv
 
