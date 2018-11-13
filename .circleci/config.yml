@@ -445,8 +445,8 @@ jobs:
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
+          ##curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
           command: |
-      ##curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
             curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt-get update
