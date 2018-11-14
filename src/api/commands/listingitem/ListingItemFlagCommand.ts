@@ -65,7 +65,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
-
         const profileModel = await this.profileService.findOne(profileId) // throws if not found
             .catch(reason => {
                 this.log.error('ERROR:', reason);
@@ -103,9 +102,11 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
+            this.log.error('Missing listingItemHash.');
             throw new MessageException('Missing listingItemHash.');
         }
         if (data.params.length < 2) {
+            this.log.error('Missing profileId.');
             throw new MessageException('Missing profileId.');
         }
 
@@ -115,6 +116,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         } else {
             listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
                 .catch(reason => {
+                    this.log.error('ListingItem not found.');
                     throw new MessageException('ListingItem not found.');
                 });
         }
@@ -122,6 +124,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         // check if item is already flagged
         if (!_.isEmpty(listingItem.FlaggedItem)) {
+            this.log.error('Item is already flagged.');
             throw new MessageException('Item is already flagged.');
         }
 
@@ -129,12 +132,13 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         data.params[0] = listingItem.hash;  // set to hash
 
         if (typeof data.params[1] !== 'number') {
+            this.log.error('profileId needs to be a number.');
             throw new MessageException('profileId needs to be a number.');
         } else {
             // make sure profile with the id exists
             await this.profileService.findOne(data.params[1])    // throws if not found
                 .catch(reason => {
-                    this.log.error(reason);
+                    this.log.error('Profile not found. ' + reason);
                     throw new MessageException('Profile not found.');
                 });
         }

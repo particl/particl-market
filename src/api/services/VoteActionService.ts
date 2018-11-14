@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -32,6 +33,8 @@ import { ProposalOptionResult } from '../models/ProposalOptionResult';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { ProfileService } from './ProfileService';
+import { Profile } from '../models/Profile';
 
 export class VoteActionService {
 
@@ -48,6 +51,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -65,6 +69,11 @@ export class VoteActionService {
      */
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
+        /*
+         * TODO:
+         * If senderProfile has balance (weight) <= 0
+         *     Skip sending this vote, waste of time since it has no weight.
+         */
 
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
             senderProfile.address);
@@ -73,6 +82,11 @@ export class VoteActionService {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: voteMessage
         };
+
+        /*
+         * TODO:
+         * Create vote locally
+         */
 
         return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
                                          Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
@@ -87,7 +101,6 @@ export class VoteActionService {
      * @returns {Promise<module:resources.Bid>}
      */
     public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
-
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
@@ -103,51 +116,77 @@ export class VoteActionService {
             .then(async proposalModel => {
 
                 const proposal = proposalModel.toJSON();
-
-                // just make sure we have one
-                if (_.isEmpty(proposal.ProposalResults)) {
-                    throw new MessageException('ProposalResult should not be empty!');
-                }
-
-                // const currentBlock: number = await this.coreRpcService.getBlockCount();
-                // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
-
-                if (voteMessage && event.smsgMessage.daysretention >= 1) {
-                    const weight = await this.voteService.getVoteWeight(voteMessage.voter);
-                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight, event.smsgMessage);
-                    this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
-
-                    const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-                    // todo: extract method
-                    if (proposal.type === ProposalType.ITEM_VOTE
-                        && await this.shouldRemoveListingItem(proposalResult)) {
-
-                        // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                        const listingItemId = await this.listingItemService.findOne(proposal.FlaggedItem.listingItemId, false)
-                            .then(value => {
-                                return value.Id;
-                            }).catch(reason => {
-                                // ignore
-                                return null;
-                            });
-                        if (listingItemId) {
-                            await this.listingItemService.destroy(listingItemId);
+                /*
+                 * Are any of these votes from one of our profiles?
+                 *     Ignore the vote, we've already created it locally
+                 * Else, process vote
+                 */
+                let weAreTheVoter = false;
+                const profiles: Bookshelf.Collection<Profile> = await this.profileService.findAll();
+                for (const i in profiles) {
+                    if (i) {
+                        const profile: Profile = profiles[i];
+                        if (profile.Address === voteMessage.voter) {
+                            this.log.debug(`profile.Address (${profile.Address}) === voteMessage.voter (${voteMessage.voter})`);
+                            weAreTheVoter = true;
+                            break;
                         }
-                    } else {
-                        this.log.debug('No item destroyed.');
                     }
-                    // TODO: do whatever else needs to be done
-
-                    return SmsgMessageStatus.PROCESSED;
-                } else {
-                    throw new MessageException('Missing VoteMessage');
                 }
+                if (weAreTheVoter) {
+                    this.log.debug('This vote should have already been created locally. Skipping.');
+                } else {
+                    this.log.debug('This vote should not exist already locally. Process the vote.');
+
+                    // just make sure we have one
+                    if (_.isEmpty(proposal.ProposalResults)) {
+                        throw new MessageException('ProposalResult should not be empty!');
+                    }
+
+                    // const currentBlock: number = await this.coreRpcService.getBlockCount();
+                    // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
+
+                    if (voteMessage && event.smsgMessage.daysretention >= 1) {
+                        const weight = await this.voteService.getVoteWeight(voteMessage.voter);
+
+                        // If vote has weight of 0, ignore, no point saving a weightless vote.
+                        // If vote has a weight > 0, process and save it.
+                        if (weight > 0) {
+                            const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight, event.smsgMessage);
+                            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+
+                            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+                            // todo: extract method
+                            if (proposal.type === ProposalType.ITEM_VOTE
+                                && await this.shouldRemoveListingItem(proposalResult)) {
+
+                                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                                const listingItemId = await this.listingItemService.findOne(proposal.FlaggedItem.listingItemId, false)
+                                    .then(value => {
+                                        return value.Id;
+                                    }).catch(reason => {
+                                        // ignore
+                                        return null;
+                                    });
+                                if (listingItemId) {
+                                    await this.listingItemService.destroy(listingItemId);
+                                }
+                            } else {
+                                this.log.debug('No item destroyed.');
+                            }
+                            // TODO: do whatever else needs to be done
+                        }
+                        return SmsgMessageStatus.PROCESSED;
+                    } else {
+                        throw new MessageException('Missing VoteMessage');
+                    }
+                }
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
                 return SmsgMessageStatus.WAITING;
             });
-
     }
 
     /**
