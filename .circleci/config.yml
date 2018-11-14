@@ -515,7 +515,7 @@ jobs:
       - run:
             name: apt-get updates
             command: |
-                sudo apt-get install gcc g++ make build-essential build-essential checkinstall libssl-dev
+                sudo apt-get install gcc g++ make build-essential build-essential libssl-dev
                 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
                 nvm install 9.6.1
                 nvm use 9.6.1
