@@ -122,15 +122,13 @@ export class VoteActionService {
                  * Else, process vote
                  */
                 let weAreTheVoter = false;
-                const profiles: Bookshelf.Collection<Profile> = await this.profileService.findAll();
-                for (const i in profiles) {
-                    if (i) {
-                        const profile: Profile = profiles[i];
-                        if (profile.Address === voteMessage.voter) {
-                            this.log.debug(`profile.Address (${profile.Address}) === voteMessage.voter (${voteMessage.voter})`);
-                            weAreTheVoter = true;
-                            break;
-                        }
+                const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
+                const profiles: resources.Profile[] = profilesCollection.toJSON();
+                for (const profile of profiles) {
+                    if (profile.address === voteMessage.voter) {
+                        this.log.debug(`profile.Address (${profile.address}) === voteMessage.voter (${voteMessage.voter})`);
+                        weAreTheVoter = true;
+                        break;
                     }
                 }
                 if (weAreTheVoter) {

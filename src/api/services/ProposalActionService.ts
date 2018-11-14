@@ -96,8 +96,6 @@ export class ProposalActionService {
             itemHash
         );
 
-        this.log.error('senderProfile  = ' + JSON.stringify(senderProfile, null, 2));
-
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: proposalMessage
@@ -132,22 +130,20 @@ export class ProposalActionService {
 
             // For each profile, vote.
             // The VoteActionService will ignore votes without weight (profile has no balance).
-            const profiles: Bookshelf.Collection<Profile> = await this.profileService.findAll();
-            for (const i in profiles) {
-                if (i) {
-                    const profile: resources.Profile = profiles[i];
-                    await this.voteActionService.send(proposal, proposalOption, profile, market);
-                }
+            const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
+            const profiles: resources.Profile[] = profilesCollection.toJSON();
+            for (const profile of profiles) {
+                await this.voteActionService.send(proposal, proposalOption, profile, market);
             }
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
             let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
             // TODO: Not sure this line is required.
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-            return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+            return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         } else {
             const paidMessage = true;
-            return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+            return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         }
     }
 
