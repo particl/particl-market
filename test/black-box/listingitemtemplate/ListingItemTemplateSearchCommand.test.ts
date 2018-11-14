@@ -10,6 +10,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { SearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -68,6 +69,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -83,6 +85,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             1,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -102,6 +105,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             1,
             1,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -121,6 +125,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             2,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -136,7 +141,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
+            undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.key
         ]);
         res.expectJson();
@@ -153,7 +160,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
+            undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.id
         ]);
         res.expectJson();
@@ -170,9 +179,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
-            '',
-            listingItemTemplate1.ItemInformation.title
+            listingItemTemplate1.ItemInformation.title,
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -192,5 +201,25 @@ describe('ListingItemTemplateSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Missing parameters.');
+    });
+
+
+    test('Should filter templates with published listing items', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
+        expect(result).toHaveLength(2);
     });
 });

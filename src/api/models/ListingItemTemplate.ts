@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
+import { SearchOrderField } from '../enums/SearchOrderField';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
@@ -73,6 +74,13 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
+        let sortingField = 'update_at';
+        if (options.orderField === SearchOrderField.TITLE) {
+            sortingField = 'item_informations.title';
+        }
+        if (options.orderField === SearchOrderField.STATE) {
+            sortingField = 'listing_items.id';
+        }
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 if (typeof options.category === 'number') {
@@ -88,8 +96,15 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
+                if (typeof options.hasItems === 'boolean') {
+                    if (options.hasItems) {
+                        qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    } else {
+                        qb.outerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    }
+                }
             })
-            .orderBy('updated_at', options.order)
+            .orderBy(sortingField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
