@@ -431,7 +431,7 @@ jobs:
     <<: *defaults
     machine:
       enabled: true
-      image: circleci/classic:201808-01
+      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
