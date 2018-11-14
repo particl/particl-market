@@ -446,7 +446,6 @@ jobs:
       - run:
           name: apt-get updates
             ##curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            ##  curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
             ## You may also need development tools to build native addons:
             ## To install the Yarn package manager, run:
             ## curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
@@ -457,8 +456,11 @@ jobs:
             ##  sudo apt-get install gcc-4.9 g++-4.9 nodejs
             ##  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
           command: |
+            curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
             sudo apt-get install -y nodejs
             sudo apt-get install gcc g++ make
+            node -v
+            npm -v
       ##- run:
       ##    name: install dockerize
       ##    command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
