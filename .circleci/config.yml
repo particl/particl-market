@@ -515,6 +515,9 @@ jobs:
       - run:
             name: apt-get updates
             command: |
+                nvm -v
+                node -v
+                npm -v
                 sudo apt-get install gcc g++ make build-essential build-essential libssl-dev
                 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
                 export NVM_DIR="/opt/circleci/.nvm"
@@ -523,6 +526,7 @@ jobs:
                 nvm use 9.6.1
                 node -v
                 npm -v
+                npm install -g -s --no-progress yarn
                 yarn -v
       - run:
           name: install dockerize
