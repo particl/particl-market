@@ -209,8 +209,13 @@ export class ProposalService {
         this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
 
         // fetch the latest ProposalResult to get the latest id
+        let proposalResult: resources.ProposalResult;
         let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
-        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
+        if (!proposalResultModel) {
+            proposalResult = await this.createProposalResult(proposal);
+        } else {
+            proposalResult = proposalResultModel.toJSON();
+        }
 
         // TODO: rather than update, we should create new ProposalResult
         // first update the calculatedAt in ProposalResult
