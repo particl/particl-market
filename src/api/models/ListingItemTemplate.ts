@@ -74,12 +74,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
-        let sortingField = 'update_at';
+        let sortingField = 'updated_at';
         if (options.orderField === SearchOrderField.TITLE) {
             sortingField = 'item_informations.title';
         }
         if (options.orderField === SearchOrderField.STATE) {
-            sortingField = 'listing_items.id';
+            sortingField = 'listing_items.listing_item_template_id';
         }
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
@@ -96,12 +96,15 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (typeof options.hasItems === 'boolean') {
+                if (options.hasItems && typeof options.hasItems === 'boolean') {
                     if (options.hasItems) {
                         qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                     } else {
-                        qb.outerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        qb.whereNotNull('listing_items.listing_item_template_id');
                     }
+                } else if (typeof options.hasItems !== 'boolean') {
+                    qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                 }
             })
             .orderBy(sortingField, options.order)

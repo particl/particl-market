@@ -21,6 +21,9 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateSearchCommand = Commands.TEMPLATE_SEARCH.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -222,4 +225,75 @@ describe('ListingItemTemplateSearchCommand', () => {
         const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
+
+
+
+    test('Should filter templates with non-published listing items', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
+        expect(result).toHaveLength(2);
+    });
+
+
+
+    test('Should filter templates with published listing items', async () => {
+        const daysRetention = 4;
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate1.id,
+            daysRetention,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+
+        const ress: any = res.getBody()['result'];
+        if (ress.result === 'Send failed.') {
+            log.debug(JSON.stringify(ress, null, 2));
+        }
+        res.expectStatusCode(200);
+
+        await testUtil.waitFor(5);
+
+        const response: any = await testUtil.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplate1.hash],
+            8 * 60,
+            200,
+            'hash',
+            listingItemTemplate1.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200)
+
+        await testUtil.waitFor(5);
+        
+        const result: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            true
+        ]);
+        result.expectJson();
+        result.expectStatusCode(200);
+
+        const resMain: resources.ListingItemTemplate[] = result.getBody()['result'];
+        expect(resMain).toHaveLength(1);
+    }, 6000000);  // timeout to 600s
 });
