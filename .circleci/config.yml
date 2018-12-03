@@ -513,7 +513,7 @@ jobs:
       ##      sudo apt-get install gcc-4.9 g++-4.9 nodejs
       ##      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - run:
-            name: apt-get updates
+            name: apt-get updates + update node
             command: |
                 set +e
                 node -v
@@ -546,7 +546,11 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       ##- run: npm install -g -s --no-progress yarn
       ##- run: yarn install
-      - run: bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
+      - run:
+            name: run integration tests
+            command: |
+                less .env.test
+                run: bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
 
   # develop branch blackbox test
   blackbox_test_develop:
