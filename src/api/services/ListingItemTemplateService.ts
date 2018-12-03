@@ -273,15 +273,22 @@ export class ListingItemTemplateService {
         }
     }
 
-    // check if object is exist in a array
-    private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
+    /**
+     * find object with given field and value in given array, returns the object or undefined
+     * todo: rename
+     *
+     * @param objectArray
+     * @param fieldName
+     * @param value
+     */
+    private async checkExistingObject(objectArray: any[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }
 
     // find highest order number from listingItemObjects
-    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: any[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
             return itemObject['order'];
         });

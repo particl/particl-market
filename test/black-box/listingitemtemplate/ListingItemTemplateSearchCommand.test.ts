@@ -278,7 +278,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         response.expectStatusCode(200)
 
         await testUtil.waitFor(5);
-        
+
         const result: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -296,4 +296,5 @@ describe('ListingItemTemplateSearchCommand', () => {
         const resMain: resources.ListingItemTemplate[] = result.getBody()['result'];
         expect(resMain).toHaveLength(1);
     }, 6000000);  // timeout to 600s
+
 });
