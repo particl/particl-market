@@ -515,10 +515,11 @@ jobs:
       - run:
             name: apt-get updates
             command: |
+                set +e
                 node -v
                 npm -v
                 sudo apt-get install gcc g++ make build-essential build-essential libssl-dev
-                npm install eslint
+                echo "INSTALLING NVM..."
                 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
                 export NVM_DIR="/opt/circleci/.nvm"
                 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
@@ -526,7 +527,10 @@ jobs:
                 node -v
                 npm -v
                 nvm install 9.6.1
+                nvm alias default 9.6.1
                 nvm use 9.6.1
+                echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+                echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
                 npm install -g -s --no-progress yarn
                 yarn -v
       - run:
