@@ -401,11 +401,12 @@ jobs:
 
       # install deps and set up the app locally
       - run: yarn install
-      - run: ./bin/ci-copy-env.sh
-      ##- run: cp -f .env.circle.app1 .env
-      ##- run: cp -f .env.circle.app1 .env.blackbox
-      ##- run: cp -f .env.circle.app1 .env.test
-      ##- run: ./bin/ci-create-dbs.sh
+      - run:
+            name: copy env files
+            command: |
+                #cp .env.example .env
+                cp .env.circle.test .env.test
+                cp .env.blackbox.example .env.blackbox
       - run: ./bin/ci-create-build-version.sh
 
 
@@ -550,7 +551,8 @@ jobs:
             name: run integration tests
             command: |
                 cat .env.test
-                bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
+                npm run test:integration:pretty
+                # bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
 
   # develop branch blackbox test
   blackbox_test_develop:
