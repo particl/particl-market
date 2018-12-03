@@ -364,6 +364,18 @@ export class CoreRpcService {
         return await this.call('dumpprivkey', params);
     }
 
+    /**
+     * Sign an object.
+     *
+     * @param {string} address
+     * @param {any} obj
+     * @returns {Promise<string>}
+     */
+    public async signMessage(address: string, obj: any): Promise<string> {
+        const message = JSON.stringify(obj).split('').sort().toString();
+        return await this.call('signmessage', [address, message]);
+    }
+
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;

@@ -70,26 +70,29 @@ export class VoteActionService {
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
         /*
-         * TODO:
          * If senderProfile has balance (weight) <= 0
          *     Skip sending this vote, waste of time since it has no weight.
          */
+        const weight = await this.voteService.getVoteWeight(senderProfile.address);
+        if (weight > 0) {
+            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
+                senderProfile.address);
 
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-            senderProfile.address);
+            // Sign message (daemon signmessage <addr> <msg>)
+            const signature = await this.coreRpcService.signMessage(senderProfile.address, voteMessage);
+            // Save signature
+            voteMessage.signature = signature;
 
-        const msg: MarketplaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: voteMessage
-        };
+            const msg: MarketplaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: voteMessage
+            };
 
-        /*
-         * TODO:
-         * Create vote locally
-         */
-
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
-                                         Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
+            return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
+                                             Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
+        } else {
+            return {} as SmsgSendResponse;
+        }
     }
 
     /**
@@ -109,6 +112,15 @@ export class VoteActionService {
         const voteMessage: VoteMessage = event.marketplaceMessage.mpaction as VoteMessage;
         if (voteMessage.voter !== event.smsgMessage.from) {
             throw new MessageException('Voter does not match with sender.');
+        }
+
+        // Get vote message signature
+        const signature = voteMessage.signature;
+        // Verify signature
+        delete voteMessage.signature;
+        const localSignature = await this.coreRpcService.signMessage(voteMessage.voter, voteMessage);
+        if (signature !== localSignature) {
+            throw new MessageException('Received signature and locally calculated signature do not match! ' + signature + ' !== ' + localSignature);
         }
 
         // get proposal and ignore vote if we're past the final block of the proposal
