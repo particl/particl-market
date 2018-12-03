@@ -47,9 +47,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/ListingItemTemplateSearchParams';
-import { IsEnum, IsNotEmpty } from 'class-validator';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
 
@@ -748,6 +746,56 @@ describe('ListingItemTemplate', async () => {
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
         expect(templates.length).toBe(1);
+
+    });
+
+    test('Should return ListingItemTemplates using searchString ordered correctly', async () => {
+        const titleToSearchFor = 'titleToSearchFor';
+
+        let testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.itemInformation.title = titleToSearchFor + ' 1';
+        await listingItemTemplateService.create(testDataToSave);
+
+        testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.itemInformation.title = titleToSearchFor + ' 2';
+        await listingItemTemplateService.create(testDataToSave);
+
+        let searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.ASC,
+            orderField: SearchOrderField.TITLE,
+            profileId: defaultProfile.id,
+            searchString: titleToSearchFor
+            // category: '*',
+            // hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        let templateCollection = await listingItemTemplateService.search(searchParams);
+        let templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(2);
+        expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 1');
+        expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 2');
+
+        searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.DESC,
+            orderField: SearchOrderField.TITLE,
+            profileId: defaultProfile.id,
+            searchString: titleToSearchFor
+            // category: '*',
+            // hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        templateCollection = await listingItemTemplateService.search(searchParams);
+        templates = templateCollection.toJSON();
+        expect(templates.length).toBe(2);
+        expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 2');
+        expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 1');
+
     });
 
 

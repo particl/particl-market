@@ -86,6 +86,8 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
+                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
@@ -96,18 +98,22 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.profileId) {
                     qb.where('profile_id', '=', options.profileId);
                 }
-                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
 
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
 
-                if (options.hasItems) {
-                    qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
-                } else {
+                if (options.hasItems !== undefined) {
+                    if (options.hasItems) {
+                        qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    } else {
+                        qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        qb.whereNotNull('listing_items.listing_item_template_id');
+                    }
+                } else if (typeof options.hasItems !== 'boolean') {
                     qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
-                    qb.whereNotNull('listing_items.listing_item_template_id');
                 }
+
             })
             .orderBy(sortingField, options.order)
             .query({
