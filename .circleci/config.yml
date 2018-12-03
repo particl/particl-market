@@ -550,7 +550,7 @@ jobs:
             name: run integration tests
             command: |
                 cat .env.test
-                run: bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
+                bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
 
   # develop branch blackbox test
   blackbox_test_develop:
