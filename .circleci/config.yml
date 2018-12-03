@@ -401,7 +401,7 @@ jobs:
 
       # install deps and set up the app locally
       - run: yarn install
-      - run: ./bin/copy-env.sh
+      - run: ./bin/ci-copy-env.sh
       ##- run: cp -f .env.circle.app1 .env
       ##- run: cp -f .env.circle.app1 .env.blackbox
       ##- run: cp -f .env.circle.app1 .env.test
@@ -549,7 +549,7 @@ jobs:
       - run:
             name: run integration tests
             command: |
-                less .env.test
+                cat .env.test
                 run: bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
 
   # develop branch blackbox test
