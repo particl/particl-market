@@ -517,22 +517,21 @@ jobs:
             name: apt-get updates + update node
             command: |
                 set +e
-                node -v
-                npm -v
                 sudo apt-get install gcc g++ make build-essential build-essential libssl-dev
                 echo "INSTALLING NVM..."
                 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
                 export NVM_DIR="/opt/circleci/.nvm"
                 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                nvm -v
-                node -v
-                npm -v
                 nvm install 9.6.1
                 nvm alias default 9.6.1
                 nvm use 9.6.1
                 echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
                 echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
                 npm install -g -s --no-progress yarn
+                echo "VERSIONS:"
+                nvm --version
+                node -v
+                npm -v
                 yarn -v
       - run:
           name: install dockerize
