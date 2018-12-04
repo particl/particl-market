@@ -192,6 +192,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
 
+                if (options.flagged) {
+                    qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
+                }
+
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
                 }

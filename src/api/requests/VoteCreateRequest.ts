@@ -11,6 +11,9 @@ export class VoteCreateRequest extends RequestBody {
     public proposal_option_id: number;
 
     @IsNotEmpty()
+    public weight: number;
+
+    @IsNotEmpty()
     public voter: string;
 
     @IsNotEmpty()
@@ -21,9 +24,6 @@ export class VoteCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public expiredAt: number;
-
-    @IsNotEmpty()
-    public weight: number;
 
 }
 // tslint:enable:variable-name

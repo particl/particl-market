@@ -234,12 +234,12 @@ export class VoteActionService {
      *
      * @param {VoteMessage} voteMessage
      * @param {"resources".Proposal} proposal
-     * @param {number} currentBlock
      * @param {number} weight
+     * @param voteSmsgMessage
      * @returns {Promise<"resources".Vote>}
      */
     private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
-                                     weight: number, voteSmsg: resources.SmsgMessage): Promise<resources.Vote> {
+                                     weight: number, voteSmsgMessage?: resources.SmsgMessage): Promise<resources.Vote> {
 
         let lastVote: any;
         try {
@@ -250,8 +250,20 @@ export class VoteActionService {
         }
         const create: boolean = lastVote == null;
 
+        // find the ProposalOption
+        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.optionId === voteMessage.optionId;
+        });
+
+        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
+
+        if (!proposalOption) {
+            this.log.warn('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+            throw new MessageException('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
+        }
+
         // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, weight, create, voteSmsg);
+        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, create, voteSmsgMessage);
 
         let voteModel;
         if (create) {

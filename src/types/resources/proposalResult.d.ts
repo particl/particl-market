@@ -6,7 +6,8 @@ declare module 'resources' {
 
     interface ProposalResult {
         id: number;
-        block: number;
+        calculatedAt: number;
+
         Proposal: Proposal;
         ProposalOptionResults: ProposalOptionResult[];
 

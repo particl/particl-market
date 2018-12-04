@@ -98,6 +98,7 @@ import { ItemVote } from '../enums/ItemVote';
 import { Proposal } from '../models/Proposal';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
+import {IsNotEmpty} from 'class-validator';
 
 export class TestDataService {
 
@@ -681,13 +682,15 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const randomBoolean: boolean = Math.random() >= 0.5;
             const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
-            const daysRetention = proposal.expiryTime;
             const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
                 voter,
-                weight: 1
+                weight: 1,
+                postedAt: new Date().getTime(),
+                receivedAt: new Date().getTime(),
+                expiredAt: new Date().getTime() + 100000000
             } as VoteCreateRequest;
 
             const voteModel = await this.voteService.create(voteCreateRequest);
@@ -715,14 +718,15 @@ export class TestDataService {
         const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
         const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
 
-        const currentblock: number = await this.coreRpcService.getBlockCount();
-        /*const blockStart = generateParams.generatePastProposal
-            ? _.random(1, (currentblock / 2), false)
-            : _.random(currentblock + 100, currentblock + 1000, false);
+        const currentTime = new Date().getTime();
 
-        const blockEnd = generateParams.generatePastProposal
-            ? _.random((currentblock / 2) + 100, currentblock - 1000, false)
-            : _.random(currentblock + 1001, currentblock + 2000, false);*/
+        const timeStart = generateParams.generatePastProposal
+            ? _.random(1, (currentTime / 2), false)
+            : _.random(currentTime + 100, currentTime + 1000, false);
+
+        const timeEnd = generateParams.generatePastProposal
+            ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
+            : _.random(currentTime + 1001, currentTime + 2000, false);
 
         // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
         // this.log.debug('currentblock: ', currentblock);
@@ -735,10 +739,10 @@ export class TestDataService {
             item,
             title,
             description,
-            expiryTime: 4,
-            postedAt: new Date().getTime(),
-            expiredAt: new Date().getTime() + 100000000,
-            receivedAt: new Date().getTime()
+            timeStart,
+            postedAt: timeStart,
+            receivedAt: timeStart,
+            expiredAt: timeEnd
         } as ProposalCreateRequest;
 
         const options: ProposalOptionCreateRequest[] = [];

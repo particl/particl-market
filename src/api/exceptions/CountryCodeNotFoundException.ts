@@ -3,19 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * MessageException
+ * CountryCodeNotFoundException
  * ----------------------------------------
  *
- * This should be used if a someone requests a
- * entity with a id, but there is no entity with this id in the
- * database, then we throw this exception.
+ * This should be used if country code
+ * not found in country code conversion.
  */
 
 import { Exception } from '../../core/api/Exception';
 
 
-export class InvalidCountryCodeException extends Exception {
+export class CountryCodeNotFoundException extends Exception {
     constructor(countryCode: string) {
-        super(404, `Country code ${countryCode} was not valid!`);
+        super(404, `Country code ${countryCode} was not found!`);
     }
 }

@@ -177,19 +177,6 @@ export class ItemInformationService {
             await this.shippingDestinationService.create(shippingDestination);
         }
 
-        // find related record and delete it
-        let itemImages = updatedItemInformation.related('ItemImages').toJSON() || [];
-        for (const itemImage of itemImages) {
-            await this.itemImageService.destroy(itemImage.id);
-        }
-
-        // recreate related data
-        itemImages = body.itemImages || [];
-        for (const itemImage of itemImages) {
-            itemImage.item_information_id = id;
-            await this.itemImageService.create(itemImage);
-        }
-
         // finally find and return the updated itemInformation
         const newItemInformation = await this.findOne(id);
         return newItemInformation;

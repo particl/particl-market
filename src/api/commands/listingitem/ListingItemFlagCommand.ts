@@ -24,6 +24,7 @@ import { ListingItemActionService } from '../../services/ListingItemActionServic
 import { ItemVote } from '../../enums/ItemVote';
 import { ProposalFactory } from '../../factories/ProposalFactory';
 import * as _ from 'lodash';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -73,7 +74,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const profile: resources.Profile = profileModel.toJSON();
 
         // Get the default market.
-        // TODO: We might want to let users specify this later.
+        // TODO: this should be a command parameter
         const marketModel = await this.marketService.getDefault(); // throws if not found
         const market: resources.Market = marketModel.toJSON();
 
@@ -111,7 +112,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         }
 
         let listingItemModel: ListingItem;
-        if (typeof data.params[0] === 'number') {
+        if (typeof data.params[0] !== 'string') {
             throw new MessageException('Invalid listingItemHash.');
         } else {
             listingItemModel = await this.listingItemService.findOneByHash(data.params[0])

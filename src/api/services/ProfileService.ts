@@ -150,7 +150,7 @@ export class ProfileService {
         // set new values
         profile.Name = body.name;
 
-        // update address only if its set
+        // update address only if it is set
         if (body.address) {
             profile.Address = body.address;
         }

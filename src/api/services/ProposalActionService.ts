@@ -246,7 +246,6 @@ export class ProposalActionService {
      */
     /* private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
 
-        // const currentBlock = await this.coreRpcService.getBlockCount();
         const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
             return option.description === itemVote;
         });
@@ -288,10 +287,15 @@ export class ProposalActionService {
         const proposal: resources.Proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item)
             .then(async existingProposalModel => {
                 // Proposal already exists (for some unexplicable reason), so we use it
+                // this same function is called from send() and from processProposalReceivedEvent
+                // => if the proposal is yours, it's allready created in send
                 const existingProposal: resources.Proposal = existingProposalModel.toJSON();
-                if (proposalCreateRequest.postedAt &&
-                        (proposalCreateRequest.postedAt < existingProposal.postedAt)) { // update to use the one that was sent first
+                if (proposalCreateRequest.postedAt
+                    && (proposalCreateRequest.postedAt < existingProposal.postedAt)) {
+                    // update to use the one that was sent first
                     // incoming was posted before the existing -> update existing with incoming data
+                    // TODO: WTF there should always be just one incoming?
+                    // + the one created locally in send should not have postedAt field!!
                     const updatedProposalModel = await this.proposalService.update(existingProposal.id, proposalCreateRequest);
                     return updatedProposalModel.toJSON();
                 } else {
@@ -299,11 +303,16 @@ export class ProposalActionService {
                 }
             })
             .catch(async reason => {
+                // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
                 // proposal doesnt exist -> create Proposal
                 let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
                 const createdProposal = createdProposalModel.toJSON();
+                // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
+
                 // also create the FlaggedItem
                 const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
+                // this.log.debug('processItemVoteProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+
                 createdProposalModel = await this.proposalService.findOne(createdProposal.id);
                 return createdProposalModel.toJSON();
             });
