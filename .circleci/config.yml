@@ -147,10 +147,12 @@ jobs:
 
       # install deps and set up the app locally
       - run: yarn install
-      - run: ./bin/copy-env.sh
-      - run: cp -f .env.circle.app1 .env
-      - run: cp -f .env.circle.app1 .env.blackbox
-      - run: cp -f .env.circle.app1 .env.test
+      - run:
+            name: copy env files
+            command: |
+                cp -f .env.circle.app1 .env
+                cp -f .env.circle.test .env.test
+                cp -f .env.blackbox.example .env.blackbox
       - run: ./bin/ci-create-build-version.sh
 
       # cache
@@ -404,11 +406,10 @@ jobs:
       - run:
             name: copy env files
             command: |
-                cp .env.circle.app1 .env
-                cp .env.circle.test .env.test
-                cp .env.blackbox.example .env.blackbox
+                cp -f .env.circle.app1 .env
+                cp -f .env.circle.test .env.test
+                cp -f .env.blackbox.example .env.blackbox
       - run: ./bin/ci-create-build-version.sh
-
 
       # cache
       - save_cache:
