@@ -14,6 +14,11 @@ cp -f .env.circle.app1 .env
 cp -f .env.circle.test .env.test
 cp -f .env.blackbox.example .env.blackbox
 
+echo ".env:"
+cat .env
+echo ".env.test:"
+cat .env.test
+
 yarn install --check-files
 
 export NODE_ENV=$1
@@ -36,5 +41,4 @@ echo $TESTNET_PORT
 
 # ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 30s
 
-yarn install --check-files
 npm run test:integration:pretty
