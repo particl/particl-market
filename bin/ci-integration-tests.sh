@@ -29,4 +29,6 @@ echo $MAINNET_PORT
 echo $TESTNET_PORT
 
 # ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 30s
+
+yarn install --check-files
 npm run test:integration:pretty
