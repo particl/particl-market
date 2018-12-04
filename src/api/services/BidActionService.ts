@@ -273,21 +273,22 @@ export class BidActionService {
             // No exact match found, so...
             //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the required amount by no more than 1%.
             // NB!! Only do this if number of utxos <= 12 (which is 4096 combinations to test for - any more and performance drastically suffers)
-            if (utxoLessThanReqestedAmount.length <= 12 ) {
-                for (let ii = 0; ii < Math.pow(2, utxoLessThanReqestedAmount.length); ii++) {
-                    const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
-                    const summed: number = this.correctNumberDecimals( potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0) );
+            const requiredTestCases = utxoLessThanReqestedAmount.length <= 12 ? 0 : Math.pow(2, utxoLessThanReqestedAmount.length);
+            for (let ii = 0; ii < requiredTestCases; ii++) {
+                const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
+                const summed: number = this.correctNumberDecimals( 
+                    potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0)
+                );
 
-                    if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
-                        // Sum of utxos is within a 1 percent upper margin of the requested amount.
-                        if (summed === adjustedRequiredAmount) {
-                            // Found the exact required amount.
-                            utxoIdxs = potentialIdxs;
-                            break;
-                        } else if (!utxoIdxs.length) {
-                            utxoIdxs.length = 0;
-                            utxoIdxs = potentialIdxs;
-                        }
+                if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
+                    // Sum of utxos is within a 1 percent upper margin of the requested amount.
+                    if (summed === adjustedRequiredAmount) {
+                        // Found the exact required amount.
+                        utxoIdxs = potentialIdxs;
+                        break;
+                    } else if (!utxoIdxs.length) {
+                        utxoIdxs.length = 0;
+                        utxoIdxs = potentialIdxs;
                     }
                 }
             }
