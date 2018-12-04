@@ -528,10 +528,13 @@ jobs:
                 echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
                 echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
                 npm install -g -s --no-progress yarn
-                echo "VERSIONS:"
+                echo "NVM:"
                 nvm --version
+                echo "NODE:"
                 node -v
+                echo "NPM:"
                 npm -v
+                echo "YARN:"
                 yarn -v
       - run:
           name: install dockerize
@@ -549,9 +552,10 @@ jobs:
       - run:
             name: run integration tests
             command: |
+                rm -rf data/database/*
+                rm -rf data/tests/database/*
                 cat .env.test
                 npm run test:integration:pretty
-                # bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
 
   # develop branch blackbox test
   blackbox_test_develop:
