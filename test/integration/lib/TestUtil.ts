@@ -16,7 +16,9 @@ export class TestUtil {
 
     public async bootstrapAppContainer(app: any): Promise<void> {
         await app.bootstrap();
-        await this.waitFor(10);
+        // todo: this hack needs to be fixed
+        this.log.debug('TEST_BOOTSTRAP_WAITFOR:', process.env.TEST_BOOTSTRAP_WAITFOR || 10);
+        await this.waitFor(process.env.TEST_BOOTSTRAP_WAITFOR || 10);
     }
 
     /**
@@ -27,7 +29,7 @@ export class TestUtil {
      */
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
-            this.log.debug('waiting... ');
+            this.log.debug('waiting... ' + i + '/' + maxSeconds);
             await this.waitTimeOut(1000);
         }
         return true;
