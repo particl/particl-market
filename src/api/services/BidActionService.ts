@@ -276,7 +276,7 @@ export class BidActionService {
             const requiredTestCases = utxoLessThanReqestedAmount.length <= 12 ? 0 : Math.pow(2, utxoLessThanReqestedAmount.length);
             for (let ii = 0; ii < requiredTestCases; ii++) {
                 const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
-                const summed: number = this.correctNumberDecimals( 
+                const summed: number = this.correctNumberDecimals(
                     potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0)
                 );
 
