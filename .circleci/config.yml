@@ -383,168 +383,190 @@ jobs:
 # builds, tests and deploys the develop branch
 # -------------------------------------------------------------------
 
-  build_develop:
-    <<: *defaults
-    environment:
-      <<: *commonenv
+    build_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
 
-    steps:
-      - checkout
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        steps:
+            - checkout
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Generate build version # todo: use CIRCLE_SHA1?
+                command: ./bin/ci-create-build-version.sh
+            - run:
+                name: Login to private docker registry
+                command: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+            - run:
+                name: Build docker image
+                command: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
+            - run:
+                name: Push docker image to registry
+                command: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
 
-      # generate build version
-      # todo: just pass the CIRCLE_SHA1 to the script?
-      - run: ./bin/ci-create-build-version.sh
+            # cache will be regenerated every time something is changed in package.json file,
+            # each branch will generate separate cache.
+            - save_cache:
+                paths:
+                    - node_modules
+                key: particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+            - persist_to_workspace: # persist the cloned repo as workspace
+                root: ~/particl-market
+                paths:
+                    - .
 
-      # build the app image and push to registry
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
+    # develop branch unit test
+    unit_test_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
 
-      # persist the cloned repo as workspace
-      - persist_to_workspace:
-          root: ~/particl-market
-          paths:
-            - .
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Run unit tests (docker)
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
+
+    # develop branch integration test
+    integration_test_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Run integration tests (docker)
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
+
+    # develop branch blackbox test
+    blackbox_test_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Run integration tests (docker)
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-blackbox-tests.sh
+
+    # develop branch ui test
+    ui_test_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Run ui tests (docker)
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
 
 
-  # develop branch unit test
-  unit_test_develop:
-    <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
+    # develop branch deploy
+    deploy_develop:
+        <<: *defaults
+        environment:
+            <<: *commonenv
 
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-            docker_layer_caching: true
-            version: 17.11.0-ce
-      - run:
-            name: run unit tests (docker)
-            command: |
-                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
 
-  # develop branch integration test
-  integration_test_develop:
-    <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Rebuild docker image with develop tag
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:develop" -f Dockerfile.ci .
+            - run:
+                name: Push docker image to registry
+                command: docker push $REGISTRY/$IMAGE_NAME:develop
 
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-            docker_layer_caching: true
-            version: 17.11.0-ce
-      - run:
-            name: run integration tests (docker)
-            command: |
-                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
-
-  # develop branch blackbox test
-  blackbox_test_develop:
-    <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-            docker_layer_caching: true
-            version: 17.11.0-ce
-      #- run:
-      #    name: apt-get updates
-      #    command: |
-      #      curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-      #      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-      #      sudo apt-get update
-      #      sudo apt-get install gcc-4.9 g++-4.9 nodejs
-      #      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-            name: run blackbox tests (docker)
-            command: |
-                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                docker run -d --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-blackbox-tests.sh
-      #- run: npm install -g -s --no-progress yarn
-      #- run: yarn install
-      #- run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-
-  # develop branch ui test
-  ui_test_develop:
-    <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-            docker_layer_caching: true
-            version: 17.11.0-ce
-      - run:
-            name: run ui tests (docker)
-            command: |
-                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                docker run -d --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
-
-  # develop branch deploy
-  deploy_develop:
-    <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-      # build and deploy the app
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:develop" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:develop
-      - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml;
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Upgrade kontena stack
+                command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml
+            - run:
+                  name: Post to Discord
+                  command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
 # -------------------------------------------------------------------
