@@ -147,10 +147,12 @@ jobs:
 
       # install deps and set up the app locally
       - run: yarn install
-      - run: ./bin/copy-env.sh
-      - run: cp -f .env.circle.app1 .env
-      - run: cp -f .env.circle.app1 .env.blackbox
-      - run: cp -f .env.circle.app1 .env.test
+      - run:
+            name: copy env files
+            command: |
+                cp -f .env.circle.app1 .env
+                cp -f .env.circle.test .env.test
+                cp -f .env.blackbox.example .env.blackbox
       - run: ./bin/ci-create-build-version.sh
 
       # cache
@@ -400,14 +402,14 @@ jobs:
           version: 17.11.0-ce
 
       # install deps and set up the app locally
-      - run: yarn install
-      - run: ./bin/copy-env.sh
-      ##- run: cp -f .env.circle.app1 .env
-      ##- run: cp -f .env.circle.app1 .env.blackbox
-      ##- run: cp -f .env.circle.app1 .env.test
-      ##- run: ./bin/ci-create-dbs.sh
+      #- run: yarn install
+      #- run:
+      #      name: copy env files
+      #      command: |
+      #          cp -f .env.circle.app1 .env
+      #          cp -f .env.circle.test .env.test
+      #          cp -f .env.blackbox.example .env.blackbox
       - run: ./bin/ci-create-build-version.sh
-
 
       # cache
       - save_cache:
@@ -429,9 +431,11 @@ jobs:
   # develop branch unit test
   unit_test_develop:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
+    docker:
+      - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -439,60 +443,25 @@ jobs:
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
-          keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+            keys:
+            - dappshell-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+      - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
       - run:
-          name: apt-get updates
-            ##curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            ## You may also need development tools to build native addons:
-            ## To install the Yarn package manager, run:
-            ## curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-            ## echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-            ## sudo apt-get update && sudo apt-get install yarn
-            ##  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            ##  sudo apt-get update
-            ##  sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            ##  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-          command: |
-            curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            sudo apt-get install gcc g++ make
-            node -v
-            npm -v
-      ##- run:
-      ##    name: install dockerize
-      ##    command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-      ##    environment:
-      ##      DOCKERIZE_VERSION: v0.6.0
-      ##- run: npm rebuild
-      ##- run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      ##- run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      ##- run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      ##- run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      # - run: node --version
-      # - run: docker logs app1
-      # - run: docker ps
-      # - run: docker stats --no-stream
-      # install deps and set up the app locally
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      # - run: ./bin/copy-env.sh
-      # - run: ./bin/ci-create-dbs.sh
-      # - run: ./bin/ci-create-build-version.sh
-      - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
+            name: run unit tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
 
   # develop branch integration test
   integration_test_develop:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+    docker:
+      - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -504,51 +473,20 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      ##- run:
-      ##    name: apt-get updates
-      ##    command: |
-      ##      curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-      ##      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-      ##      sudo apt-get update
-      ##      sudo apt-get install gcc-4.9 g++-4.9 nodejs
-      ##      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
       - run:
-            name: apt-get updates
+            name: run integration tests (docker)
             command: |
-                nvm -v
-                node -v
-                npm -v
-                sudo apt-get install gcc g++ make build-essential build-essential libssl-dev
-                curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-                export NVM_DIR="/opt/circleci/.nvm"
-                [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                nvm install 9.6.1
-                nvm use 9.6.1
-                node -v
-                npm -v
-                npm install -g -s --no-progress yarn
-                yarn -v
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-      ##- run: npm rebuild
-      ##- run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      ##- run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      ##- run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      ##- run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      ##- run: npm install -g -s --no-progress yarn
-      ##- run: yarn install
-      - run: bin/ci-integration-tests.sh test $APP_PORT $APP_HOST
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
 
   # develop branch blackbox test
   blackbox_test_develop:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+    docker:
+      - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -560,35 +498,31 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+      - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+      #- run:
+      #    name: apt-get updates
+      #    command: |
+      #      curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      #      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      #      sudo apt-get update
+      #      sudo apt-get install gcc-4.9 g++-4.9 nodejs
+      #      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-      - run: npm rebuild
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
+            name: run blackbox tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run -d --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-blackbox-tests.sh
+      #- run: npm install -g -s --no-progress yarn
+      #- run: yarn install
+      #- run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
 
   # develop branch ui test
   ui_test_develop:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+    docker:
+      - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -600,27 +534,14 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+      - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
       - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
+            name: run ui tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run -d --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
 
   # develop branch deploy
   deploy_develop:
