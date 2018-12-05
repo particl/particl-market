@@ -6,94 +6,82 @@ version: 2
 # -------------------------------------------------------------------
 
 workflows:
-  version: 2
-  build_test_deploy_feature:
-    jobs:
-      - build_feature:
-          filters:
-            branches:
-              ignore:
-                - develop
-                - master
-      - unit_test_feature:
-          requires:
-            - build_feature
-      - integration_test_feature:
-          requires:
-            - build_feature
-      - blackbox_test_feature:
-          requires:
-            - build_feature
-      - ui_test_feature:
-          requires:
-            - build_feature
-      - hodl:
-          type: approval
-          requires:
-            - unit_test_feature
-            - integration_test_feature
-            - blackbox_test_feature
-            - ui_test_feature
-      - deploy_feature:
-          requires:
-            - hodl
+    version: 2
+    build_test_deploy_feature:
+        jobs:
+            - build_image:
+                filters:
+                    branches:
+                        ignore:
+                            - develop
+                            - master
+            - run_unit_tests:
+                requires:
+                    - build_image
+            - run_integration_tests:
+                requires:
+                    - build_image
 
-  build_test_deploy_develop:
-    jobs:
-      - build_develop:
-          filters:
-            branches:
-              only: develop
-      - unit_test_develop:
-          requires:
-            - build_develop
-      - integration_test_develop:
-          requires:
-            - build_develop
-      - blackbox_test_develop:
-          requires:
-            - build_develop
-      - ui_test_develop:
-          requires:
-            - build_develop
-      - hodl:
-          type: approval
-          requires:
-            - unit_test_develop
-            - integration_test_develop
-            - blackbox_test_develop
-            - ui_test_develop
-      - deploy_develop:
-          requires:
-            - hodl
+            - deploy_feature:
+                requires:
+                    - run_integration_tests
 
-  build_test_deploy_master:
-    jobs:
-      - build_master:
-          filters:
-            branches:
-              only: master
-      - unit_test_master:
-          requires:
-            - build_master
-      - integration_test_master:
-          requires:
-            - build_master
-      - blackbox_test_master:
-          requires:
-            - build_master
-      - ui_test_master:
-          requires:
-            - build_master
-      - hodl:
-          requires:
-            - unit_test_master
-            - integration_test_master
-            - blackbox_test_master
-            - ui_test_master
-      - deploy_master:
-          requires:
-            - hodl
+            - run_blackbox_tests:
+                requires:
+                    - deploy_feature
+            - run_ui_tests:
+                requires:
+                    - deploy_feature
+
+    build_test_deploy_develop:
+        jobs:
+            - build_image:
+                filters:
+                    branches:
+                        only: develop
+            - run_unit_tests:
+                requires:
+                    - build_image
+            - run_integration_tests:
+                requires:
+                    - build_image
+
+            - deploy_develop:
+                requires:
+                    - run_integration_tests
+
+            - run_blackbox_tests:
+                requires:
+                    - deploy_develop
+            - run_ui_tests:
+                requires:
+                    - deploy_develop
+
+
+    build_test_deploy_master:
+        jobs:
+            - build_image:
+                filters:
+                    branches:
+                        only: master
+            - run_unit_tests:
+                requires:
+                    - build_image
+            - run_integration_tests:
+                requires:
+                    - build_image
+
+            - deploy_master:
+                requires:
+                    - run_integration_tests
+
+            - run_blackbox_tests:
+                requires:
+                    - deploy_master
+            - run_ui_tests:
+                requires:
+                    - deploy_master
+
 
 
 # -------------------------------------------------------------------
@@ -101,289 +89,29 @@ workflows:
 # -------------------------------------------------------------------
 
 defaults: &defaults
-  docker:
-    - image: circleci/node:latest #9.5.0-browsers   # todo: test circleci/node:latest
-  working_directory: ~/particl-market
+    docker:
+        - image: circleci/node:latest #9.5.0-browsers   # todo: test circleci/node:latest
+    working_directory: ~/particl-market
 
 commonenv: &commonenv
-  TERM: xterm                               # colors
-  APP_HOST: http://localhost
-  APP_PORT: 3100
-  REGISTRY: r.cfcr.io                       # codefresh registry
-  IMAGE_NAME: ludx/dapp-shell-ci            # todo: update
-  RPCUSER: test
-  RPCPASSWORD: test
-  RPCHOSTNAME: circle.particl.xyz
-  MAINNET_PORT: 58738
-  TESTNET_PORT: 58935
-  DEFAULT_MARKETPLACE_NAME: DEFAULT
-  DEFAULT_MARKETPLACE_PRIVATE_KEY: 2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek
-  DEFAULT_MARKETPLACE_ADDRESS: pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA
+    TERM: xterm                               # colors
+    APP_HOST: http://localhost
+    APP_PORT: 3100
+    REGISTRY: r.cfcr.io                       # codefresh registry
+    IMAGE_NAME: ludx/dapp-shell-ci            # todo: update
+    RPCUSER: test
+    RPCPASSWORD: test
+    RPCHOSTNAME: circle.particl.xyz
+    MAINNET_PORT: 58738
+    TESTNET_PORT: 58935
+    DEFAULT_MARKETPLACE_NAME: DEFAULT
+    DEFAULT_MARKETPLACE_PRIVATE_KEY: 2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek
+    DEFAULT_MARKETPLACE_ADDRESS: pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA
 
-
-
-# -------------------------------------------------------------------
-#   FEATURE JOB
-# -------------------------------------------------------------------
 
 jobs:
-  # builds the feature branch
-  build_feature:
-    <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-    steps:
-      - checkout
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      # download and cache dependencies
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-     # fallback to using the latest cache if no exact match is found
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-
-      # install deps and set up the app locally
-      - run: yarn install
-      - run:
-            name: copy env files
-            command: |
-                cp -f .env.circle.app1 .env
-                cp -f .env.circle.test .env.test
-                cp -f .env.blackbox.example .env.blackbox
-      - run: ./bin/ci-create-build-version.sh
-
-      # cache
-      - save_cache:
-          paths:
-            - node_modules
-          key: particl-market-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
-          # key: particl-market-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
-
-      # build the app image
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
-
-      - persist_to_workspace:
-          root: ~/particl-market
-          paths:
-            - .
-
-  # feature branch unit test
-  unit_test_feature:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      ## - run:
-      ##    name: install dockerize
-      ##    command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-      ##    environment:
-      ##      DOCKERIZE_VERSION: v0.6.0
-
-      ## - run: npm rebuild
-      ## - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      ## - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      ## - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      ## - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      # - run: node --version
-      # - run: docker logs app1
-      # - run: docker ps
-      # - run: docker stats --no-stream
-      # install deps and set up the app locally
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      # - run: ./bin/copy-env.sh
-      # - run: ./bin/ci-create-dbs.sh
-      # - run: ./bin/ci-create-build-version.sh
-      - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
-
-  # feature branch integration test
-  integration_test_feature:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      ## - run:
-      ##    name: install dockerize
-      ##    command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-      ##    environment:
-      ##      DOCKERIZE_VERSION: v0.6.0
-
-      ## - run: npm rebuild
-      ## - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      ## - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      ## - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      ## - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: echo "NODE:"
-      - run: node --version
-      - run: echo "NPM:"
-      - run: npm --version
-      - run: echo "YARN:"
-      - run: yarn --version
-      - run: ls -al /app
-      - run: npm run test:integration:pretty
-      ## - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
-
-  # feature branch blackbox test
-  blackbox_test_feature:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-
-      - run: npm rebuild
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-
-  # feature branch ui test
-  ui_test_feature:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
-
-  # feature branch deploy
-  deploy_feature:
-    <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-      # build and deploy the app
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:feature
-      - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
-
-
-# -------------------------------------------------------------------
-# DEVELOP JOB
-#
-# builds, tests and deploys the develop branch
-# -------------------------------------------------------------------
-
-    build_develop:
+    build_image:
         <<: *defaults
         environment:
             <<: *commonenv
@@ -427,8 +155,109 @@ jobs:
                 paths:
                     - .
 
-    # develop branch unit test
-    unit_test_develop:
+
+    run_unit_tests:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+        - attach_workspace:
+            at: ~/particl-market
+        - restore_cache:
+            keys:
+                - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        - run:
+            name: Run unit tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
+
+    run_integration_tests:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+        - attach_workspace:
+            at: ~/particl-market
+        - restore_cache:
+            keys:
+                - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        - run:
+            name: Run integration tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
+
+    run_blackbox_tests:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+        - attach_workspace:
+            at: ~/particl-market
+        - restore_cache:
+            keys:
+                - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        - run:
+            name: Run integration tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-blackbox-tests.sh
+
+    run_ui_tests:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+        - attach_workspace:
+            at: ~/particl-market
+        - restore_cache:
+            keys:
+                - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        - run:
+            name: Run ui tests (docker)
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
+
+
+    deploy_feature:
         <<: *defaults
         environment:
             <<: *commonenv
@@ -446,93 +275,24 @@ jobs:
 
             - run:
                 name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
             - run:
-                name: Run unit tests (docker)
+                name: Rebuild docker image with develop tag
                 command: |
                     docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
+                    docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
+            - run:
+                name: Push docker image to registry
+                command: docker push $REGISTRY/$IMAGE_NAME:feature
 
-    # develop branch integration test
-    integration_test_develop:
-        <<: *defaults
-        environment:
-            <<: *commonenv
-
-        steps:
-            - setup_remote_docker:
-                docker_layer_caching: true
-                version: 17.11.0-ce
-            - attach_workspace:
-                at: ~/particl-market
-            - restore_cache:
-                keys:
-                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
-                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
-
+            - run:
+                name: Upgrade kontena stack
+                command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml
             - run:
                 name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-            - run:
-                name: Run integration tests (docker)
-                command: |
-                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
-
-    # develop branch blackbox test
-    blackbox_test_develop:
-        <<: *defaults
-        environment:
-            <<: *commonenv
-
-        steps:
-            - setup_remote_docker:
-                docker_layer_caching: true
-                version: 17.11.0-ce
-            - attach_workspace:
-                at: ~/particl-market
-            - restore_cache:
-                keys:
-                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
-                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
-
-            - run:
-                name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-            - run:
-                name: Run integration tests (docker)
-                command: |
-                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-blackbox-tests.sh
-
-    # develop branch ui test
-    ui_test_develop:
-        <<: *defaults
-        environment:
-            <<: *commonenv
-
-        steps:
-            - setup_remote_docker:
-                docker_layer_caching: true
-                version: 17.11.0-ce
-            - attach_workspace:
-                at: ~/particl-market
-            - restore_cache:
-                keys:
-                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
-                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
-
-            - run:
-                name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-            - run:
-                name: Run ui tests (docker)
-                command: |
-                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-                    docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
-    # develop branch deploy
     deploy_develop:
         <<: *defaults
         environment:
@@ -565,260 +325,42 @@ jobs:
                 name: Upgrade kontena stack
                 command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml
             - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+
+
+    deploy_master:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+            - setup_remote_docker:
+                docker_layer_caching: true
+                version: 17.11.0-ce
+            - attach_workspace:
+                at: ~/particl-market
+            - restore_cache:
+                keys:
+                    - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                    - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+            - run:
+                name: Post to Discord
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - run:
+                name: Rebuild docker image with master tag
+                command: |
+                    docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                    docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:master" -f Dockerfile.ci .
+            - run:
+                  name: Push docker image to registry
+                  command: docker push $REGISTRY/$IMAGE_NAME:master
+
+            - run:
+                  name: Upgrade kontena stack
+                  command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml
+            - run:
                   name: Post to Discord
                   command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
-
-# -------------------------------------------------------------------
-#   MASTER JOB
-# -------------------------------------------------------------------
-
-  # builds the master branch
-  build_master:
-    <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-
-    steps:
-      - checkout
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      # download and cache dependencies
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - particl-market-dependencies-
-
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-
-      # install deps and set up the app locally
-      - run: yarn install
-      - run: ./bin/copy-env.sh
-      - run: ./bin/ci-create-dbs.sh
-      - run: ./bin/ci-create-build-version.sh
-
-      # cache
-      - save_cache:
-          paths:
-            - node_modules
-          key: particl-market-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
-          # key: particl-market-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
-
-      # build the app image
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
-
-      - persist_to_workspace:
-          root: ~/particl-market
-          paths:
-            - .
-
-  # master branch unit test
-  unit_test_master:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-
-      - run: npm rebuild
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      # - run: node --version
-      # - run: docker logs app1
-      # - run: docker ps
-      # - run: docker stats --no-stream
-      # install deps and set up the app locally
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      # - run: ./bin/copy-env.sh
-      # - run: ./bin/ci-create-dbs.sh
-      # - run: ./bin/ci-create-build-version.sh
-      - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
-
-  # master branch integration test
-  integration_test_master:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-
-      - run: npm rebuild
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
-
-  # master branch blackbox test
-  blackbox_test_master:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-
-      - run: npm rebuild
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
-
-  # master branch ui test
-  ui_test_master:
-    <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      - run:
-          name: apt-get updates
-          command: |
-            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9 nodejs
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: npm install -g -s --no-progress yarn
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
-
-  # master branch deploy
-  deploy_master:
-    <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
-    environment:
-      <<: *commonenv
-
-    steps:
-      - attach_workspace:
-          at: ~/particl-market
-      - restore_cache:
-          keys:
-          - particl-market-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - particl-market-dependencies-
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-      # build and deploy the app
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:master" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:master
-      - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml;
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
