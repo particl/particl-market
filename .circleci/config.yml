@@ -102,8 +102,8 @@ workflows:
 
 defaults: &defaults
   docker:
-    - image: circleci/node:9.5.0-browsers   # todo: test circleci/node:latest
-  working_directory: ~/dappshell            # todo: change
+    - image: circleci/node:latest #9.5.0-browsers   # todo: test circleci/node:latest
+  working_directory: ~/particl-market
 
 commonenv: &commonenv
   TERM: xterm                               # colors
@@ -140,8 +140,8 @@ jobs:
       # download and cache dependencies
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-     # fallback to using the latest cache if no exact match is found
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-     # fallback to using the latest cache if no exact match is found
 
       - setup_remote_docker:
           docker_layer_caching: true
@@ -161,8 +161,8 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
-          # key: dappshell-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
+          key: particl-market-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
+          # key: particl-market-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
 
       # build the app image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
@@ -170,7 +170,7 @@ jobs:
       - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
 
       - persist_to_workspace:
-          root: ~/dappshell
+          root: ~/particl-market
           paths:
             - .
 
@@ -185,11 +185,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
@@ -236,11 +236,11 @@ jobs:
       <<: *commonenv
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
@@ -283,11 +283,11 @@ jobs:
       <<: *commonenv
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
@@ -323,11 +323,11 @@ jobs:
       <<: *commonenv
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
@@ -359,12 +359,12 @@ jobs:
       <<: *commonenv
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
@@ -385,8 +385,6 @@ jobs:
 
   build_develop:
     <<: *defaults
-    #docker:
-    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -409,7 +407,7 @@ jobs:
 
       # persist the cloned repo as workspace
       - persist_to_workspace:
-          root: ~/dappshell
+          root: ~/particl-market
           paths:
             - .
 
@@ -424,7 +422,7 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
             docker_layer_caching: true
@@ -445,11 +443,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
             docker_layer_caching: true
@@ -470,11 +468,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
             docker_layer_caching: true
@@ -506,11 +504,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
             docker_layer_caching: true
@@ -531,12 +529,12 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
@@ -568,9 +566,9 @@ jobs:
       # download and cache dependencies
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
+          - particl-market-dependencies-
 
       - setup_remote_docker:
           docker_layer_caching: true
@@ -586,8 +584,8 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
-          # key: dappshell-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
+          key: particl-market-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
+          # key: particl-market-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
 
       # build the app image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
@@ -595,7 +593,7 @@ jobs:
       - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
 
       - persist_to_workspace:
-          root: ~/dappshell
+          root: ~/particl-market
           paths:
             - .
 
@@ -610,11 +608,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       - run:
@@ -663,11 +661,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       - run:
@@ -705,11 +703,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       - run:
@@ -747,11 +745,11 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+          - particl-market-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       - run:
@@ -785,12 +783,12 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: ~/dappshell
+          at: ~/particl-market
       - restore_cache:
           keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
+          - particl-market-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
+          - particl-market-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       - setup_remote_docker:
