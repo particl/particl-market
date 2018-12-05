@@ -96,14 +96,14 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (options.hasItems && typeof options.hasItems === 'boolean') {
+                if (typeof options.hasItems === 'boolean') {
                     if (options.hasItems) {
                         qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                     } else {
                         qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                         qb.whereNotNull('listing_items.listing_item_template_id');
                     }
-                } else if (typeof options.hasItems !== 'boolean') {
+                } else {
                     qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                 }
             })

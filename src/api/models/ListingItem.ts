@@ -113,7 +113,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
-
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 // ignore expired items
