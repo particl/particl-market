@@ -57,6 +57,15 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
             throw new MessageException(`PaymentInformation for the ListingItemTemplate was not found!`);
         }
 
+        let cryptocurrencyAddress;
+
+        if (data.params[6]) {
+            cryptocurrencyAddress = {
+                type: CryptocurrencyAddressType.NORMAL,
+                address: data.params[6]
+            };
+        }
+
         return this.paymentInformationService.update(listingItemTemplate.PaymentInformation.id, {
             listing_item_template_id : data.params[0],
             type: data.params[1],
@@ -67,10 +76,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
                     domestic: data.params[4],
                     international: data.params[5]
                 },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: data.params[6]
-                }
+                cryptocurrencyAddress
             }
         } as PaymentInformationUpdateRequest);
     }

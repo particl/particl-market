@@ -16,15 +16,21 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import * as resources from 'resources';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProfileService } from '../../services/ProfileService';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
     public log: LoggerType;
+    private DEFAULT_PAGE_LIMIT = 10;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_SEARCH);
@@ -36,11 +42,11 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [0]: page, number, 0-based
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
-     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied NEW
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profile id
      *  [5]: searchString, string, optional
      *  [6]: category, number|string, if string, try to search using key, optional
-     *  [7]: hasItems, boolean, optional NEW
+     *  [7]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
@@ -52,25 +58,87 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             order: data.params[2] || 'ASC',
             orderField: data.params[3] || SearchOrderField.DATE,
             profileId: data.params[4],
-            searchString: data.params[5] || '',
+            searchString: data.params[5],
             category: data.params[6],
             hasItems: data.params[7]
         } as ListingItemTemplateSearchParams);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: profileId
+     *  [5]: searchString, string, * for all, optional
+     *  [6]: category, number|string, if string, try to search using key, * for all, optional
+     *  [7]: hasItems, boolean, optional
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 5) {
-            throw new MessageException('Missing parameters.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('page');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('pageLimit');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('order');
+        } else if (data.params.length < 4) {
+            throw new MissingParamException('orderField');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('profileId');
         }
-        const field = data.params[3];
-        const validFields = [SearchOrderField.STATE, SearchOrderField.DATE, SearchOrderField.TITLE];
-        if (field && !_.includes(validFields, field)) {
+
+        data.params[0] = data.params[0] ? data.params[0] : 0;
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('page');
+        }
+
+        data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('pageLimit');
+        }
+
+        if (data.params[2] === 'ASC') {
+            data.params[2] = SearchOrder.ASC;
+        } else {
+            data.params[2] = SearchOrder.DESC;
+        }
+        const validSearchOrders = [SearchOrder.ASC, SearchOrder.DESC];
+        if (!data.params[2] || !_.includes(validSearchOrders, data.params[2])) {
+            throw new InvalidParamException('order');
+        }
+
+        const validOrderFields = [SearchOrderField.STATE, SearchOrderField.DATE, SearchOrderField.TITLE];
+        if (!data.params[3] || !_.includes(validOrderFields, data.params[3])) {
             throw new InvalidParamException('orderField');
         }
+
+        if (typeof data.params[4] !== 'number') {
+            throw new InvalidParamException('profile');
+        }
+        const profile: resources.Profile = await this.profileService.findOne(data.params[4])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+
+        if (typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('searchString');
+        }
+        data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
+        data.params[6] = data.params[6] !== '*' ? data.params[6] : undefined;
+
+        // if (!data.params[7] || typeof data.params[7] !== 'boolean') {
+        //   throw new InvalidParamException('hasItems');
+        // }
+
         // TODO:
-        // - is order valid?
-        // - profile exists?
         // - category exists?
+
         return data;
     }
 
@@ -98,8 +166,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     }
 
     public description(): string {
-        return 'Search listing items with pagination, state (published/non-published) by category id or'
-        + ' category name or by profileId, or by perticular searchString matched with itemInformation title.';
+        return 'Search ListingItemTemplates..';
     }
 
     public example(): string {

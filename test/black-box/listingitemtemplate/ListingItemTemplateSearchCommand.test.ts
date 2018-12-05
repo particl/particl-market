@@ -11,6 +11,7 @@ import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -194,6 +195,17 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
     });
 
+    test('Should fail because we want to search without searchOrder', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('searchOrder').getMessage());
+    });
+
     test('Should fail because we want to search without profileId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
@@ -203,7 +215,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
 
@@ -278,7 +290,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         response.expectStatusCode(200)
 
         await testUtil.waitFor(5);
-        
+
         const result: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -296,4 +308,5 @@ describe('ListingItemTemplateSearchCommand', () => {
         const resMain: resources.ListingItemTemplate[] = result.getBody()['result'];
         expect(resMain).toHaveLength(1);
     }, 6000000);  // timeout to 600s
+
 });

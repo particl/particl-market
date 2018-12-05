@@ -74,29 +74,35 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
+
         let sortingField = 'updated_at';
-        if (options.orderField === SearchOrderField.TITLE) {
+        if (SearchOrderField.TITLE === options.orderField) {
             sortingField = 'item_informations.title';
-        }
-        if (options.orderField === SearchOrderField.STATE) {
+        } else if (SearchOrderField.STATE === options.orderField) {
             sortingField = 'listing_items.listing_item_template_id';
+        } else if (SearchOrderField.DATE === options.orderField) {
+            sortingField = 'updated_at';
         }
+
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
+                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
                     qb.where('item_categories.key', '=', options.category);
                     qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                 }
+
                 if (options.profileId) {
                     qb.where('profile_id', '=', options.profileId);
                 }
-                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (typeof options.hasItems === 'boolean') {
+                if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
                     if (options.hasItems) {
                         qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                     } else {
@@ -106,6 +112,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 } else {
                     qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                 }
+
             })
             .orderBy(sortingField, options.order)
             .query({
