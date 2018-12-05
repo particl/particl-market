@@ -553,17 +553,12 @@ jobs:
       ##- run: yarn install
 
       - run:
-            name: run integration tests
+            name: run integration tests (docker)
             command: |
                 echo "tcp://$RPCHOSTNAME:$TESTNET_PORT"
                 ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
                 docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
                 docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-integration-tests.sh
-                #--env-file .env.circle.test
-                #rm -rf data/database/*
-                #rm -rf data/tests/database/*
-                #cat .env.test
-                #npm run test:integration:pretty
 
   # develop branch blackbox test
   blackbox_test_develop:
