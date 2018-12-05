@@ -106,12 +106,12 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             data.params[2] = SearchOrder.DESC;
         }
         const validSearchOrders = [SearchOrder.ASC, SearchOrder.DESC];
-        if (data.params[2] && !_.includes(validSearchOrders, data.params[2])) {
+        if (!data.params[2] || !_.includes(validSearchOrders, data.params[2])) {
             throw new InvalidParamException('order');
         }
 
         const validOrderFields = [SearchOrderField.STATE, SearchOrderField.DATE, SearchOrderField.TITLE];
-        if (data.params[3] && !_.includes(validOrderFields, data.params[3])) {
+        if (!data.params[3] || !_.includes(validOrderFields, data.params[3])) {
             throw new InvalidParamException('orderField');
         }
 
@@ -126,13 +126,13 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
                 throw new ModelNotFoundException('Profile');
             });
 
-        if (data.params[5] && typeof data.params[5] !== 'string') {
+        if (!data.params[5] || typeof data.params[5] !== 'string') {
             throw new InvalidParamException('searchString');
         }
         data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
         data.params[6] = data.params[6] !== '*' ? data.params[6] : undefined;
 
-        if (data.params[7] && typeof data.params[7] !== 'boolean') {
+        if (!data.params[7] || typeof data.params[7] !== 'boolean') {
             throw new InvalidParamException('hasItems');
         }
 
