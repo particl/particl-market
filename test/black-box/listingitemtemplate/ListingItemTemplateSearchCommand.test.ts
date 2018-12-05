@@ -11,6 +11,7 @@ import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -202,7 +203,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe(new MissingParamException('searchOrder').getMessage());
     });
 
     test('Should fail because we want to search without profileId', async () => {
@@ -214,7 +215,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
 
