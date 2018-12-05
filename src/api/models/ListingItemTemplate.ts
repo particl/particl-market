@@ -107,7 +107,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                         qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
                     } else {
                         qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
-                        qb.whereNull('listing_items.listing_item_template_id');
+                        qb.whereNot('listing_items.listing_item_template_id', 'listing_item_templates.id');
                     }
                 } else {
                     qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
