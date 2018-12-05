@@ -126,7 +126,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
                 throw new ModelNotFoundException('Profile');
             });
 
-        if (!data.params[5] || typeof data.params[5] !== 'string') {
+        if (typeof data.params[5] !== 'string') {
             throw new InvalidParamException('searchString');
         }
         data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
