@@ -439,20 +439,18 @@ jobs:
     environment:
       <<: *commonenv
 
-
     steps:
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
-          keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          - dappshell-dependencies-
+            keys:
+            - dappshell-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-      - run:
-            name: install dockerize
-            command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            environment:
-                DOCKERIZE_VERSION: v0.6.0
+      - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
       - run:
             name: run unit tests (docker)
             command: |
