@@ -136,21 +136,13 @@ export class ProposalActionService {
             const profiles: resources.Profile[] = profilesCollection.toJSON();
             for (const profile of profiles) {
                 // Send votes out for others to receive (will be ignored when received locally)
-                this.log.error('Sending vote for ' + profile.address);
                 await this.voteActionService.send(proposal, proposalOption, profile, market);
-                this.log.error('Sending vote for ' + profile.address + ': DONE');
 
                 // Local (instant) votes
-                this.log.error('Casting instant vote for ' + profile.address);
                 const weight = await this.voteService.getVoteWeight(profile.address);
-                this.log.error('Weight calculated');
                 const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
-                this.log.error('Vote message created');
                 const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
-                this.log.error('Vote create request created');
                 const localVote = await this.processItemVoteVote(voteCreateRequest);
-                this.log.error('Casting instant vote for ' + profile.address + ': DONE');
-                this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
             }
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
