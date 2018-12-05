@@ -146,7 +146,7 @@ export class ProposalActionService {
                 this.log.error('Weight calculated');
                 const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
                 this.log.error('Vote message created');
-                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, weight, false);
+                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
                 this.log.error('Vote create request created');
                 const localVote = await this.processItemVoteVote(voteCreateRequest);
                 this.log.error('Casting instant vote for ' + profile.address + ': DONE');
