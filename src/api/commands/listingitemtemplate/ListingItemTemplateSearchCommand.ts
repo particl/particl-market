@@ -132,9 +132,9 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
         data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
         data.params[6] = data.params[6] !== '*' ? data.params[6] : undefined;
 
-        if (!data.params[7] || typeof data.params[7] !== 'boolean') {
-            throw new InvalidParamException('hasItems');
-        }
+        // if (!data.params[7] || typeof data.params[7] !== 'boolean') {
+        //   throw new InvalidParamException('hasItems');
+        // }
 
         // TODO:
         // - category exists?
