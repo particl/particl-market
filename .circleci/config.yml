@@ -431,11 +431,14 @@ jobs:
   # develop branch unit test
   unit_test_develop:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
+    docker:
+      - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
+
 
     steps:
       - attach_workspace:
@@ -455,12 +458,6 @@ jobs:
             command: |
                 docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
                 docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-unit-tests.sh
-
-      # cache
-      - save_cache:
-            paths:
-            - node_modules
-            key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
 
   # develop branch integration test
   integration_test_develop:
