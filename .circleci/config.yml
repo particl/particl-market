@@ -101,13 +101,16 @@ workflows:
 # -------------------------------------------------------------------
 
 defaults: &defaults
-  working_directory: ~/dappshell
+  docker:
+    - image: circleci/node:9.5.0-browsers   # todo: test circleci/node:latest
+  working_directory: ~/dappshell            # todo: change
 
 commonenv: &commonenv
+  TERM: xterm                               # colors
   APP_HOST: http://localhost
   APP_PORT: 3100
-  REGISTRY: r.cfcr.io
-  IMAGE_NAME: ludx/dapp-shell-ci
+  REGISTRY: r.cfcr.io                       # codefresh registry
+  IMAGE_NAME: ludx/dapp-shell-ci            # todo: update
   RPCUSER: test
   RPCPASSWORD: test
   RPCHOSTNAME: circle.particl.xyz
@@ -138,8 +141,7 @@ jobs:
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
+          - dappshell-dependencies-     # fallback to using the latest cache if no exact match is found
 
       - setup_remote_docker:
           docker_layer_caching: true
@@ -374,15 +376,17 @@ jobs:
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
+
 # -------------------------------------------------------------------
-#   DEVELOP JOB
+# DEVELOP JOB
+#
+# builds, tests and deploys the develop branch
 # -------------------------------------------------------------------
 
-  # builds the develop branch
   build_develop:
     <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -390,63 +394,37 @@ jobs:
       - checkout
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
-      # download and cache dependencies
-      - restore_cache:
-          keys:
-          - dappshell-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - dappshell-dependencies-
-
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
 
-      # install deps and set up the app locally
-      #- run: yarn install
-      #- run:
-      #      name: copy env files
-      #      command: |
-      #          cp -f .env.circle.app1 .env
-      #          cp -f .env.circle.test .env.test
-      #          cp -f .env.blackbox.example .env.blackbox
+      # generate build version
+      # todo: just pass the CIRCLE_SHA1 to the script?
       - run: ./bin/ci-create-build-version.sh
 
-      # cache
-      - save_cache:
-          paths:
-            - node_modules
-          key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
-          # key: dappshell-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
-
-      # build the app image
+      # build the app image and push to registry
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
 
+      # persist the cloned repo as workspace
       - persist_to_workspace:
           root: ~/dappshell
           paths:
             - .
 
+
   # develop branch unit test
   unit_test_develop:
     <<: *defaults
-#    machine:
-#      enabled: true
-#      image: circleci/classic:latest
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
     steps:
       - attach_workspace:
           at: ~/dappshell
-      - restore_cache:
-            keys:
-            - dappshell-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - dappshell-dependencies-
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
             docker_layer_caching: true
@@ -460,8 +438,8 @@ jobs:
   # develop branch integration test
   integration_test_develop:
     <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -485,8 +463,8 @@ jobs:
   # develop branch blackbox test
   blackbox_test_develop:
     <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -521,8 +499,8 @@ jobs:
   # develop branch ui test
   ui_test_develop:
     <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
@@ -546,8 +524,8 @@ jobs:
   # develop branch deploy
   deploy_develop:
     <<: *defaults
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    #docker:
+    #  - image: circleci/node:9.5.0-browsers
     environment:
       <<: *commonenv
 
