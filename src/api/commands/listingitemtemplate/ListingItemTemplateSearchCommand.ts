@@ -71,8 +71,8 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profileId
-     *  [5]: searchString, string, optional
-     *  [6]: category, number|string, if string, try to search using key, optional
+     *  [5]: searchString, string, * for all, optional
+     *  [6]: category, number|string, if string, try to search using key, * for all, optional
      *  [7]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<RpcRequest>}
