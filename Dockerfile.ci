@@ -8,15 +8,15 @@ RUN npm install -g -s --no-progress yarn
 RUN npm install -g ts-node
 RUN npm install -g typescript
 
+RUN mkdir -p /app/data/database
+WORKDIR /app/
+
 # install dockerize
 RUN wget https://github.com/jwilder/dockerize/releases/download/v0.6.0/dockerize-linux-amd64-v0.6.0.tar.gz \
     && tar -xzvf dockerize-linux-amd64-v0.6.0.tar.gz
 
-RUN mkdir -p /app/data/database
-WORKDIR /app/
 COPY package.json /app
 COPY yarn.lock /app
-
 COPY . /app/
 
 #VOLUME /app/data
