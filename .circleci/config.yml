@@ -177,9 +177,9 @@ jobs:
   # feature branch unit test
   unit_test_feature:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
@@ -229,9 +229,9 @@ jobs:
   # feature branch integration test
   integration_test_feature:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
     steps:
@@ -276,9 +276,9 @@ jobs:
   # feature branch blackbox test
   blackbox_test_feature:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
     steps:
@@ -316,9 +316,9 @@ jobs:
   # feature branch ui test
   ui_test_feature:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
     steps:
@@ -602,9 +602,9 @@ jobs:
   # master branch unit test
   unit_test_master:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
@@ -655,9 +655,9 @@ jobs:
   # master branch integration test
   integration_test_master:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
@@ -697,9 +697,9 @@ jobs:
   # master branch blackbox test
   blackbox_test_master:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
@@ -739,9 +739,9 @@ jobs:
   # master branch ui test
   ui_test_master:
     <<: *defaults
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+#    machine:
+#      enabled: true
+#      image: circleci/classic:latest
     environment:
       <<: *commonenv
 
