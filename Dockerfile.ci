@@ -19,6 +19,8 @@ COPY package.json /app
 COPY yarn.lock /app
 COPY . /app/
 
+RUN yarn install --check-files
+
 #VOLUME /app/data
 #VOLUME /app/
 #CMD [ "yarn", "serve" ]
