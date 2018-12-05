@@ -194,6 +194,17 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
     });
 
+    test('Should fail because we want to search without searchOrder', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing parameters.');
+    });
+
     test('Should fail because we want to search without profileId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
