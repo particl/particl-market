@@ -1,9 +1,10 @@
 #!/bin/sh
+set -e
 
-yarn install
-rm -rf data/database/marketplace.db
-rm -rf data/database/marketplace-test.db
-npm run db:migrate
-cp -rf data/database/marketplace.db data/database/marketplace-test.db
-bin/ci-create-build-version.sh
+# setup config files
+cp -f .env.circle.app1 .env
+cp -f .env.circle.test .env.test
+cp -f .env.circle.blackbox.example .env.blackbox
+
+yarn install --check-files
 npm run serve

@@ -48,17 +48,17 @@ workflows:
 #                requires:
 #                    - build_image
 
-            - deploy_for_testing:
+            - deploy_for_e2e_testing:
                 requires:
                     - run_unit_tests
 #                    - run_integration_tests
 
             - run_blackbox_tests:
                 requires:
-                    - deploy_for_testing
+                    - deploy_for_e2e_testing
             - run_ui_tests:
                 requires:
-                    - deploy_for_testing
+                    - deploy_for_e2e_testing
 
             - deploy_develop:
                   requires:
@@ -266,7 +266,7 @@ jobs:
                 docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
 
 
-    deploy_for_testing:
+    deploy_for_e2e_testing:
         <<: *defaults
         environment:
             <<: *commonenv

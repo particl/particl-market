@@ -61,12 +61,12 @@ services:
       - particld1
       - loadbalancerstack/internet-lb
     #    volumes:
-    #      - /root/data/dapp-shell-dev1:/app/data
+    #      - /root/data/particl-market-ci1:/app/data
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=particl-market
-      - APP_HOST=http://circle1.particl.xyz
+      - APP_HOST=http://circle.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3000
       - TESTNET=true
@@ -93,10 +93,10 @@ services:
       - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
       - DB_SEEDS_DIR=/app/src/database/seeds
-      - KONTENA_LB_MODE=http
-      - KONTENA_LB_BALANCE=roundrobin
+      - KONTENA_LB_MODE=tcp
+      - KONTENA_LB_BALANCE=leastconn
+      - KONTENA_LB_EXTERNAL_PORT=3100
       - KONTENA_LB_INTERNAL_PORT=3000
-      - KONTENA_LB_VIRTUAL_HOSTS=circle1.particl.xyz
     affinity:
       - node==kontena-agent1
     cpus: 4.0
@@ -111,12 +111,12 @@ services:
       - particld2
       - loadbalancerstack/internet-lb
       #    volumes:
-      #      - /root/data/dapp-shell-dev2:/app/data
+      #      - /root/data/particl-market-ci2:/app/data
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=particl-market
-      - APP_HOST=http://circle2.particl.xyz
+      - APP_HOST=http://circle.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3000
       - TESTNET=true
@@ -143,9 +143,9 @@ services:
       - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
       - DB_SEEDS_DIR=/app/src/database/seeds
-      - KONTENA_LB_MODE=http
-      - KONTENA_LB_BALANCE=roundrobin
+      - KONTENA_LB_MODE=tcp
+      - KONTENA_LB_BALANCE=leastconn
+      - KONTENA_LB_EXTERNAL_PORT=3200
       - KONTENA_LB_INTERNAL_PORT=3000
-      - KONTENA_LB_VIRTUAL_HOSTS=circle2.particl.xyz
     affinity:
       - node==kontena-agent1
