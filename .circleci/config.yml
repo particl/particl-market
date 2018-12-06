@@ -24,6 +24,7 @@ workflows:
 
             - deploy_feature:
                 requires:
+                    - run_unit_tests
                     - run_integration_tests
 
             - run_blackbox_tests:
@@ -42,20 +43,27 @@ workflows:
             - run_unit_tests:
                 requires:
                     - build_image
-            - run_integration_tests:
-                requires:
-                    - build_image
+# skip for now
+#            - run_integration_tests:
+#                requires:
+#                    - build_image
 
-            - deploy_develop:
+            - deploy_for_testing:
                 requires:
-                    - run_integration_tests
+                    - run_unit_tests
+#                    - run_integration_tests
 
             - run_blackbox_tests:
                 requires:
-                    - deploy_develop
+                    - deploy_for_testing
             - run_ui_tests:
                 requires:
-                    - deploy_develop
+                    - deploy_for_testing
+
+            - deploy_develop:
+                  requires:
+                  - run_blackbox_tests
+                  - run_ui_tests
 
 
     build_test_deploy_master:
@@ -73,6 +81,7 @@ workflows:
 
             - deploy_master:
                 requires:
+                    - run_unit_tests
                     - run_integration_tests
 
             - run_blackbox_tests:
@@ -98,7 +107,7 @@ commonenv: &commonenv
     APP_HOST: http://localhost
     APP_PORT: 3100
     REGISTRY: r.cfcr.io                       # codefresh registry
-    IMAGE_NAME: ludx/dapp-shell-ci            # todo: update
+    IMAGE_NAME: ludx/particl-market-ci        # todo: update
     RPCUSER: test
     RPCPASSWORD: test
     RPCHOSTNAME: circle.particl.xyz
@@ -257,6 +266,42 @@ jobs:
                 docker run --name testapp $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1 bin/ci-ui-tests.sh
 
 
+    deploy_for_testing:
+        <<: *defaults
+        environment:
+            <<: *commonenv
+
+        steps:
+        - setup_remote_docker:
+            docker_layer_caching: true
+            version: 17.11.0-ce
+        - attach_workspace:
+            at: ~/particl-market
+        - restore_cache:
+            keys:
+                - particl-market-dependencies-{{ .Branch }}-{{ checksum "package.json" }}
+                - particl-market-dependencies- # fallback to using the latest cache if no exact match is found
+
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying for testing $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+        - run:
+            name: Rebuild docker image with ci-test tag
+            command: |
+                docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+                docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:ci-test" -f Dockerfile.ci .
+        - run:
+            name: Push docker image to registry
+            command: docker push $REGISTRY/$IMAGE_NAME:ci-test
+
+        - run:
+            name: Upgrade kontena stack
+            command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellcircle-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-circle.yml
+        - run:
+            name: Post to Discord
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed for testing http://circle.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+
+
     deploy_feature:
         <<: *defaults
         environment:
@@ -326,7 +371,7 @@ jobs:
                 command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml
             - run:
                 name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://develop.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
     deploy_master:
@@ -362,5 +407,5 @@ jobs:
                   command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml
             - run:
                   name: Post to Discord
-                  command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+                  command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://master.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
