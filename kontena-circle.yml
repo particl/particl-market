@@ -93,14 +93,16 @@ services:
       - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
       - DB_SEEDS_DIR=/app/src/database/seeds
-      - KONTENA_LB_MODE=tcp
-      - KONTENA_LB_BALANCE=leastconn
-      - KONTENA_LB_EXTERNAL_PORT=3100
-      - KONTENA_LB_INTERNAL_PORT=3000
+      #- KONTENA_LB_MODE=http
+      #- KONTENA_LB_BALANCE=roundrobin
+      #- KONTENA_LB_INTERNAL_PORT=3000
+      #- KONTENA_LB_VIRTUAL_HOSTS=circle1.particl.xyz
+    ports:
+      - 3100:3000
     affinity:
       - node==kontena-agent1
     cpus: 4.0
-    mem_limit: 2g
+    mem_limit: 4g
 
   app2:
     image: r.cfcr.io/ludx/particl-market-ci:ci-test
@@ -143,9 +145,13 @@ services:
       - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
       - DB_SEEDS_DIR=/app/src/database/seeds
-      - KONTENA_LB_MODE=tcp
-      - KONTENA_LB_BALANCE=leastconn
-      - KONTENA_LB_EXTERNAL_PORT=3200
-      - KONTENA_LB_INTERNAL_PORT=3000
+      #- KONTENA_LB_MODE=http
+      #- KONTENA_LB_BALANCE=roundrobin
+      #- KONTENA_LB_INTERNAL_PORT=3000
+      #- KONTENA_LB_VIRTUAL_HOSTS=circle.particl.xyz
+    ports:
+      - 3200:3000
     affinity:
       - node==kontena-agent1
+    cpus: 4.0
+    mem_limit: 4g
