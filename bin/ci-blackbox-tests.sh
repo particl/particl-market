@@ -18,4 +18,6 @@ echo "connected to: http://circle.particl.xyz:3100"
 ./dockerize -wait http://circle.particl.xyz:3200/cli/ -timeout 600s
 echo "connected to: http://circle.particl.xyz:3200"
 
+sleep 10s
+
 npm run test:black-box:pretty
