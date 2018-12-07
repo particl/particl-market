@@ -22,17 +22,22 @@ workflows:
                 requires:
                     - build_image
 
-            - deploy_feature:
+            - deploy_for_e2e_testing:
                 requires:
                     - run_unit_tests
                     - run_integration_tests
 
             - run_blackbox_tests:
                 requires:
-                    - deploy_feature
+                    - deploy_for_e2e_testing
             - run_ui_tests:
                 requires:
-                    - deploy_feature
+                    - deploy_for_e2e_testing
+
+            - deploy_feature:
+                requires:
+                    - run_blackbox_tests
+                    - run_ui_tests
 
     build_test_deploy_develop:
         jobs:
@@ -79,18 +84,22 @@ workflows:
                 requires:
                     - build_image
 
-            - deploy_master:
+            - deploy_for_e2e_testing:
                 requires:
                     - run_unit_tests
                     - run_integration_tests
 
             - run_blackbox_tests:
                 requires:
-                    - deploy_master
+                    - deploy_for_e2e_testing
             - run_ui_tests:
                 requires:
-                    - deploy_master
+                    - deploy_for_e2e_testing
 
+            - deploy_master:
+                requires:
+                    - run_blackbox_tests
+                    - run_ui_tests
 
 
 # -------------------------------------------------------------------
@@ -289,7 +298,7 @@ jobs:
             command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellcircle-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-circle.yml
         - run:
             name: Post to Discord
-            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed for testing http://circle.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+            command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed for testing http://circle[1|2].particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
     deploy_feature:
@@ -325,7 +334,7 @@ jobs:
                 command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml
             - run:
                 name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature[1|2].particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
     deploy_develop:
@@ -361,7 +370,7 @@ jobs:
                 command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml
             - run:
                 name: Post to Discord
-                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://develop.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+                command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://develop[1|2].particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
     deploy_master:
@@ -397,5 +406,5 @@ jobs:
                   command: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml
             - run:
                   name: Post to Discord
-                  command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://master.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
+                  command: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://master[1|2].particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
