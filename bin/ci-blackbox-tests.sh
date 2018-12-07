@@ -8,9 +8,13 @@ cp -f .env.circle.blackbox.example .env.blackbox
 
 # wait until core rpc and the mp cli are up
 ./dockerize -wait tcp://circle.particl.xyz:58935 -timeout 60s
+echo "connected to: tcp://circle.particl.xyz:58935"
 ./dockerize -wait tcp://circle.particl.xyz:59935 -timeout 60s
-./dockerize -wait http://circle.particl.xyz:3100/cli/ -timeout 120s
-./dockerize -wait http://circle.particl.xyz:3200/cli/ -timeout 120s
+echo "connected to: tcp://circle.particl.xyz:59935"
+./dockerize -wait http://circle.particl.xyz:3100/cli/ -timeout 300s
+echo "connected to: http://circle.particl.xyz:3100"
+./dockerize -wait http://circle.particl.xyz:3200/cli/ -timeout 300s
+echo "connected to: http://circle.particl.xyz:3200"
 
 yarn install --check-files
 npm run test:black-box:pretty
