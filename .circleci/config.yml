@@ -99,23 +99,13 @@ workflows:
 
 defaults: &defaults
     docker:
-        - image: circleci/node:latest #9.5.0-browsers   # todo: test circleci/node:latest
+        - image: circleci/node:latest
     working_directory: ~/particl-market
 
 commonenv: &commonenv
     TERM: xterm                               # colors
-    APP_HOST: http://localhost
-    APP_PORT: 3100
     REGISTRY: r.cfcr.io                       # codefresh registry
-    IMAGE_NAME: ludx/particl-market-ci        # todo: update
-    RPCUSER: test
-    RPCPASSWORD: test
-    RPCHOSTNAME: circle.particl.xyz
-    MAINNET_PORT: 58738
-    TESTNET_PORT: 58935
-    DEFAULT_MARKETPLACE_NAME: DEFAULT
-    DEFAULT_MARKETPLACE_PRIVATE_KEY: 2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek
-    DEFAULT_MARKETPLACE_ADDRESS: pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA
+    IMAGE_NAME: ludx/particl-market-ci        #
 
 
 jobs:
