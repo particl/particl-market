@@ -48,15 +48,15 @@ workflows:
             - run_unit_tests:
                 requires:
                     - build_image
-# skip for now
-#            - run_integration_tests:
-#                requires:
-#                    - build_image
+
+            - run_integration_tests:
+                requires:
+                    - build_image
 
             - deploy_for_e2e_testing:
                 requires:
                     - run_unit_tests
-#                    - run_integration_tests
+                    - run_integration_tests
 
             - run_blackbox_tests:
                 requires:
