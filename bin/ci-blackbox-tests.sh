@@ -8,6 +8,8 @@ cp -f .env.circle.blackbox.example .env.blackbox
 
 yarn install --check-files
 
+sleep 30s
+
 # wait until core rpc and the mp cli are up
 ./dockerize -wait tcp://circle.particl.xyz:58935 -timeout 60s
 echo "connected to: tcp://circle.particl.xyz:58935"
