@@ -1,0 +1,21 @@
+
+
+# pipeline describes build steps
+pipeline:
+    # every entry in the pipeline describes a single build step
+    build_image:
+        image: node
+        environment:
+            VERSION: "${DRONE_TAG}"
+            COMMIT: "${DRONE_COMMIT_SHA:0:7}"
+            REGISTRY: r.cfcr.io                       # codefresh registry
+            IMAGE_NAME: ludx/particl-market-ci        #
+
+        # commands executed in the container
+        commands:
+            - ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+            - ./bin/ci-create-build-version.sh
+            - docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+            - docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
+            - docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
+
