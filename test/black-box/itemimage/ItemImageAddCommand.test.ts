@@ -143,7 +143,7 @@ describe('ItemImageAddCommand', () => {
         for ( const imageData of itemImages ) {
             const imageUrl = // process.env.APP_HOST
                 // + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + 'http://localhost:3000'
+                'http://localhost:3000'
                 + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
             expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
@@ -177,7 +177,7 @@ describe('ItemImageAddCommand', () => {
         for ( const imageData of itemImages ) {
             const imageUrl = // process.env.APP_HOST
                 // + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + 'http://localhost:3000'
+                'http://localhost:3000'
                 + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
             expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
@@ -210,7 +210,7 @@ describe('ItemImageAddCommand', () => {
         for ( const imageData of itemImages ) {
             const imageUrl = // process.env.APP_HOST
                 // + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + 'http://localhost:3000'
+                'http://localhost:3000'
                 + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
             expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
