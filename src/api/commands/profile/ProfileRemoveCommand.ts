@@ -64,6 +64,6 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
     }
 
     public example(): string {
-        return 'profile ' + this.getName() + ' 2 myNewProfile ';
+        return 'profile ' + this.getName() + ' 2 ';
     }
 }

@@ -44,7 +44,6 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
         if (data.params.length < 1) {
             throw new MessageException('Missing name.');
         }
@@ -72,11 +71,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileName>            - The name of the profile we want to create. \n'
-            + '    <profileAddress>         - [optional] the particl address of this profile. \n'
-            + '                                This is the address that\'s used in the particl \n'
-            + '                                messaging system. Will be automatically generated \n'
-            + '                                if omitted. ';
+            + '    <profileName>            - The name of the profile we want to create. ';
     }
 
     public description(): string {
@@ -84,6 +79,6 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'profile ' + this.getName() + ' myProfile PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+        return 'profile ' + this.getName() + ' myProfile ';
     }
 }

@@ -12,6 +12,7 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -35,6 +36,10 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
+        if (data.params.length < 2) {
+            throw new MessageException('Missing args.');
+        }
+
         return this.profileService.update(data.params[0], {
             name: data.params[1]
         });
