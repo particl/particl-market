@@ -8,8 +8,6 @@ pipeline:
         environment:
             VERSION: "${DRONE_TAG}"
             COMMIT: "${DRONE_COMMIT_SHA:0:7}"
-            REGISTRY: r.cfcr.io                       # codefresh registry
-            IMAGE_NAME: ludx/particl-market-ci        #
 
         # commands executed in the container
         commands:
