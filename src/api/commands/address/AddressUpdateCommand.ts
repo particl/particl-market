@@ -152,7 +152,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <addressId> <title> <firstName> <lastName> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <addressId> <title> <firstName> <lastName> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) <zip> ';
     }
     // tslint:enable:max-line-length
 
