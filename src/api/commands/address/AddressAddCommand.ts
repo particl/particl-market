@@ -180,7 +180,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Create an address and associate it with a profile.';
+        return 'Create a shipping address and associate it with a profile.';
     }
 
     public example(): string {

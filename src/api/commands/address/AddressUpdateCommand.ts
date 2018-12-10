@@ -172,7 +172,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Update the details of an address given by ID.';
+        return 'Update the details of a shipping address given by addressId.';
     }
 
     public example(): string {
