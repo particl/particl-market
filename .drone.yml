@@ -17,8 +17,10 @@ steps:
           from_secret: REGISTRY_USER
       password:
           from_secret: REGISTRY_PASSWORD
-      tags:
-        - $VERSION
+      auto_tag: true
+      debug: true
+      #tags:
+      #  - $VERSION
 
 
 
