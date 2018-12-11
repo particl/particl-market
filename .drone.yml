@@ -20,7 +20,7 @@ steps:
       #auto_tag: true
       debug: true
       tags:
-          - ${DRONE_COMMIT_SHA}
+          - ${VERSION}
 
 
 
