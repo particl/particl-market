@@ -25,9 +25,14 @@ steps:
 
 - name: Unit test
   image: docker:dind
+  environment:
+    REGISTRY_USER:
+      from_secret: REGISTRY_USER
+    REGISTRY_PASSWORD:
+      from_secret: REGISTRY_PASSWORD
   commands:
-    - docker login ${REGISTRY} -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
-    - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
+    - wrapdocker && docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
+    - wrapdocker && docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
 
