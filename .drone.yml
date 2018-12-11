@@ -17,10 +17,10 @@ steps:
           from_secret: REGISTRY_USER
       password:
           from_secret: REGISTRY_PASSWORD
-      auto_tag: true
+      #auto_tag: true
       debug: true
-      #tags:
-      #  - $VERSION
+      tags:
+          - ${DRONE_COMMIT_SHA}
 
 
 
