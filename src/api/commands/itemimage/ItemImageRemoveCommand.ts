@@ -35,7 +35,14 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('Requires arg: ItemImageId');
         }
         // find itemImage
-        const itemImage = await this.itemImageService.findOne(data.params[0]);
+        const itemImageId = data.params[0];
+        if (!itemImageId) {
+            // Redundant code, but just in case something changes later
+            throw new MessageException('ItemImageId missing.');
+        } else if (typeof itemImageId !== 'number') {
+            throw new MessageException('ItemImageId must be a number.');
+        }
+        const itemImage = await this.itemImageService.findOne(itemImageId);
 
         // find related itemInformation
         const itemInformation = itemImage.related('ItemInformation').toJSON();
@@ -57,7 +64,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Remove an item\'s image, identified by its ID.';
+        return 'Remove an item\'s image, identified by the image\'s  itemImageId.';
     }
 
     public example(): string {

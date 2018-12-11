@@ -73,10 +73,10 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Return all images for listing item.';
+        return 'Return all images for a listing item, specified using either the listing item\'s templateId or listingItemId.';
     }
 
     public example(): string {
-        return 'image ' + this.getName() + ' 1 1 ';
+        return 'image ' + this.getName() + ' template 1 ';
     }
 }
