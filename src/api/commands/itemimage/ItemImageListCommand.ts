@@ -38,21 +38,11 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemImage>> {
-        if ( data.params.length !== 2 ) {
-            throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
-        }
-
-        if (typeof data.params[1] !== 'number') {
-            this.log.error('Second arg must be numeric.');
-            throw new MessageException('Second arg must be numeric.');
-        }
-
         const idType = data.params[0];
         if ( idType === 'template' ) {
             const listingItemTemplateId = data.params[1];
             const retval: ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId, true);
             return retval.toJSON().ItemInformation.ItemImages;
-
         } else if ( idType === 'item' ) {
             const listingItemId = data.params[1];
             const retval: ListingItem = await this.listingItemService.findOne(listingItemId, true);
@@ -60,6 +50,24 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         } else {
             throw new MessageException(`Invalid ID type detected <${idType}>. Expected 'template' or 'item'.`);
         }
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if ( data.params.length !== 2 ) {
+            throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
+        }
+
+        const idType = data.params[0];
+        if ( idType !== 'template' && idType !== 'item' ) {
+            throw new MessageException(`Invalid ID type detected <${idType}>. Expected 'template' or 'item'.`);
+        }
+
+        if (typeof data.params[1] !== 'number') {
+            this.log.error('Second arg must be numeric.');
+            throw new MessageException('Second arg must be numeric.');
+        }
+
+        return data;
     }
 
     public usage(): string {

@@ -48,6 +48,31 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
         // check listingItemTemplate id present in params
         const listingItemTemplateId = data.params[0];
+        const dataId = data.params[1];
+        let protocol = data.params[2];
+        let encoding = data.params[3];
+        const dataStr = data.params[4];
+
+        // find listing item template
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // create item images
+        return await this.itemImageService.create({
+            item_information_id: listingItemTemplate.ItemInformation.id,
+            data: [{
+                dataId,
+                protocol,
+                encoding,
+                data: dataStr,
+                imageVersion: ImageVersions.ORIGINAL.propName
+            }]
+        } as ItemImageCreateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // check listingItemTemplate id present in params
+        const listingItemTemplateId = data.params[0];
         if (!listingItemTemplateId) {
             this.log.error('ListingItemTemplate id can not be null.');
             throw new MessageException('ListingItemTemplate id can not be null.');
@@ -97,21 +122,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('Data arg was present, but encoding arg is missing.');
         }
 
-        // find listing item template
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
-
-        // create item images
-        return await this.itemImageService.create({
-            item_information_id: listingItemTemplate.ItemInformation.id,
-            data: [{
-                dataId,
-                protocol,
-                encoding,
-                data: dataStr,
-                imageVersion: ImageVersions.ORIGINAL.propName
-            }]
-        } as ItemImageCreateRequest);
+        return data;
     }
 
     public usage(): string {

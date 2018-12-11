@@ -31,6 +31,20 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        const itemImageId = data.params[0];
+        const itemImage = await this.itemImageService.findOne(itemImageId);
+
+        // find related itemInformation
+        const itemInformation = itemImage.related('ItemInformation').toJSON();
+
+        // check if item already been posted
+        if (itemInformation.listingItemId) {
+            throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
+        }
+        return this.itemImageService.destroy(data.params[0]);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MessageException('Requires arg: ItemImageId');
         }
@@ -42,16 +56,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         } else if (typeof itemImageId !== 'number') {
             throw new MessageException('ItemImageId must be a number.');
         }
-        const itemImage = await this.itemImageService.findOne(itemImageId);
 
-        // find related itemInformation
-        const itemInformation = itemImage.related('ItemInformation').toJSON();
-
-        // check if item already been posted
-        if (itemInformation.listingItemId) {
-            throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
-        }
-        return this.itemImageService.destroy(data.params[0]);
+        return data;
     }
 
     public usage(): string {
