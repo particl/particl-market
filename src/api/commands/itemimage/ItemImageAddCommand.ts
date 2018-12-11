@@ -16,6 +16,8 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { ImageDataProtocolType } from '../../enums/ImageDataProtocolType';
+import { ImageDataEncodingType } from '../../enums/ImageDataEncodingType';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -45,21 +47,68 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
 
         // check listingItemTemplate id present in params
-        if (!data.params[0]) {
+        const listingItemTemplateId = data.params[0];
+        if (!listingItemTemplateId) {
+            this.log.error('ListingItemTemplate id can not be null.');
             throw new MessageException('ListingItemTemplate id can not be null.');
         }
+
+        // No need to validate data, it's optional and a string
+        const dataId = data.params[1];
+
+        let protocol = data.params[2];
+        if (protocol) {
+            if (!dataId) {
+                // Probably impossible, but throw an error if dataId arg (the arg required before protocol) doesn't exist.
+                throw new MessageException('Protocol arg was present, but dataId arg is missing.');
+            }
+            if (typeof protocol !== 'string') {
+                this.log.error('Protocol is present but not a string.');
+                throw new MessageException('Protocol is present but not a string.');
+            }
+            if (!ImageDataProtocolType[protocol]) {
+                this.log.error('Invalid protocol.');
+                throw new MessageException('Invalid protocol.');
+            }
+            protocol = ImageDataProtocolType[protocol];
+        }
+
+        let encoding = data.params[3];
+        if (encoding) {
+            if (!protocol) {
+                // Probably impossible, but throw an error if protocol arg (the arg required before encoding) doesn't exist.
+                throw new MessageException('Encoding arg was present, but protocol arg is missing.');
+            }
+            if (typeof encoding !== 'string') {
+                this.log.error('Encoding is present but not a string.');
+                throw new MessageException('Encoding is present but not a string.');
+            }
+            if (!ImageDataEncodingType[encoding]) {
+                this.log.error('Invalid encoding.');
+                throw new MessageException('Invalid encoding.');
+            }
+            encoding = ImageDataEncodingType[encoding];
+        }
+
+        // No need to validate data, it's optional and a string
+        const dataStr = data.params[4];
+        if (dataStr && !encoding) {
+            // Probably impossible, but throw an error if encoding arg (the arg required before dataStr) doesn't exist.
+            throw new MessageException('Data arg was present, but encoding arg is missing.');
+        }
+
         // find listing item template
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
         // create item images
         return await this.itemImageService.create({
             item_information_id: listingItemTemplate.ItemInformation.id,
             data: [{
-                dataId: data.params[1],
-                protocol: data.params[2],
-                encoding: data.params[3],
-                data: data.params[4],
+                dataId,
+                protocol,
+                encoding,
+                data: dataStr,
                 imageVersion: ImageVersions.ORIGINAL.propName
             }]
         } as ItemImageCreateRequest);
@@ -73,14 +122,14 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     we want to associate this item image with. \n'
-            + '    <dataId>                      - [optional] String - [TODO] \n'
+            + '    <dataId>                      - [optional] String - String identifier for the image. \n'
             + '    <protocol>                    - [optional] Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image. \n'
             + '    <encoding>                    - [optional] Enum{BASE64} - The format the image is encoded in. \n'
             + '    <data>                        - [optional] String - The image\'s data. ';
     }
 
     public description(): string {
-        return 'Add an item image to a listing item template, identified by its ID.';
+        return 'Add an item image to a listing item template, identified by its listingItemTemplateId.';
     }
 
     public example(): string {
