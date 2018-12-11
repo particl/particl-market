@@ -1,22 +1,33 @@
 
 kind: pipeline
-name: build and push
+name: Build and Push
 
 steps:
 
-- name: build and push
+- name: Build and Push
   image: plugins/docker
+  pull: always
   settings:
-      repo: ludx/particl-market-ci
-      dockerfile: Dockerfile.ci
-      username:
-          from_secret: REGISTRY_USER
-      password:
-          from_secret: REGISTRY_PASSWORD
-      #auto_tag: true
-      debug: true
-      tags:
-          - ${DRONE_COMMIT_SHA}
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}
+
+# TODO: caching
+# - https://github.com/drone-plugins/drone-docker/issues/172
+# - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
+
+- name: Unit test
+  image: docker:dind
+  commands:
+    - docker login ${REGISTRY} -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
+    - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
 
