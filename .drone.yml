@@ -6,10 +6,6 @@ steps:
 
 - name: build and push
   image: plugins/docker
-  environment:
-      VERSION: "${DRONE_TAG}"
-      COMMIT: "${DRONE_COMMIT_SHA:0:7}"
-
   settings:
       repo: ludx/particl-market-ci
       dockerfile: Dockerfile.ci
@@ -20,7 +16,7 @@ steps:
       #auto_tag: true
       debug: true
       tags:
-          - ${VERSION}
+          - ${DRONE_COMMIT_SHA}
 
 
 
