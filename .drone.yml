@@ -18,7 +18,7 @@ steps:
       password:
           from_secret: REGISTRY_PASSWORD
       tags:
-      - $$VERSION
+        - $VERSION
 
 
 
