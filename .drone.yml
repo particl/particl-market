@@ -1,6 +1,6 @@
 
 kind: pipeline
-name: default
+name: build and push
 
 steps:
 
