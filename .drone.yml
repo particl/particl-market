@@ -51,10 +51,10 @@ steps:
 
 
 services:
-  docker:
-    image: docker:dind
-    privileged: true
-    command: [ '-H', 'unix:///drone/docker.sock' ]
+- name: docker
+  image: docker:dind
+  privileged: true
+  command: [ '-H', 'unix:///drone/docker.sock' ]
 
 # pipeline describes build steps
 #pipeline:
