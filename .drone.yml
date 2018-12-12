@@ -3,7 +3,7 @@ kind: pipeline
 name: Build and Push
 
 steps:
-- name: Unit test
+- name: Unit test1
   image: docker:dind
   environment:
     REGISTRY_USER:
