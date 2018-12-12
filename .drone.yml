@@ -7,16 +7,16 @@ steps:
   image: docker
   environment:
     DOCKER_HOST: unix:///drone/docker.sock
-    REGISTRY_USER:
-      from_secret: REGISTRY_USER
-    REGISTRY_PASSWORD:
+    DOCKER_USER:
+      from_secret: REGISTRY_USERNAME
+    DOCKER_PASSWORD:
       from_secret: REGISTRY_PASSWORD
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
     - sleep 10 # gives docker enough time to initialize
-    - docker login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}"
-    - echo ${REGISTRY_USER}
-    - echo ${REGISTRY_PASS}
+    - echo "${DOCKER_USER}"
+    - echo "${DOCKER_PASSWORD}"
+    - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 - name: Build and Push
   image: plugins/docker
@@ -41,12 +41,12 @@ steps:
   image: docker:dind
   environment:
     REGISTRY_USER:
-        from_secret: REGISTRY_USER
+        from_secret: REGISTRY_USERNAME
     REGISTRY_PASSWORD:
       from_secret: REGISTRY_PASSWORD
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
-    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD}
+    - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
     - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
