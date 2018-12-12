@@ -14,8 +14,14 @@ steps:
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
     - sleep 10 # gives docker enough time to initialize
+    - echo $DOCKER_USER
+    - echo $DOCKER_PASSWORD
+    - echo ${DOCKER_USER}
+    - echo ${DOCKER_PASSWORD}
     - echo "$DOCKER_USER"
     - echo "$DOCKER_PASSWORD"
+    - echo "${DOCKER_USER}"
+    - echo "${DOCKER_PASSWORD}"
     - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
     #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
 
