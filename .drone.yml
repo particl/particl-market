@@ -12,7 +12,8 @@ steps:
       from_secret: REGISTRY_PASSWORD
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
-  - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} -e ${DOCKER_EMAIL}
+  - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
+      #-e ${DOCKER_EMAIL}
 
 - name: Build and Push
   image: plugins/docker
