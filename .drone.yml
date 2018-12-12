@@ -3,17 +3,20 @@ kind: pipeline
 name: Build and Push
 
 steps:
-- name: Unit test1
-  image: docker:dind
+- name: build
+  image: docker
   environment:
+    DOCKER_HOST: unix:///drone/docker.sock
     REGISTRY_USER:
       from_secret: REGISTRY_USER
     REGISTRY_PASSWORD:
       from_secret: REGISTRY_PASSWORD
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
-  - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
-      #-e ${DOCKER_EMAIL}
+    - sleep 10 # gives docker enough time to initialize
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
+    - echo ${REGISTRY_USER}
+    - echo ${REGISTRY_PASS}
 
 - name: Build and Push
   image: plugins/docker
@@ -47,7 +50,11 @@ steps:
     - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
-
+services:
+  docker:
+    image: docker:dind
+    privileged: true
+    command: [ '-H', 'unix:///drone/docker.sock' ]
 
 # pipeline describes build steps
 #pipeline:
