@@ -3,6 +3,16 @@ kind: pipeline
 name: Build and Push
 
 steps:
+- name: Unit test
+  image: docker:dind
+  environment:
+    REGISTRY_USER:
+      from_secret: REGISTRY_USER
+    REGISTRY_PASSWORD:
+      from_secret: REGISTRY_PASSWORD
+    REGISTRY_EMAIL: juha.kovanen@gmail.com
+  commands:
+  - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} -e ${DOCKER_EMAIL}
 
 - name: Build and Push
   image: plugins/docker
@@ -27,12 +37,13 @@ steps:
   image: docker:dind
   environment:
     REGISTRY_USER:
-      from_secret: REGISTRY_USER
+        from_secret: REGISTRY_USER
     REGISTRY_PASSWORD:
       from_secret: REGISTRY_PASSWORD
+    REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
-    - wrapdocker && docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
-    - wrapdocker && docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} -e ${DOCKER_EMAIL}
+    - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
 
