@@ -16,12 +16,16 @@ steps:
     - sleep 10 # gives docker enough time to initialize
     - echo $DOCKER_USER
     - echo $DOCKER_PASSWORD
+    - sleep 1
     - echo ${DOCKER_USER}
     - echo ${DOCKER_PASSWORD}
+    - sleep 1
     - echo "$DOCKER_USER"
     - echo "$DOCKER_PASSWORD"
+    - sleep 1
     - echo "${DOCKER_USER}"
     - echo "${DOCKER_PASSWORD}"
+    - sleep 1
     - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
     #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
 
