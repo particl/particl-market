@@ -14,7 +14,7 @@ steps:
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
     - sleep 10 # gives docker enough time to initialize
-    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS}
+    - docker login -u "${REGISTRY_USER}" -p "${REGISTRY_PASSWORD}"
     - echo ${REGISTRY_USER}
     - echo ${REGISTRY_PASS}
 
@@ -46,7 +46,7 @@ steps:
       from_secret: REGISTRY_PASSWORD
     REGISTRY_EMAIL: juha.kovanen@gmail.com
   commands:
-    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASS} -e ${DOCKER_EMAIL}
+    - docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD}
     - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
 
 
