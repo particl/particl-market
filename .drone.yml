@@ -11,9 +11,12 @@ steps:
 
 - name: test
   image: docker
+  volumes:              # mount the cache volume, needs "trusted"
+    - name: cache
+      path: /cache
   commands:
-    - ls -al /tmp/cache
-    - ls -al /tmp/cache/node_modules
+    - ls -al /cache
+    - ls -al /cache/node_modules
 
 - name: restore cache
   image: drillster/drone-volume-cache
