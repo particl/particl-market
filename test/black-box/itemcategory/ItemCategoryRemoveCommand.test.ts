@@ -62,12 +62,14 @@ describe('ItemCategoryRemoveCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
+        expect(res.error.error.message).toBe(`Category not found`);
     });
 
     test('Should not delete the default/root ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, rootCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Category not found`);
     });
 
     test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
@@ -112,6 +114,7 @@ describe('ItemCategoryRemoveCommand', () => {
         res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Cant delete category with something something`);
     });
 
     test('Should not delete the ItemCategory if theres ListingItemTemplate related with ItemCategory', async () => {
@@ -138,6 +141,7 @@ describe('ItemCategoryRemoveCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Cant delete cateogry with something something`);
     });
 
 });

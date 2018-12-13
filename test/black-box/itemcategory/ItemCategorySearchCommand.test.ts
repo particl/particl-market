@@ -60,7 +60,7 @@ describe('ItemCategorySearchCommand', () => {
         expect(res.error.error.message).toBe('SearchString can not be null');
     });
 
-    test('Should find get any ItemCategories when the search string doesnt match', async () => {
+    test('Should get any ItemCategories when the search string doesnt match', async () => {
         //  find categories
         const res = await testUtil.rpc(categoryCommand, [categorySearchCommand, 'NOTFOUNDCATEGORY']);
         res.expectJson();

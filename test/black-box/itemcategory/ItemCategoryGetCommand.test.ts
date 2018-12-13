@@ -35,4 +35,10 @@ describe('ItemCategoryGetCommand', () => {
         expect(result.parentItemCategoryId).toBe(null);
     });
 
+    test('Should fail to find category by key', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryGetCommand, 'A_CATEGORY_THAT_DOESNT_EXIST']);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Category not found`);
+    });
 });
