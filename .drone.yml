@@ -1,14 +1,8 @@
 
-#workspace:
-#  base: /workspace
-#  path: src/github.com/xludx/particl-market
+workspace:
+  base: /workspace      # shared base volume available to all pipeline steps.
+  path: particl-market  # default working directory, where your code is cloned
 
-# The base attribute defines a shared base volume available to all pipeline steps. This ensures your source code,
-# dependencies and compiled binaries are persisted and shared between steps.
-# The path attribute defines the working directory of your build. This is where your code is cloned
-# and will be the default working directory of every step in your build process. The path must be
-# relative and is combined with your base path.
-# /drone/src/github.com/octocat/hello-world
 
 kind: pipeline
 name: Build and Push
@@ -53,10 +47,7 @@ steps:
   commands:
     - echo "workspace:"
     - ls -al /workspace
-    - ls -al /workspace/src/
-    - ls -al /workspace/src/github.com/
-    - ls -al /workspace/src/github.com/xludx/
-    - ls -al /workspace/src/github.com/xludx/particl-market
+    - ls -al /workspace/particl-market
     - bin/ci-unit-tests.sh
 
 #- name: rebuild cache
