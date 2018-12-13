@@ -1,7 +1,7 @@
 
-workspace:
-  base: /workspace
-  path: src/github.com/xludx/particl-market
+#workspace:
+#  base: /workspace
+#  path: src/github.com/xludx/particl-market
 
 # The base attribute defines a shared base volume available to all pipeline steps. This ensures your source code,
 # dependencies and compiled binaries are persisted and shared between steps.
@@ -53,6 +53,10 @@ steps:
   commands:
     - echo "workspace:"
     - ls -al /workspace
+    - ls -al /workspace/src/
+    - ls -al /workspace/src/github.com/
+    - ls -al /workspace/src/github.com/xludx/
+    - ls -al /workspace/src/github.com/xludx/particl-market
     - bin/ci-unit-tests.sh
 
 #- name: rebuild cache
