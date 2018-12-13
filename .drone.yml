@@ -4,32 +4,6 @@ name: Build and Push
 
 steps:
 
-- name: testetstteetst
-  image: plugins/docker
-  pull: always
-  settings:
-    username:
-      from_secret: REGISTRY_USER
-    password:
-      from_secret: REGISTRY_PASSWORD
-    debug: true
-  commands:
-    - sleep 10 # gives docker enough time to initialize
-    - echo $DOCKER_USER
-    - echo $DOCKER_PASSWORD
-    - sleep 1
-    - echo ${DOCKER_USER}
-    - echo ${DOCKER_PASSWORD}
-    - sleep 1
-    - echo "$DOCKER_USER"
-    - echo "$DOCKER_PASSWORD"
-    - sleep 1
-    - echo "${DOCKER_USER}"
-    - echo "${DOCKER_PASSWORD}"
-    - sleep 1
-    - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
-    #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
-
 
 
 - name: Build and Push
@@ -51,33 +25,13 @@ steps:
 # - https://github.com/drone-plugins/drone-docker/issues/172
 # - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
 
-- name: build
-  image: docker
-  environment:
-      DOCKER_HOST: unix:///drone/docker.sock
-      DOCKER_USER:
-          from_secret: REGISTRY_USERNAME
-      DOCKER_PASSWORD:
-          from_secret: REGISTRY_PASSWORD
-      REGISTRY_EMAIL: juha.kovanen@gmail.com
-  commands:
-    - sleep 10 # gives docker enough time to initialize
-    - echo $DOCKER_USER
-    - echo $DOCKER_PASSWORD
-    - sleep 1
-    - echo ${DOCKER_USER}
-    - echo ${DOCKER_PASSWORD}
-    - sleep 1
-    - echo "$DOCKER_USER"
-    - echo "$DOCKER_PASSWORD"
-    - sleep 1
-    - echo "${DOCKER_USER}"
-    - echo "${DOCKER_PASSWORD}"
-    - sleep 1
-    - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
-    #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
-
 - name: Unit test
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+  - bin/ci-unit-tests.sh
+
+
+- name: Unit test dockerdind
   image: docker:dind
   environment:
     REGISTRY_USER:
@@ -88,6 +42,32 @@ steps:
   commands:
     - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
     - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
+
+- name: test
+  image: docker
+  environment:
+      DOCKER_HOST: unix:///drone/docker.sock
+      DOCKER_USER:
+          from_secret: REGISTRY_USERNAME
+      DOCKER_PASSWORD:
+          from_secret: REGISTRY_PASSWORD
+      REGISTRY_EMAIL: juha.kovanen@gmail.com
+  commands:
+  - sleep 10 # gives docker enough time to initialize
+  - echo $DOCKER_USER
+  - echo $DOCKER_PASSWORD
+  - sleep 1
+  - echo ${DOCKER_USER}
+  - echo ${DOCKER_PASSWORD}
+  - sleep 1
+  - echo "$DOCKER_USER"
+  - echo "$DOCKER_PASSWORD"
+  - sleep 1
+  - echo "${DOCKER_USER}"
+  - echo "${DOCKER_PASSWORD}"
+  - sleep 1
+  - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
+  #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
 
 
 services:
