@@ -63,7 +63,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 3) {
-            throw new MessageException(`Requires 3 args`);
+            throw new MessageException('Requires 3 args');
         }
         return data;
     }

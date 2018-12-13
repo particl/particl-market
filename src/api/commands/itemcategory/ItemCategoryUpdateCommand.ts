@@ -13,10 +13,10 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import * as resources from 'resources';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -60,7 +60,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 4) {
-            throw new MessageException('SearchString can not be null');
+            throw new MessageException('Missing args. Requires 4 args.');
         }
 
         const categoryId = data.params[0];
@@ -73,23 +73,26 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             throw new MessageException('parentItemCategoryId can not be non-numeric.');
         }
 
-        const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
-        if (!itemCategoryModel) {
-            throw new MessageException('Category specified by categoryId does not exist.');   
-        }
-        const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
+        {
+            const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
+            if (!itemCategoryModel) {
+                throw new MessageException('Category specified by categoryId does not exist.');
+            }
+            const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
 
-        // if category has a key, its a default category and cant be updated
-        if (itemCategory.key != null) {
-            throw new MessageException(`Default category can't be updated or deleted.`);
+            // if category has a key, its a default category and cant be updated
+            if (itemCategory.key != null) {
+                throw new MessageException('Default category can\'t be updated or deleted.');
+            }
         }
 
         if (parentItemCategoryId) {
             const itemCategoryModel = await this.itemCategoryService.findOne(parentItemCategoryId);
             if (!itemCategoryModel) {
-                throw new MessageException('Category specified by parentItemCategoryId does not exist.');   
+                throw new MessageException('Category specified by parentItemCategoryId does not exist.');
             }
         }
+        return data;
     }
 
     public usage(): string {

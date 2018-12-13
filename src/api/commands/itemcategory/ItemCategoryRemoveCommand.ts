@@ -11,13 +11,13 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SearchOrder } from '../../enums/SearchOrder';
 import * as _ from 'lodash';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -91,7 +91,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException(`Requires 1 arg`);
+            throw new MessageException('Requires 1 arg');
         }
         return data;
     }

@@ -46,7 +46,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException(`Requires 1 arg`);
+            throw new MessageException('Requires 1 arg');
         }
         return data;
     }
