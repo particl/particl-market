@@ -9,15 +9,6 @@ name: Build and Push
 
 steps:
 
-- name: test
-  image: docker
-  volumes:              # mount the cache volume, needs "trusted"
-    - name: cache
-      path: /cache
-  commands:
-    - ls -al /cache
-    - ls -al /cache/node_modules
-
 - name: restore cache
   image: drillster/drone-volume-cache
   settings:
@@ -28,6 +19,15 @@ steps:
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
       path: /cache
+
+- name: ls cache test1
+  image: docker
+  volumes:              # mount the cache volume, needs "trusted"
+    - name: cache
+      path: /cache
+  commands:
+    - ls -al /cache
+    - ls -al /cache/node_modules
 
 - name: build and push image
   image: plugins/docker
