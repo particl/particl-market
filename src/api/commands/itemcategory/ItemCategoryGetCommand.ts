@@ -12,6 +12,7 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -47,6 +48,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         if (data.params.length < 1) {
             throw new MessageException(`Requires 1 arg`);
         }
+        return data;
     }
 
     public usage(): string {

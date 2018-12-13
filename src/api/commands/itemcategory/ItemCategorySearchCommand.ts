@@ -43,6 +43,7 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
         if (data.params.length < 1) {
             throw new MessageException('SearchString can not be null');
         }
+        return data;
     }
 
     public usage(): string {

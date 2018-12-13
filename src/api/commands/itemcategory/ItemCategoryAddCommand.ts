@@ -65,6 +65,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         if (data.params.length < 3) {
             throw new MessageException(`Requires 3 args`);
         }
+        return data;
     }
 
     public usage(): string {

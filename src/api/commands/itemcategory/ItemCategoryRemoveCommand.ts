@@ -93,6 +93,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         if (data.params.length < 1) {
             throw new MessageException(`Requires 1 arg`);
         }
+        return data;
     }
 
     public usage(): string {
