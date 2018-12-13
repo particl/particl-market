@@ -9,14 +9,14 @@ name: Build and Push
 
 steps:
 
-#- name: restore cache
-#  image: drillster/drone-volume-cache
-#  restore: true         # instruct plugin to restore cache, can be true or false
-#  mount:                # list of folders or files to cache
-#    - ./node_modules
-#  ttl: 10               # maximum cache lifetime in days
-#  volumes:
-#    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
+- name: restore cache
+  image: drillster/drone-volume-cache
+  restore: true         # instruct plugin to restore cache, can be true or false
+  mount:                # list of folders or files to cache
+    - ./node_modules
+  ttl: 10               # maximum cache lifetime in days
+  volumes:
+    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
 
 
 - name: build and push image
@@ -50,13 +50,14 @@ steps:
     - ls -al /workspace/particl-market
     - bin/ci-unit-tests.sh
 
-#- name: rebuild cache
-#  image: drillster/drone-volume-cache
-#  rebuild: true         # instruct plugin to rebuild cache, can be true or false
-#  mount:                # list of folders or files to cache
-#    - ./node_modules
-#  volumes:
-#    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
+# cache files and directories between builds
+- name: rebuild cache
+  image: drillster/drone-volume-cache
+  rebuild: true         # instruct plugin to rebuild cache, can be true or false
+  mount:                # list of folders or files to cache
+    - ./node_modules
+  volumes:
+    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
 
 
 volumes:
