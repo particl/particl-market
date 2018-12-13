@@ -9,6 +9,12 @@ name: Build and Push
 
 steps:
 
+- name: test
+  image: docker
+  commands:
+    - ls -al /tmp/cache
+    - ls -al /tmp/cache/node_modules
+
 - name: restore cache
   image: drillster/drone-volume-cache
   settings:
