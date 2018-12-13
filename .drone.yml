@@ -1,12 +1,31 @@
 
+workspace:
+  base: /workspace
+  path: src/github.com/xludx/particl-market
+
+# The base attribute defines a shared base volume available to all pipeline steps. This ensures your source code,
+# dependencies and compiled binaries are persisted and shared between steps.
+# The path attribute defines the working directory of your build. This is where your code is cloned
+# and will be the default working directory of every step in your build process. The path must be
+# relative and is combined with your base path.
+# /drone/src/github.com/octocat/hello-world
+
 kind: pipeline
 name: Build and Push
 
 steps:
 
+- name: restore cache
+  image: drillster/drone-volume-cache
+  restore: true         # instruct plugin to restore cache, can be true or false
+  mount:                # list of folders or files to cache
+    - ./node_modules
+  ttl: 10               # maximum cache lifetime in days
+  volumes:
+    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
 
 
-- name: Build and Push
+- name: build and push image
   image: plugins/docker
   pull: always
   settings:
@@ -21,60 +40,56 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}
 
+
 # TODO: caching
 # - https://github.com/drone-plugins/drone-docker/issues/172
 # - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
 
-- name: Unit test
+- name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:              # mount an absolute path on the host machine into a pipeline step
+    - name: node_modules
+      path: /app/node_modules
   commands:
-  - bin/ci-unit-tests.sh
+    - ls -al /workspace
+    - bin/ci-unit-tests.sh
+
+- name: rebuild cache
+  image: drillster/drone-volume-cache
+  rebuild: true         # instruct plugin to rebuild cache, can be true or false
+  mount:                # list of folders or files to cache
+    - ./node_modules
+  volumes:
+    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
 
 
-- name: Unit test dockerdind
-  image: docker:dind
-  environment:
-    REGISTRY_USER:
-        from_secret: REGISTRY_USERNAME
-    REGISTRY_PASSWORD:
-      from_secret: REGISTRY_PASSWORD
-    REGISTRY_EMAIL: juha.kovanen@gmail.com
-  commands:
-    - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
-    - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
-
-- name: test
-  image: docker
-  environment:
-      DOCKER_HOST: unix:///drone/docker.sock
-      DOCKER_USER:
-          from_secret: REGISTRY_USERNAME
-      DOCKER_PASSWORD:
-          from_secret: REGISTRY_PASSWORD
-      REGISTRY_EMAIL: juha.kovanen@gmail.com
-  commands:
-  - sleep 10 # gives docker enough time to initialize
-  - echo $DOCKER_USER
-  - echo $DOCKER_PASSWORD
-  - sleep 1
-  - echo ${DOCKER_USER}
-  - echo ${DOCKER_PASSWORD}
-  - sleep 1
-  - echo "$DOCKER_USER"
-  - echo "$DOCKER_PASSWORD"
-  - sleep 1
-  - echo "${DOCKER_USER}"
-  - echo "${DOCKER_PASSWORD}"
-  - sleep 1
-  - docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
-  #- docker login --username "${DOCKER_USER}" --password "${DOCKER_PASSWORD}"
+volumes:
+- name: node_modules
+  host:
+    path: ./node_modules
 
 
-services:
-- name: docker
-  image: docker:dind
-  privileged: true
-  command: [ '-H', 'unix:///drone/docker.sock' ]
+#- name: test
+#  image: docker
+#  environment:
+#      DOCKER_HOST: unix:///drone/docker.sock
+#      DOCKER_USER:
+#          from_secret: REGISTRY_USERNAME
+#      DOCKER_PASSWORD:
+#          from_secret: REGISTRY_PASSWORD
+#      REGISTRY_EMAIL: juha.kovanen@gmail.com
+#  commands:
+#  - sleep 10 # gives docker enough time to initialize
+#  - echo $DOCKER_USER
+#  - echo $DOCKER_PASSWORD
+#  - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
+#  - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
+#
+#services:
+#- name: docker
+#  image: docker:dind
+#  privileged: true
+#  command: [ '-H', 'unix:///drone/docker.sock' ]
 
 # pipeline describes build steps
 #pipeline:
