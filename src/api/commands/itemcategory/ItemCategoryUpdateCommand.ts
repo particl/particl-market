@@ -21,8 +21,6 @@ import * as resources from 'resources';
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -60,22 +58,25 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         } as ItemCategoryUpdateRequest);
     }
 
-    /**
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
-     *
-     * @param {RpcRequest} data
-     * @returns {Promise<void>}
-     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
         if (data.params.length < 4) {
-            throw new MessageException('Missing parameters.');
+            throw new MessageException('SearchString can not be null');
         }
 
         const categoryId = data.params[0];
+        const parentItemCategoryId = data.params[3];
+
+        if (!categoryId || typeof categoryId !== 'number') {
+            throw new MessageException('CategoryId can not be empty or non-numeric.');
+        }
+        if (parentItemCategoryId && typeof parentItemCategoryId !== 'number') {
+            throw new MessageException('parentItemCategoryId can not be non-numeric.');
+        }
+
         const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
+        if (!itemCategoryModel) {
+            throw new MessageException('Category specified by categoryId does not exist.');   
+        }
         const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
 
         // if category has a key, its a default category and cant be updated
@@ -83,7 +84,12 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             throw new MessageException(`Default category can't be updated or deleted.`);
         }
 
-        return data;
+        if (parentItemCategoryId) {
+            const itemCategoryModel = await this.itemCategoryService.findOne(parentItemCategoryId);
+            if (!itemCategoryModel) {
+                throw new MessageException('Category specified by parentItemCategoryId does not exist.');   
+            }
+        }
     }
 
     public usage(): string {

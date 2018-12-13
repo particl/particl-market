@@ -43,10 +43,6 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-
-        if (!data.params[0]) {
-            throw new MessageException('Missing categoryId.');
-        }
         const categoryId = data.params[0];
 
         await this.itemCategoryService.findOne(categoryId)
@@ -91,6 +87,12 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
 
         return await this.itemCategoryService.destroy(categoryId);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException(`Requires 1 arg`);
+        }
     }
 
     public usage(): string {

@@ -43,6 +43,12 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException(`Requires 1 arg`);
+        }
+    }
+
     public usage(): string {
         return this.getName() + ' (<categoryId>|<categoryKey>) ';
     }
@@ -56,7 +62,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Command for getting an item category associated with category Id or key';
+        return 'Command for getting an item category associated with categoryId or categoryKey';
     }
 
     public example(): string {

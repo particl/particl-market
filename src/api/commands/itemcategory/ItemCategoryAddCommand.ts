@@ -40,16 +40,30 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        if (data.params[2]) {
-            const parentItemCategory = data.params[2];
-            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
+        const categoryName = data.params[0];
+        const description = data.params[1];
+        const parentItemCategory = data.params[2];
+        if (parentItemCategory) {
+            let parentItemCategoryId;
+            if (typeof parentItemCategory === 'number') {
+                parentItemCategoryId = parentItemCategory;
+            } else {
+                parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
+            }
+
             return await this.itemCategoryService.create({
-                name: data.params[0],
-                description: data.params[1],
+                name: categoryName,
+                description,
                 parent_item_category_id: parentItemCategoryId
             } as ItemCategoryCreateRequest);
         } else {
             throw new MessageException(`Parent category can't be null or undefined!`);
+        }
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 3) {
+            throw new MessageException(`Requires 3 args`);
         }
     }
 

@@ -36,12 +36,13 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemCategory>> {
+        return await this.itemCategoryService.findByName(data.params[0]);
+    }
 
-        if (!data.params[0]) {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
             throw new MessageException('SearchString can not be null');
         }
-
-        return await this.itemCategoryService.findByName(data.params[0]);
     }
 
     public usage(): string {
