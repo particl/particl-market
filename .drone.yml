@@ -11,10 +11,11 @@ steps:
 
 - name: restore cache
   image: drillster/drone-volume-cache
-  restore: true         # instruct plugin to restore cache, can be true or false
-  mount:                # list of folders or files to cache
-    - node_modules
-  ttl: 10               # maximum cache lifetime in days
+  settings:
+    restore: true       # instruct plugin to restore cache, can be true or false
+    mount:              # list of folders or files to cache
+      - node_modules
+    ttl: 10             # maximum cache lifetime in days
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
       path: /cache
@@ -53,9 +54,10 @@ steps:
 # cache files and directories between builds
 - name: rebuild cache
   image: drillster/drone-volume-cache
-  rebuild: true         # instruct plugin to rebuild cache, can be true or false
-  mount:                # list of folders or files to cache
-    - node_modules
+  settings:
+    rebuild: true       # instruct plugin to rebuild cache, can be true or false
+    mount:              # list of folders or files to cache
+      - node_modules
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
       path: /cache
