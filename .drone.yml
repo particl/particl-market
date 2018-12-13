@@ -9,7 +9,7 @@ name: Build and Push
 
 
 # To enable docker image caching all you need is:
-# RONE_VOLUME=/tmp/drone-cache:/cache drone-server variable;
+# DRONE_VOLUME=/tmp/drone-cache:/cache drone-server variable;
 # storage_path: /drone/docker and use_cache: true parameters for plugins/docker job;
 # drillster/drone-volume-cache of course ;-)
 # https://github.com/drone-plugins/drone-docker/issues/172
@@ -39,8 +39,8 @@ steps:
     - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
     - echo "DRONE_REPO ${DRONE_REPO}"
     - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
-#    - ls -al /cache
-#    - ls -al /cache/node_modules
+    - ls -al /cache
+    - ls -al /cache/node_modules
 
 - name: build and push image
   image: plugins/docker
@@ -92,7 +92,7 @@ volumes:
     path: ./node_modules
 - name: cache
   host:
-    path: /tmp/cache
+    path: /root/data/drone-agents
 
 #- name: test
 #  image: docker
