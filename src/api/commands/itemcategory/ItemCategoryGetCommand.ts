@@ -48,6 +48,16 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         if (data.params.length < 1) {
             throw new MessageException('Requires 1 arg');
         }
+        let tmpCategory;
+        if (typeof data.params[0] === 'number') {
+            tmpCategory = await this.itemCategoryService.findOne(data.params[0]);
+        } else {
+            tmpCategory = await this.itemCategoryService.findOneByKey(data.params[0]);
+        }
+        if (!tmpCategory) {
+            throw new MessageException('Category not found.');
+        }
+
         return data;
     }
 

@@ -77,6 +77,6 @@ describe('ItemCategoryAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Parent category can't be null or undefined!`);
+        expect(res.error.error.message).toBe(`Requires 3 args`);
     });
 });

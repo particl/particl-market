@@ -19,6 +19,7 @@ describe('ItemCategoryRemoveCommand', () => {
 
     const categoryCommand = Commands.CATEGORY_ROOT.commandName;
     const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
+    const categoryGetCommand = Commands.CATEGORY_GET.commandName;
     const categoryListCommand = Commands.CATEGORY_LIST.commandName;
     const categoryRemoveCommand = Commands.CATEGORY_REMOVE.commandName;
 
@@ -62,14 +63,17 @@ describe('ItemCategoryRemoveCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        expect(res.error.error.message).toBe(`Category not found`);
+
+        const res2 = await testUtil.rpc(categoryCommand, [categoryGetCommand, createdCategory.id]);
+        res2.expectJson();
+        res2.expectStatusCode(404);
     });
 
     test('Should not delete the default/root ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, rootCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Category not found`);
+        expect(res.error.error.message).toBe(`Invalid categoryId.`);
     });
 
     test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
@@ -114,10 +118,10 @@ describe('ItemCategoryRemoveCommand', () => {
         res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Cant delete category with something something`);
+        expect(res.error.error.message).toBe(`Category associated with ListingItem can't be deleted. id= ${createdCategory.id}`);
     });
 
-    test('Should not delete the ItemCategory if theres ListingItemTemplate related with ItemCategory', async () => {
+    test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
         // create category
         const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category 3',
@@ -141,7 +145,7 @@ describe('ItemCategoryRemoveCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Cant delete cateogry with something something`);
+        expect(res.error.error.message).toBe(`Category associated with ListingItemTemplate can't be deleted. id= ${createdCategory.id}`);
     });
 
 });

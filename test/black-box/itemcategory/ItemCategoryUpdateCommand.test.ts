@@ -102,7 +102,7 @@ describe('ItemCategoryUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe('Missing args. Requires 4 args.');
     });
 
     test('Should not update ItemCategory, because its a default ItemCategory', async () => {
