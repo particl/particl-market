@@ -10,7 +10,7 @@ name: Build and Push
 steps:
 
 - name: restore cache
-  image: drillster/drone-volume-cache
+  image: ludx/drone-volume-cache:latest
   settings:
     restore: true       # instruct plugin to restore cache, can be true or false
     mount:              # list of folders or files to cache
@@ -66,7 +66,7 @@ steps:
 
 # cache files and directories between builds
 - name: rebuild cache
-  image: drillster/drone-volume-cache
+  image: ludx/drone-volume-cache:latest
   settings:
     rebuild: true       # instruct plugin to rebuild cache, can be true or false
     mount:              # list of folders or files to cache
