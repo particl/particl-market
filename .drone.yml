@@ -15,9 +15,9 @@ steps:
   mount:                # list of folders or files to cache
     - ./node_modules
   ttl: 10               # maximum cache lifetime in days
-  volumes:
-    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
-
+  volumes:              # mount the cache volume, needs "trusted"
+    - name: cache
+      path: /cache
 
 - name: build and push image
   image: plugins/docker
@@ -56,15 +56,18 @@ steps:
   rebuild: true         # instruct plugin to rebuild cache, can be true or false
   mount:                # list of folders or files to cache
     - ./node_modules
-  volumes:
-    - /tmp/cache:/cache # mount the cache volume, needs "trusted"
+  volumes:              # mount the cache volume, needs "trusted"
+    - name: cache
+      path: /cache
 
 
 volumes:
 - name: node_modules
   host:
     path: ./node_modules
-
+- name: cache
+  host:
+      path: /tmp/cache
 
 #- name: test
 #  image: docker
