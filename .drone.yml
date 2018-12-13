@@ -26,10 +26,10 @@ steps:
     - name: cache
       path: /cache
   commands:
-    - echo "DRONE_COMMIT_MESSAGE: ${DRONE_COMMIT_MESSAGE}"
-    - echo "DRONE_REPO_OWNER: ${DRONE_REPO_OWNER}"
-    - echo "DRONE_REPO_NAME: ${DRONE_REPO_NAME}"
-    - echo "DRONE_JOB_NUMBER: ${DRONE_JOB_NUMBER}"
+    - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
+    - echo "DRONE_REPO_OWNER ${DRONE_REPO_OWNER}"
+    - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
+    - echo "DRONE_JOB_NUMBER ${DRONE_JOB_NUMBER}"
     - ls -al /cache
     - ls -al /cache/node_modules
 
