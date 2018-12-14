@@ -73,15 +73,16 @@ steps:
   - name: cache
     path: /cache
   commands:
-  - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
-  - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
-  - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
-  - echo "DRONE_REPO ${DRONE_REPO}"
-  - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
-  - echo "workspace:"
-  - ls -al /workspace/particl-market
-  - mkdir -p "/workspace/particl-market/node_modules"
-  - touch /workspace/particl-market/node_modules/testfile
+    - ls -al /cache
+    - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
+    - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
+    - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
+    - echo "DRONE_REPO ${DRONE_REPO}"
+    - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
+    - echo "workspace:"
+    - ls -al /workspace/particl-market
+    - mkdir -p "/workspace/particl-market/node_modules"
+    - touch /workspace/particl-market/node_modules/testfile
 
 
 # cache files and directories between builds
