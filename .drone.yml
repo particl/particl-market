@@ -29,22 +29,22 @@ steps:
       path: /cache
 
 
-- name: build and push image
-  image: plugins/docker
-  pull: always
-  storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
+#- name: build and push image
+#  image: plugins/docker
+#  pull: always
+#  storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
                                         # are stored (default: /var/lib/docker)
-  settings:
-    repo: ludx/particl-market-ci
-    dockerfile: Dockerfile.ci
-    username:
-      from_secret: REGISTRY_USER
-    password:
-      from_secret: REGISTRY_PASSWORD
-    debug: true
-    tags:
-      - latest
-      - ${DRONE_COMMIT_SHA}
+#  settings:
+#    repo: ludx/particl-market-ci
+#    dockerfile: Dockerfile.ci
+#    username:
+#      from_secret: REGISTRY_USER
+#    password:
+#      from_secret: REGISTRY_PASSWORD
+#    debug: true
+#    tags:
+#      - latest
+#      - ${DRONE_COMMIT_SHA}
 
 
 # TODO: caching
