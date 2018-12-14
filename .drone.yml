@@ -80,6 +80,9 @@ steps:
   - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
   - echo "workspace:"
   - ls -al /workspace/particl-market
+  - mkdir -p "/workspace/particl-market/node_modules"
+  - touch /workspace/particl-market/node_modules/testfile
+
 
 # cache files and directories between builds
 - name: rebuild cache
