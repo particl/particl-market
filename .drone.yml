@@ -60,10 +60,10 @@ steps:
     #- echo "workspace:"
     #- ls -al /workspace
     #- ls -al /workspace/particl-market
-    - cp -rf /workspace/particl-market/node_modules /app    # copy the node_modules from the cached workspace
-    - cd /app                                               # cd the actual app folder from the workspace
-    - bin/ci-unit-tests.sh                                  # run the tests
-    - cp -rf /app/node_modules /workspace/particl-market/   # copy the node_modules to the workspace so they can be cached
+    - cp -rf /workspace/particl-market/node_modules /app || true    # copy the node_modules from the cached workspace
+    - cd /app                                                       # cd the actual app folder from the workspace
+    - bin/ci-unit-tests.sh                                          # run the tests
+    - cp -rf /app/node_modules /workspace/particl-market/           # copy the node_modules to the workspace so they can be cached
 
 
 - name: ls cache test1
