@@ -59,6 +59,7 @@ steps:
     #- ls -al /workspace
     #- ls -al /workspace/particl-market
     - bin/ci-unit-tests.sh
+    - ls -al /app
     - cp -rf /app/node_modules /workspace/particl-market/
     - echo "node_modules:"
     - ls -al /workspace/particl-market/node_modules
