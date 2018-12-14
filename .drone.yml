@@ -22,7 +22,7 @@ steps:
   settings:
     restore: true       # instruct plugin to restore cache, can be true or false
     mount:              # list of folders or files to cache
-      - ./node_modules
+      - /app/node_modules
     ttl: 10             # maximum cache lifetime in days
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
@@ -32,7 +32,8 @@ steps:
 - name: build and push image
   image: plugins/docker
   pull: always
-  storage_path: /drone/docker
+  storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
+                                        # are stored (default: /var/lib/docker)
   settings:
     repo: ludx/particl-market-ci
     dockerfile: Dockerfile.ci
@@ -50,6 +51,7 @@ steps:
 # - https://github.com/drone-plugins/drone-docker/issues/172
 # - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
 
+
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
@@ -58,10 +60,9 @@ steps:
     #- echo "workspace:"
     #- ls -al /workspace
     #- ls -al /workspace/particl-market
-    - cd /app
-    - bin/ci-unit-tests.sh
-    - ls -al /app
-    - cp -rf /app/node_modules /workspace/particl-market/
+    - cd /app                                               # cd the actual app folder from the workspace
+    - bin/ci-unit-tests.sh                                  # run the tests
+    - cp -rf /app/node_modules /workspace/particl-market/   # copy the node_modules to the workspace so they can be cached
     - echo "node_modules:"
     - ls -al /workspace/particl-market/node_modules
 
@@ -76,10 +77,8 @@ steps:
   - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
   - echo "DRONE_REPO ${DRONE_REPO}"
   - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
-  - ls -al
-#    - ls -al /cache/node_modules
-  - echo "node_modules:"
-  - ls -al /workspace/particl-market/node_modules
+  - echo "workspace:"
+  - ls -al /workspace/
 
 # cache files and directories between builds
 - name: rebuild cache
@@ -87,7 +86,7 @@ steps:
   settings:
     rebuild: true       # instruct plugin to rebuild cache, can be true or false
     mount:              # list of folders or files to cache
-      - ./node_modules
+      - /app/node_modules
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
       path: /cache
