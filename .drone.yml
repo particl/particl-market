@@ -22,7 +22,7 @@ steps:
   settings:
     restore: true       # instruct plugin to restore cache, can be true or false
     mount:              # list of folders or files to cache
-      - /app/node_modules
+      - node_modules
     ttl: 10             # maximum cache lifetime in days
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
@@ -60,11 +60,11 @@ steps:
     #- echo "workspace:"
     #- ls -al /workspace
     #- ls -al /workspace/particl-market
+    - cp -rf /workspace/particl-market/node_modules /app    # copy the node_modules from the cached workspace
     - cd /app                                               # cd the actual app folder from the workspace
     - bin/ci-unit-tests.sh                                  # run the tests
     - cp -rf /app/node_modules /workspace/particl-market/   # copy the node_modules to the workspace so they can be cached
-    - echo "node_modules:"
-    - ls -al /workspace/particl-market/node_modules
+
 
 - name: ls cache test1
   image: docker
@@ -78,7 +78,7 @@ steps:
   - echo "DRONE_REPO ${DRONE_REPO}"
   - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
   - echo "workspace:"
-  - ls -al /workspace/
+  - ls -al /workspace/particl-market
 
 # cache files and directories between builds
 - name: rebuild cache
@@ -86,7 +86,7 @@ steps:
   settings:
     rebuild: true       # instruct plugin to rebuild cache, can be true or false
     mount:              # list of folders or files to cache
-      - /app/node_modules
+      - node_modules
   volumes:              # mount the cache volume, needs "trusted"
     - name: cache
       path: /cache
