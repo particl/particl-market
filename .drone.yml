@@ -28,23 +28,11 @@ steps:
     - name: cache
       path: /cache
 
-- name: ls cache test1
-  image: docker
-  volumes:              # mount the cache volume, needs "trusted"
-    - name: cache
-      path: /cache
-  commands:
-    - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
-    - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
-    - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
-    - echo "DRONE_REPO ${DRONE_REPO}"
-    - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
-#    - ls -al /cache
-#    - ls -al /cache/node_modules
 
 - name: build and push image
   image: plugins/docker
   pull: always
+  storage_path: /drone/docker
   settings:
     repo: ludx/particl-market-ci
     dockerfile: Dockerfile.ci
@@ -64,15 +52,28 @@ steps:
 
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
-#  volumes:              # mount an absolute path on the host machine into a pipeline step
-#    - name: node_modules
-#      path: /app/node_modules
+  volumes:              # mount an absolute path on the host machine into a pipeline step
+    - name: node_modules
+      path: /app/node_modules
   commands:
     - echo "workspace:"
     - ls -al /workspace
     - ls -al /workspace/particl-market
     - bin/ci-unit-tests.sh
 
+- name: ls cache test1
+  image: docker
+  volumes:              # mount the cache volume, needs "trusted"
+  - name: cache
+    path: /cache
+  commands:
+  - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
+  - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
+  - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
+  - echo "DRONE_REPO ${DRONE_REPO}"
+  - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
+  - ls -al
+#    - ls -al /cache/node_modules
 
 # cache files and directories between builds
 - name: rebuild cache
@@ -87,9 +88,9 @@ steps:
 
 
 volumes:
-#- name: node_modules
-#  host:
-#    path: ./node_modules
+- name: node_modules
+  host:
+    path: /root/data/drone-agents-node_modules
 - name: cache
   host:
     path: /root/data/drone-agents

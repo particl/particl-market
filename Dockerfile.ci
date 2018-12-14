@@ -19,7 +19,12 @@ COPY package.json /app
 COPY yarn.lock /app
 COPY . /app/
 
-# RUN yarn install --check-files
+# setup config files
+RUN cp -f .env.circle.app1 /app/.env
+RUN cp -f .env.circle.test /app/.env.test
+RUN cp -f .env.blackbox.example /app/.env.blackbox
+
+#RUN yarn install --check-files
 
 #VOLUME /app/data
 #VOLUME /app/
