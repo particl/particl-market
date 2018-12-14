@@ -84,6 +84,7 @@ steps:
 # cache files and directories between builds
 - name: rebuild cache
   image: ludx/drone-volume-cache:master
+  privileged: true
   settings:
     rebuild: true       # instruct plugin to rebuild cache, can be true or false
     mount:              # list of folders or files to cache
