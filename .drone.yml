@@ -52,16 +52,16 @@ steps:
 
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
-  volumes:              # mount an absolute path on the host machine into a pipeline step
-    - name: node_modules
-      path: /app/node_modules
   commands:
-    - echo "app:"
-    - ls -al /app
-    - echo "workspace:"
-    - ls -al /workspace
-    - ls -al /workspace/particl-market
+    #- echo "app:"
+    #- ls -al /app
+    #- echo "workspace:"
+    #- ls -al /workspace
+    #- ls -al /workspace/particl-market
     - bin/ci-unit-tests.sh
+    - cp -rf /app/node_modules /workspace/particl-market/
+    - echo "node_modules:"
+    - ls -al /workspace/particl-market/node_modules
 
 - name: ls cache test1
   image: docker
@@ -76,6 +76,8 @@ steps:
   - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
   - ls -al
 #    - ls -al /cache/node_modules
+  - echo "node_modules:"
+  - ls -al /workspace/particl-market/node_modules
 
 # cache files and directories between builds
 - name: rebuild cache
@@ -90,9 +92,9 @@ steps:
 
 
 volumes:
-- name: node_modules
-  host:
-    path: /root/data/drone-agents-node_modules
+#- name: node_modules
+#  host:
+#    path: /root/data/drone-agents-node_modules
 - name: cache
   host:
     path: /root/data/drone-agents
