@@ -70,7 +70,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public description(): string {
-        return 'Adds data to the database.';
+        return 'Adds data to the database, specified as json.';
     }
 
     public example(): string {

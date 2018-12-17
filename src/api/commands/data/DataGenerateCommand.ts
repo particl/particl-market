@@ -75,7 +75,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public description(): string {
-        return 'Generates data to the database.';
+        return 'Autogenerates data for the database.';
     }
 
     public example(): string {
