@@ -132,7 +132,7 @@ steps:
 
 
 - name: flush
-  image: plugins/s3-cache:1
+  image: plugins/s3-cache
   settings:
     pull: true
     endpoint: http://minio1:9000
