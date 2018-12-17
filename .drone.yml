@@ -17,16 +17,27 @@ name: Build and Push
 steps:
 
 - name: restore cache
-  image: ludx/drone-volume-cache:master
-  pull: always
+  image: plugins/s3-cache
   settings:
-    restore: true       # instruct plugin to restore cache, can be true or false
-    mount:              # list of folders or files to cache
-      - node_modules
-    ttl: 10             # maximum cache lifetime in days
-  volumes:              # mount the cache volume, needs "trusted"
-    - name: cache
-      path: /cache
+    pull: true
+    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    access_key:
+      from_secret: CACHE_ACCESS_KEY
+    secret_key:
+      from_secret: CACHE_SECRET_KEY
+    restore: true
+
+#- name: restore cache
+#  image: ludx/drone-volume-cache:master
+#  pull: always
+#  settings:
+#    restore: true       # instruct plugin to restore cache, can be true or false
+#    mount:              # list of folders or files to cache
+#      - node_modules
+#    ttl: 10             # maximum cache lifetime in days
+#  volumes:              # mount the cache volume, needs "trusted"
+#    - name: cache
+#      path: /cache
 
 
 #- name: build and push image
