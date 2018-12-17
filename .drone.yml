@@ -125,6 +125,7 @@ steps:
 #    secret_key:
 #      from_secret: CACHE_SECRET_KEY
     rebuild: true
+    debug: true
     mount:
       - node_modules
     when:
