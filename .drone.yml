@@ -20,11 +20,17 @@ steps:
   image: plugins/s3-cache
   settings:
     pull: true
-    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    endpoint: https://minio.particl.xyz
     access_key:
-      from_secret: CACHE_ACCESS_KEY
+      from_secret: MINIO_ACCESS_KEY
     secret_key:
-      from_secret: CACHE_SECRET_KEY
+      from_secret: MINIO_SECRET_KEY
+#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+#    access_key:
+#      from_secret: CACHE_ACCESS_KEY
+#    secret_key:
+#      from_secret: CACHE_SECRET_KEY
+
     restore: true
 
 #- name: restore cache
@@ -108,11 +114,16 @@ steps:
   image: plugins/s3-cache
   settings:
     pull: true
-    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    endpoint: https://minio.particl.xyz
     access_key:
-      from_secret: CACHE_ACCESS_KEY
+      from_secret: MINIO_ACCESS_KEY
     secret_key:
-      from_secret: CACHE_SECRET_KEY
+      from_secret: MINIO_SECRET_KEY
+#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+#    access_key:
+#      from_secret: CACHE_ACCESS_KEY
+#    secret_key:
+#      from_secret: CACHE_SECRET_KEY
     rebuild: true
     mount:
       - node_modules
@@ -124,11 +135,16 @@ steps:
   image: plugins/s3-cache:1
   settings:
     pull: true
-    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    endpoint: https://minio.particl.xyz
     access_key:
-      from_secret: CACHE_ACCESS_KEY
+      from_secret: MINIO_ACCESS_KEY
     secret_key:
-      from_secret: CACHE_SECRET_KEY
+      from_secret: MINIO_SECRET_KEY
+#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+#    access_key:
+#      from_secret: CACHE_ACCESS_KEY
+#    secret_key:
+#      from_secret: CACHE_SECRET_KEY
     flush: true
     flush_age: 14
 
