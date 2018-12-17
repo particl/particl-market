@@ -93,16 +93,44 @@ steps:
 
 
 # cache files and directories between builds
+#- name: rebuild cache
+#  image: ludx/drone-volume-cache:master
+#  privileged: true
+#  settings:
+#    rebuild: true       # instruct plugin to rebuild cache, can be true or false
+#    mount:              # list of folders or files to cache
+#      - node_modules
+#  volumes:              # mount the cache volume, needs "trusted"
+#    - name: cache
+#      path: /cache
+
 - name: rebuild cache
-  image: ludx/drone-volume-cache:master
-  privileged: true
+  image: plugins/s3-cache
   settings:
-    rebuild: true       # instruct plugin to rebuild cache, can be true or false
-    mount:              # list of folders or files to cache
+    pull: true
+    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    access_key:
+      from_secret: CACHE_ACCESS_KEY
+    secret_key:
+      from_secret: CACHE_SECRET_KEY
+    rebuild: true
+    mount:
       - node_modules
-  volumes:              # mount the cache volume, needs "trusted"
-    - name: cache
-      path: /cache
+    when:
+      event: push
+
+
+- name: flush
+  image: plugins/s3-cache:1
+  settings:
+    pull: true
+    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
+    access_key:
+      from_secret: CACHE_ACCESS_KEY
+    secret_key:
+      from_secret: CACHE_SECRET_KEY
+    flush: true
+    flush_age: 14
 
 
 volumes:
