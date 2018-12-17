@@ -56,13 +56,28 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('Missing model.');
         }
         if (data.params.length < 2) {
-            throw new MessageException('Missing json.');
+            throw new MessageException('Missing amount.');
         }
+
+        if (data.params.length > 1) {
+            const amount = data.params[1];
+            if (typeof amount !== 'number' || amount < 0) {
+                throw new MessageException('Invalid amount.');
+            }
+        }
+
+        if (data.params.length > 2) {
+            const withRelated = data.params[2];
+            if (typeof withRelated !== 'boolean') {
+                throw new MessageException('Invalid withRelated.');
+            }
+        }
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <model> [<amount> [<withRelated>]] ';
+        return this.getName() + ' <model> <amount> [<withRelated>] ';
     }
 
     public help(): string {
@@ -70,7 +85,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
-            + '    <amount>                 - [optional] Numeric - The number of objects we want to generate. \n'
+            + '    <amount>                 - Numeric - The number of objects we want to generate. \n'
             + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';
     }
 

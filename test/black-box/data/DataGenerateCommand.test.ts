@@ -333,6 +333,165 @@ describe('DataGenerateCommand', () => {
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();
         expect(result[0].MessagingInformation).not.toHaveLength(0);
         expect(result[0].ListingItemObjects).not.toHaveLength(0);
+    });
 
+    test('Should generate fail to generate anything because invalid model', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, 'INVALID'].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid amount.');
+    });
+
+    test('Should generate fail to generate anything because invalid model', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, 'INVALID', 1].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not implemented');
+    });
+
+    test('Should generate fail to generate anything because invalid model', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, 'INVALID', 1, WITH_RELATED].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not implemented');
+    });
+
+    test('Should generate fail to generate anything because invalid qty', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, -1].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid amount.');
+    });
+
+    test('Should generate fail to generate anything because invalid qty', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 'INVALID'].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid amount.');
+    });
+
+    test('Should generate fail to generate anything because invalid qty', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, -1, WITH_RELATED].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid amount.');
+    });
+
+    test('Should generate fail to generate anything because invalid qty', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 'INVALID', WITH_RELATED].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid amount.');
+    });
+
+    test('Should generate fail to generate anything because invalid withRelated', async () => {
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await testUtil.rpc(dataCommand, [dataGenerateCommand, CreatableModel.LISTINGITEM, 1, 'INVALID'].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Invalid withRelated.');
     });
 });
