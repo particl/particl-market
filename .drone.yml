@@ -114,7 +114,8 @@ steps:
   image: plugins/s3-cache:latest
   settings:
     pull: true
-    endpoint: http://minio1:9000
+    endpoint: http://minio.particl.xyz:9001/minio/particl-market/
+#    endpoint: http://minio1:9000
     access_key:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
