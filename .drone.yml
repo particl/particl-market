@@ -17,7 +17,7 @@ name: Build and Push
 steps:
 
 - name: restore cache
-  image: plugins/s3-cache
+  image: plugins/s3-cache:latest
   settings:
     pull: true
     endpoint: http://minio1:9000
@@ -30,8 +30,8 @@ steps:
 #      from_secret: CACHE_ACCESS_KEY
 #    secret_key:
 #      from_secret: CACHE_SECRET_KEY
-
     restore: true
+    path: /particl/particl-market/
 
 #- name: restore cache
 #  image: ludx/drone-volume-cache:master
@@ -111,7 +111,7 @@ steps:
 #      path: /cache
 
 - name: rebuild cache
-  image: plugins/s3-cache
+  image: plugins/s3-cache:latest
   settings:
     pull: true
     endpoint: http://minio1:9000
@@ -128,12 +128,13 @@ steps:
     debug: true
     mount:
       - node_modules
-    when:
-      event: push
+    path: /particl/particl-market/
+#    when:
+#      event: push
 
 
 - name: flush
-  image: plugins/s3-cache
+  image: plugins/s3-cache:latest
   settings:
     pull: true
     endpoint: http://minio1:9000
