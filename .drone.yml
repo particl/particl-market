@@ -129,6 +129,7 @@ steps:
     mount:
       - node_modules
     path: /particl/particl-market/
+    fallback_path: /particl/particl-market/
 #    when:
 #      event: push
 
@@ -149,7 +150,7 @@ steps:
 #      from_secret: CACHE_SECRET_KEY
     flush: true
     flush_age: 14
-
+    flush_path: /particl/particl-market/
 
 volumes:
 #- name: node_modules
