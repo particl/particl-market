@@ -20,7 +20,7 @@ steps:
   image: plugins/s3-cache:latest
   settings:
     pull: true
-    endpoint: http://minio1:9000
+    endpoint: http://drone-minio1:9001
     access_key:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
@@ -114,7 +114,7 @@ steps:
   image: plugins/s3-cache:latest
   settings:
     pull: true
-    endpoint: http://minio.particl.xyz:9001/minio/particl-market/
+    endpoint: http://drone-minio1:9001
 #    endpoint: http://minio1:9000
     access_key:
       from_secret: MINIO_ACCESS_KEY
@@ -139,7 +139,7 @@ steps:
   image: plugins/s3-cache:latest
   settings:
     pull: true
-    endpoint: http://minio1:9000
+    endpoint: http://drone-minio1:9001
     access_key:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
