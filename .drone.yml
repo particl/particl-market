@@ -33,55 +33,41 @@ steps:
     restore: true
     path: /cache/particl-market/
 
-#- name: restore cache
-#  image: ludx/drone-volume-cache:master
-#  pull: always
-#  settings:
-#    restore: true       # instruct plugin to restore cache, can be true or false
-#    mount:              # list of folders or files to cache
-#      - node_modules
-#    ttl: 10             # maximum cache lifetime in days
-#  volumes:              # mount the cache volume, needs "trusted"
-#    - name: cache
-#      path: /cache
 
-
-#- name: build and push image
-#  image: plugins/docker
-#  pull: always
-#  storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
+- name: build and push image
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
                                         # are stored (default: /var/lib/docker)
-#  settings:
-#    repo: ludx/particl-market-ci
-#    dockerfile: Dockerfile.ci
-#    username:
-#      from_secret: REGISTRY_USER
-#    password:
-#      from_secret: REGISTRY_PASSWORD
-#    debug: true
-#    tags:
-#      - latest
-#      - ${DRONE_COMMIT_SHA}
-
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}
 
 # TODO: caching
 # - https://github.com/drone-plugins/drone-docker/issues/172
 # - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
 
 
-
-#- name: run unit tests
-#  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
-#  commands:
+- name: run unit tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
     #- echo "app:"
     #- ls -al /app
     #- echo "workspace:"
     #- ls -al /workspace
     #- ls -al /workspace/particl-market
-#    - cp -rf /workspace/particl-market/node_modules /app || true    # copy the node_modules from the cached workspace
-#    - cd /app                                                       # cd the actual app folder from the workspace
-#    - bin/ci-unit-tests.sh                                          # run the tests
-#    - cp -rf /app/node_modules /workspace/particl-market/           # copy the node_modules to the workspace so they can be cached
+    - cp -rf /workspace/particl-market/node_modules /app || true    # copy the node_modules from the cached workspace
+    - cd /app                                                       # cd the actual app folder from the workspace
+    - bin/ci-unit-tests.sh                                          # run the tests
+    - cp -rf /app/node_modules /workspace/particl-market/           # copy the node_modules to the workspace so they can be cached
 
 
 - name: ls cache test1
@@ -113,7 +99,6 @@ steps:
   settings:
     pull: true
     endpoint: http://minio.particl.xyz:9001
-#    endpoint: http://minio1:9000
     access_key:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
