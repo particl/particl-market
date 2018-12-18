@@ -8,12 +8,6 @@ kind: pipeline
 name: Build and Push
 
 
-# To enable docker image caching all you need is:
-# DRONE_VOLUME=/tmp/drone-cache:/cache drone-server variable;
-# storage_path: /drone/docker and use_cache: true parameters for plugins/docker job;
-# drillster/drone-volume-cache of course ;-)
-# https://github.com/drone-plugins/drone-docker/issues/172
-
 steps:
 
 - name: restore cache
@@ -25,11 +19,6 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
       from_secret: MINIO_SECRET_KEY
-#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
-#    access_key:
-#      from_secret: CACHE_ACCESS_KEY
-#    secret_key:
-#      from_secret: CACHE_SECRET_KEY
     restore: true
     path: /cache/particl-market/
 
@@ -51,19 +40,10 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}
 
-# TODO: caching
-# - https://github.com/drone-plugins/drone-docker/issues/172
-# - https://discourse.drone.io/t/how-do-i-cache-node-modules-between-builds/1946/2
-
 
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
-    #- echo "app:"
-    #- ls -al /app
-    #- echo "workspace:"
-    #- ls -al /workspace
-    #- ls -al /workspace/particl-market
     - cp -rf /workspace/particl-market/node_modules /app || true    # copy the node_modules from the cached workspace
     - cd /app                                                       # cd the actual app folder from the workspace
     - bin/ci-unit-tests.sh                                          # run the tests
@@ -82,18 +62,6 @@ steps:
     - ls -al /workspace/particl-market/node_modules
 
 
-# cache files and directories between builds
-#- name: rebuild cache
-#  image: ludx/drone-volume-cache:master
-#  privileged: true
-#  settings:
-#    rebuild: true       # instruct plugin to rebuild cache, can be true or false
-#    mount:              # list of folders or files to cache
-#      - node_modules
-#  volumes:              # mount the cache volume, needs "trusted"
-#    - name: cache
-#      path: /cache
-
 - name: rebuild cache
   image: plugins/s3-cache:latest
   settings:
@@ -103,11 +71,6 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
       from_secret: MINIO_SECRET_KEY
-#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
-#    access_key:
-#      from_secret: CACHE_ACCESS_KEY
-#    secret_key:
-#      from_secret: CACHE_SECRET_KEY
     rebuild: true
     debug: true
     mount:
@@ -127,44 +90,10 @@ steps:
       from_secret: MINIO_ACCESS_KEY
     secret_key:
       from_secret: MINIO_SECRET_KEY
-#    endpoint: https://mp-ci-cache.ams3.digitaloceanspaces.com
-#    access_key:
-#      from_secret: CACHE_ACCESS_KEY
-#    secret_key:
-#      from_secret: CACHE_SECRET_KEY
     flush: true
     flush_age: 14
     flush_path: /cache/particl-market/
 
-volumes:
-#- name: node_modules
-#  host:
-#    path: /root/data/drone-agents-node_modules
-- name: cache
-  host:
-    path: /root/data/drone-agents
-
-#- name: test
-#  image: docker
-#  environment:
-#      DOCKER_HOST: unix:///drone/docker.sock
-#      DOCKER_USER:
-#          from_secret: REGISTRY_USERNAME
-#      DOCKER_PASSWORD:
-#          from_secret: REGISTRY_PASSWORD
-#      REGISTRY_EMAIL: juha.kovanen@gmail.com
-#  commands:
-#  - sleep 10 # gives docker enough time to initialize
-#  - echo $DOCKER_USER
-#  - echo $DOCKER_PASSWORD
-#  - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD}
-#  - docker run --name testapp ludx/particl-market-ci:${DRONE_COMMIT_SHA} bin/ci-unit-tests.sh
-#
-#services:
-#- name: docker
-#  image: docker:dind
-#  privileged: true
-#  command: [ '-H', 'unix:///drone/docker.sock' ]
 
 # pipeline describes build steps
 #pipeline:
