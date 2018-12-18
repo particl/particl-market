@@ -31,7 +31,7 @@ steps:
 #    secret_key:
 #      from_secret: CACHE_SECRET_KEY
     restore: true
-    path: /particl/particl-market/
+    path: /cache/particl-market/
 
 #- name: restore cache
 #  image: ludx/drone-volume-cache:master
@@ -129,8 +129,8 @@ steps:
     debug: true
     mount:
       - node_modules
-    path: /particl/particl-market/
-    fallback_path: /particl/particl-market/
+    path: /cache/particl-market/
+    fallback_path: /cache/particl-market/
 #    when:
 #      event: push
 
@@ -151,7 +151,7 @@ steps:
 #      from_secret: CACHE_SECRET_KEY
     flush: true
     flush_age: 14
-    flush_path: /particl/particl-market/
+    flush_path: /cache/particl-market/
 
 volumes:
 #- name: node_modules
