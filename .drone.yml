@@ -8,7 +8,7 @@ name: Build and Push
 
 steps:
 
-- name: info
+- name: build info
   image: docker
   commands:
     - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
@@ -218,6 +218,7 @@ steps:
     repo:
       include:
         - particl/particl-market
+        - xludx/particl-market
 
 
 - name: deploy (develop-push)
