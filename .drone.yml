@@ -3,12 +3,27 @@ workspace:
   base: /workspace      # shared base volume available to all pipeline steps.
   path: particl-market  # default working directory, where your code is cloned
 
-
 kind: pipeline
 name: Build and Push
 
-
 steps:
+
+- name: info
+  image: docker
+  commands:
+  - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
+  - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
+  - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
+  - echo "DRONE_REPO ${DRONE_REPO}"
+  - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
+  - echo "DRONE_COMMIT_BRANCH ${DRONE_COMMIT_BRANCH}"
+  - echo "DRONE_COMMIT_SHA ${DRONE_COMMIT_SHA}"
+  - echo "DRONE_PULL_REQUEST ${DRONE_PULL_REQUEST}"
+  - echo "DRONE_SOURCE_BRANCH ${DRONE_SOURCE_BRANCH}"
+  - echo "DRONE_TARGET_BRANCH ${DRONE_TARGET_BRANCH}"
+  - echo "DRONE_COMMIT_LINK ${DRONE_COMMIT_LINK}"
+  - echo "DRONE_COMMIT_REF ${DRONE_COMMIT_REF}"
+
 
 - name: restore cache
   image: plugins/s3-cache:latest
@@ -226,18 +241,6 @@ steps:
       - master
     event:
       - pull_request
-
-
-- name: ls cache test1
-  image: docker
-  commands:
-    - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
-    - echo "DRONE_REPO_NAMESPACE ${DRONE_REPO_NAMESPACE}"
-    - echo "DRONE_REPO_NAME ${DRONE_REPO_NAME}"
-    - echo "DRONE_REPO ${DRONE_REPO}"
-    - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
-    - echo "workspace:"
-    - ls -al /workspace/particl-market/node_modules
 
 
 - name: rebuild cache
