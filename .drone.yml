@@ -76,6 +76,9 @@ steps:
       - develop                       # ...and branch names are not available for tag events.
     event:
       - pull_request
+    repo:
+      include:
+        - particl/particl-market
 
 
 - name: build (develop-push)
@@ -102,7 +105,7 @@ steps:
       - push
 
 
-- name: build (master-pr)
+- name: build (develop-pr)
   image: plugins/docker
   pull: always
   storage_path: /workspace/docker
@@ -118,7 +121,7 @@ steps:
       - latest
       - ${DRONE_COMMIT_SHA}             # current commit tag
       - ci-test                         # kontena blackbox/ui test env stack tag
-      - master                          # kontena master env stack tag
+      - develop                         # kontena master env stack tag
   when:
     branch:
       - master
@@ -169,6 +172,60 @@ steps:
     - cd /app
     - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-ui-tests.sh
+
+
+- name: deploy (feature-push)
+  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-feature.yml
+  when:
+    branch:
+      exclude:
+        - develop
+        - master
+    event:
+      - push
+    repo:
+      exclude:
+        - particl/particl-market
+      include:
+        - xludx/particl-market          # todo: others
+
+
+- name: deploy (feature-pr)
+  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_SOURCE_BRANCH} kontena-feature.yml
+  when:
+    branch:
+      - develop
+    event:
+      - pull_request
+    repo:
+      include:
+        - particl/particl-market
+
+
+- name: deploy (develop-push)
+  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-develop.yml
+  when:
+    branch:
+      - develop
+    event:
+      - push
+
+
+- name: deploy (develop-pr)
+  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_SOURCE_BRANCH} kontena-develop.yml
+  when:
+    branch:
+      - master
+    event:
+      - pull_request
 
 
 - name: ls cache test1
