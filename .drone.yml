@@ -92,6 +92,7 @@ steps:
     repo:
       include:
         - particl/particl-market
+        - xludx/particl-market
 
 
 - name: build (develop-push)
