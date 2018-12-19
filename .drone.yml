@@ -157,6 +157,8 @@ steps:
 
 - name: run integration tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  settings:
+    SER
   commands:
     - cd /app                                                       # cd to the actual app folder from the workspace
     - ln -s /workspace/particl-market/node_modules node_modules
