@@ -23,7 +23,7 @@ steps:
     path: /cache/particl-market/
 
 
-- name: build and push image
+- name: build and push image (feature-pr)
   image: plugins/docker
   pull: always
   storage_path: /workspace/docker       # the path where persisted data such as images, volumes, and cluster state
@@ -38,20 +38,85 @@ steps:
     debug: true
     tags:
       - latest
-      - ${DRONE_COMMIT_SHA}
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - feature                         # kontena feature env stack tag
+    when:
+      branch:                           # target branch is evaluated for pull requests
+        - develop                       # ...and branch names are not available for tag events.
+      event:
+        - pull_request
+
+
+- name: build and push image (feature-push)
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - feature                         # kontena feature env stack tag
+    when:
+      branch:
+        exclude:
+          - develop
+          - master
+      event:
+        - push
 
 
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
 #    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
-#    - cp -rf /workspace/particl-market/node_modules /app || true    # copy the node_modules from the cached workspace
-    - cd /app                                                       # cd the actual app folder from the workspace
+#    - cp -rf /workspace/particl-market/node_modules /app || true
+    - cd /app                                                       # cd to the actual app folder from the workspace
     - ln -s /workspace/particl-market/node_modules node_modules
-    - ls -al /workspace/particl-market/
     - bin/ci-unit-tests.sh                                          # run the tests
-#    - cp -rf /app/node_modules /workspace/particl-market/           # copy the node_modules to the workspace so they can be cached
+#    - cp -rf /app/node_modules /workspace/particl-market/          # copy the node_modules to the workspace so they can be cached
 #    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
+
+
+- name: run integration tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - cd /app                                                       # cd to the actual app folder from the workspace
+    - ln -s /workspace/particl-market/node_modules node_modules
+    - bin/ci-integration-tests.sh                                   # run the tests
+
+
+- name: upgrade kontena stack for tests
+  image: ludx/codefresh-custom-runner                               # TODO: use ludx/particl-market-ci
+#  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+#    - cd /app
+#    - ln -s /workspace/particl-market/node_modules node_modules
+    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellcircle-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-circle.yml
+
+
+- name: run blackbox tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - cd /app
+    - ln -s /workspace/particl-market/node_modules node_modules
+    - bin/ci-blackbox-tests.sh
+
+
+- name: run ui tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  commands:
+    - cd /app
+    - ln -s /workspace/particl-market/node_modules node_modules
+    - bin/ci-ui-tests.sh
 
 
 - name: ls cache test1
@@ -81,11 +146,9 @@ steps:
       - node_modules
     path: /cache/particl-market/
     fallback_path: /cache/particl-market/
-#    when:
-#      event: push
 
 
-- name: flush
+- name: flush cache
   image: plugins/s3-cache:latest
   settings:
     pull: true
@@ -97,6 +160,8 @@ steps:
     flush: true
     flush_age: 14
     flush_path: /cache/particl-market/
+
+
 
 
 # pipeline describes build steps
