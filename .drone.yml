@@ -41,11 +41,11 @@ steps:
       - ${DRONE_COMMIT_SHA}             # current commit tag
       - ci-test                         # kontena blackbox/ui test env stack tag
       - feature                         # kontena feature env stack tag
-    when:
-      branch:                           # target branch is evaluated for pull requests
-        - develop                       # ...and branch names are not available for tag events.
-      event:
-        - pull_request
+  when:
+    branch:                           # target branch is evaluated for pull requests
+      - develop                       # ...and branch names are not available for tag events.
+    event:
+      - pull_request
 
 
 - name: build and push image (feature-push)
@@ -65,13 +65,13 @@ steps:
       - ${DRONE_COMMIT_SHA}             # current commit tag
       - ci-test                         # kontena blackbox/ui test env stack tag
       - feature                         # kontena feature env stack tag
-    when:
-      branch:
-        exclude:
-          - develop
-          - master
-      event:
-        - push
+  when:
+    branch:
+      exclude:
+        - develop
+        - master
+    event:
+      - push
 
 
 - name: run unit tests
