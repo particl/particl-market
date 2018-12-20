@@ -19,6 +19,8 @@ describe('EscrowRemoveCommand', () => {
 
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowRemoveCommand = Commands.ESCROW_REMOVE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -57,15 +59,80 @@ describe('EscrowRemoveCommand', () => {
 
     });
 
-    test('Should destroy Escrow', async () => {
-        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
+    test('Should fail destroy Escrow because missing escrowId', async () => {
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
+        ]);
         res.expectJson();
-        res.expectStatusCode(200);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Expected listingItemTemplateId but received no params.');
+    });
+
+    test('Should fail destroy Escrow because missing escrowId', async () => {
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
+            null
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+    });
+
+    test('Should fail destroy Escrow because invalid escrowId', async () => {
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
+            -1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+    });
+
+    test('Should fail destroy Escrow because invalid escrowId', async () => {
+        const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
+            'INVALLID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+    });
+
+    test('Should destroy Escrow', async () => {
+        // Check escrow exists.
+        {
+            const res0: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
+            res0.expectJson();
+            res0.expectStatusCode(200);
+            const result0: any = res0.getBody()['result'];
+            expect(result0.PaymentInformation.Escrow).not.toBeNull();
+            expect(result0.PaymentInformation.Escrow).not.toBeUndefined();
+            expect(result0.PaymentInformation.Escrow).not.toEqual({});
+        }
+
+        // Destroy escrow.
+        {
+            const res1: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
+            res1.expectJson();
+            res1.expectStatusCode(200);
+        }
+
+        // Check escrow no longer exists.
+        {
+            const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
+            res2.expectJson();
+            res2.expectStatusCode(200);
+            const result2: any = res2.getBody()['result'];
+            // throw new Error('result2.PaymentInformation.Escrow = ' + JSON.stringify(result2.PaymentInformation.Escrow, null, 2));
+            expect(result2.PaymentInformation.Escrow).toEqual({});
+        }
     });
 
     test('Should fail destroy Escrow because already been destroyed', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Entity with identifier undefined does not exist');
     });
 });
