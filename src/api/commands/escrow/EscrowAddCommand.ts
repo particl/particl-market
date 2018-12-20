@@ -94,7 +94,7 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
 
         this.log.debug('escrow: ', JSON.stringify(listingItemTemplate.PaymentInformation, null, 2));
         if (!_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
-            throw new MessageException(`Escrow allready exists.`);
+            throw new MessageException(`Escrow already exists.`);
         }
 
         return data;
