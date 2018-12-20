@@ -20,6 +20,8 @@ describe('EscrowAddCommand', () => {
 
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowAddCommand = Commands.ESCROW_ADD.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -270,6 +272,19 @@ describe('EscrowAddCommand', () => {
         expect(result.type).toBe(testData.type);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
+
+        // Double check the object was created with the new values.
+        {
+            const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand,
+                listingItemTemplate.id
+            ]);
+            res2.expectJson();
+            res2.expectStatusCode(200);
+            const result2: any = res2.getBody()['result'];
+            expect(result2.PaymentInformation.Escrow.type).toBe(testData.type);
+            expect(result2.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.ratio.buyer);
+            expect(result2.PaymentInformation.Escrow.Ratio.seller).toBe(testData.ratio.seller);
+        }
     });
 
     test('Should fail to create Escrow because it already exists', async () => {

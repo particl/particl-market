@@ -21,6 +21,9 @@ describe('EscrowUpdateCommand', () => {
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowUpdateCommand = Commands.ESCROW_UPDATE.commandName;
 
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
@@ -253,17 +256,32 @@ describe('EscrowUpdateCommand', () => {
     });
 
     test('Should update Escrow', async () => {
-        const res: any = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
-            listingItemTemplate.id,
-            testData.type,
-            testData.ratio.buyer,
-            testData.ratio.seller
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.type).toBe(testData.type);
-        expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
-        expect(result.Ratio.seller).toBe(testData.ratio.seller);
+        {
+            const res: any = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
+                listingItemTemplate.id,
+                testData.type,
+                testData.ratio.buyer,
+                testData.ratio.seller
+            ]);
+            res.expectJson();
+            res.expectStatusCode(200);
+            const result: any = res.getBody()['result'];
+            expect(result.type).toBe(testData.type);
+            expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
+            expect(result.Ratio.seller).toBe(testData.ratio.seller);
+        }
+
+        // Double check the object was updated with the new values.
+        {
+            const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand,
+                listingItemTemplate.id
+            ]);
+            res2.expectJson();
+            res2.expectStatusCode(200);
+            const result2: any = res2.getBody()['result'];
+            expect(result2.PaymentInformation.Escrow.type).toBe(testData.type);
+            expect(result2.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.ratio.buyer);
+            expect(result2.PaymentInformation.Escrow.Ratio.seller).toBe(testData.ratio.seller);
+        }
     });
 });
