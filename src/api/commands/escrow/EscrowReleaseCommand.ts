@@ -70,8 +70,8 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         }
 
         const orderItemId = data.params[0];
-        if (typeof orderItemId !== 'number') {
-            throw new MessageException('orderItemId needs to be a number.');
+        if (typeof orderItemId !== 'number' || orderItemId < 0) {
+            throw new MessageException('orderItemId needs to be a number >= 0.');
         }
 
         const memo = data.params[1];

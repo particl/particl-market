@@ -60,8 +60,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         let orderItem;
         if (data.params.length >= 1) {
             const orderItemId = data.params[0];
-            if (typeof orderItemId !== 'number') {
-                throw new MessageException('orderItemId must be number.');
+            if (typeof orderItemId !== 'number' || orderItemId < 0) {
+                throw new MessageException('orderItemId must be number and >= 0.');
             }
             const orderItemModel = await this.orderItemService.findOne(orderItemId);
             if (!orderItemModel) {
