@@ -7,7 +7,7 @@ kind: pipeline
 name: Build and Push
 
 node:
-  instance: drone-agent1
+  instance: drone-agent4
 
 steps:
 
