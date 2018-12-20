@@ -65,6 +65,25 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
 
         // get the template
         const listingItemTemplateId = data.params[0];
+        if (typeof listingItemTemplateId !== 'number') {
+            throw new MessageException('listingItemTemplateId must be numeric.');
+        }
+
+        const escrowType = data.params[1];
+        if (typeof escrowType !== 'string' || (escrowType !== 'NOP' && escrowType !== 'MAD')) {
+            throw new MessageException('escrowType must be either NOP or MAD.');
+        }
+
+        const buyerRatio = data.params[2];
+        if (typeof buyerRatio !== 'number') {
+            throw new MessageException('buyerRatio must be numeric.');
+        }
+
+        const sellerRatio = data.params[3];
+        if (typeof sellerRatio !== 'number') {
+            throw new MessageException('sellerRatio must be numeric.');
+        }
+
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
@@ -91,8 +110,8 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
             + '                                to associate with this escrow. \n'
             + '    <escrowType>             - Enum{NOP,MAD} - The type of the escrow we want to \n'
             + '                                create. \n'
-            + '    <buyerRatio>             - Numeric - [TODO] \n'
-            + '    <sellerRatio>            - Numeric - [TODO] ';
+            + '    <buyerRatio>             - Numeric - The ratio of the buyer in the escrow. \n'
+            + '    <sellerRatio>            - Numeric - The ratio of the seller in the escrow. ';
     }
 
     public description(): string {

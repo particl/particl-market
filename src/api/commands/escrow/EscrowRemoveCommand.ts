@@ -36,13 +36,32 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        const listingItemTemplateId = data.params[0];
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
+        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
+    }
+
+    /**
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Expected ListingItemTemplate id but received no params.');
+            throw new MessageException('Expected listingItemTemplateId but received no params.');
         }
 
         const listingItemTemplateId = data.params[0];
+        if (typeof listingItemTemplateId !== 'number') {
+            throw new MessageException('listingItemTemplateId must be a number.');
+        }
+
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        if (!listingItemTemplateModel) {
+            throw new MessageException(`ListingItemTemplate with listingItemTemplateId = ${listingItemTemplateId} not found.`);
+        }
         const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
         // template allready has listingitems so for now, it cannot be modified
@@ -50,7 +69,6 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
         }
 
-        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
     }
 
     public usage(): string {

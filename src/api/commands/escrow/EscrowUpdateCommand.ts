@@ -46,11 +46,6 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
-        // template allready has listingitems so for now, it cannot be modified
-        if (listingItemTemplate.ListingItems.length > 0) {
-            throw new MessageException(`Escrow cannot be updated because ListingItems allready exist for the ListingItemTemplate.`);
-        }
-
         // creates an Escrow related to PaymentInformation related to ListingItemTemplate
         return this.escrowService.update(listingItemTemplate.PaymentInformation.Escrow.id, {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
@@ -60,6 +55,48 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
                 seller: data.params[3]
             }
         } as EscrowUpdateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 4) {
+            throw new MessageException('Missing params.');
+        }
+
+        // get the template
+        const listingItemTemplateId = data.params[0];
+        if (typeof listingItemTemplateId !== 'number') {
+            throw new MessageException('listingItemTemplateId must be numeric.');
+        }
+
+        const escrowType = data.params[1];
+        if (typeof escrowType !== 'string' || (escrowType !== 'NOP' && escrowType !== 'MAD')) {
+            throw new MessageException('escrowType must be either NOP or MAD.');
+        }
+
+        const buyerRatio = data.params[2];
+        if (typeof buyerRatio !== 'number') {
+            throw new MessageException('buyerRatio must be numeric.');
+        }
+
+        const sellerRatio = data.params[3];
+        if (typeof sellerRatio !== 'number') {
+            throw new MessageException('sellerRatio must be numeric.');
+        }
+
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // template allready has listingitems so for now, it cannot be modified
+        if (listingItemTemplate.ListingItems.length > 0) {
+            throw new MessageException(`Escrow cannot be added because ListingItems allready exist for the ListingItemTemplate.`);
+        }
+
+        this.log.debug('escrow: ', JSON.stringify(listingItemTemplate.PaymentInformation, null, 2));
+        if (!_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
+            throw new MessageException(`Escrow allready exists.`);
+        }
+
+        return data;
     }
 
     public usage(): string {
@@ -74,8 +111,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             + '                                escrow we are modifying. \n'
             + '                             - ENUM{NOP,MAD} - The escrow type to give to the \n'
             + '                                escrow we are modifying. \n'
-            + '    <buyerRatio>             - Numeric - [TODO] \n'
-            + '    <sellerRatio>            - Numeric - [TODO] ';
+            + '    <buyerRatio>             - Numeric - The ratio of the buyer in the escrow. \n'
+            + '    <sellerRatio>            - Numeric - The ratio of the seller in the escrow. ';
     }
 
     public description(): string {
