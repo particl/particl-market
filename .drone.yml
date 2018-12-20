@@ -6,8 +6,8 @@ workspace:
 kind: pipeline
 name: Build and Push
 
-node:
-  instance: drone-agent4
+#node:
+#  instance: drone-agent4
 
 steps:
 
