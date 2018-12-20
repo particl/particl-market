@@ -117,6 +117,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
                 throw new MessageException('memo must be string.');
             }
         }
+
+        return data;
     }
 
     public usage(): string {

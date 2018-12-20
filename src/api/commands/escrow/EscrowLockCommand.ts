@@ -118,6 +118,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
                 throw new MessageException('memo must be string.');
             }
         }
+
+        return data;
     }
 
     public usage(): string {

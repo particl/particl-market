@@ -69,6 +69,7 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
         }
 
+        return data;
     }
 
     public usage(): string {
