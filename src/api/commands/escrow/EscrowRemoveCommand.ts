@@ -54,8 +54,8 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
         }
 
         const listingItemTemplateId = data.params[0];
-        if (typeof listingItemTemplateId !== 'number') {
-            throw new MessageException('listingItemTemplateId must be a number.');
+        if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId < 0) {
+            throw new MessageException('listingItemTemplateId must be a number and >= 0.');
         }
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
