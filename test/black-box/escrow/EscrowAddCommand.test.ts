@@ -288,6 +288,6 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Escrow allready exists.');
+        expect(res.error.error.message).toBe('Escrow already exists.');
     });
 });
