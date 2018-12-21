@@ -151,7 +151,13 @@ export class ProposalActionService {
             const paidMessage = true;
             if (!estimateFee) {
                 const proposal = await this.processGenericProposal(proposalCreateRequest);
+
+                // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
+                let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+                // TODO: Not sure this line is required.
+                proposalResult = await this.proposalService.recalculateProposalResult(proposal);
             }
+
             return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         } else {
             throw new MessageException(`Unknown type of proposal = ${proposalCreateRequest.type}.`);
