@@ -154,22 +154,24 @@ steps:
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
-#    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
+    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
 #    - cp -rf /workspace/particl-market/node_modules /app || true
-    - cd /app                                                       # cd to the actual app folder from the workspace
+#    - cd /app                                                       # cd to the actual app folder from the workspace
     - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-unit-tests.sh                                          # run the tests
 #    - cp -rf /app/node_modules /workspace/particl-market/          # copy the node_modules to the workspace so they can be cached
-#    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
+    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: run integration tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
 #  settings:
   commands:
+    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app                                                       # cd to the actual app folder from the workspace
-    - ln -s /workspace/particl-market/node_modules node_modules
+#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-integration-tests.sh                                   # run the tests
+    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: upgrade kontena stack for tests
@@ -184,17 +186,21 @@ steps:
 - name: run blackbox tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
+    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app
-    - ln -s /workspace/particl-market/node_modules node_modules
+#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-blackbox-tests.sh
+    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: run ui tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
+    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app
-    - ln -s /workspace/particl-market/node_modules node_modules
+#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-ui-tests.sh
+    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: deploy (feature-push)
@@ -284,6 +290,10 @@ steps:
 
 
 
+volumes:
+- name: node_modules cache
+  host:
+      path: /var/lib/cache
 
 # pipeline describes build steps
 #pipeline:
