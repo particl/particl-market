@@ -182,8 +182,6 @@ steps:
   image: ludx/codefresh-custom-runner                               # TODO: use ludx/particl-market-ci
 #  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
-#    - cd /app
-#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellcircle-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-circle.yml
 
 
