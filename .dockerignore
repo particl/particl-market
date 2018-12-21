@@ -8,7 +8,6 @@ data/app1
 data/app2
 dist
 node_modules
-test
 .semaphore-cache
 .DS_Store
 .circleci
