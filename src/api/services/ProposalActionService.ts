@@ -105,13 +105,14 @@ export class ProposalActionService {
 
         // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
+
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
             const paidMessage = false;
 
             /*
              * Vote once per profile
              */
-            const proposal = await this.processItemVoteProposal(proposalCreateRequest);
+            const proposal = await this.processProposal(proposalCreateRequest);
             // Get the YES (flag this item listing) proposal option
             const proposalOptionId = 0;
             const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
@@ -148,9 +149,12 @@ export class ProposalActionService {
             const retval = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
 
             return retval;
-        } else {
+        } else if (proposalCreateRequest.type === ProposalType.PUBLIC_VOTE) {
             const paidMessage = true;
+            const proposal = await this.processGenericProposal(proposalCreateRequest);
             return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+        } else {
+            throw new MessageException(`Unknown type of proposal = ${proposalCreateRequest.type}.`);
         }
     }
 
@@ -271,7 +275,7 @@ export class ProposalActionService {
         });
     }
 
-    private async processItemVoteProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
+    private async processProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
         const proposal: resources.Proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item)
             .then(async existingProposalModel => {
                 // Proposal already exists (for some unexplicable reason), so we use it
@@ -305,6 +309,17 @@ export class ProposalActionService {
                 return createdProposalModel.toJSON();
             });
         return proposal;
+    }
+
+    private async processGenericProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
+        // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
+        // proposal doesnt exist -> create Proposal
+        let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
+        const createdProposal = createdProposalModel.toJSON();
+        // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
+
+        createdProposalModel = await this.proposalService.findOne(createdProposal.id);
+        return createdProposalModel.toJSON();
     }
 
     private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
