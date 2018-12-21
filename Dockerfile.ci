@@ -20,9 +20,9 @@ COPY yarn.lock /app
 COPY . /app/
 
 # setup config files
-RUN cp -f .env.circle.app1 /app/.env
-RUN cp -f .env.circle.test /app/.env.test
-RUN cp -f .env.blackbox.example /app/.env.blackbox
+RUN cp -f .env.ci.app1 /app/.env
+RUN cp -f .env.ci.test /app/.env.test
+RUN cp -f .env.ci.example /app/.env.blackbox
 
 #RUN yarn install --check-files
 
