@@ -169,7 +169,8 @@ steps:
 #    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
 #    - cp -rf /workspace/particl-market/node_modules /app || true
     - cd /app                                                       # cd to the actual app folder from the workspace
-#    - ln -s /workspace/particl-market/node_modules node_modules
+    - yarn add mysql2
+  #    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-unit-tests.sh                                          # run the tests
 #    - cp -rf /app/node_modules /workspace/particl-market/          # copy the node_modules to the workspace so they can be cached
 #    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
