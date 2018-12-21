@@ -53,7 +53,7 @@ services:
 
 
   app1:
-    image: r.cfcr.io/ludx/particl-market-ci:ci-test
+    image: ludx/particl-market-ci:ci-test
     instances: 1
     depends_on:
       - particld1
@@ -106,7 +106,7 @@ services:
     mem_limit: 4g
 
   app2:
-    image: r.cfcr.io/ludx/particl-market-ci:ci-test
+    image: ludx/particl-market-ci:ci-test
     instances: 1
     depends_on:
       - particld2
@@ -157,3 +157,20 @@ services:
       - node==kontena-agent1
     cpus: 4.0
     mem_limit: 4g
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=supersecret
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=marketplace-test
+    volumes:
+      - /root/data/mysql-test:/var/lib/mysql
+      #ports:
+      #  - 3306:3306
+    affinity:
+      - node==kontena-agent1
+
+    command: --max_allowed_packet=16M
+      # fixes: Error 1105: Parameter of prepared statement which is set through
+      # mysql_send_long_data() is longer than 'max_allowed_packet' bytes, default was 4M
