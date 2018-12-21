@@ -92,8 +92,10 @@ export class VoteActionService {
             this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-            // TODO: Not sure this line is required.
+            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+            if (!proposalResult) {
+                proposalResult = await this.proposalService.createProposalResult(proposal);
+            }
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
             return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
@@ -174,7 +176,11 @@ export class VoteActionService {
                             const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight, event.smsgMessage);
                             this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
-                            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+                            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+                            if (!proposalResult) {
+                                proposalResult = await this.proposalService.createProposalResult(proposal);
+                            }
+                            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
                             // todo: extract method
                             if (proposal.type === ProposalType.ITEM_VOTE
