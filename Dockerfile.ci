@@ -22,7 +22,7 @@ COPY . /app/
 # setup config files
 RUN cp -f .env.ci.app1 /app/.env
 RUN cp -f .env.ci.test /app/.env.test
-RUN cp -f .env.ci.example /app/.env.blackbox
+RUN cp -f .env.ci.blackbox /app/.env.blackbox
 
 #RUN yarn install --check-files
 
