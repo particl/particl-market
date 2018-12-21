@@ -88,8 +88,17 @@ export class VoteActionService {
                 mpaction: voteMessage
             };
 
+            const localVote = this.instaVote(senderProfile, proposal, proposalOption.optionId);
+            this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
+
+            // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
+            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+            // TODO: Not sure this line is required.
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
             return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
                                              Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
+
         } else {
             return {} as SmsgSendResponse;
         }
@@ -197,6 +206,35 @@ export class VoteActionService {
             .catch(reason => {
                 return SmsgMessageStatus.WAITING;
             });
+    }
+
+    private async instaVote(profile: resources.Profile, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
+        const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+            return o.optionId === proposalOptionId; // TODO: Or is it 1????
+        });
+        if (!proposalOption) {
+            this.log.error(`Proposal option ${proposalOptionId} wasn't found.`);
+            throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
+        }
+
+        // Local (instant) votes
+        this.log.error('Casting instant vote for ' + profile.address);
+        const weight = await this.voteService.getVoteWeight(profile.address);
+        this.log.error('Weight calculated');
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
+        this.log.error('Vote message created');
+        const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
+        this.log.error('Vote create request created');
+        const localVote = await this.processItemVoteVote(voteCreateRequest);
+        this.log.error('Casting instant vote for ' + profile.address + ': DONE');
+        this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
+
+        return localVote;
+    }
+
+    private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
+        const vote: any = await this.voteService.create(voteCreateRequest);
+        return vote;
     }
 
     /**
