@@ -133,25 +133,29 @@ export class ProposalActionService {
 
             // For each profile, vote.
             // The VoteActionService will ignore votes without weight (profile has no balance).
-            const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
-            const profiles: resources.Profile[] = profilesCollection.toJSON();
-            for (const profile of profiles) {
-                // Send votes out for others to receive (will be ignored when received locally)
-                this.log.error('Sending vote for ' + profile.address);
-                await this.voteActionService.send(proposal, proposalOption, profile, market);
-                this.log.error('Sending vote for ' + profile.address + ': DONE');
-            }
+            if (!estimateFee) {
+                const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
+                const profiles: resources.Profile[] = profilesCollection.toJSON();
+                for (const profile of profiles) {
+                    // Send votes out for others to receive (will be ignored when received locally)
+                    this.log.error('Sending vote for ' + profile.address);
+                    await this.voteActionService.send(proposal, proposalOption, profile, market);
+                    this.log.error('Sending vote for ' + profile.address + ': DONE');
+                }
 
-            // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-            // TODO: Not sure this line is required.
-            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+                // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
+                let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+                // TODO: Not sure this line is required.
+                proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+            }
             const retval = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
 
             return retval;
         } else if (proposalCreateRequest.type === ProposalType.PUBLIC_VOTE) {
             const paidMessage = true;
-            const proposal = await this.processGenericProposal(proposalCreateRequest);
+            if (!estimateFee) {
+                const proposal = await this.processGenericProposal(proposalCreateRequest);
+            }
             return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         } else {
             throw new MessageException(`Unknown type of proposal = ${proposalCreateRequest.type}.`);
