@@ -29,6 +29,7 @@ steps:
     - echo "DRONE_TARGET_BRANCH ${DRONE_TARGET_BRANCH}"
     - echo "DRONE_COMMIT_LINK ${DRONE_COMMIT_LINK}"
     - echo "DRONE_COMMIT_REF ${DRONE_COMMIT_REF}"
+    - mkdir -p /workspace/particl-market/node_modules/
 
 
 - name: restore cache
