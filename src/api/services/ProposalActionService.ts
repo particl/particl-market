@@ -183,28 +183,44 @@ export class ProposalActionService {
 
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
 
-        let proposal: resources.Proposal;
-        if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
-            /*
-             * If proposal was created locally, just retreive it.
-             */
-             const tmpProposal = await this.proposalService.findOneByHash(proposalCreateRequest.hash);
-             proposal = tmpProposal.toJSON();
-             if (!proposal) {
-                 this.log.error('processProposalReceivedEvent(): Proposal not found.');
-                 throw new MessageException('processProposalReceivedEvent(): Proposal not found.');
-             }
-        } else { // else (ProposalType.PUBLIC_VOTE)
-            // Create the proposal
-            const createdProposalModel = await this.proposalService.create(proposalCreateRequest);
-            proposal = createdProposalModel.toJSON();
+        let weAreTheProposer = false;
+        const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
+        const profiles: resources.Profile[] = profilesCollection.toJSON();
+        for (const profile of profiles) {
+            if (profile.address === proposalMessage.submitter) {
+                this.log.debug(`profile.Address (${profile.address}) === proposalMessage.submitter (${proposalMessage.submitter})`);
+                weAreTheProposer = true;
+                break;
+            }
         }
-        // finally, create ProposalResult, vote and recalculate proposalresult
-        let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-        // TODO: Not sure this line is required.
-        proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
-        // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
+        if (weAreTheProposer) {
+            this.log.debug('This proposal should have already been created locally. Skipping.');
+        } else {
+            let proposal: resources.Proposal;
+            if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
+                /*
+                 * If proposal was created locally, just retreive it.
+                 */
+                 const tmpProposal = await this.proposalService.findOneByHash(proposalCreateRequest.hash);
+                 proposal = tmpProposal.toJSON();
+                 if (!proposal) {
+                     this.log.error('processProposalReceivedEvent(): Proposal not found.');
+                     throw new MessageException('processProposalReceivedEvent(): Proposal not found.');
+                 }
+            } else { // else (ProposalType.PUBLIC_VOTE)
+                // Create the proposal
+                const createdProposalModel = await this.proposalService.create(proposalCreateRequest);
+                proposal = createdProposalModel.toJSON();
+            }
+            // finally, create ProposalResult, vote and recalculate proposalresult
+            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
+            // TODO: Not sure this line is required.
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+            // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
+            return SmsgMessageStatus.PROCESSED;
+        }
         return SmsgMessageStatus.PROCESSED;
     }
 
