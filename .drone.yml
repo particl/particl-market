@@ -173,6 +173,8 @@ steps:
     - bin/ci-unit-tests.sh                                          # run the tests
 #    - cp -rf /app/node_modules /workspace/particl-market/          # copy the node_modules to the workspace so they can be cached
 #    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
+    - ls -al /app/node_modules
+    - ls -al /workspace/particl-market/node_modules
 
 
 - name: run integration tests
