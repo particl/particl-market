@@ -29,7 +29,6 @@ steps:
     - echo "DRONE_TARGET_BRANCH ${DRONE_TARGET_BRANCH}"
     - echo "DRONE_COMMIT_LINK ${DRONE_COMMIT_LINK}"
     - echo "DRONE_COMMIT_REF ${DRONE_COMMIT_REF}"
-    - mkdir -p /workspace/particl-market/node_modules/
 
 
 - name: restore cache
@@ -155,6 +154,10 @@ steps:
 - name: run unit tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   commands:
+    - ls -al /workspace/particl-market
+    - ls -al /app
+    - mkdir -p /workspace/particl-market/node_modules
+    - mkdir -p /app/node_modules
     - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
 #    - cp -rf /workspace/particl-market/node_modules /app || true
 #    - cd /app                                                       # cd to the actual app folder from the workspace
