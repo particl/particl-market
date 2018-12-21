@@ -168,8 +168,6 @@ export class ProposalService {
             calculatedAt,
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
-        let proposalResult = proposalResultModel.toJSON();
-
         let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
         for (const proposalOption of proposal.ProposalOptions) {
