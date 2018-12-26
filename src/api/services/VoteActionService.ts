@@ -88,7 +88,7 @@ export class VoteActionService {
                 mpaction: voteMessage
             };
 
-            const localVote = this.instaVote(senderProfile, proposal, proposalOption.optionId);
+            const localVote = await this.instaVote(senderProfile, proposal, proposalOption.optionId);
             this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
@@ -230,12 +230,35 @@ export class VoteActionService {
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
         this.log.error('Vote message created');
         const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
-        this.log.error('Vote create request created');
-        const localVote = await this.processItemVoteVote(voteCreateRequest);
-        this.log.error('Casting instant vote for ' + profile.address + ': DONE');
-        this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
 
-        return localVote;
+        let lastVote: any;
+        try {
+            const lastVoteModel = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id);
+            lastVote = lastVoteModel.toJSON();
+        } catch (ex) {
+            lastVote = null;
+        }
+        const create: boolean = lastVote == null;
+        let voteModel;
+        if (create) {
+            this.log.error('CREATE VOTE');
+            // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
+            voteModel = await this.voteService.create(voteCreateRequest);
+            this.log.error('Vote create request created');
+        } else {
+            // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
+            this.log.error('UPDATE VOTE');
+            voteModel = await this.voteService.update(lastVote.id, voteCreateRequest);
+            this.log.error('Vote create request updated');
+            // this.voteService.destroy(lastVote.id);
+            // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
+        }
+        if (!voteModel) {
+            this.log.error('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
+            throw new MessageException('Vote wasn\'t saved or updated properly. Return val is empty.');
+        }
+        const vote = voteModel.toJSON();
+        return vote;
     }
 
     private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
@@ -311,10 +334,12 @@ export class VoteActionService {
 
         let voteModel;
         if (create) {
+            this.log.error('CREATE VOTE');
             // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.create(voteRequest);
         } else {
             // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
+            this.log.error('UPDATE VOTE');
             voteModel = await this.voteService.update(lastVote.id, voteRequest as VoteUpdateRequest);
             // this.voteService.destroy(lastVote.id);
             // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
