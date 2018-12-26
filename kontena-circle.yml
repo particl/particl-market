@@ -166,8 +166,8 @@ services:
       - MYSQL_DATABASE=marketplace-test
     volumes:
       - /root/data/mysql-test:/var/lib/mysql
-      #ports:
-      #  - 3306:3306
+    ports:
+      - 33306:3306
     affinity:
       - node==kontena-agent1
 

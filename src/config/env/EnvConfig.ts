@@ -51,6 +51,7 @@ export class EnvConfig {
         MONITOR_ENABLED: true,
         MONITOR_ROUTE: '/status',
         DB_CLIENT: 'sqlite3',
+        DB_CONNECTION: './data/database/marketplace-test.db',
         DB_POOL_MIN: 2,
         DB_POOL_MAX: 10,
         DB_MIGRATION_TABLE: 'version',
