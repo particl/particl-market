@@ -89,7 +89,7 @@ export class VoteActionService {
             };
 
             const localVote = await this.instaVote(senderProfile, proposal, proposalOption.optionId);
-            this.log.error('localVote = ' + JSON.stringify(localVote, null, 2));
+            this.log.debug('localVote = ' + JSON.stringify(localVote, null, 2));
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
@@ -126,12 +126,12 @@ export class VoteActionService {
         }
 
         // Get vote message signature
-        const signature = voteMessage.signature;
         // Verify signature
-        delete voteMessage.signature;
-        const localSignature = await this.coreRpcService.signMessage(voteMessage.voter, voteMessage);
-        if (signature !== localSignature) {
-            throw new MessageException('Received signature and locally calculated signature do not match! ' + signature + ' !== ' + localSignature);
+        const passedVerification = await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteMessage);
+        if (!passedVerification) {
+            throw new MessageException('Received signature failed validation.');
+        } else {
+            this.log.debug('Received signature passed validation.');
         }
 
         // get proposal and ignore vote if we're past the final block of the proposal
@@ -219,16 +219,16 @@ export class VoteActionService {
             return o.optionId === proposalOptionId; // TODO: Or is it 1????
         });
         if (!proposalOption) {
-            this.log.error(`Proposal option ${proposalOptionId} wasn't found.`);
+            this.log.debug(`Proposal option ${proposalOptionId} wasn't found.`);
             throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
         }
 
         // Local (instant) votes
-        this.log.error('Casting instant vote for ' + profile.address);
+        this.log.debug('Casting instant vote for ' + profile.address);
         const weight = await this.voteService.getVoteWeight(profile.address);
-        this.log.error('Weight calculated');
+        this.log.debug('Weight calculated');
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
-        this.log.error('Vote message created');
+        this.log.debug('Vote message created');
         const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
 
         let lastVote: any;
@@ -241,20 +241,20 @@ export class VoteActionService {
         const create: boolean = lastVote == null;
         let voteModel;
         if (create) {
-            this.log.error('CREATE VOTE');
+            this.log.debug('CREATE VOTE');
             // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.create(voteCreateRequest);
-            this.log.error('Vote create request created');
+            this.log.debug('Vote create request created');
         } else {
             // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
-            this.log.error('UPDATE VOTE');
+            this.log.debug('UPDATE VOTE');
             voteModel = await this.voteService.update(lastVote.id, voteCreateRequest);
-            this.log.error('Vote create request updated');
+            this.log.debug('Vote create request updated');
             // this.voteService.destroy(lastVote.id);
             // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
         }
         if (!voteModel) {
-            this.log.error('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
+            this.log.debug('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
             throw new MessageException('Vote wasn\'t saved or updated properly. Return val is empty.');
         }
         const vote = voteModel.toJSON();

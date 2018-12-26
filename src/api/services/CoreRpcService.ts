@@ -372,8 +372,22 @@ export class CoreRpcService {
      * @returns {Promise<string>}
      */
     public async signMessage(address: string, obj: any): Promise<string> {
+        delete obj.signature;
         const message = JSON.stringify(obj).split('').sort().toString();
         return await this.call('signmessage', [address, message]);
+    }
+
+    /**
+     * Verify a signature on a message.
+     *
+     * @param {string} address
+     * @param {any} obj
+     * @returns {Promise<string>}
+     */
+    public async verifyMessage(address: string, signature: string, obj: any): Promise<string> {
+        delete obj.signature;
+        const message = JSON.stringify(obj).split('').sort().toString();
+        return await this.call('verifymessage', [address, signature, message]);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
