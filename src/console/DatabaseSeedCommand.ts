@@ -23,7 +23,7 @@ export class DatabaseSeedCommand extends AbstractCommand {
     public static description = 'Seeding database with testdata.';
 
     public async run(): Promise<void> {
-        const db = Knex(DatabaseConfig as Knex.Config);
+        const db = Knex(DatabaseConfig() as Knex.Config);
 
         // Close connection to the database
         await db.destroy();

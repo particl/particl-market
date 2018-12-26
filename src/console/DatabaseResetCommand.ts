@@ -24,7 +24,7 @@ export class DatabaseResetCommand extends AbstractCommand {
     public static description = 'Reverse all current migrations and migrate to latest.';
 
     public async run(): Promise<void> {
-        const knex = Knex(DatabaseConfig as Knex.Config);
+        const knex = Knex(DatabaseConfig() as Knex.Config);
 
         const migrate: any = knex.migrate;
 
