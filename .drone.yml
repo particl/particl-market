@@ -186,6 +186,10 @@ steps:
   commands:
 #    - ls -al /app/node_modules
 #    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
+    - echo ".env:"
+    - cat .env
+    - echo ".env.test:"
+    - cat .env.test
     - cd /app                                                       # cd to the actual app folder from the workspace
 #    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-integration-tests.sh                                   # run the tests
