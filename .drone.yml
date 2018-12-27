@@ -172,10 +172,10 @@ steps:
     - name: node_modules
       path: /app/node_modules
   commands:
-#    - ls -al /app/node_modules
+    - ls -al /app/node_modules
 #    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
-    - yarn add node-mysql
     - cd /app                                                       # cd to the actual app folder from the workspace
+    - yarn add node-mysql
     - echo ".env -------------------------------------------------------------------------"
     - cat .env
     - echo ".env.test --------------------------------------------------------------------"
