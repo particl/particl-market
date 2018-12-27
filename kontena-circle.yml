@@ -162,7 +162,8 @@ services:
     image: mysql:5.7
     environment:
       - MYSQL_ROOT_PASSWORD=supersecret
-      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=supersecret
       - MYSQL_DATABASE=marketplace-test
     volumes:
       - /root/data/mysql-test:/var/lib/mysql
