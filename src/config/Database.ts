@@ -79,8 +79,8 @@ export const DatabaseConfig = (): any => {
 
 export const Knex = (): knex => {
 
-    console.log('process.env.DB_CONNECTION:', process.env.DB_CONNECTION);
-    console.log('knex config:', JSON.stringify(DatabaseConfig(), null, 2));
+    console.log('Knex(), process.env.DB_CONNECTION:', process.env.DB_CONNECTION);
+    console.log('knex(), config:', JSON.stringify(DatabaseConfig(), null, 2));
     return knex(DatabaseConfig());
 };
 

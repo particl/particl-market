@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import { EnvConfig } from './EnvConfig';
 
 export class TestEnvConfig extends EnvConfig {

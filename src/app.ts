@@ -20,7 +20,7 @@ import { App } from './core/App';
 import { CustomConfig } from './config/CustomConfig';
 import { Environment } from './core/helpers/Environment';
 
-console.log('process.env.NODE_ENV:', process.env.NODE_ENV );
+console.log('app, process.env.NODE_ENV:', process.env.NODE_ENV );
 
 const newApp = new App(envConfig());
 
