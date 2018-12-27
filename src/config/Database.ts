@@ -15,23 +15,22 @@
 import * as knex from 'knex';
 import * as bookshelf from 'bookshelf';
 import { DataDir } from '../core/helpers/DataDir';
-import {EnvConfig} from './env/EnvConfig';
-import {Environment} from '../core/helpers/Environment';
-import {ProductionEnvConfig} from './env/ProductionEnvConfig';
-import {AlphaEnvConfig} from './env/AlphaEnvConfig';
-import {DevelopmentEnvConfig} from './env/DevelopmentEnvConfig';
-import {TestEnvConfig} from './env/TestEnvConfig';
 
 // export const DatabaseConfig = {
 
 export const DatabaseConfig = (): any => {
 
+    console.log('DatabaseConfig(), process.env.NODE_ENV:', process.env.NODE_ENV);
+    console.log('DatabaseConfig(), process.env.DB_CLIENT:', process.env.DB_CLIENT);
+
     if (process.env.DB_CLIENT === 'mysql') {
         return {
             client: process.env.DB_CLIENT || 'sqlite3',
             connection: {
-                filename: process.env.DB_CONNECTION || DataDir.getDatabaseFile(),
-                debug: false
+                user: process.env.DB_MYSQL_USER || 'test',
+                password: process.env.DB_MYSQL_PASSWORD || 'supersecret',
+                server: process.env.DB_MYSQL_SERVER || 'circle.particl.xyz:33306',
+                database: process.env.DB_MYSQL_DATABASE || 'marketplace-test'
             },
             pool: {
                 min: parseInt(process.env.DB_POOL_MIN || 2, 10),

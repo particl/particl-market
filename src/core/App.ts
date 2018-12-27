@@ -19,7 +19,7 @@ import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
-import {Environment} from './helpers/Environment';
+import { Environment } from './helpers/Environment';
 
 
 export interface Configurable {
