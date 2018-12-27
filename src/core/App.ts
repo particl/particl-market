@@ -40,6 +40,7 @@ export class App {
 
     constructor(envConfig?: EnvConfig) {
 
+        console.log('App() constructor, envconfig(): ', JSON.stringify(envConfig));
         // if envConfig isn't given, use ProductionEnvConfig
         this.envConfig = !envConfig ? new ProductionEnvConfig() : envConfig;
         this.bootstrapApp = new Bootstrap(this.envConfig);
