@@ -47,7 +47,7 @@ export const DatabaseConfig = (): any => {
                 directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
             },
             useNullAsDefault: true,
-            debug: true
+            debug: false
         };
     } else {
         return {
@@ -73,8 +73,8 @@ export const DatabaseConfig = (): any => {
                 directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
             },
             useNullAsDefault: true,
-            debug: true
-            // debug: false
+            // debug: true
+            debug: false
         };
     }
 };
