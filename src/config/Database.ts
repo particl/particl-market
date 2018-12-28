@@ -30,7 +30,8 @@ export const DatabaseConfig = (): any => {
             connection: {
                 user: process.env.DB_MYSQL_USER || 'test',
                 password: process.env.DB_MYSQL_PASSWORD || 'supersecret',
-                host: process.env.DB_MYSQL_SERVER || 'circle.particl.xyz:33306',
+                host: process.env.DB_MYSQL_HOST || 'circle.particl.xyz',
+                port: process.env.DB_MYSQL_PORT || 33306,
                 database: process.env.DB_MYSQL_DATABASE || 'marketplace-test'
             } as MySqlConnectionConfig,
             pool: {
@@ -46,7 +47,7 @@ export const DatabaseConfig = (): any => {
                 directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
             },
             useNullAsDefault: true,
-            debug: false
+            debug: true
         };
     } else {
         return {
@@ -72,8 +73,8 @@ export const DatabaseConfig = (): any => {
                 directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
             },
             useNullAsDefault: true,
-            // debug: true
-            debug: false
+            debug: true
+            // debug: false
         };
     }
 };
