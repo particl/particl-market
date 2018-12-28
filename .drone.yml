@@ -175,7 +175,7 @@ steps:
     - ls -al /app/node_modules
 #    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app                                                       # cd to the actual app folder from the workspace
-    - yarn add node-mysql
+#    - yarn add node-mysql
     - echo ".env -------------------------------------------------------------------------"
     - cat .env
     - echo ".env.test --------------------------------------------------------------------"

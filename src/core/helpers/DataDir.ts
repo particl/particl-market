@@ -2,13 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Environment } from '../../core/helpers/Environment';
+import { Environment } from './Environment';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { envConfig } from '../../config/EnvironmentConfig';
-import {EnvConfig} from '../../config/env/EnvConfig';
-import {MessageException} from '../../api/exceptions/MessageException';
+import { EnvConfig } from '../../config/env/EnvConfig';
 
 /**
  * core.DataDir
