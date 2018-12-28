@@ -15,10 +15,10 @@ export const envConfig = (): EnvConfig => {
 
     console.log('envConfig(), ...');
 
-    if (config) {
-        console.log('envConfig(), allready created...');
-        return config;
-    }
+    // if (config) {
+    //    console.log('envConfig(), allready created...');
+    //    return config;
+    // }
 
     if (Environment.isProduction()) {
         config = new ProductionEnvConfig();

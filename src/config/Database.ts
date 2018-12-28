@@ -15,6 +15,7 @@
 import * as knex from 'knex';
 import * as bookshelf from 'bookshelf';
 import { DataDir } from '../core/helpers/DataDir';
+import {MySqlConnectionConfig} from 'knex';
 
 // export const DatabaseConfig = {
 
@@ -29,9 +30,9 @@ export const DatabaseConfig = (): any => {
             connection: {
                 user: process.env.DB_MYSQL_USER || 'test',
                 password: process.env.DB_MYSQL_PASSWORD || 'supersecret',
-                server: process.env.DB_MYSQL_SERVER || 'circle.particl.xyz:33306',
+                host: process.env.DB_MYSQL_SERVER || 'circle.particl.xyz:33306',
                 database: process.env.DB_MYSQL_DATABASE || 'marketplace-test'
-            },
+            } as MySqlConnectionConfig,
             pool: {
                 min: parseInt(process.env.DB_POOL_MIN || 2, 10),
                 max: parseInt(process.env.DB_POOL_MAX || 10, 10)
