@@ -15,9 +15,12 @@ export class TestUtil {
     }
 
     public async bootstrapAppContainer(app: any): Promise<void> {
+        this.log.debug('bootstrapAppContainer(), bootstrap the App...');
         await app.bootstrap();
+        this.log.debug('bootstrapAppContainer(), bootstrap the App DONE');
+
         // todo: this hack needs to be fixed
-        this.log.debug('TEST_BOOTSTRAP_WAITFOR:', process.env.TEST_BOOTSTRAP_WAITFOR || 10);
+        this.log.debug('bootstrapAppContainer(), TEST_BOOTSTRAP_WAITFOR:', process.env.TEST_BOOTSTRAP_WAITFOR || 10);
         await this.waitFor(process.env.TEST_BOOTSTRAP_WAITFOR || 10);
     }
 
