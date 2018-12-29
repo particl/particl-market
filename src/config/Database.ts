@@ -24,59 +24,32 @@ export const DatabaseConfig = (): any => {
     console.log('DatabaseConfig(), process.env.NODE_ENV:', process.env.NODE_ENV);
     console.log('DatabaseConfig(), process.env.DB_CLIENT:', process.env.DB_CLIENT);
 
-    if (process.env.DB_CLIENT === 'mysql') {
-        return {
-            client: process.env.DB_CLIENT || 'sqlite3',
-            connection: {
-                user: process.env.DB_MYSQL_USER || 'test',
-                password: process.env.DB_MYSQL_PASSWORD || 'supersecret',
-                host: process.env.DB_MYSQL_HOST || 'circle.particl.xyz',
-                port: process.env.DB_MYSQL_PORT || 33306,
-                database: process.env.DB_MYSQL_DATABASE || 'marketplace-test'
-            } as MySqlConnectionConfig,
-            pool: {
-                min: parseInt(process.env.DB_POOL_MIN || 2, 10),
-                max: parseInt(process.env.DB_POOL_MAX || 10, 10)
-            },
-            migrations: {
-                directory: process.env.DB_MIGRATION_DIR || DataDir.getDefaultMigrationsPath(),
-                tableName: process.env.DB_MIGRATION_TABLE || 'version'
-            },
-            // not used anymore, potentially we can delete this.
-            seeds: {
-                directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
-            },
-            useNullAsDefault: true,
+    return {
+        client: process.env.DB_CLIENT || 'sqlite3',
+        connection: {
+            filename: process.env.DB_CONNECTION || DataDir.getDatabaseFile(),
             debug: false
-        };
-    } else {
-        return {
-            client: process.env.DB_CLIENT || 'sqlite3',
-            connection: {
-                filename: process.env.DB_CONNECTION || DataDir.getDatabaseFile(),
-                debug: false
-            },
-            pool: {
-                min: parseInt(process.env.DB_POOL_MIN || 2, 10),
-                max: parseInt(process.env.DB_POOL_MAX || 10, 10),
-                afterCreate: (conn, cb) => {
-                    conn.run('PRAGMA foreign_keys = ON', cb);
-                    conn.run('PRAGMA journal_mode = WAL', cb);
-                }
-            },
-            migrations: {
-                directory: process.env.DB_MIGRATION_DIR || DataDir.getDefaultMigrationsPath(),
-                tableName: process.env.DB_MIGRATION_TABLE || 'version'
-            },
-            // not used anymore, potentially we can delete this.
-            seeds: {
-                directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
-            },
-            useNullAsDefault: true,
-            // debug: true
-            debug: false
-        };
-    }
+        },
+        pool: {
+            min: parseInt(process.env.DB_POOL_MIN || 2, 10),
+            max: parseInt(process.env.DB_POOL_MAX || 10, 10),
+            afterCreate: (conn, cb) => {
+                conn.run('PRAGMA foreign_keys = ON', cb);
+                conn.run('PRAGMA journal_mode = WAL', cb);
+            }
+        },
+        migrations: {
+            directory: process.env.DB_MIGRATION_DIR || DataDir.getDefaultMigrationsPath(),
+            tableName: process.env.DB_MIGRATION_TABLE || 'version'
+        },
+        // not used anymore, potentially we can delete this.
+        seeds: {
+            directory: process.env.DB_SEEDS_DIR || DataDir.getDefaultSeedsPath()
+        },
+        useNullAsDefault: true,
+        // debug: true
+        debug: false
+    };
 };
 
 export const Knex = (): knex => {
