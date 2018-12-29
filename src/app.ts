@@ -19,10 +19,15 @@ import { envConfig } from './config/EnvironmentConfig';
 import { App } from './core/App';
 import { CustomConfig } from './config/CustomConfig';
 import { Environment } from './core/helpers/Environment';
+import * as dotenv from 'dotenv';
 
 console.log('app, process.env.NODE_ENV:', process.env.NODE_ENV );
 
-const newApp = new App(envConfig());
+const config = envConfig();
+// loads the .env file into the 'process.env' variable.
+dotenv.config({ path: config.envFile });
+
+const newApp = new App(config);
 
 if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
     // integration tests will bootstrap the app

@@ -309,8 +309,9 @@ export class TestDataService {
             'smsg_messages'
         ];
 
+        this.log.debug('cleaning ' + tablesToClean.length + ' tables...');
+
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;

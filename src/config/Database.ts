@@ -15,7 +15,6 @@
 import * as knex from 'knex';
 import * as bookshelf from 'bookshelf';
 import { DataDir } from '../core/helpers/DataDir';
-import {MySqlConnectionConfig} from 'knex';
 
 // export const DatabaseConfig = {
 
