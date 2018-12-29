@@ -71,16 +71,11 @@ export class EnvConfig {
      */
     constructor(dataDirLocation?: string, envFileName?: string) {
 
-        if (dataDirLocation) {
-            // console.log('EnvConfig: setting DataDir:', dataDirLocation);
-            // DataDir.set(dataDirLocation);
-            this.dataDir = dataDirLocation;
-        }
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
             this.envFile = envFileName;
         } else {
-            this.envFile = path.join(DataDir.getDefaultDataDirPath(), this.envFile);
+            this.envFile = path.join(dataDirLocation || DataDir.getDefaultDataDirPath(), this.envFile);
         }
 
         console.log('EnvConfig: envFile:', this.envFile);
@@ -102,6 +97,12 @@ export class EnvConfig {
             _.forOwn(this.defaultEnv, (value: any, key: string) => {
                 console.log('process.env.' + key + ':', process.env[key]);
             });
+        }
+
+        if (dataDirLocation) {
+            // console.log('EnvConfig: setting DataDir:', dataDirLocation);
+            // DataDir.set(dataDirLocation);
+            this.dataDir = dataDirLocation;
         }
 
     }
