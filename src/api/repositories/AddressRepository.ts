@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
-import * as PromiseB from 'bluebird';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Address } from '../models/Address';
