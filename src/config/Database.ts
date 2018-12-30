@@ -27,15 +27,15 @@ export const DatabaseConfig = (): any => {
         client: process.env.DB_CLIENT || 'sqlite3',
         connection: {
             filename: process.env.DB_CONNECTION || DataDir.getDatabaseFile(),
-            debug: false,
-            close: {}
+            debug: false
         },
         pool: {
-            min: parseInt(process.env.DB_POOL_MIN || 1, 10),
+            min: parseInt(process.env.DB_POOL_MIN || 0, 10),
             max: parseInt(process.env.DB_POOL_MAX || 1, 10),
             afterCreate: (conn, cb) => {
                 conn.run('PRAGMA foreign_keys = ON', cb);
                 conn.run('PRAGMA journal_mode = WAL', cb);
+                cb(null, conn);
             }
         },
         migrations: {
