@@ -88,24 +88,6 @@ describe('ItemInformation', () => {
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
             }]
-        }, {
-            hash: 'imagehash5',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatTall
-            }]
-        }, {
-            hash: 'imagehash6',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatWide
-            }]
         }]
     } as ItemInformationCreateRequest;
 
@@ -146,24 +128,6 @@ describe('ItemInformation', () => {
                 imageVersion: 'ORIGINAL',
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
-            }]
-        }, {
-            hash: 'imagehash5',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatTall
-            }]
-        }, {
-            hash: 'imagehash6',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatWide
             }]
         }]
     } as ItemInformationUpdateRequest;
@@ -229,7 +193,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
 
     });
 
@@ -272,7 +236,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
     });
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
@@ -301,7 +265,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
     });
 
     test('Should delete the item information', async () => {
@@ -335,12 +299,6 @@ describe('ItemInformation', () => {
         // ItemImages
         await itemImageService.findOne(itemImages[0].id).catch(e =>
             expect(e).toEqual(new NotFoundException(itemImages[0].id))
-        );
-        await itemImageService.findOne(itemImages[1].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemImages[1].id))
-        );
-        await itemImageService.findOne(itemImages[2].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemImages[2].id))
         );
 
         // delete listing item
