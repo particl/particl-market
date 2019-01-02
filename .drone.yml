@@ -1,0 +1,41 @@
+
+kind: pipeline
+name: build and push
+
+steps:
+
+- name: build and push
+  image: plugins/docker
+  environment:
+      VERSION: "${DRONE_TAG}"
+      COMMIT: "${DRONE_COMMIT_SHA:0:7}"
+
+  settings:
+      repo: ludx/particl-market-ci
+      dockerfile: Dockerfile.ci
+      username:
+          from_secret: REGISTRY_USER
+      password:
+          from_secret: REGISTRY_PASSWORD
+      tags:
+      - $$VERSION
+
+
+
+
+# pipeline describes build steps
+#pipeline:
+    # every entry in the pipeline describes a single build step
+#    build_image:
+#        image: node
+#        environment:
+#            VERSION: "${DRONE_TAG}"
+#            COMMIT: "${DRONE_COMMIT_SHA:0:7}"
+
+        # commands executed in the container
+#        commands:
+#            - ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+#            - ./bin/ci-create-build-version.sh
+#            - docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+#            - docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
+#            - docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1
