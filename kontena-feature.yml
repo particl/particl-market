@@ -4,7 +4,7 @@ version: 0.1.0
 services:
 
   particld1:
-    image: ludx/particl:0.16
+    image: ludx/particl:0.17
     instances: 1
     volumes:
       - /root/data/particld-feature1:/root/.particl
@@ -24,7 +24,7 @@ services:
       - node==kontena-agent1
 
   particld2:
-    image: ludx/particl:0.16
+    image: ludx/particl:0.17
     instances: 1
     volumes:
       - /root/data/particld-feature2:/root/.particl
@@ -44,19 +44,19 @@ services:
       - node==kontena-agent1
 
   app1:
-    image: r.cfcr.io/ludx/dapp-shell-ci:feature
+    image: r.cfcr.io/ludx/particl-market-ci:feature
     instances: 1
     depends_on:
       - particld1
     links:
       - particld1
       - loadbalancerstack/internet-lb
-#    volumes:
-#      - /root/data/dapp-shell-feature1:/app/data
+    volumes:
+      - /root/data/particl-market-feature1:/app/data
     command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
-      - APP_NAME=dapp-shell
+      - APP_NAME=particl-market
       - APP_HOST=http://feature1.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333
@@ -94,19 +94,19 @@ services:
     mem_limit: 2g
 
   app2:
-    image: r.cfcr.io/ludx/dapp-shell-ci:feature
+    image: r.cfcr.io/ludx/particl-market-ci:feature
     instances: 1
     depends_on:
       - particld2
     links:
       - particld2
       - loadbalancerstack/internet-lb
-#    volumes:
-#      - /root/data/dapp-shell-feature2:/app/data
+    volumes:
+      - /root/data/particl-market-feature2:/app/data
     command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
-      - APP_NAME=dapp-shell
+      - APP_NAME=particl-market
       - APP_HOST=http://feature2.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333

@@ -54,9 +54,8 @@ describe('CryptocurrencyAddress', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-
-        defaultProfile = await profileService.getDefault();
-        defaultProfile = defaultProfile.toJSON();
+        const orofileModel = await profileService.getDefault();
+        defaultProfile = orofileModel.toJSON();
     });
 
     test('Should create a new cryptocurrency address related to profile', async () => {
