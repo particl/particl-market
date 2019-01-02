@@ -19,7 +19,7 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('proposal_options');
 
             // todo: should be decimal later, but that didnt work
-            table.integer('weight').notNullable();
+            table.integer('old_weight').notNullable(); // We want to calculate the weight every time it's used, so no saving
             table.integer('voters').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());

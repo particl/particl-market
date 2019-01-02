@@ -92,11 +92,15 @@ export class VoteActionService {
             this.log.debug('localVote = ' + JSON.stringify(localVote, null, 2));
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
+            this.log.error('VoteActionService.send:1800, findOneByProposalHash');
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
             if (!proposalResult) {
+                this.log.error('VoteActionService.send:1900, createProposalResult');
                 proposalResult = await this.proposalService.createProposalResult(proposal);
             }
+            this.log.error('VoteActionService.send:2000, recalculateProposalResult');
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+            this.log.error('VoteActionService.send:2100, After recalculateProposalResult');
 
             return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
                                              Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
@@ -214,6 +218,43 @@ export class VoteActionService {
             });
     }
 
+    /**
+     * todo: move to listingItemService
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    public async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
+        // TODO: Currently this should work fine, the new weights are calculated in recalculateProposalResult, which is called when we recieve a vote
+        // If this function is ever called somewhere other than just after we receive a vote, we need to make sure recalculateProposalResult is called first,
+        //     alternatively, we can calculate it here.
+        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 0;
+        });
+        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
+        });
+
+        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+        // at minimum, a total of env.MINIMUM_REQUIRED_VOTES votes
+        // at minimum, 50% of votes saying remove
+
+        this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
+        if (removeOptionResult && okOptionResult) {
+            const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
+            const totalWeight = okOptionResult.oldWeight + removeOptionResult.oldWeight;
+            if (
+                (totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000))
+                && (totalWeight > (process.env.MINIMUM_REQUIRED_WEIGHT || 100000000000))
+                && ((removeOptionResult.oldWeight / (totalWeight)) > 0.5)) {
+                this.log.debug('Item should be destroyed');
+                return true;
+            }
+        }
+        this.log.debug('Item should NOT be destroyed');
+        return false;
+    }
+
     private async instaVote(profile: resources.Profile, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
         const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
             return o.optionId === proposalOptionId; // TODO: Or is it 1????
@@ -264,37 +305,6 @@ export class VoteActionService {
     private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
         const vote: any = await this.voteService.create(voteCreateRequest);
         return vote;
-    }
-
-    /**
-     * todo: move to listingItemService
-     *
-     * @param {"resources".ProposalResult} proposalResult
-     * @returns {Promise<boolean>}
-     */
-    private async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
-        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 0;
-        });
-        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
-        });
-
-        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-        // at minimum, a total of env.MINIMUM_REQUIRED_VOTES votes
-        // at minimum, 50% of votes saying remove
-
-        this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
-        if (removeOptionResult && okOptionResult) {
-            const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
-            if (totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000)
-                && ((removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight)) > 0.5)) {
-                this.log.debug('Item should be destroyed');
-                return true;
-            }
-        }
-        this.log.debug('Item should NOT be destroyed');
-        return false;
     }
 
     /**

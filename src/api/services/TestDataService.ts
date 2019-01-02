@@ -687,7 +687,7 @@ export class TestDataService {
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
                 voter,
-                weight: 1,
+                oldWeight: 1,
                 postedAt: new Date().getTime(),
                 receivedAt: new Date().getTime(),
                 expiredAt: new Date().getTime() + 100000000

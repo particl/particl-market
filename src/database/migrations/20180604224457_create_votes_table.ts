@@ -15,7 +15,7 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('proposal_options').onDelete('cascade');
 
             table.string('voter').notNullable();
-            table.integer('weight').notNullable();
+            table.integer('old_weight').notNullable();
 
             table.timestamp('posted_at').notNullable();
             table.timestamp('received_at').notNullable();
