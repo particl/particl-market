@@ -197,14 +197,14 @@ describe('ItemInformation', () => {
 
     });
 
-    test('Should throw ValidationException because we want to create a empty item information', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemInformation', async () => {
         expect.assertions(1);
         await itemInformationService.create({} as ItemInformationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item informations with our new create one', async () => {
+    test('Should list ItemInformations with our new create one', async () => {
         const itemInformationCollection = await itemInformationService.findAll();
         const itemInformation = itemInformationCollection.toJSON();
         expect(itemInformation.length).toBe(1);
@@ -220,7 +220,7 @@ describe('ItemInformation', () => {
         expect(result.ItemImages).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item information', async () => {
+    test('Should return one ItemInformation', async () => {
         const itemInformationModel: ItemInformation = await itemInformationService.findOne(createdId);
         const result = itemInformationModel.toJSON();
 
@@ -246,7 +246,7 @@ describe('ItemInformation', () => {
         );
     });
 
-    test('Should update the item information', async () => {
+    test('Should update the ItemInformation', async () => {
 
         testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
 
@@ -268,8 +268,8 @@ describe('ItemInformation', () => {
         expect(result.ItemImages).toHaveLength(1);
     });
 
-    test('Should delete the item information', async () => {
-        expect.assertions(10);
+    test('Should delete the ItemInformation', async () => {
+        expect.assertions(8);
         await itemInformationService.destroy(createdId);
         await itemInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
