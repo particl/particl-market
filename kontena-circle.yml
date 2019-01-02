@@ -60,8 +60,9 @@ services:
     links:
       - particld1
       - loadbalancerstack/internet-lb
-    #    volumes:
-    #      - /root/data/particl-market-ci1:/app/data
+    volumes:
+      - /root/data/particl-market-ci1:/app/data
+      - /root/data/particl-market-ci1-node_modules:/app/node_modules
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
@@ -112,8 +113,9 @@ services:
     links:
       - particld2
       - loadbalancerstack/internet-lb
-      #    volumes:
-      #      - /root/data/particl-market-ci2:/app/data
+    volumes:
+      - /root/data/particl-market-ci2:/app/data
+      - /root/data/particl-market-ci2-node_modules:/app/node_modules
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development

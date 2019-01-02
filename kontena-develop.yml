@@ -51,8 +51,8 @@ services:
     links:
       - particld1
       - loadbalancerstack/internet-lb
-#    volumes:
-#      - /root/data/dapp-shell-dev1:/app/data
+    volumes:
+      - /root/data/particl-market-dev1:/app/data
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
@@ -101,8 +101,8 @@ services:
     links:
       - particld2
       - loadbalancerstack/internet-lb
-#    volumes:
-#      - /root/data/dapp-shell-dev2:/app/data
+    volumes:
+      - /root/data/particl-market-dev2:/app/data
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
