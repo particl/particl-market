@@ -8,6 +8,7 @@ cp -f .env.ci.blackbox .env.blackbox
 
 yarn install --check-files
 ./node_modules/.bin/jest -v
+
 ./dockerize -wait tcp://circle.particl.xyz:58935 -timeout 30s
 ./dockerize -wait tcp://circle.particl.xyz:33306 -timeout 30s
 
