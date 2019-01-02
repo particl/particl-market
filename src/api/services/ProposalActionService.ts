@@ -108,30 +108,43 @@ export class ProposalActionService {
             /*
              * Vote once per profile
              */
-            const proposal = await this.processProposal(proposalCreateRequest);
-            // Get the YES (flag this item listing) proposal option
-            const proposalOptionId = 0;
-            const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-                return o.optionId === proposalOptionId; // TODO: Or is it 1????
-            });
-            if (!proposalOption) {
-                this.log.error(`Proposal option ${proposalOptionId} wasn't found.`);
-                throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
-            }
-
-            // Get the default market.
-            //     TODO: Might want to let users specify this later.
-            const marketModel = await this.marketService.getDefault();
-            if (!marketModel) {
-                throw new MessageException(`Default market doesn't exist!`);
-            }
-            const market: resources.Market = marketModel.toJSON();
-
-            // For each profile, vote.
-            // The VoteActionService will ignore votes without weight (profile has no balance).
             if (!estimateFee) {
-                const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+                let proposal;
+                try {
+                    proposal = await this.processProposal(proposalCreateRequest);
+                    this.log.error('proposal = ' + JSON.stringify(proposal, null, 2));
+                } catch (ex) {
+                    this.log.error(JSON.stringify(ex, null, 2));
+                }
+                this.log.error('START findOneByProposalHash');
+                {
+                    const proposalResult0: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+                    if (!proposalResult0) {
+                        this.log.error('START createProposalResult');
+                    }
+                    this.log.error('START recalculateProposalResult');
+                }
+                // Get the YES (flag this item listing) proposal option
+                const proposalOptionId = 0;
+                const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+                    return o.optionId === proposalOptionId; // TODO: Or is it 1????
+                });
+                if (!proposalOption) {
+                    this.log.error(`Proposal option ${proposalOptionId} wasn't found.`);
+                    throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
+                }
 
+                // Get the default market.
+                //     TODO: Might want to let users specify this later.
+                const marketModel = await this.marketService.getDefault();
+                if (!marketModel) {
+                    throw new MessageException(`Default market doesn't exist!`);
+                }
+                const market: resources.Market = marketModel.toJSON();
+
+                // For each profile, vote.
+                // The VoteActionService will ignore votes without weight (profile has no balance).
+                const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
                 const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
                 const profiles: resources.Profile[] = profilesCollection.toJSON();
                 for (const profile of profiles) {
@@ -142,8 +155,13 @@ export class ProposalActionService {
                 }
 
                 // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-                let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-                // TODO: Not sure this line is required.
+                this.log.debug('Doing findOneByProposalHash');
+                let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+                if (!proposalResult) {
+                    this.log.debug('Doing createProposalResult');
+                    proposalResult = await this.proposalService.createProposalResult(proposal);
+                }
+                this.log.debug('Doing recalculateProposalResult');
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
                 return smsgProposal;
@@ -157,8 +175,10 @@ export class ProposalActionService {
                 const proposal = await this.processGenericProposal(proposalCreateRequest);
 
                 // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-                let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-                // TODO: Not sure this line is required.
+                let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+                if (!proposalResult) {
+                    proposalResult = await this.proposalService.createProposalResult(proposal);
+                }
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
                 return smsgProposal;
             } else {
@@ -225,8 +245,10 @@ export class ProposalActionService {
                 proposal = createdProposalModel.toJSON();
             }
             // finally, create ProposalResult, vote and recalculate proposalresult
-            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
-            // TODO: Not sure this line is required.
+            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+            if (!proposalResult) {
+                proposalResult = await this.proposalService.createProposalResult(proposal);
+            }
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
             // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
@@ -303,38 +325,51 @@ export class ProposalActionService {
     }
 
     private async processProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
-        const proposal: resources.Proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item)
-            .then(async existingProposalModel => {
-                // Proposal already exists (for some unexplicable reason), so we use it
-                // this same function is called from send() and from processProposalReceivedEvent
-                // => if the proposal is yours, it's allready created in send
-                const existingProposal: resources.Proposal = existingProposalModel.toJSON();
-                if (proposalCreateRequest.postedAt
-                    && (proposalCreateRequest.postedAt < existingProposal.postedAt)) {
-                    // update to use the one that was sent first
-                    // incoming was posted before the existing -> update existing with incoming data
-                    // TODO: WTF there should always be just one incoming?
-                    // + the one created locally in send should not have postedAt field!!
-                    const updatedProposalModel = await this.proposalService.update(existingProposal.id, proposalCreateRequest);
-                    return updatedProposalModel.toJSON();
-                } else {
-                    return existingProposal;
-                }
-            })
-            .catch(async reason => {
-                // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
-                // proposal doesnt exist -> create Proposal
-                let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
-                const createdProposal = createdProposalModel.toJSON();
-                // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
+        let proposal: any;
+        try {
+            proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item);
+        } catch (ex) {
+            this.log.debug('ProposalActionService, processProposal, ' + JSON.stringify(ex, null, 2));
+        }
+        if (proposal) {
+            // Proposal already exists (for some unexplicable reason), so we use it
+            // this same function is called from send() and from processProposalReceivedEvent
+            // => if the proposal is yours, it's allready created in send
+            if (proposalCreateRequest.postedAt
+                && (proposalCreateRequest.postedAt < proposal.postedAt)) {
+                // update to use the one that was sent first
+                // incoming was posted before the existing -> update existing with incoming data
+                // TODO: WTF there should always be just one incoming?
+                // + the one created locally in send should not have postedAt field!!
+                const updatedProposalModel = await this.proposalService.update(proposal.id, proposalCreateRequest);
+                proposal = updatedProposalModel.toJSON();
+            } else {
+                proposal = proposal.toJSON();
+            }
+        } else {
+            // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
+            // proposal doesnt exist -> create Proposal
+            this.log.error('processProposal:1000, proposalCreateRequest = ' + JSON.stringify(proposalCreateRequest, null, 2));
+            let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
+            const createdProposal = createdProposalModel.toJSON();
+            // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
 
-                // also create the FlaggedItem
-                const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                // this.log.debug('processItemVoteProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+            // also create the FlaggedItem
+            const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
+            // this.log.debug('processItemVoteProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
 
-                createdProposalModel = await this.proposalService.findOne(createdProposal.id);
-                return createdProposalModel.toJSON();
-            });
+            createdProposalModel = await this.proposalService.findOne(createdProposal.id);
+            proposal = createdProposalModel.toJSON();
+        }
+        this.log.debug('processProposal. proposal = ' + JSON.stringify(proposal, null, 2));
+        this.log.debug('processProposal, Doing findOneByProposalHash');
+        let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+        if (!proposalResult) {
+            this.log.debug('processProposal, Doing createProposalResult');
+            proposalResult = await this.proposalService.createProposalResult(proposal);
+        }
+        this.log.debug('processProposal, Doing recalculateProposalResult');
+        proposalResult = await this.proposalService.recalculateProposalResult(proposal);
         return proposal;
     }
 

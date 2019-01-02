@@ -82,7 +82,7 @@ export class VoteService {
 
         // set new values
         vote.set('voter', body.voter);
-        vote.set('weight', body.weight);
+        vote.set('old_weight', body.oldWeight);
 
         vote.set('postedAt', body.postedAt);
         vote.set('receivedAt', body.receivedAt);
