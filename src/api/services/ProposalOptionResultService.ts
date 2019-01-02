@@ -69,7 +69,7 @@ export class ProposalOptionResultService {
         // set new values
         // proposalOptionResult.ProposalResultId = body.proposalResultId;
         // proposalOptionResult.ProposalOptionId = body.proposalOptionId;
-        proposalOptionResult.OldWeight = body.weight;
+        proposalOptionResult.OldWeight = body.old_weight;
         proposalOptionResult.Voters = body.voters;
 
         // update proposalOptionResult record
