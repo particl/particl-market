@@ -144,15 +144,29 @@ export class TestDataService {
      */
     public async clean(seed: boolean = true): Promise<void> {
 
-        await this.cleanDb();
+        await this.cleanDb()
+            .catch( reason => {
+                this.log.debug('failed cleaning the db: ' + reason);
+            });
+
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories();
-            await this.defaultProfileService.seedDefaultProfile();
-            await this.defaultMarketService.seedDefaultMarket();
-            this.log.info('cleanup & default seeds done.');
-            return;
+            await this.defaultItemCategoryService.seedDefaultCategories()
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+            await this.defaultProfileService.seedDefaultProfile()
+                .catch( reason => {
+                    this.log.debug('failed seeding default profile: ' + reason);
+                });
+            await this.defaultMarketService.seedDefaultMarket()
+                .catch( reason => {
+                    this.log.debug('failed seeding default market: ' + reason);
+                });
         }
+
+        this.log.info('cleanup & default seeds done.');
+        return;
     }
 
     /**

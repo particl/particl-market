@@ -166,7 +166,7 @@ describe('OrderItemObject', () => {
         // log.debug('createdOrder: ', JSON.stringify(createdOrder, null, 2));
         // log.debug('createdOrderItem: ', JSON.stringify(createdOrderItem, null, 2));
 
-    });
+    }, 1200000); // timeout to 1200s
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
