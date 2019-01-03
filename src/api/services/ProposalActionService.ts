@@ -112,17 +112,8 @@ export class ProposalActionService {
                 let proposal;
                 try {
                     proposal = await this.processProposal(proposalCreateRequest);
-                    this.log.error('proposal = ' + JSON.stringify(proposal, null, 2));
                 } catch (ex) {
-                    this.log.error(JSON.stringify(ex, null, 2));
-                }
-                this.log.error('START findOneByProposalHash');
-                {
-                    const proposalResult0: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-                    if (!proposalResult0) {
-                        this.log.error('START createProposalResult');
-                    }
-                    this.log.error('START recalculateProposalResult');
+                    this.log.debug(JSON.stringify(ex, null, 2));
                 }
                 // Get the YES (flag this item listing) proposal option
                 const proposalOptionId = 0;
@@ -130,7 +121,7 @@ export class ProposalActionService {
                     return o.optionId === proposalOptionId; // TODO: Or is it 1????
                 });
                 if (!proposalOption) {
-                    this.log.error(`Proposal option ${proposalOptionId} wasn't found.`);
+                    this.log.debug(`Proposal option ${proposalOptionId} wasn't found.`);
                     throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
                 }
 
@@ -145,23 +136,16 @@ export class ProposalActionService {
                 // For each profile, vote.
                 // The VoteActionService will ignore votes without weight (profile has no balance).
                 const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
-                const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
-                const profiles: resources.Profile[] = profilesCollection.toJSON();
-                for (const profile of profiles) {
-                    // Send votes out for others to receive (will be ignored when received locally)
-                    this.log.error('Sending vote for ' + profile.address);
-                    await this.voteActionService.send(proposal, proposalOption, profile, market);
-                    this.log.error('Sending vote for ' + profile.address + ': DONE');
+                const addrCollection: any = await this.coreRpcService.getWalletAddresses();
+                for (const addr of addrCollection) {
+                    await this.voteActionService.send(proposal, proposalOption, addr.address, market);
                 }
 
                 // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-                this.log.debug('Doing findOneByProposalHash');
                 let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
                 if (!proposalResult) {
-                    this.log.debug('Doing createProposalResult');
                     proposalResult = await this.proposalService.createProposalResult(proposal);
                 }
-                this.log.debug('Doing recalculateProposalResult');
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
                 return smsgProposal;

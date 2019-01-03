@@ -70,6 +70,10 @@ export class CoreRpcService {
         return await this.call('getaddressbalance', addresses);
     }
 
+    public async getWalletAddresses(): Promise<any> {
+        return await this.call('listreceivedbyaddress', [0, false]);
+    }
+
     /**
      * ﻿Returns a new Particl address for receiving payments, key is saved in wallet.
      *
