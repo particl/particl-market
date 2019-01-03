@@ -30,7 +30,7 @@ export class VoteService {
         let voteWeight;
         try {
             const tmpWeight = await this.coreRpcService.getAddressBalance(voter);
-            this.log.debug('Vote getaddressbalance retval = ' + JSON.stringify(tmpWeight, null, 2));
+            // this.log.debug('Vote getaddressbalance retval = ' + JSON.stringify(tmpWeight, null, 2));
             voteWeight = tmpWeight.balance;
         } catch (ex) {
             this.log.error('ERROR getting vote weight; ex = ' + JSON.stringify(ex));

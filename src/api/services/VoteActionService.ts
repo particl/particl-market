@@ -68,18 +68,18 @@ export class VoteActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                       senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
+                       senderAddress: string, marketplace: resources.Market): Promise<SmsgSendResponse> {
         /*
-         * If senderProfile has balance (weight) <= 0
+         * If senderAddress has balance (weight) <= 0
          *     Skip sending this vote, waste of time since it has no weight.
          */
-        const weight = await this.voteService.getVoteWeight(senderProfile.address);
+        const weight = await this.voteService.getVoteWeight(senderAddress);
         if (weight > 0) {
             const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-                senderProfile.address);
+                senderAddress);
 
             // Sign message (daemon signmessage <addr> <msg>)
-            const signature = await this.coreRpcService.signMessage(senderProfile.address, voteMessage);
+            const signature = await this.coreRpcService.signMessage(senderAddress, voteMessage);
             // Save signature
             voteMessage.signature = signature;
 
@@ -88,21 +88,17 @@ export class VoteActionService {
                 mpaction: voteMessage
             };
 
-            const localVote = await this.instaVote(senderProfile, proposal, proposalOption.optionId);
+            const localVote = await this.instaVote(senderAddress, proposal, proposalOption.optionId);
             this.log.debug('localVote = ' + JSON.stringify(localVote, null, 2));
 
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-            this.log.error('VoteActionService.send:1800, findOneByProposalHash');
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
             if (!proposalResult) {
-                this.log.error('VoteActionService.send:1900, createProposalResult');
                 proposalResult = await this.proposalService.createProposalResult(proposal);
             }
-            this.log.error('VoteActionService.send:2000, recalculateProposalResult');
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-            this.log.error('VoteActionService.send:2100, After recalculateProposalResult');
 
-            return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false,
+            return this.smsgService.smsgSend(senderAddress, marketplace.address, msg, false,
                                              Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
 
         } else {
@@ -149,11 +145,10 @@ export class VoteActionService {
                  * Else, process vote
                  */
                 let weAreTheVoter = false;
-                const profilesCollection: Bookshelf.Collection<Profile> = await this.profileService.findAll();
-                const profiles: resources.Profile[] = profilesCollection.toJSON();
-                for (const profile of profiles) {
-                    if (profile.address === voteMessage.voter) {
-                        this.log.debug(`profile.Address (${profile.address}) === voteMessage.voter (${voteMessage.voter})`);
+                const addrCollection: any = await this.coreRpcService.getWalletAddresses();
+                for (const addr of addrCollection) {
+                    if (addr.address === voteMessage.voter) {
+                        this.log.debug(`Address (${addr.address}) === voteMessage.voter (${voteMessage.voter})`);
                         weAreTheVoter = true;
                         break;
                     }
@@ -255,7 +250,7 @@ export class VoteActionService {
         return false;
     }
 
-    private async instaVote(profile: resources.Profile, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
+    private async instaVote(senderAddress: string, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
         const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
             return o.optionId === proposalOptionId; // TODO: Or is it 1????
         });
@@ -265,10 +260,10 @@ export class VoteActionService {
         }
 
         // Local (instant) votes
-        this.log.debug('Casting instant vote for ' + profile.address);
-        const weight = await this.voteService.getVoteWeight(profile.address);
+        this.log.debug('Casting instant vote for ' + senderAddress);
+        const weight = await this.voteService.getVoteWeight(senderAddress);
         this.log.debug('Weight calculated');
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, profile.address);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderAddress);
         this.log.debug('Vote message created');
         const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
 

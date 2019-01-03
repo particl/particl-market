@@ -19,6 +19,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ProposalService } from '../../services/ProposalService';
 import * as resources from 'resources';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { CoreRpcService } from '../../services/CoreRpcService';
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -29,7 +30,8 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
     ) {
         super(Commands.VOTE_POST);
         this.log = new Logger(__filename);
@@ -82,7 +84,14 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         }
         const market: resources.Market = marketModel.toJSON();
 
-        return await this.voteActionService.send(proposal, proposalOption, profile, market);
+        const addrCollection: any = await this.coreRpcService.getWalletAddresses();
+        let voteMsg;
+        for (const addr of addrCollection) {
+            this.log.debug('Sending vote for ' + addr.address);
+            voteMsg = await this.voteActionService.send(proposal, proposalOption, addr.address, market);
+            this.log.debug('Sending vote for ' + addr.address + ': DONE');
+        }
+        return voteMsg;
     }
 
     /**
