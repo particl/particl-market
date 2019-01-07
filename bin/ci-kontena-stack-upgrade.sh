@@ -24,6 +24,21 @@ echo "BRANCH_NAME: $BRANCH_NAME"
 echo "CONFIG_FILE: $CONFIG_FILE"
 echo "=============================================================="
 
+
+echo "=============================================================="
+echo "KONTENA_CERT: $KONTENA_CERT"
+echo "KONTENA_PK: $KONTENA_PK"
+echo "KONTENA_SERVER_URL: $KONTENA_SERVER_URL"
+echo "KONTENA_SERVER_NAME: $KONTENA_SERVER_NAME"
+echo "KONTENA_SERVER_USERNAME: $KONTENA_SERVER_USERNAME"
+echo "KONTENA_SERVER_GRID: $KONTENA_SERVER_GRID"
+echo "KONTENA_SERVER_TOKEN: $KONTENA_SERVER_TOKEN"
+echo "KONTENA_ACCOUNT_NAME: $KONTENA_ACCOUNT_NAME"
+echo "KONTENA_ACCOUNT_USERNAME: $KONTENA_ACCOUNT_USERNAME"
+echo "KONTENA_ACCOUNT_TOKEN: $KONTENA_ACCOUNT_TOKEN"
+echo "KONTENA_ACCOUNT_REFRESH_TOKEN: $KONTENA_ACCOUNT_REFRESH_TOKEN"
+echo "=============================================================="
+
 #sanitize semicolons, remove newlines, and replace multiple spaces with a single space
 #ASDF=$(echo ${ASDF//;/%3B}|sed ':a;N;$!ba;s/\n/ /g'|tr -s ' ')
 
