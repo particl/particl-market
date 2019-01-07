@@ -21,23 +21,30 @@ RUN npm install -g typescript
 #    && ruby --version \
 #    && ruby-install --cleanup
 
-RUN echo 'check_certificate = off' >> /etc/wgetrc
-RUN wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz
-RUN tar xzf ruby-install-0.6.0.tar.gz
-RUN cd ruby-install-0.6.0 \
-    && make install
-RUN ruby-install --system --latest ruby \
-    && gem install --no-ri --no-rdoc bundler \
-    && gem update --system
-RUN rm -rf ruby-install* \
-    && ruby --version \
-    && ruby-install --cleanup
+#RUN echo 'check_certificate = off' >> /etc/wgetrc
+#RUN wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz
+#RUN tar xzf ruby-install-0.6.0.tar.gz
+#RUN cd ruby-install-0.6.0 \
+#    && make install
+#RUN ruby-install --system --latest ruby \
+#    && gem install --no-ri --no-rdoc bundler \
+#    && gem update --system
+#RUN rm -rf ruby-install* \
+#    && ruby --version \
+#    && ruby-install --cleanup
+
+RUN apk add --no-cache ruby ruby-dev
 
 RUN gem install kontena-cli
+RUN gem cleanup
 
 RUN mkdir -p /app/data/database
 RUN mkdir -p /root/.kontena/certs
-
+RUN rm -rf /usr/lib/ruby/gems/*/cache/* \
+              /var/cache/apk/* \
+              /tmp/* \
+              /var/tmp/*
+              
 WORKDIR /app/
 
 # install dockerize
