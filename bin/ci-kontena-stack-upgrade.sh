@@ -44,14 +44,14 @@ echo "=============================================================="
 
 cat > /root/.kontena/certs/master.rutherford.in.pem <<CERTS
 -----BEGIN CERTIFICATE-----
-KONTENA_CERT
+${KONTENA_CERT}
 -----END CERTIFICATE-----
 -----BEGIN RSA PRIVATE KEY-----
-KONTENA_PK
+${KONTENA_PK}
 -----END RSA PRIVATE KEY-----
 CERTS
-sed -i "" "s|KONTENA_CERT|${KONTENA_CERT}|g" /root/.kontena/certs/master.rutherford.in.pem
-sed -i "" "s|KONTENA_PK|${KONTENA_PK}|g" /root/.kontena/certs/master.rutherford.in.pem
+#sed -i "" "s|KONTENA_CERT|${KONTENA_CERT}|g" /root/.kontena/certs/master.rutherford.in.pem
+#sed -i "" "s|KONTENA_PK|${KONTENA_PK}|g" /root/.kontena/certs/master.rutherford.in.pem
 
 echo "=============================================================="
 ls -al ~/.kontena/certs/
