@@ -9,15 +9,27 @@ RUN npm install -g ts-node
 RUN npm install -g tslint
 RUN npm install -g typescript
 
-RUN echo 'check_certificate = off' >> /etc/wgetrc \
-    && wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz \
-    && tar xzf ruby-install-0.6.0.tar.gz \
-    && cd ruby-install-0.6.0 \
-    && make install \
-    && ruby-install --system --latest ruby \
+#RUN echo 'check_certificate = off' >> /etc/wgetrc \
+#    && wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz \
+#    && tar xzf ruby-install-0.6.0.tar.gz \
+#    && cd ruby-install-0.6.0 \
+#    && make install \
+#    && ruby-install --system --latest ruby \
+#    && gem install --no-ri --no-rdoc bundler \
+#    && gem update --system \
+#    && rm -rf ruby-install* \
+#    && ruby --version \
+#    && ruby-install --cleanup
+
+RUN echo 'check_certificate = off' >> /etc/wgetrc
+RUN wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz
+RUN tar xzf ruby-install-0.6.0.tar.gz
+RUN cd ruby-install-0.6.0 \
+    && make install
+RUN ruby-install --system --latest ruby \
     && gem install --no-ri --no-rdoc bundler \
-    && gem update --system \
-    && rm -rf ruby-install* \
+    && gem update --system
+RUN rm -rf ruby-install* \
     && ruby --version \
     && ruby-install --cleanup
 
