@@ -39,9 +39,6 @@ echo "KONTENA_ACCOUNT_TOKEN: $KONTENA_ACCOUNT_TOKEN"
 echo "KONTENA_ACCOUNT_REFRESH_TOKEN: $KONTENA_ACCOUNT_REFRESH_TOKEN"
 echo "=============================================================="
 
-#sanitize semicolons, remove newlines, and replace multiple spaces with a single space
-#ASDF=$(echo ${ASDF//;/%3B}|sed ':a;N;$!ba;s/\n/ /g'|tr -s ' ')
-
 cat > /root/.kontena/certs/master.rutherford.in.pem <<CERTS
 -----BEGIN CERTIFICATE-----
 ${KONTENA_CERT}
@@ -50,13 +47,6 @@ ${KONTENA_CERT}
 ${KONTENA_PK}
 -----END RSA PRIVATE KEY-----
 CERTS
-#sed -i "s|KONTENA_CERT|${KONTENA_CERT}|g" /root/.kontena/certs/master.rutherford.in.pem
-#sed -i "s|KONTENA_PK|${KONTENA_PK}|g" /root/.kontena/certs/master.rutherford.in.pem
-
-echo "=============================================================="
-ls -al ~/.kontena/certs/
-cat /root/.kontena/certs/master.rutherford.in.pem
-echo "=============================================================="
 
 sed -i "s|KONTENA_SERVER_URL|${KONTENA_SERVER_URL}|g" /root/.kontena_client.json
 sed -i "s|KONTENA_SERVER_NAME|${KONTENA_SERVER_NAME}|g" /root/.kontena_client.json
@@ -68,11 +58,6 @@ sed -i "s|KONTENA_ACCOUNT_USERNAME|${KONTENA_ACCOUNT_USERNAME}|g" /root/.kontena
 sed -i "s|KONTENA_ACCOUNT_TOKEN|${KONTENA_ACCOUNT_TOKEN}|g" /root/.kontena_client.json
 sed -i "s|KONTENA_ACCOUNT_REFRESH_TOKEN|${KONTENA_ACCOUNT_REFRESH_TOKEN}|g" /root/.kontena_client.json
 
-echo "=============================================================="
-cat /root/.kontena_client.json
-echo "=============================================================="
-
-echo "=============================================================="
 echo "MASTER_NAME: $MASTER_NAME"
 echo "GRID_NAME: $GRID_NAME"
 echo "STACK_NAME: $STACK_NAME"
@@ -80,25 +65,13 @@ echo "GIT_REPOSITORY: $GIT_REPOSITORY"
 echo "BRANCH_NAME: $BRANCH_NAME"
 echo "=============================================================="
 
-echo "--------------------------------------------"
-echo "selecting master..."
-echo "--------------------------------------------"
 SSL_IGNORE_ERRORS=true kontena master use $MASTER_NAME
-
-echo "--------------------------------------------"
-echo "selecting grid..."
-echo "--------------------------------------------"
 SSL_IGNORE_ERRORS=true kontena grid use $GRID_NAME
+SSL_IGNORE_ERRORS=true kontena stack rm --grid $GRID_NAME --force $STACK_NAME
+SSL_IGNORE_ERRORS=true kontena stack install --grid $GRID_NAME --deploy $CONFIG_FILE
 
-echo "--------------------------------------------"
-echo "upgrading stack..."
-echo "--------------------------------------------"
-kontena stack rm --grid $GRID_NAME --force $STACK_NAME
-kontena stack install --grid $GRID_NAME --deploy $CONFIG_FILE
-
-echo "--------------------------------------------"
 echo "restarting loadbalancerstack/internet_lb..."
-echo "--------------------------------------------"
+echo "=============================================================="
 SSL_IGNORE_ERRORS=true kontena service restart loadbalancerstack/internet-lb
 
 echo "done."
