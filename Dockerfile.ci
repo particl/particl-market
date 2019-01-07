@@ -33,7 +33,7 @@ RUN npm install -g typescript
 #    && ruby --version \
 #    && ruby-install --cleanup
 
-RUN apk --update add --no-cache ruby ruby-json ruby-bigdecimal ruby-io-console \
+RUN apk --update add --no-cache ruby ruby-bundler ruby-json ruby-bigdecimal ruby-io-console \
     ca-certificates libssl1.0 openssl libstdc++
 
 RUN gem install kontena-cli --no-rdoc --no-ri
