@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -170,7 +170,6 @@ export class BidService {
 
     @validate()
     public async update(id: number, @request(BidUpdateRequest) data: BidUpdateRequest): Promise<Bid> {
-
         const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related

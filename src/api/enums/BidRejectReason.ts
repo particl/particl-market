@@ -3,13 +3,10 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * CurrencyEnum
+ * BidRejectReason
  *
  */
 
-export enum Currency {
-
-    BITCOIN = 'BITCOIN',
-    PARTICL = 'PARTICL'
-
+export enum BidRejectReason {
+    OUT_OF_STOCK = 'OUT_OF_STOCK'
 }

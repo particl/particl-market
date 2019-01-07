@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -40,7 +40,6 @@ export class BidDataService {
 
     @validate()
     public async create( @request(BidDataCreateRequest) data: BidDataCreateRequest): Promise<BidData> {
-
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('BidDataCreateRequest: ', JSON.stringify(body, null, 2));
 
