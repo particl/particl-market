@@ -185,6 +185,29 @@ steps:
 
 - name: upgrade kontena stack for tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+      KONTENA_CERT:
+          from_secret: KONTENA_CERT
+      KONTENA_PK:
+          from_secret: KONTENA_PK
+      KONTENA_SERVER_URL:
+          from_secret: KONTENA_SERVER_URL
+      KONTENA_SERVER_NAME:
+          from_secret: KONTENA_SERVER_NAME
+      KONTENA_SERVER_USERNAME:
+          from_secret: KONTENA_SERVER_USERNAME
+      KONTENA_SERVER_GRID:
+          from_secret: KONTENA_SERVER_GRID
+      KONTENA_SERVER_TOKEN:
+          from_secret: KONTENA_SERVER_TOKEN
+      KONTENA_ACCOUNT_NAME:
+          from_secret: KONTENA_ACCOUNT_NAME
+      KONTENA_ACCOUNT_USERNAME:
+          from_secret: KONTENA_ACCOUNT_USERNAME
+      KONTENA_ACCOUNT_TOKEN:
+          from_secret: KONTENA_ACCOUNT_TOKEN
+      KONTENA_ACCOUNT_REFRESH_TOKEN:
+          from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
   commands:
     - bin/ci-kontena-stack-upgrade.sh ruth-master gridsteri dappshellcircle-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-circle.yml
 
