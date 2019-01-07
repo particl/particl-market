@@ -186,6 +186,7 @@ steps:
 - name: upgrade kontena stack for tests
   image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
   environment:
+      SSL_CERT_DIR: /root/.kontena/certs/
       KONTENA_CERT:
           from_secret: KONTENA_CERT
       KONTENA_PK:
