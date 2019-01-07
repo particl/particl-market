@@ -9,7 +9,23 @@ RUN npm install -g ts-node
 RUN npm install -g tslint
 RUN npm install -g typescript
 
+RUN echo 'check_certificate = off' >> /etc/wgetrc \
+    && wget -O ruby-install-0.6.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.0.tar.gz \
+    && tar xzf ruby-install-0.6.0.tar.gz \
+    && cd ruby-install-0.6.0 \
+    && make install \
+    && ruby-install --system --latest ruby \
+    && gem install --no-ri --no-rdoc bundler \
+    && gem update --system \
+    && rm -rf ruby-install* \
+    && ruby --version \
+    && ruby-install --cleanup
+
+RUN gem install kontena-cli
+
 RUN mkdir -p /app/data/database
+RUN mkdir -p /root/.kontena/certs
+
 WORKDIR /app/
 
 # install dockerize
@@ -19,6 +35,7 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/v0.6.0/dockerize
 COPY package.json /app
 COPY yarn.lock /app
 COPY . /app/
+COPY .kontena_client.json /root/.kontena_client.json
 
 # setup config files
 RUN cp -f .env.ci.app1 /app/.env

@@ -4,8 +4,13 @@ npm-debug.log
 data/database/*
 data/particl1
 data/particl2
-data/app1
-data/app2
+data/app1*
+data/app2*
+data/gui*
+data/tests
+data/uploads
+data/.env
+data/marketplace.log
 dist
 node_modules
 .semaphore-cache
