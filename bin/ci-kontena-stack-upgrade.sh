@@ -50,23 +50,23 @@ ${KONTENA_CERT}
 ${KONTENA_PK}
 -----END RSA PRIVATE KEY-----
 CERTS
-#sed -i "" "s|KONTENA_CERT|${KONTENA_CERT}|g" /root/.kontena/certs/master.rutherford.in.pem
-#sed -i "" "s|KONTENA_PK|${KONTENA_PK}|g" /root/.kontena/certs/master.rutherford.in.pem
+#sed -i "s|KONTENA_CERT|${KONTENA_CERT}|g" /root/.kontena/certs/master.rutherford.in.pem
+#sed -i "s|KONTENA_PK|${KONTENA_PK}|g" /root/.kontena/certs/master.rutherford.in.pem
 
 echo "=============================================================="
 ls -al ~/.kontena/certs/
 cat /root/.kontena/certs/master.rutherford.in.pem
 echo "=============================================================="
 
-sed -i "" "s|KONTENA_SERVER_URL|${KONTENA_SERVER_URL}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_SERVER_NAME|${KONTENA_SERVER_NAME}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_SERVER_USERNAME|${KONTENA_SERVER_USERNAME}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_SERVER_GRID|${KONTENA_SERVER_GRID}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_SERVER_TOKEN|${KONTENA_SERVER_TOKEN}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_ACCOUNT_NAME|${KONTENA_ACCOUNT_NAME}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_ACCOUNT_USERNAME|${KONTENA_ACCOUNT_USERNAME}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_ACCOUNT_TOKEN|${KONTENA_ACCOUNT_TOKEN}|g" /root/.kontena_client.json
-sed -i "" "s|KONTENA_ACCOUNT_REFRESH_TOKEN|${KONTENA_ACCOUNT_REFRESH_TOKEN}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_SERVER_URL|${KONTENA_SERVER_URL}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_SERVER_NAME|${KONTENA_SERVER_NAME}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_SERVER_USERNAME|${KONTENA_SERVER_USERNAME}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_SERVER_GRID|${KONTENA_SERVER_GRID}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_SERVER_TOKEN|${KONTENA_SERVER_TOKEN}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_ACCOUNT_NAME|${KONTENA_ACCOUNT_NAME}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_ACCOUNT_USERNAME|${KONTENA_ACCOUNT_USERNAME}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_ACCOUNT_TOKEN|${KONTENA_ACCOUNT_TOKEN}|g" /root/.kontena_client.json
+sed -i "s|KONTENA_ACCOUNT_REFRESH_TOKEN|${KONTENA_ACCOUNT_REFRESH_TOKEN}|g" /root/.kontena_client.json
 
 echo "=============================================================="
 cat /root/.kontena_client.json
