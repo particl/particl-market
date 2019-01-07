@@ -1,33 +1,21 @@
 #!/bin/sh
 set -e
 
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ] || [ -z "$6" ]
+if [ -z "$1" ] || [ -z "$2" ]
   then
     echo "Error!"
     echo ""
-    echo "Usage: ./kontena-stack-upgrade.sh MASTER_NAME GRID_NAME STACK_NAME GIT_REPOSITORY BRANCH_NAME CONFIG_FILE"
+    echo "Usage: ./kontena-stack-upgrade.sh STACK_NAME CONFIG_FILE"
     exit 1
 fi
-MASTER_NAME=$1
-GRID_NAME=$2
-STACK_NAME=$3
-GIT_REPOSITORY=$4
-BRANCH_NAME=$5
-CONFIG_FILE=$6
+
+STACK_NAME=$1
+CONFIG_FILE=$2
 
 echo "=============================================================="
-echo "MASTER_NAME: $MASTER_NAME"
-echo "GRID_NAME: $GRID_NAME"
 echo "STACK_NAME: $STACK_NAME"
-echo "GIT_REPOSITORY: $GIT_REPOSITORY"
-echo "BRANCH_NAME: $BRANCH_NAME"
 echo "CONFIG_FILE: $CONFIG_FILE"
 echo "=============================================================="
-
-
-echo "=============================================================="
-echo "KONTENA_CERT: $KONTENA_CERT"
-echo "KONTENA_PK: $KONTENA_PK"
 echo "KONTENA_SERVER_URL: $KONTENA_SERVER_URL"
 echo "KONTENA_SERVER_NAME: $KONTENA_SERVER_NAME"
 echo "KONTENA_SERVER_USERNAME: $KONTENA_SERVER_USERNAME"
@@ -58,17 +46,10 @@ sed -i "s|KONTENA_ACCOUNT_USERNAME|${KONTENA_ACCOUNT_USERNAME}|g" /root/.kontena
 sed -i "s|KONTENA_ACCOUNT_TOKEN|${KONTENA_ACCOUNT_TOKEN}|g" /root/.kontena_client.json
 sed -i "s|KONTENA_ACCOUNT_REFRESH_TOKEN|${KONTENA_ACCOUNT_REFRESH_TOKEN}|g" /root/.kontena_client.json
 
-echo "MASTER_NAME: $MASTER_NAME"
-echo "GRID_NAME: $GRID_NAME"
-echo "STACK_NAME: $STACK_NAME"
-echo "GIT_REPOSITORY: $GIT_REPOSITORY"
-echo "BRANCH_NAME: $BRANCH_NAME"
-echo "=============================================================="
-
-SSL_IGNORE_ERRORS=true kontena master use $MASTER_NAME
-SSL_IGNORE_ERRORS=true kontena grid use $GRID_NAME
-SSL_IGNORE_ERRORS=true kontena stack rm --grid $GRID_NAME --force $STACK_NAME
-SSL_IGNORE_ERRORS=true kontena stack install --grid $GRID_NAME --deploy $CONFIG_FILE
+SSL_IGNORE_ERRORS=true kontena master use $KONTENA_SERVER_NAME
+SSL_IGNORE_ERRORS=true kontena grid use $KONTENA_SERVER_GRID
+SSL_IGNORE_ERRORS=true kontena stack rm --grid $KONTENA_SERVER_GRID --force $STACK_NAME
+SSL_IGNORE_ERRORS=true kontena stack install --grid $KONTENA_SERVER_GRID --deploy $CONFIG_FILE
 
 echo "restarting loadbalancerstack/internet_lb..."
 echo "=============================================================="

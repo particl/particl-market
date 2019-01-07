@@ -209,7 +209,7 @@ steps:
       KONTENA_ACCOUNT_REFRESH_TOKEN:
           from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
   commands:
-    - bin/ci-kontena-stack-upgrade.sh ruth-master gridsteri dappshellcircle-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-circle.yml
+    - bin/ci-kontena-stack-upgrade.sh dappshellcircle-stack kontena-circle.yml
 
 
 - name: run blackbox tests
