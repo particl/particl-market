@@ -37,15 +37,10 @@ RUN apk --update add --no-cache ruby ruby-json ruby-bigdecimal ruby-io-console \
     ca-certificates libssl1.0 openssl libstdc++
 
 RUN gem install kontena-cli --no-rdoc --no-ri
-RUN gem cleanup && \
-                 apk del build-dependencies
+RUN gem cleanup
 
 RUN mkdir -p /app/data/database
 RUN mkdir -p /root/.kontena/certs
-RUN rm -rf /usr/lib/ruby/gems/*/cache/* \
-              /var/cache/apk/* \
-              /tmp/* \
-              /var/tmp/*
 
 WORKDIR /app/
 
