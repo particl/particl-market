@@ -66,6 +66,8 @@ describe('EscrowRatio', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
         const defaultProfile = await profileService.getDefault();
+
+        testDataService.generate()
         // create payment-information
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: 'listingitemtemplate',
@@ -104,7 +106,7 @@ describe('EscrowRatio', () => {
             );
     });
 
-    test('Should create a new escrow ratio', async () => {
+    test('Should create a new EscrowRatio', async () => {
         testData['escrow_id'] = escrowId;
         const escrowRatioModel: EscrowRatio = await escrowRatioService.create(testData);
         createdId = escrowRatioModel.Id;
@@ -115,14 +117,14 @@ describe('EscrowRatio', () => {
         expect(result.seller).toBe(testData.seller);
     });
 
-    test('Should throw ValidationException because we want to create a empty escrow ratio', async () => {
+    test('Should throw ValidationException because we want to create a empty EscrowRatio', async () => {
         expect.assertions(1);
         await escrowRatioService.create({} as EscrowRatioCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list escrow ratios with our new create one', async () => {
+    test('Should list EscrowRatios with our new create one', async () => {
         const escrowRatioCollection = await escrowRatioService.findAll();
         const escrowRatio = escrowRatioCollection.toJSON();
         expect(escrowRatio.length).toBe(2); // including existing
@@ -133,7 +135,7 @@ describe('EscrowRatio', () => {
         expect(result.seller).toBe(testData.seller);
     });
 
-    test('Should return one escrow ratio', async () => {
+    test('Should return one EscrowRatio', async () => {
         const escrowRatioModel: EscrowRatio = await escrowRatioService.findOne(createdId);
         const result = escrowRatioModel.toJSON();
 
@@ -151,7 +153,7 @@ describe('EscrowRatio', () => {
             );
     });
 
-    test('Should update the escrow ratio', async () => {
+    test('Should update the EscrowRatio', async () => {
         testDataUpdated['escrow_id'] = escrowId;
         const escrowRatioModel: EscrowRatio = await escrowRatioService.update(createdId, testDataUpdated);
         const result = escrowRatioModel.toJSON();
@@ -160,7 +162,7 @@ describe('EscrowRatio', () => {
         expect(result.seller).toBe(testDataUpdated.seller);
     });
 
-    test('Should delete the escrow ratio', async () => {
+    test('Should delete the EscrowRatio', async () => {
         expect.assertions(4);
         await escrowRatioService.destroy(createdId);
         await escrowRatioService.findOne(createdId).catch(e =>

@@ -32,7 +32,10 @@ const newApp = new App(config);
 if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
     // integration tests will bootstrap the app
     newApp.configure(new CustomConfig());
-    newApp.bootstrap();
+    newApp.bootstrap()
+        .catch(reason => {
+            console.log('ERROR:', reason);
+        });
 
 }
 
