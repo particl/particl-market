@@ -50,8 +50,7 @@ describe('Escrow', () => {
         ratio: {
             buyer: 50,
             seller: 50
-        },
-        payment_information_id: 0
+        }
     } as EscrowCreateRequest;
 
     const testDataUpdated = {
@@ -59,8 +58,7 @@ describe('Escrow', () => {
         ratio: {
             buyer: 100,
             seller: 100
-        },
-        payment_information_id: 0
+        }
     } as EscrowUpdateRequest;
 
     beforeAll(async () => {
@@ -119,20 +117,14 @@ describe('Escrow', () => {
 
     test('Should throw ValidationException because there is no payment_information_id', async () => {
         expect.assertions(1);
-        await escrowService.create({
-            type: EscrowType.NOP,
-            ratio: {
-                buyer: 100,
-                seller: 100
-            }
-        } as EscrowCreateRequest).catch(e =>
+        await escrowService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a new Escrow', async () => {
         testData.payment_information_id = listingItemTemplate.PaymentInformation.id;
-        const escrowModel: Escrow = await escrowService.create(testData as EscrowCreateRequest);
+        const escrowModel: Escrow = await escrowService.create(testData);
         createdEscrow = escrowModel.toJSON();
         const result = createdEscrow;
 
@@ -200,7 +192,8 @@ describe('Escrow', () => {
         await escrowService.findOne(createdEscrow.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdEscrow.id))
         );
-        // delete listing-item-template
+
+        // delete ListingItemTemplate
         await listingItemTemplateService.destroy(listingItemTemplate.id);
         await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
             expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
