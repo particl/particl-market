@@ -78,7 +78,7 @@ describe('ItemCategory', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no name of Category', async () => {
+    test('Should throw ValidationException because there is no name of ItemCategory', async () => {
         expect.assertions(1);
         await itemCategoryService.create({
             parent_item_category_id: 0,
@@ -89,7 +89,7 @@ describe('ItemCategory', () => {
         );
     });
 
-    test('Should create a root item category', async () => {
+    test('Should create a root ItemCategory', async () => {
         const itemCategoryModel: ItemCategory = await itemCategoryService.create(rootData);
         rootId = itemCategoryModel.Id;
 
@@ -99,7 +99,7 @@ describe('ItemCategory', () => {
         expect(result.description).toBe(rootData.description);
     });
 
-    test('Should create a new item category', async () => {
+    test('Should create a new ItemCategory', async () => {
         testData['parent_item_category_id'] = rootId;
         const itemCategoryModel: ItemCategory = await itemCategoryService.create(testData);
         createdId = itemCategoryModel.Id;
@@ -110,7 +110,7 @@ describe('ItemCategory', () => {
         expect(result.description).toBe(testData.description);
     });
 
-    test('Should create a new child item category', async () => {
+    test('Should create a new child ItemCategory', async () => {
         testDataChild['parent_item_category_id'] = createdId;
         const itemCategoryModel: ItemCategory = await itemCategoryService.create(testDataChild);
         createdIdChild = itemCategoryModel.Id;
@@ -123,7 +123,7 @@ describe('ItemCategory', () => {
         expect(result.ParentItemCategory.ParentItemCategory.id).toBe(testData['parent_item_category_id']);
     });
 
-    test('Should create a two item categories with null keys', async () => {
+    test('Should create a two ItemCategories with null keys', async () => {
         testDataNullKey['parent_item_category_id'] = createdId;
         const itemCategoryModel1: ItemCategory = await itemCategoryService.create(testDataNullKey);
         nullKeyId1 = itemCategoryModel1.Id;
@@ -140,14 +140,14 @@ describe('ItemCategory', () => {
         expect(result2.description).toBe(testDataNullKey.description);
     });
 
-    test('Should throw ValidationException because we want to create a empty item category', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemCategory', async () => {
         expect.assertions(1);
         await itemCategoryService.create({} as ItemCategoryCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should return one item category', async () => {
+    test('Should return one ItemCategory', async () => {
         const itemCategoryModel: ItemCategory = await itemCategoryService.findOne(createdId);
         const result = itemCategoryModel.toJSON();
 
@@ -155,7 +155,7 @@ describe('ItemCategory', () => {
         expect(result.description).toBe(testData.description);
     });
 
-    test('Should update the item category', async () => {
+    test('Should update the ItemCategory', async () => {
         testDataUpdated['parent_item_category_id'] = 0;
         const itemCategoryModel: ItemCategory = await itemCategoryService.update(createdId, testDataUpdated as ItemCategoryUpdateRequest);
         const result = itemCategoryModel.toJSON();
@@ -164,7 +164,7 @@ describe('ItemCategory', () => {
         expect(result.description).toBe(testDataUpdated.description);
     });
 
-    test('Should delete the item category', async () => {
+    test('Should delete the ItemCategory', async () => {
         expect.assertions(6);
         await itemCategoryService.destroy(nullKeyId2);
         await itemCategoryService.findOne(nullKeyId2).catch(e =>
@@ -194,6 +194,6 @@ describe('ItemCategory', () => {
         const itemCategoryCollection = await itemCategoryService.findAll();
         const itemCategory = itemCategoryCollection.toJSON();
         expect(itemCategory.length).toBe(0);
-    });
+    }, 600000); // timeout to 600s
 
 });
