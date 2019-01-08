@@ -48,7 +48,7 @@ export class SmsgMessageRepository {
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
     }
-
+/*
     public async createAll(datas: any[]): Promise<SmsgMessage[]> {
 
         const SmsgMessages = Bookshelf.Collection.extend({
@@ -67,12 +67,7 @@ export class SmsgMessageRepository {
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
     }
-
-
-
-
-
-
+*/
 
     public async update(id: number, data: any): Promise<SmsgMessage> {
         const smsgMessage = this.SmsgMessageModel.forge<SmsgMessage>({ id });
