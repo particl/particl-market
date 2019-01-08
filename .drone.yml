@@ -6,9 +6,6 @@ workspace:
 kind: pipeline
 name: Build and Push
 
-#node:
-#  instance: drone-agent4
-
 steps:
 
 - name: build info
@@ -154,33 +151,32 @@ steps:
       - pull_request
 
 
-#- name: run unit tests
-#  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
-#  volumes:
-#    - name: node_modules
-#      path: /app/node_modules
-#    - name: node_modules
-#      path: /workspace/particl-market/node_modules
-#  commands:
-#    - cd /app                                                       # cd to the actual app folder from the workspace
-#    - bin/ci-unit-tests.sh                                          # run the tests
+- name: run unit tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+    - name: node_modules
+      path: /workspace/particl-market/node_modules
+  commands:
+    - cd /app                                                       # cd to the actual app folder from the workspace
+    - bin/ci-unit-tests.sh                                          # run the tests
 
 
-#- name: run integration tests
-#  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
-#  volumes:
-#    - name: node_modules
-#      path: /app/node_modules
-#  commands:
-#    - npm -v
-#    - node -v
-#    - yarn -v
-#    - cd /app                                                       # cd to the actual app folder from the workspace
-#    - echo ".env -------------------------------------------------------------------------"
-#    - cat .env
-#    - echo ".env.test --------------------------------------------------------------------"
-#    - cat .env.test
-#    - bin/ci-integration-tests.sh                                   # run the tests
+- name: run integration tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+  commands:
+    - cd /app                                                       # cd to the actual app folder from the workspace
+    - echo ".env -------------------------------------------------------------------------"
+    - cat .env
+    - echo ".env.test --------------------------------------------------------------------"
+    - cat .env.test
+    - echo ".env.blackbox ----------------------------------------------------------------"
+    - cat .env.blackbox
+    - bin/ci-integration-tests.sh                                   # run the tests
 
 
 - name: upgrade kontena stack for tests
@@ -218,12 +214,8 @@ steps:
     - name: node_modules
       path: /app/node_modules
   commands:
-#    - ls -al /app/node_modules
-#    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app
-#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-blackbox-tests.sh
-#    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: run ui tests
@@ -232,17 +224,37 @@ steps:
     - name: node_modules
       path: /app/node_modules
   commands:
-#    - rsync -a --stats --delete --delete-excluded /workspace/particl-market/node_modules/* /app/node_modules/
     - cd /app
-#    - ln -s /workspace/particl-market/node_modules node_modules
     - bin/ci-ui-tests.sh
-#    - rsync -a --stats --delete --delete-excluded /app/node_modules/* /workspace/particl-market/node_modules/
 
 
 - name: deploy (feature-push)
-  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
   commands:
-    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-feature.yml
+    - bin/ci-kontena-stack-upgrade.sh dappshellfeature-stack kontena-feature.yml
   when:
     branch:
       exclude:
@@ -273,9 +285,32 @@ steps:
 
 
 - name: deploy (develop-push)
-  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
   commands:
-    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_BRANCH} kontena-develop.yml
+    - bin/ci-kontena-stack-upgrade.sh dappshelldev-stack kontena-develop.yml
   when:
     branch:
       - develop
@@ -284,9 +319,32 @@ steps:
 
 
 - name: deploy (develop-pr)
-  image: ludx/codefresh-custom-runner     # TODO: use ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
   commands:
-    - bin/kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/particl-market.git ${DRONE_SOURCE_BRANCH} kontena-develop.yml
+    - bin/ci-kontena-stack-upgrade.sh dappshelldev-stack kontena-develop.yml
   when:
     branch:
       - master
