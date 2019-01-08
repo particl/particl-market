@@ -69,6 +69,7 @@ export class SmsgMessageRepository {
     }
 */
 
+
     public async update(id: number, data: any): Promise<SmsgMessage> {
         const smsgMessage = this.SmsgMessageModel.forge<SmsgMessage>({ id });
         try {
