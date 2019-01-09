@@ -10,7 +10,6 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
-import {SmsgMessageCollection} from '../models/SmsgMessageCollection';
 
 
 export class SmsgMessageRepository {

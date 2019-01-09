@@ -13,9 +13,8 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import * as resources from 'resources';
-import {SmsgMessageCollection} from '../models/SmsgMessageCollection';
 
 export class SmsgMessageService {
 

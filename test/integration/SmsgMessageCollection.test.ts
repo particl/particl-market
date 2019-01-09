@@ -12,13 +12,6 @@ import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
 import * as resources from 'resources';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../src/api/factories/SmsgMessageFactory';
-import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
-import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
-import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage';
-import { ProposalMessageType } from '../../src/api/enums/ProposalMessageType';
-import { VoteMessageType } from '../../src/api/enums/VoteMessageType';
-import { EscrowMessageType } from '../../src/api/enums/EscrowMessageType';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 
 describe('SmsgMessageCollection', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
