@@ -97,7 +97,7 @@ describe('BidDatas', () => {
             true,                               // generateEscrow
             true,                               // generateItemPrice
             true,                               // generateMessagingInformation
-            false,                              // generateListingItemObjects
+            false                               // generateListingItemObjects
         ]).toParamsArray();
 
         const listingItems = await testDataService.generate({

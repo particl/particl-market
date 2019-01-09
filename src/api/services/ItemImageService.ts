@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as fs from 'fs';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -15,16 +16,11 @@ import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { ItemImageDataService } from './ItemImageDataService';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
-import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
-import { HashableObjectType } from '../../api/enums/HashableObjectType';
-import * as fs from 'fs';
+import { HashableObjectType } from '../enums/HashableObjectType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 
 export class ItemImageService {
@@ -57,22 +53,15 @@ export class ItemImageService {
      * create(), but get data from a local file instead.
      *
      * @param imageFile
-     * @param {ListingItemTemplate} listingItemTemplate
+     * @param itemInformationId
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async createFromFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
-        // TODO: how am i supposed to know what imageFile contains? add type to it
+    public async createFromFile(imageFile: any, itemInformationId: number): Promise<ItemImage> {
+        // TODO: ADD TYPE TO imageFile!!
 
         // Read the file data in
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
-        // this.log.error('dataStr = ' + dataStr);
-
-        // find listing item template
-        // this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
-        // find related itemInformation
-
-        const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
 
         const itemImageDataCreateRequest = {
             protocol: ImageDataProtocolType.LOCAL,
@@ -85,8 +74,8 @@ export class ItemImageService {
         };
 
         const itemImageCreateRequest = {
-            item_information_id: itemInformation.id,
-            data: [itemImageDataCreateRequest]
+            item_information_id: itemInformationId,
+            data: [itemImageDataCreateRequest] // todo: should be datas
         } as ItemImageCreateRequest;
 
         return await this.create(itemImageCreateRequest);
@@ -104,23 +93,23 @@ export class ItemImageService {
         const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;
 
-        const protocols = Object.keys(ImageDataProtocolType)
-            .map(key => (ImageDataProtocolType[key]));
-        // this.log.debug('protocols: ', protocols);
+        // get all protocols
+        const protocols = Object.keys(ImageDataProtocolType).map(key => (ImageDataProtocolType[key]));
 
+        // find the original
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
-        // this.log.debug('itemImageDataOriginal: ', itemImageDataOriginal);
-
-        // use the original image version to create a hash for the ItemImage
-        body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
-
-        // if the request body was valid we will create the itemImage
-        const itemImage = await this.itemImageRepo.create(body);
-
 
         if (itemImageDataOriginal) {
+
+            // use the original image version to create a hash for the ItemImage
+            body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+
+            // todo: save to disk
+
+            // if the request body was valid we will create the itemImage
+            const itemImage = await this.itemImageRepo.create(body);
 
             if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);

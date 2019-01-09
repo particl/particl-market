@@ -212,7 +212,7 @@ describe('Bid', () => {
             orderItems: [{
                 itemHash: createdListingItem2.hash,
                 bid_id: createdBid2.id,
-                status: OrderStatus.AWAITING_ESCROW,
+                status: OrderStatus.AWAITING_ESCROW
             } as OrderItemCreateRequest],
             buyer: createdBid2.bidder,
             seller: 'selleraddress'

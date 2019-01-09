@@ -7,8 +7,8 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
-import { ListingItemTemplateService } from '../services/ListingItemTemplateService';
-import { ItemImageService } from '../services/ItemImageService';
+import { ListingItemTemplateService } from './ListingItemTemplateService';
+import { ItemImageService } from './ItemImageService';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import * as resources from 'resources';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
@@ -30,10 +30,11 @@ export class ItemImageHttpUploadService {
     public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<resources.ItemImage[]> {
 
         const createdItemImages: resources.ItemImage[] = [];
-        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId);
+        const listingItemTemplateModel: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId);
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
         for (const file of uploadRequest.request.files) {
-            const createdItemImage = await this.itemImageService.createFromFile(file, listingItemTemplate);
+            const createdItemImage = await this.itemImageService.createFromFile(file, listingItemTemplate.ItemInformation.id);
             createdItemImages.push(createdItemImage.toJSON());
         }
         return createdItemImages;
