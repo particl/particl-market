@@ -11,7 +11,6 @@ import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ItemImageService } from './ItemImageService';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import * as resources from 'resources';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ItemImageHttpUploadService {
 

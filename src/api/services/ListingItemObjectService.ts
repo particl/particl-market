@@ -11,11 +11,9 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../models/ListingItemObject';
-import { ListingItemObjectData } from '../models/ListingItemObjectData';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
 
 import { ListingItemObjectDataService } from './ListingItemObjectDataService';

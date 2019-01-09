@@ -4,7 +4,8 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ListingItemObjectType } from '../../api/enums/ListingItemObjectType';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
+import { ListingItemObjectDataCreateRequest } from './ListingItemObjectDataCreateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemObjectCreateRequest extends RequestBody {
@@ -22,6 +23,6 @@ export class ListingItemObjectCreateRequest extends RequestBody {
     @IsNotEmpty()
     public order: number;
 
-    public listingItemObjectDatas;
+    public listingItemObjectDatas: ListingItemObjectDataCreateRequest[];
 }
 // tslint:enable:variable-name
