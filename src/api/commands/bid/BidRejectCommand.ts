@@ -73,12 +73,12 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('bidId should be a number.');
         }
 
-        if (data.params.length < 2) {
+        if (data.params.length >= 2) {
             const reason = data.params[1];
             if (typeof reason !== 'string') {
                 this.log.error('reasonEnum should be a string.');
                 throw new MessageException('reasonEnum should be a string.');
-            } else if (typeof BidRejectReason[reason]) {
+            } else if (!BidRejectReason[reason]) {
                 this.log.error('reasonEnum should be a string with one of these values {OUT_OF_STOCK}.');
                 throw new MessageException('reasonEnum should be a string with one of these values {OUT_OF_STOCK}.');
             }
