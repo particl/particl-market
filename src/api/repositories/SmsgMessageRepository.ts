@@ -10,6 +10,8 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import {SmsgMessageCollection} from '../models/SmsgMessageCollection';
+
 
 export class SmsgMessageRepository {
 
@@ -48,27 +50,15 @@ export class SmsgMessageRepository {
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
     }
-/*
-    public async createAll(datas: any[]): Promise<SmsgMessage[]> {
 
-        const SmsgMessages = Bookshelf.Collection.extend({
-            model: SmsgMessage
-        });
-
-        const smsgMessageModels = SmsgMessages.forge<Bookshelf.Collection<SmsgMessage>>([
-            datas
-        ]);
-
-        const smsgMessage = this.SmsgMessageModel.forge<SmsgMessage>(data);
-        try {
-            const smsgMessageCreated = await smsgMessage.save();
-            return this.SmsgMessageModel.fetchById(smsgMessageCreated.id);
-        } catch (error) {
-            throw new DatabaseException('Could not create the smsgMessage!', error);
-        }
+    /**
+     * returns just the last id when using sqlite
+     *
+     * @param datas
+     */
+    public async createAll(datas: any[]): Promise<number> {
+        return await SmsgMessage.createAll(datas);
     }
-*/
-
 
     public async update(id: number, data: any): Promise<SmsgMessage> {
         const smsgMessage = this.SmsgMessageModel.forge<SmsgMessage>({ id });

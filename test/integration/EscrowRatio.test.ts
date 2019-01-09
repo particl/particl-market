@@ -16,19 +16,16 @@ import { EscrowService } from '../../src/api/services/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { EscrowRatio } from '../../src/api/models/EscrowRatio';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { EscrowType } from '../../src/api/enums/EscrowType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/EscrowRatioCreateRequest';
 import { EscrowRatioUpdateRequest } from '../../src/api/requests/EscrowRatioUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import {MarketService} from '../../src/api/services/MarketService';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import * as resources from "resources";
-import {Escrow} from '../../src/api/models/Escrow';
-import {EscrowCreateRequest} from '../../src/api/requests/EscrowCreateRequest';
+import { MarketService } from '../../src/api/services/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import * as resources from 'resources';
+import { Escrow } from '../../src/api/models/Escrow';
+import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 
 describe('EscrowRatio', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

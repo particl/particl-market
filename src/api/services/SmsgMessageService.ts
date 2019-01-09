@@ -15,6 +15,7 @@ import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
 import * as resources from 'resources';
+import {SmsgMessageCollection} from '../models/SmsgMessageCollection';
 
 export class SmsgMessageService {
 
@@ -67,6 +68,10 @@ export class SmsgMessageService {
         // finally find and return the created smsgMessage
         const newSmsgMessage = await this.findOne(smsgMessage.id);
         return newSmsgMessage;
+    }
+
+    public async createAll(datas: SmsgMessageCreateRequest[]): Promise<number> {
+        return await this.smsgMessageRepo.createAll(datas);
     }
 
     @validate()

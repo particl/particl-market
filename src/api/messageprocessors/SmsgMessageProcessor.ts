@@ -44,30 +44,31 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      */
     public async process(messages: IncomingSmsgMessage[]): Promise<void> {
 
-        for (const message of messages) {
+        const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
+        this.log.debug('INCOMING messages.length: ', messages.length);
 
+        // create the createrequests
+        for (const message of messages) {
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
+            smsgMessageCreateRequests.push(smsgMessageCreateRequest);
+        }
 
-            // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-            await this.smsgMessageService.create(smsgMessageCreateRequest)
-                .then(async smsgMessageModel => {
+        // store all in db
+        await this.smsgMessageService.createAll(smsgMessageCreateRequests)
+            .catch(reason => {
+                this.log.error('ERROR: ', reason);
+            });
 
-                    const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
-                    this.log.debug('INCOMING SMSGMESSAGE: '
-                        + smsgMessage.from + ' => ' + smsgMessage.to
-                        + ' : ' + smsgMessage.type
-                        + ' : ' + smsgMessage.status
-                        + ' : ' + smsgMessage.msgid);
-
-                    // after message is stored, remove it
-                    await this.smsgService.smsg(message.msgid, true, true);
-                })
+        // after messages are stored, remove them
+        for (const message of messages) {
+            await this.smsgService.smsg(message.msgid, true, true)
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
                 });
         }
+
     }
 
     public stop(): void {

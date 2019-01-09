@@ -22,11 +22,6 @@ import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
 import { ListingItem } from '../models/ListingItem';
-import { Profile } from '../models/Profile';
-import { ItemCategory } from '../models/ItemCategory';
-import { FavoriteItem } from '../models/FavoriteItem';
-import { PaymentInformation } from '../models/PaymentInformation';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -44,9 +39,6 @@ import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { ItemInformation } from '../models/ItemInformation';
-import { Bid } from '../models/Bid';
-import { ItemImage } from '../models/ItemImage';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -73,7 +65,6 @@ import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAd
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
@@ -95,10 +86,7 @@ import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest
 import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
-import { Proposal } from '../models/Proposal';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
-import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
-import {IsNotEmpty} from 'class-validator';
 
 export class TestDataService {
 

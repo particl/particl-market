@@ -15,17 +15,14 @@ import { PaymentInformationService } from '../../src/api/services/PaymentInforma
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Escrow } from '../../src/api/models/Escrow';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { EscrowType } from '../../src/api/enums/EscrowType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import * as resources from "resources";
-import {MarketService} from '../../src/api/services/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import * as resources from 'resources';
+import { MarketService } from '../../src/api/services/MarketService';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
