@@ -30,8 +30,8 @@ export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get OldWeight(): number { return this.get('oldWeight'); }
-    public set OldWeight(value: number) { this.set('oldWeight', value); }
+    public get Weight(): number { return this.get('weight'); }
+    public set Weight(value: number) { this.set('weight', value); }
 
     public get Voters(): number { return this.get('voters'); }
     public set Voters(value: number) { this.set('voters', value); }

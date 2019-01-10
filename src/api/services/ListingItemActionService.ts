@@ -242,8 +242,8 @@ export class ListingItemActionService {
         // at minimum, 30% of votes saying remove
 
         // TODO: This needs to call the same code we use for removigng votes!!!!!!
-        if (removeOptionResult && okOptionResult && removeOptionResult.oldWeight > 10
-            && (removeOptionResult.oldWeight / (removeOptionResult.oldWeight + okOptionResult.oldWeight) > 0.3)) {
+        if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
+            && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
             return false;
         } else {
             return true;

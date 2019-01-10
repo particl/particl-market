@@ -59,18 +59,18 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
             const voterAddress = data.params.shift();
             let vote: any = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
             vote = vote.toJSON();
-            retVote.old_weight = vote.oldWeight;
+            retVote.weight = vote.weight;
         } else {
             let votes: any = await this.voteService.findAllFromMeByProposalId(proposal.id);
             votes = votes.toJSON();
             let totalWeight = 0;
             for (const i in votes) {
                 if (i) {
-                    let vote = votes[i];
-                    totalWeight += vote.oldWeight;
+                    const vote = votes[i];
+                    totalWeight += vote.weight;
                 }
             }
-            retVote.old_weight = totalWeight;
+            retVote.weight = totalWeight;
         }
 
         retVote.createdAt = new Date();

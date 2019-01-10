@@ -7,7 +7,7 @@ declare module 'resources' {
     interface Vote {
         id: number;
         voter: string;
-        old_weight: number;
+        weight: number;
 
         postedAt: number;
         receivedAt: number;

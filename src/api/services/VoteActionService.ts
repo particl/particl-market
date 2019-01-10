@@ -237,11 +237,11 @@ export class VoteActionService {
         this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
         if (removeOptionResult && okOptionResult) {
             const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
-            const totalWeight = okOptionResult.oldWeight + removeOptionResult.oldWeight;
+            const totalWeight = okOptionResult.weight + removeOptionResult.weight;
             if (
                 (totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000))
                 && (totalWeight > (process.env.MINIMUM_REQUIRED_WEIGHT || 100000000000))
-                && ((removeOptionResult.oldWeight / (totalWeight)) > 0.5)) {
+                && ((removeOptionResult.weight / (totalWeight)) > 0.5)) {
                 this.log.debug('Item should be destroyed');
                 return true;
             }
