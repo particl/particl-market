@@ -19,7 +19,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import * as resources from 'resources';
 
-export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Vote>> {
+export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
 
     public log: LoggerType;
 
@@ -43,18 +43,39 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<B
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Vote>> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
+        /*
+         * Unused varg for the time being, but TODO: fix that when multiwallet becomes a thing.
+         */
+        const profileId = data.params.shift();
+        const profile = await this.profileService.findOne(profileId);
+        // profile = profile.toJSON();
+
         const proposalHash = data.params.shift();
         const proposal = await this.proposalService.findOneByHash(proposalHash);
 
+        const retVote = {} as resources.Vote;
         if (data.params.length > 0) {
             const voterAddress = data.params.shift();
-            const vote: any = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
-            return vote as Bookshelf.Collection<Vote>;
+            let vote: any = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
+            vote = vote.toJSON();
+            retVote.old_weight = vote.oldWeight;
         } else {
-            const votes = await this.voteService.findAllFromMeByProposalId(proposal.id);
-            return votes.fetch();
+            let votes: any = await this.voteService.findAllFromMeByProposalId(proposal.id);
+            votes = votes.toJSON();
+            let totalWeight = 0;
+            for (const i in votes) {
+                if (i) {
+                    let vote = votes[i];
+                    totalWeight += vote.oldWeight;
+                }
+            }
+            retVote.old_weight = totalWeight;
         }
+
+        retVote.createdAt = new Date();
+        retVote.voter = profile.Address;
+        return retVote;
     }
 
     /**
@@ -66,12 +87,21 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<B
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MessageException('Expected proposalHash but received no params.');
+        if (data.params.length < 2) {
+            throw new MessageException('Expected 2 args: profileId and proposalHash.');
+        }
+
+        const profileId = data.params[0];
+        if (!profileId || typeof profileId !== 'number') {
+            throw new MessageException(`Invalid profileId = ${profileId}, expected number.`);
+        }
+        const profile = await this.profileService.findOne(profileId);
+        if (!profile) {
+            throw new MessageException(`Profile with profileId = ${profileId} not found.`);
         }
 
         // Get proposal id from proposal hash
-        const proposalHash = data.params[0];
+        const proposalHash = data.params[1];
         if (!proposalHash || typeof proposalHash !== 'string') {
             throw new MessageException(`Invalid proposalHash = ${proposalHash}, expected String.`);
         }
@@ -82,8 +112,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<B
             throw new MessageException(`Proposal with the hash = ${proposalHash} doesn't seem to have an ID; something is terribly wrong.`);
         }
 
-        if (data.params.length >= 2) {
-            const voterAddress = data.params[1];
+        if (data.params.length >= 3) {
+            const voterAddress = data.params[2];
             if (!voterAddress || typeof voterAddress !== 'string') {
                 throw new MessageException(`Invalid voterAddress = ${voterAddress}, expected String.`);
             }
@@ -96,7 +126,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<B
     }
 
     public help(): string {
-        return this.getName() + ' <proposalHash> [<votingAddress>]';
+        return this.getName() + ' <profileId> <proposalHash> [<votingAddress>]';
     }
 
     public description(): string {
