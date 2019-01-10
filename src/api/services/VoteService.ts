@@ -61,6 +61,15 @@ export class VoteService {
         return vote;
     }
 
+    public async findAllFromMeByProposalId(proposalId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        const votes = await this.voteRepo.findAllFromMeByProposalId(proposalId, withRelated);
+        if (!votes) {
+            this.log.warn(`No votes with proposalId=${proposalId} made by you were found!`);
+            throw new NotFoundException(proposalId);
+        }
+        return votes;
+    }
+
     @validate()
     public async create( @request(VoteCreateRequest) data: VoteCreateRequest): Promise<Vote> {
 

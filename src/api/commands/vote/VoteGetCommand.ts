@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,7 +19,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import * as resources from 'resources';
 
-export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<Vote> {
+export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Vote>> {
 
     public log: LoggerType;
 
@@ -42,30 +43,60 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Vote> {
-        if (data.params.length < 2) {
-            throw new MessageException('Expected <TODO> but received no params.');
-        }
-
-        // Get profile address from profile id
-        const profileId = data.params.shift();
-        const profileModel = await this.profileService.findOne(profileId);
-        const profile: resources.Profile = profileModel.toJSON();
-
-        // Get proposal id from proposal hash
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Vote>> {
         const proposalHash = data.params.shift();
         const proposal = await this.proposalService.findOneByHash(proposalHash);
 
-        const vote = await this.voteService.findOneByVoterAndProposalId(profile.address, proposal.id)
-            .catch(reason => {
-                throw new MessageException('User has not voted for that Proposal yet.');
-            });
+        if (data.params.length > 0) {
+            const voterAddress = data.params.shift();
+            const vote: any = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
+            return vote as Bookshelf.Collection<Vote>;
+        } else {
+            const votes = await this.voteService.findAllFromMeByProposalId(proposal.id);
+            return votes.fetch();
+        }
+    }
 
-        return vote;
+    /**
+     * data.params[]:
+     *  [0]: profileHash
+     *  [1]: voterAddress
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Expected proposalHash but received no params.');
+        }
+
+        // Get proposal id from proposal hash
+        const proposalHash = data.params[0];
+        if (!proposalHash || typeof proposalHash !== 'string') {
+            throw new MessageException(`Invalid proposalHash = ${proposalHash}, expected String.`);
+        }
+        const proposal = await this.proposalService.findOneByHash(proposalHash);
+        if (!proposal) {
+            throw new MessageException(`Proposal with the hash = ${proposalHash} doesn't seem to exist.`);
+        } else if (!proposal.id) {
+            throw new MessageException(`Proposal with the hash = ${proposalHash} doesn't seem to have an ID; something is terribly wrong.`);
+        }
+
+        if (data.params.length >= 2) {
+            const voterAddress = data.params[1];
+            if (!voterAddress || typeof voterAddress !== 'string') {
+                throw new MessageException(`Invalid voterAddress = ${voterAddress}, expected String.`);
+            }
+            const vote = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
+            if (!vote) {
+                throw new MessageException('User has not voted on proposal = ${proposalHash} yet.');
+            }
+        }
+        return data;
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <proposalHash> ';
+        return this.getName() + ' <proposalHash> [<votingAddress>]';
     }
 
     public description(): string {
