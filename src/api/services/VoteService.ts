@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -59,6 +59,15 @@ export class VoteService {
             throw new NotFoundException(proposalId);
         }
         return vote;
+    }
+
+    public async findAllFromMeByProposalId(proposalId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        const votes = await this.voteRepo.findAllFromMeByProposalId(proposalId, withRelated);
+        if (!votes) {
+            this.log.warn(`No votes with proposalId=${proposalId} made by you were found!`);
+            throw new NotFoundException(proposalId);
+        }
+        return votes;
     }
 
     @validate()
