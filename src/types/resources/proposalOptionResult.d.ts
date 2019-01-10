@@ -6,7 +6,7 @@ declare module 'resources' {
 
     interface ProposalOptionResult {
         id: number;
-        oldWeight: number;
+        weight: number;
         voters: number;
         ProposalOption: ProposalOption;
         ProposalResult: ProposalResult;

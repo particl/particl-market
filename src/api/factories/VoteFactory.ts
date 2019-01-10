@@ -76,7 +76,7 @@ export class VoteFactory {
         const voteRequest = {
             proposal_option_id: proposalOption.id,
             voter: voteMessage.voter,
-            oldWeight: weight,
+            weight,
             ...smsgData
         } as VoteCreateRequest;
 

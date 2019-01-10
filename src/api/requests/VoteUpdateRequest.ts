@@ -14,7 +14,7 @@ export class VoteUpdateRequest extends RequestBody {
     public voter: string;
 
     @IsNotEmpty()
-    public oldWeight: number;
+    public weight: number;
 
     @IsNotEmpty()
     public postedAt: number;

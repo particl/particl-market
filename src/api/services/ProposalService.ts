@@ -174,7 +174,7 @@ export class ProposalService {
 
         for (const proposalOption of proposal.ProposalOptions) {
             const proposalOptionResult = await this.proposalOptionResultService.create({
-                old_weight: 0,
+                weight: 0,
                 voters: 0,
                 proposal_option_id: proposalOption.id,
                 proposal_result_id: proposalResult.id
@@ -243,7 +243,7 @@ export class ProposalService {
             }
             this.log.debug('recalculateProposalResult(), totalWeight = ' + totalWeight);
             const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
-                old_weight: totalWeight,
+                weight: totalWeight,
                 voters: proposalOption.Votes.length
             } as ProposalOptionResultUpdateRequest);
             const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();

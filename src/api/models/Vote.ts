@@ -76,8 +76,8 @@ export class Vote extends Bookshelf.Model<Vote> {
     public get Voter(): string { return this.get('voter'); }
     public set Voter(value: string) { this.set('voter', value); }
 
-    public get OldWeight(): number { return this.get('oldWeight'); }
-    public set OldWeight(value: number) { this.set('oldWeight', value); }
+    public get Weight(): number { return this.get('weight'); }
+    public set Weight(value: number) { this.set('weight', value); }
 
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }

@@ -11,7 +11,7 @@ export class VoteCreateRequest extends RequestBody {
     public proposal_option_id: number;
 
     @IsNotEmpty()
-    public oldWeight: number;
+    public weight: number;
 
     @IsNotEmpty()
     public voter: string;
