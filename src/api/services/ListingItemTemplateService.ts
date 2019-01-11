@@ -134,7 +134,7 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
-            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(result.toJSON(), null, 2));
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
@@ -389,9 +389,12 @@ export class ListingItemTemplateService {
             item: listingItemMessage
         } as MarketplaceMessage;
 
+        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
+
         let imageDataSize = 0;
         for (const image of listingItemMessage.information.images) {
             imageDataSize = imageDataSize + image.data[0].data.length;
+            this.log.debug('imageDataSize: ', image.data[0].data.length);
         }
         const messageDataSize = JSON.stringify(marketPlaceMessage).length - imageDataSize;
         const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;

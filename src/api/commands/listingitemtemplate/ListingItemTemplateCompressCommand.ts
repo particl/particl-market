@@ -22,7 +22,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(Commands.TEMPLATE_REMOVE);
+        super(Commands.TEMPLATE_COMPRESS);
         this.log = new Logger(__filename);
     }
 

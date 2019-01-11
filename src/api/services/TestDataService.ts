@@ -366,6 +366,7 @@ export class TestDataService {
                     receivedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
 
+                // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
                 const listingItem = listingItemModel.toJSON();
@@ -931,9 +932,11 @@ export class TestDataService {
     private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
+            const fakeHash = Faker.random.uuid();
             const item = {
-                hash: Faker.random.uuid(),
-                data: [{
+                hash: fakeHash,
+                datas: [{
+                    itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
                     imageVersion: 'ORIGINAL',
@@ -953,7 +956,7 @@ export class TestDataService {
             : [];
 
         const itemImages = generateParams.generateItemImages
-            ? this.generateItemImagesData(_.random(1, 5))
+            ? this.generateItemImagesData(_.random(1, 2))
             : [];
 
         const itemLocation = generateParams.generateItemLocation

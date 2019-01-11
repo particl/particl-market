@@ -22,7 +22,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(Commands.TEMPLATE_REMOVE);
+        super(Commands.TEMPLATE_SIZE);
         this.log = new Logger(__filename);
     }
 
@@ -38,7 +38,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
-        return this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
+        return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
     }
 
     public usage(): string {

@@ -140,6 +140,7 @@ export class ItemImageDataService {
         // strip header and write the file
         const base64Image = base64String.split(';base64,').pop();
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
+        this.log.debug('saveImageFile(): ', filename);
 
         try {
             fs.writeFileSync(filename, base64Image, { encoding: 'base64' });
@@ -157,6 +158,7 @@ export class ItemImageDataService {
      */
     public async removeImageFile(imageHash: string, imageVersion: string): Promise<void> {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
+        this.log.debug('removeImageFile(): ', filename);
 
         try {
             fs.unlinkSync(filename);
@@ -174,7 +176,7 @@ export class ItemImageDataService {
      */
     public async loadImageFile(imageHash: string, imageVersion: string): Promise<string> {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-
+        this.log.debug('loadImageFile(): ', filename);
         try {
             return fs.readFileSync(filename, { encoding: 'base64' });
         } catch (err) {

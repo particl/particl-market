@@ -6,8 +6,8 @@ import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
-import { NotFoundException } from '../exceptions/NotFoundException';
 import { Environment, EnvironmentType } from '../../core/helpers/Environment';
+import { MessageException } from '../exceptions/MessageException';
 
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
@@ -472,7 +472,7 @@ export class RpcCommandFactory {
                 }
             }
         }
-        throw new NotFoundException('Couldn\'t find command <' + commandType.toString() + '>\n');
+        throw new MessageException('Couldn\'t find command <' + commandType.toString() + '>\n');
     }
 }
 // tslint:enable:array-type

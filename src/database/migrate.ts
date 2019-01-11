@@ -16,6 +16,7 @@ export const migrate = (): Promise<any> => {
     console.log('migrate, datadir: ', DataDir.getDataDirPath());
     console.log('migrate, database: ', DataDir.getDatabasePath());
     console.log('migrate, uploads: ', DataDir.getUploadsPath());
+    console.log('migrate, images: ', DataDir.getImagesPath());
 
     const db = Knex();
 

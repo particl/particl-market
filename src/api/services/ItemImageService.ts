@@ -94,6 +94,8 @@ export class ItemImageService {
         const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+
         // get the existing ItemImageDatas
         const itemImageDatas: ItemImageDataCreateRequest[] = body.datas;
         // get the original out of those
@@ -135,7 +137,6 @@ export class ItemImageService {
                 // const fileName = await this.itemImageDataService.saveImageFile(imageData.data, body.hash, imageData.imageVersion);
                 // imageData.data = fileName;
 
-                this.log.debug('imageData: ', JSON.stringify(imageData, null, 2));
                 await this.itemImageDataService.create(imageData);
             }
 

@@ -58,8 +58,6 @@ describe('/publish-image', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
-        const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-
     });
 
     test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: LARGE', async () => {

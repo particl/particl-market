@@ -65,7 +65,7 @@ export class ItemInformationService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -102,6 +102,7 @@ export class ItemInformationService {
 
         for (const itemImage of itemImages) {
             itemImage.item_information_id = itemInformation.Id;
+            // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
             await this.itemImageService.create(itemImage);
         }
 
