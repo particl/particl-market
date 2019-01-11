@@ -28,6 +28,7 @@ export class ImageFactory {
      * creates ItemImageDataCreateRequests for the required image versions from the original image data
      *
      * @param {number} itemImageId
+     * @param imageHash
      * @param {ItemImageDataCreateRequest} originalImageData
      * @param {ImageVersion[]} toVersions
      * @returns {Promise<ItemImageDataCreateRequest[]>}

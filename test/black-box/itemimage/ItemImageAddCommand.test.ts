@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -12,8 +13,7 @@ import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
 import * as Jimp from 'jimp';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import {Logger as LoggerType} from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemImageAddCommand', () => {
 

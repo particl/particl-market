@@ -43,8 +43,8 @@ import { ImageFactory } from '../factories/ImageFactory';
 export class ListingItemTemplateService {
 
     public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
-    private static FRACTION_TO_COMPRESS_BY = 0.6;
-    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.6;
+    private static FRACTION_TO_COMPRESS_BY = 0.8;
+    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.7;
     private static OVERHEAD_PER_SMSG = 0;
     private static OVERHEAD_PER_IMAGE = 0;
     private static MAX_RESIZES = 20;
@@ -290,12 +290,11 @@ export class ListingItemTemplateService {
     /**
      * creates resized versions of the template images, so that all of them fit in one smsgmessage
      *
-     * TODO: maybe move this to ImageProcessing or ItemImageService
-     *
      * @param {"resources".ListingItemTemplate} itemTemplate
      * @returns {Promise<"resources".ListingItemTemplate>}
      */
     public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+        const startTime = new Date().getTime();
 
         // ItemInformation has ItemImages, which is an array.
         const itemImages = itemTemplate.ItemInformation.ItemImages;
@@ -327,15 +326,19 @@ export class ListingItemTemplateService {
                 await this.itemImageDataService.removeImageFile(itemImageDataOriginal.imageHash, ImageVersions.RESIZED.propName);
             }
 
-            let compressedImageData = await this.itemImageDataService.loadImageFile(itemImageDataOriginal.imageHash, ImageVersions.ORIGINAL.propName);
+            let originalImageData = await this.itemImageDataService.loadImageFile(itemImageDataOriginal.imageHash, ImageVersions.ORIGINAL.propName);
+            let compressedImageData = originalImageData;
 
             // image is over the max size, needs to be compressed and then resized if needed
             for (let numResizings = 0; ;) {
 
                 if (compressedImageData.length <= maxSizePerImage) {
+                    this.log.debug('image: ' + itemImage.hash + ', ok size, no need to resize.');
                     // image is smaller than the max size, we're done
                     break;
                 }
+
+                this.log.debug('image: ' + itemImage.hash + ', downgrading quality...');
 
                 // need to compress more
                 const evenMoreCompressedImageData = await ImageProcessing.downgradeQuality(
@@ -354,10 +357,14 @@ export class ListingItemTemplateService {
                         throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
                             + ' Image size = ${compressedImage.length}.');
                     }
+
+                    this.log.debug('image: ' + itemImage.hash + ', reached the limit of compression, resizing image...');
+
                     // we've reached the limits of compression. We need to resize the image for further size losses.
                     compressedImageData = await ImageProcessing.resizeImageToFraction(
-                        compressedImageData, ListingItemTemplateService.FRACTION_TO_RESIZE_IMAGE_BY);
-                    break;
+                        originalImageData, ListingItemTemplateService.FRACTION_TO_RESIZE_IMAGE_BY);
+                    originalImageData = compressedImageData;
+                    continue;
                 }
             }
 
@@ -370,6 +377,8 @@ export class ListingItemTemplateService {
         const updatedTemplateModel = await this.findOne(itemTemplate.id);
         const updatedTemplate = updatedTemplateModel.toJSON();
         // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
+
+        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
 
         return updatedTemplate;
     }

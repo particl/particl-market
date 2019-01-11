@@ -410,7 +410,6 @@ export class ListingItemFactory {
 
         // load the actual image data
         const data = await this.itemImageDataService.loadImageFile(selectedImageData.imageHash, selectedImageData.imageVersion);
-        this.log.debug('loaded imageData:', data);
         imageDataArray.push({
             protocol: selectedImageData.protocol,
             encoding: selectedImageData.encoding,

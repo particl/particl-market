@@ -11,7 +11,6 @@ import { HashableOrder } from './HashableOrder';
 import { HashableProposal } from './HashableProposal';
 import { HashableProposalOption } from './HashableProposalOption';
 import { Logger as LoggerType } from '../Logger';
-import {MessageException} from '../../api/exceptions/MessageException';
 
 export class ObjectHash {
 

@@ -8,7 +8,6 @@ import { ImageTriplet } from '../../../src/core/helpers/ImageTriplet';
 import * as Jimp from 'jimp';
 import * as piexif from 'piexifjs';
 import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('ImageProcessing', () => {
 
@@ -18,7 +17,6 @@ describe('ImageProcessing', () => {
         try {
             const processedImage: ImageTriplet = piexif.remove(rawImage);
         } catch ( ex ) {
-            console.log('ex = ' + ex);
             expect(ex).not.toBe('Exif not found.');
             expect(false).toBe(true);
         }

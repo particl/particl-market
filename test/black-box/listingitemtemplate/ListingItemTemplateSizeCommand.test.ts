@@ -82,22 +82,17 @@ describe('ListingItemTemplatSizeCommand', () => {
 
     test('Should return MessageSize for ListingItemTemplate, doesnt fit', async () => {
 
-        const filename = path.join('..', '..', 'testdata', 'images', 'testimage.jpg');
+        const filename = path.join('test', 'testdata', 'images', 'testimage2.jpg');
         log.debug('loadImageFile(): ', filename);
-        let filedata: string;
-        try {
-            filedata = fs.readFileSync(filename, { encoding: 'base64' });
-        } catch (err) {
-            throw new MessageException('Image load failed: ' + err);
-        }
+        const filedata = fs.readFileSync(filename, { encoding: 'base64' });
 
-        let res = await testUtil.rpc(itemImageCommand, [
-            itemImageAddCommand,
+        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
             'BASE64',
-            filedata
+            filedata,
+            true        // skip resize
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -113,8 +108,8 @@ describe('ListingItemTemplatSizeCommand', () => {
         log.debug('MessageSize: ', JSON.stringify(result, null, 2));
         expect(result.messageData).toBeGreaterThan(0);
         expect(result.imageData).toBeGreaterThan(0);
-        expect(result.spaceLeft).toBeGreaterThan(500000);
-        expect(result.fits).toBe(true);
+        expect(result.spaceLeft).toBeLessThan(0);
+        expect(result.fits).toBe(false);
     });
 
 

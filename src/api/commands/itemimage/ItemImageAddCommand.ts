@@ -37,6 +37,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      *  [2]: protocol
      *  [3]: encoding
      *  [4]: data
+     *  [5]: skipResize
      *
      * @param data
      * @returns {Promise<ItemImage>}
@@ -67,7 +68,10 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // after upload create also the resized template images
         listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         listingItemTemplate = listingItemTemplateModel.toJSON();
-        await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+
+        if (!data.params[5]) {
+            await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+        }
 
         return itemImage;
     }
