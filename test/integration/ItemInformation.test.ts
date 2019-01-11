@@ -81,7 +81,7 @@ describe('ItemInformation', () => {
         }],
         itemImages: [{
             hash: 'imagehash4',
-            data: [{
+            datas: [{
                 dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 imageVersion: 'ORIGINAL',
@@ -122,7 +122,7 @@ describe('ItemInformation', () => {
         }],
         itemImages: [{
             hash: 'imagehash4',
-            data: [{
+            datas: [{
                 dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 imageVersion: 'ORIGINAL',
