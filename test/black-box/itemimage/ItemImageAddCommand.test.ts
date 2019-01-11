@@ -139,7 +139,8 @@ describe('ItemImageAddCommand', () => {
 
     });
 
-    test('Should return valid LARGE image dimension', async () => {
+    // TODO: this is not an api test and should be moved under unit/integration tests
+    test('Should have returned valid LARGE image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -172,7 +173,8 @@ describe('ItemImageAddCommand', () => {
         }
     });
 
-    test('Should return valid MEDIUM image dimension', async () => {
+    // TODO: this is not an pi test and should be moved under unit/integration tests
+    test('Should have returned valid MEDIUM image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -204,7 +206,8 @@ describe('ItemImageAddCommand', () => {
         }
     });
 
-    test('Should return valid THUMBNAIL image dimension', async () => {
+    // TODO: this is not an api test and should be moved under unit/integration tests
+    test('Should have returned valid THUMBNAIL image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')

@@ -4,12 +4,18 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as path from 'path';
+import * as fs from 'fs';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MessageSize } from '../../../src/api/responses/MessageSize';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import {DataDir} from '../../../src/core/helpers/DataDir';
 
 describe('ListingItemTemplatSizeCommand', () => {
 
@@ -20,6 +26,8 @@ describe('ListingItemTemplatSizeCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateSizeCommand = Commands.TEMPLATE_SIZE.commandName;
+    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -59,12 +67,49 @@ describe('ListingItemTemplatSizeCommand', () => {
 
     });
 
-    test('Should return MessageSize for ListingItemTemplate', async () => {
+    test('Should return MessageSize for ListingItemTemplate, fits', async () => {
         const res = await testUtil.rpc(templateCommand, [templateSizeCommand, listingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: MessageSize = res.getBody()['result'];
+        log.debug('MessageSize: ', JSON.stringify(result, null, 2));
+        expect(result.messageData).toBeGreaterThan(0);
+        expect(result.imageData).toBeGreaterThan(0);
+        expect(result.spaceLeft).toBeGreaterThan(500000);
+        expect(result.fits).toBe(true);
+    });
+
+    test('Should return MessageSize for ListingItemTemplate, doesnt fit', async () => {
+
+        const filename = path.join('..', '..', 'testdata', 'images', 'testimage.jpg');
+        log.debug('loadImageFile(): ', filename);
+        let filedata: string;
+        try {
+            filedata = fs.readFileSync(filename, { encoding: 'base64' });
+        } catch (err) {
+            throw new MessageException('Image load failed: ' + err);
+        }
+
+        let res = await testUtil.rpc(itemImageCommand, [
+            itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            filedata
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        let result: resources.ItemImage = res.getBody()['result'];
+
+        log.debug('added image: ', result);
+
+        res = await testUtil.rpc(templateCommand, [templateSizeCommand, listingItemTemplate.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        result = res.getBody()['result'];
         log.debug('MessageSize: ', JSON.stringify(result, null, 2));
         expect(result.messageData).toBeGreaterThan(0);
         expect(result.imageData).toBeGreaterThan(0);
