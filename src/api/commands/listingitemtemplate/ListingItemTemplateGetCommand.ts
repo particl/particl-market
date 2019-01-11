@@ -57,7 +57,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     }
 
     public description(): string {
-        return 'Get listing item template via listingItemTemplateId.';
+        return 'Get ListingItemTemplate using its id.';
     }
 
     public example(): string {

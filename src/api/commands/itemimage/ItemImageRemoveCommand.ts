@@ -28,20 +28,19 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     /**
      * data.params[]:
      *  [0]: ItemImageId
+     * todo: we should propably switch to use hashes
+     *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         if (data.params.length < 1) {
             throw new MessageException('Requires arg: ItemImageId');
         }
-        // find itemImage
-        const itemImage = await this.itemImageService.findOne(data.params[0]);
-
-        // find related itemInformation
-        const itemInformation = itemImage.related('ItemInformation').toJSON();
+        const itemImageModel = await this.itemImageService.findOne(data.params[0]);
+        const itemImage = itemImageModel.toJSON();
 
         // check if item already been posted
-        if (itemInformation.listingItemId) {
+        if (itemImage.ItemInformation.listingItemId) {
             throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
         }
         return this.itemImageService.destroy(data.params[0]);

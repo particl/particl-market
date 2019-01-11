@@ -4,12 +4,11 @@
 
 import { Bookshelf } from '../../config/Database';
 import { ItemImage } from './ItemImage';
-import { ItemImageDataContent } from './ItemImageDataContent';
 
 export class ItemImageData extends Bookshelf.Model<ItemImageData> {
 
     public static RELATIONS = [
-        'ItemImageDataContent'
+        'ItemImage'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImageData> {
@@ -37,17 +36,14 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get ImageVersion(): string { return this.get('imageVersion'); }
     public set ImageVersion(value: string) { this.set('imageVersion', value); }
 
+    public get ImageHash(): string { return this.get('imageHash'); }
+    public set ImageHash(value: string) { this.set('imageHash', value); }
+
     public get DataId(): string { return this.get('dataId'); }
     public set DataId(value: string) { this.set('dataId', value); }
 
-    // public get Data(): string { return this.get('data'); }
-    // public set Data(value: string) { this.set('data', value); }
-
-    public get UpdatedAt(): Date { return this.get('updatedAt'); }
-    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
-
-    public get CreatedAt(): Date { return this.get('createdAt'); }
-    public set CreatedAt(value: Date) { this.set('createdAt', value); }
+    public get Data(): string { return this.get('data'); }
+    public set Data(value: string) { this.set('data', value); }
 
     public get OriginalMime(): string { return this.get('originalMime'); }
     public set OriginalMime(value: string) { this.set('originalMime', value); }
@@ -55,12 +51,14 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get OriginalName(): string { return this.get('originalName'); }
     public set OriginalName(value: string) { this.set('originalName', value); }
 
+    public get UpdatedAt(): Date { return this.get('updatedAt'); }
+    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
+
+    public get CreatedAt(): Date { return this.get('createdAt'); }
+    public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
     public ItemImage(): ItemImage {
         return this.belongsTo(ItemImage, 'item_image_id', 'id');
-    }
-
-    public ItemImageDataContent(): ItemImageDataContent {
-        return this.hasOne(ItemImageDataContent);
     }
 
 }

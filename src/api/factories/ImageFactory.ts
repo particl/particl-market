@@ -34,6 +34,7 @@ export class ImageFactory {
      */
     public async getImageDatas(
         itemImageId: number,
+        imageHash: string,
         originalImageData: ItemImageDataCreateRequest,
         toVersions: ImageVersion[]
     ): Promise<ItemImageDataCreateRequest[]> {
@@ -59,32 +60,37 @@ export class ImageFactory {
         const imageDatas: ItemImageDataCreateRequest[] = [];
 
         // first create the original
-        const imageDataForOriginal = {
-            item_image_id: itemImageId,
-            dataId: this.getImageUrl(itemImageId, ImageVersions.ORIGINAL.propName),
-            protocol: originalImageData.protocol,
-            imageVersion: ImageVersions.ORIGINAL.propName,
-            encoding: originalImageData.encoding,
-            originalMime: originalImageData.originalMime,
-            originalName: originalImageData.originalName,
-            data: originalData
-        } as ItemImageDataCreateRequest;
+        const imageDataForOriginal = await this.getImageDataCreateRequest(itemImageId, ImageVersions.ORIGINAL, imageHash,
+            originalImageData.protocol, originalData, originalImageData.encoding, originalImageData.originalMime,
+            originalImageData.originalName);
+
         imageDatas.push(imageDataForOriginal);
 
         for (const version of toVersions) {
-            const imageData = {
-                item_image_id: itemImageId,
-                dataId: this.getImageUrl(itemImageId, version.propName),
-                protocol: originalImageData.protocol,
-                imageVersion: version.propName,
-                encoding: originalImageData.encoding,
-                originalMime: originalImageData.originalMime,
-                originalName: originalImageData.originalName,
-                data: resizedDatas.get(version.propName)
-            } as ItemImageDataCreateRequest;
+            const imageData = await this.getImageDataCreateRequest(itemImageId, version, imageHash, originalImageData.protocol,
+                resizedDatas.get(version.propName) || '', originalImageData.encoding, originalImageData.originalMime,
+                originalImageData.originalName);
             imageDatas.push(imageData);
         }
         return imageDatas;
+    }
+
+    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: string,
+                                           data: string, encoding: string | null, originalMime: string | null, originalName: string | null
+    ): Promise<ItemImageDataCreateRequest> {
+
+        const imageData = {
+            item_image_id: itemImageId,
+            dataId: this.getImageUrl(itemImageId, imageVersion.propName),
+            protocol,
+            imageVersion: imageVersion.propName,
+            imageHash,
+            encoding,
+            originalMime,
+            originalName,
+            data
+        } as ItemImageDataCreateRequest;
+        return imageData;
     }
 
     public getImageUrl(itemImageId: number, version: string): string {

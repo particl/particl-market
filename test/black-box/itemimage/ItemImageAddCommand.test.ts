@@ -150,7 +150,7 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.ItemImageDataContent.data;
+                const rawImage = imageData.data;
                 expect(typeof rawImage).toBe('string');
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
@@ -183,7 +183,7 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.ItemImageDataContent.data;
+                const rawImage = imageData.data;
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
@@ -215,7 +215,7 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.ItemImageDataContent.data;
+                const rawImage = imageData.data;
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const originalData: string = await ImageProcessing.convertToJPEG(rawImage);

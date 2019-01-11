@@ -11,9 +11,14 @@ declare module 'resources' {
         encoding: string;
         data: string;
         imageVersion: string;
+        imageHash: string;
+        originalMime: string;
+        originalName: string;
+
         createdAt: Date;
         updatedAt: Date;
-        ItemImageDataContent: ItemImageDataContent;
+
+        ItemImage: ItemImage;
     }
 
 }

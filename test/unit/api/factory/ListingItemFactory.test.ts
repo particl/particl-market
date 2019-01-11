@@ -192,7 +192,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.images[0].data.length).toBe(1);
         expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
         expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
-        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].ItemImageDataContent.data);
+        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
 
         // message.payment
         expect(message.payment).toBeDefined();

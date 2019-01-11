@@ -49,13 +49,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('ListingItemTemplate id can not be null.');
         }
         // find listing item template
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
+        let listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        let listingItemTemplate = listingItemTemplateModel.toJSON();
 
         // create item images
-        return await this.itemImageService.create({
+        const itemImage = await this.itemImageService.create({
             item_information_id: listingItemTemplate.ItemInformation.id,
-            data: [{
+            datas: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],
@@ -63,6 +63,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
                 imageVersion: ImageVersions.ORIGINAL.propName
             }]
         } as ItemImageCreateRequest);
+
+        // after upload create also the resized template images
+        listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        listingItemTemplate = listingItemTemplateModel.toJSON();
+        await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+
+        return itemImage;
     }
 
     public usage(): string {

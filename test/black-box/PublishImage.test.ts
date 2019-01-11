@@ -62,35 +62,35 @@ describe('/publish-image', () => {
 
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: LARGE', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: LARGE', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.LARGE.propName;
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: MEDIUM', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: MEDIUM', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.MEDIUM.propName;
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: THUMBNAIL', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: THUMBNAIL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.THUMBNAIL.propName;
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: ORIGINAL', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: ORIGINAL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.ORIGINAL.propName;
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent because invalid itemImageId', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because invalid itemImageId', async () => {
         const itemImageId = 0;
         const imageVersion = ImageVersions.LARGE.propName;
 
@@ -99,7 +99,7 @@ describe('/publish-image', () => {
         expect(res.error.error.message).toBe('Entity with identifier ' + itemImageId + ' does not exist');
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent invalid imageVersion', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage invalid imageVersion', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = 'INVALID_IMAGE:VERSION';
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);

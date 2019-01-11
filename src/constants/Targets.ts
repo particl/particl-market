@@ -27,7 +27,6 @@ export const Targets = {
         ItemCategory: 'ItemCategory',
         ItemImage: 'ItemImage',
         ItemImageData: 'ItemImageData',
-        ItemImageDataContent: 'ItemImageDataContent',
         ItemInformation: 'ItemInformation',
         ItemLocation: 'ItemLocation',
         ItemPrice: 'ItemPrice',
@@ -74,7 +73,6 @@ export const Targets = {
         FavoriteItemRepository: 'FavoriteItemRepository',
         FlaggedItemRepository: 'FlaggedItemRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
-        ItemImageDataContentRepository: 'ItemImageDataContentRepository',
         ItemImageDataRepository: 'ItemImageDataRepository',
         ItemImageRepository: 'ItemImageRepository',
         ItemInformationRepository: 'ItemInformationRepository',
@@ -130,7 +128,6 @@ export const Targets = {
         FavoriteItemService: 'FavoriteItemService',
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
-        ItemImageDataContentService: 'ItemImageDataContentService',
         ItemImageDataService: 'ItemImageDataService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         ItemImageService: 'ItemImageService',
@@ -265,7 +262,9 @@ export const Targets = {
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
             MarketAddCommand: 'MarketAddCommand',

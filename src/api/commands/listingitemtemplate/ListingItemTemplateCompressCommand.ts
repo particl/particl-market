@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -11,10 +12,9 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as _ from 'lodash';
-import { MessageException } from '../../exceptions/MessageException';
+import { ListingItemTemplate } from 'resources';
 
-export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     public log: LoggerType;
 
@@ -29,23 +29,16 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     /**
      * data.params[]:
      *  [0]: ListingItemTemplate.id
+     *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        // check and find that listingItemTemplate is not related with any listingItem
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
+
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
-
-        this.log.debug('remove template: ', data.params[0]);
-        // this.log.debug('listingItemTemplate.ListingItems: ', listingItemTemplate.ListingItems.length);
-        // this.log.debug('_.isEmpty(listingItemTemplate.ListingItems): ', _.isEmpty(listingItemTemplate.ListingItems));
-
-        if (!_.isEmpty(listingItemTemplate.ListingItems)) {
-            throw new MessageException(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${data.params[0]}`);
-        }
-        return await this.listingItemTemplateService.destroy(data.params[0]);
+        return this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
     }
 
     public usage(): string {
@@ -54,12 +47,11 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
-            + '                                     want to destroy. ';
+            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. ';
     }
 
     public description(): string {
-        return 'Destroy a ListingItemTemplate specified by the Id.';
+        return 'Compress the ListingItemTemplate iamges so that they will fit in a single SmsgMessage.';
     }
 
     public example(): string {

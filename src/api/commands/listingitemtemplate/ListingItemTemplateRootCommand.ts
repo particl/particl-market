@@ -38,6 +38,6 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
     }
 
     public description(): string {
-        return 'Commands for managing listingitem template.';
+        return 'Commands for managing ListingItemTemplates.';
     }
 }

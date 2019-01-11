@@ -13,11 +13,11 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('protocol'); // .notNullable();
             table.string('encoding'); // .notNullable();
 
-            table.string('image_version'); // .notNullable();
-            table.string('data_id'); // .notNullable();
+            table.string('image_version').notNullable();
+            table.string('image_hash').notNullable();
 
-            // moved to item_image_data_contents.data
-            // table.text('data'); // .notNullable();
+            table.string('data_id'); // .notNullable();
+            table.text('data'); // .notNullable();
 
             table.integer('item_image_id').unsigned();
             table.foreign('item_image_id').references('id')

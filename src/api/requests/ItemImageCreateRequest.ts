@@ -12,13 +12,10 @@ export class ItemImageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public item_information_id: number;
 
-    // @IsNotEmpty()
     public hash: string;
 
     @IsNotEmpty()
-    public data: any;
-    // TODO: change to
-    // public datas: ItemImageDataCreateRequest[];
+    public datas: ItemImageDataCreateRequest[];
 
 }
 // tslint:enable:variable-name

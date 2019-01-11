@@ -4,24 +4,21 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-
 import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -34,19 +31,36 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { HashableListingItem } from '../../core/helpers/HashableListingItem';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { MessageSize } from '../responses/MessageSize';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ItemImageDataService } from './ItemImageDataService';
+import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ImageFactory } from '../factories/ImageFactory';
 
 export class ListingItemTemplateService {
+
+    public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+    private static FRACTION_TO_COMPRESS_BY = 0.6;
+    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.6;
+    private static OVERHEAD_PER_SMSG = 0;
+    private static OVERHEAD_PER_IMAGE = 0;
+    private static MAX_RESIZES = 20;
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -271,6 +285,126 @@ export class ListingItemTemplateService {
         } else {
             throw new MessageException('ListingItemTemplate has ListingItems.');
         }
+    }
+
+    /**
+     * creates resized versions of the template images, so that all of them fit in one smsgmessage
+     *
+     * TODO: maybe move this to ImageProcessing or ItemImageService
+     *
+     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @returns {Promise<"resources".ListingItemTemplate>}
+     */
+    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+
+        // ItemInformation has ItemImages, which is an array.
+        const itemImages = itemTemplate.ItemInformation.ItemImages;
+
+        // Each ItemImage has an array of ItemImageDatas, these represent different versions of the image.
+        // ImageVersions.ORIGINAL is the original uploaded one
+        // ImageVersions.RESIZED is the one resized to fit the smsgmessage
+
+        const maxSizePerImage =
+            ((ListingItemTemplateService.MAX_SMSG_SIZE - ListingItemTemplateService.OVERHEAD_PER_SMSG)
+                / itemImages.length) - ListingItemTemplateService.OVERHEAD_PER_IMAGE;
+
+        for (const itemImage of itemImages) {
+
+            const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+            });
+            const itemImageDataResized: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+                return imageData.imageVersion === ImageVersions.RESIZED.propName;
+            });
+
+            if (!itemImageDataOriginal) {
+                // there's something wrong with the ItemImage if original image doesnt have data
+                throw new MessageException('Original image data not found.');
+            }
+
+            if (itemImageDataResized) {
+                // resized one allready exists, so remove it
+                await this.itemImageDataService.removeImageFile(itemImageDataOriginal.imageHash, ImageVersions.RESIZED.propName);
+            }
+
+            let compressedImageData = await this.itemImageDataService.loadImageFile(itemImageDataOriginal.imageHash, ImageVersions.ORIGINAL.propName);
+
+            // image is over the max size, needs to be compressed and then resized if needed
+            for (let numResizings = 0; ;) {
+
+                if (compressedImageData.length <= maxSizePerImage) {
+                    // image is smaller than the max size, we're done
+                    break;
+                }
+
+                // need to compress more
+                const evenMoreCompressedImageData = await ImageProcessing.downgradeQuality(
+                    compressedImageData, ListingItemTemplateService.FRACTION_TO_COMPRESS_BY);
+
+                if (compressedImageData.length !== evenMoreCompressedImageData.length) {
+                    // we have not yet reached the limit of compression.
+                    compressedImageData = evenMoreCompressedImageData;
+                    continue;
+                } else {
+                    // sizes equal, so we reached the limit of compression, need to resize the image
+                    numResizings++;
+                    if (numResizings >= ListingItemTemplateService.MAX_RESIZES) {
+                        // a generous number of resizes has happened, but we haven't found a solution yet.
+                        // exit incase this is an infinite loop.
+                        throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
+                            + ' Image size = ${compressedImage.length}.');
+                    }
+                    // we've reached the limits of compression. We need to resize the image for further size losses.
+                    compressedImageData = await ImageProcessing.resizeImageToFraction(
+                        compressedImageData, ListingItemTemplateService.FRACTION_TO_RESIZE_IMAGE_BY);
+                    break;
+                }
+            }
+
+            // save the resized image
+            const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
+                itemImage.id, ImageVersions.RESIZED, itemImage.hash, itemImageDataOriginal.protocol, compressedImageData,
+                itemImageDataOriginal.encoding, itemImageDataOriginal.originalMime, itemImageDataOriginal.originalName);
+            await this.itemImageDataService.create(imageDataCreateRequest);
+        }
+        const updatedTemplateModel = await this.findOne(itemTemplate.id);
+        const updatedTemplate = updatedTemplateModel.toJSON();
+        // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
+
+        return updatedTemplate;
+    }
+
+    /**
+     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
+     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
+     *
+     * @param listingItemTemplate
+     */
+    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
+
+        // convert the template to message
+        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage
+        } as MarketplaceMessage;
+
+        let imageDataSize = 0;
+        for (const image of listingItemMessage.information.images) {
+            imageDataSize = imageDataSize + image.data[0].data.length;
+        }
+        const messageDataSize = JSON.stringify(marketPlaceMessage).length - imageDataSize;
+        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
+        const fits = spaceLeft > 0;
+
+        const messageSize: MessageSize = {
+            messageData: messageDataSize,
+            imageData: imageDataSize,
+            spaceLeft,
+            fits
+        };
+
+        return messageSize;
     }
 
     // check if object is exist in a array

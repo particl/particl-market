@@ -16,17 +16,20 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     // @IsNotEmpty()
     public dataId: string | null;
 
-    @IsEnum(ImageDataProtocolType)
+    @IsNotEmpty()
     public protocol: ImageDataProtocolType;
 
     @IsNotEmpty()
     public imageVersion: string;
 
+    @IsNotEmpty()
+    public imageHash: string;
+
     // @IsNotEmpty()
     public encoding: string | null;
 
     // @IsNotEmpty()
-    public data: string | null;
+    public data: string;
 
     // @IsNotEmpty()
     public originalMime: string | null;

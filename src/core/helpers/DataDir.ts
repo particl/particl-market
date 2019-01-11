@@ -61,6 +61,10 @@ export class DataDir {
         return dataDir;
     }
 
+    public static getImagesPath(): string {
+        return path.join(this.getDataDirPath(), 'images');
+    }
+
     public static getUploadsPath(): string {
         return path.join(this.getDataDirPath(), 'uploads');
     }
@@ -105,10 +109,12 @@ export class DataDir {
 
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
+        const images = this.getImagesPath();
 
         console.log('initialize, datadir: ', this.datadir);
         console.log('initialize, database: ', database);
         console.log('initialize, uploads: ', uploads);
+        console.log('initialize, images: ', images);
 
         // may also be the particl-market/testnet
         // so check if upper directory exists.
@@ -132,6 +138,10 @@ export class DataDir {
             fs.mkdirSync(uploads);
         }
 
+        if (!this.checkIfExists(images, true)) {
+            fs.mkdirSync(images);
+        }
+
         console.log('DataDir: should have created all folders, checking..');
 
         // do a final check, doesn't hurt.
@@ -145,10 +155,12 @@ export class DataDir {
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
+        const images = this.getImagesPath();
 
         return this.checkIfExists(datadir)
                 && this.checkIfExists(database)
-                && this.checkIfExists(uploads);
+                && this.checkIfExists(uploads)
+                && this.checkIfExists(images);
     }
 
     public static createDefaultEnvFile(): Promise<boolean> {

@@ -82,6 +82,8 @@ import { ListingItemTemplateRemoveCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
 import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplate/ListingItemTemplateSearchCommand';
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
+import { ListingItemTemplateSizeCommand } from '../commands/listingitemtemplate/ListingItemTemplateSizeCommand';
+import { ListingItemTemplateCompressCommand } from '../commands/listingitemtemplate/ListingItemTemplateCompressCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
@@ -219,6 +221,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSizeCommand) private listingItemTemplateSizeCommand: ListingItemTemplateSizeCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCompressCommand) private listingItemTemplateCompressCommand: ListingItemTemplateCompressCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
@@ -365,6 +369,8 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateRemoveCommand);
         this.commands.push(listingItemTemplateGetCommand);
         this.commands.push(listingItemTemplateSearchCommand);
+        this.commands.push(listingItemTemplateSizeCommand);
+        this.commands.push(listingItemTemplateCompressCommand);
         this.commands.push(listingItemTemplateRootCommand);
 
         this.commands.push(marketAddCommand);

@@ -37,12 +37,11 @@ describe('ItemImage', () => {
 
     let createdImageId;
     let createdListingItem;
-    let imageHash;
 
     const testData = {
-        // item_information_id
+        // item_information_id: 0,
         // hash
-        data: [{
+        datas: [{
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
             imageVersion: 'ORIGINAL',
@@ -54,7 +53,7 @@ describe('ItemImage', () => {
     const testDataUpdated = {
         // item_information_id,
         // hash,
-        data: [{
+        datas: [{
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
             imageVersion: 'ORIGINAL',
@@ -96,7 +95,6 @@ describe('ItemImage', () => {
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0];
 
-        imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
     });
 
     afterAll(async () => {
@@ -115,22 +113,21 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        testData.hash = imageHash;
+        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
-        // create
         const itemImageModel: ItemImage = await itemImageService.create(testData);
         createdImageId = itemImageModel.Id;
         const result = itemImageModel.toJSON();
 
         const imageUrl = process.env.APP_HOST
         + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-        + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+        + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
 
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
         expect(result.ItemImageDatas.length).toBe(4);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
@@ -143,12 +140,15 @@ describe('ItemImage', () => {
         );
     });
 
-    test('Should list ItemImages with our new create one', async () => {
+    test('Should list ItemImages with our newly created one', async () => {
         const itemImageCollection = await itemImageService.findAll();
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
+
+        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+
         const result = itemImage[0];
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
     });
 
@@ -158,13 +158,15 @@ describe('ItemImage', () => {
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+            + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
 
-        expect(result.hash).toBe(testData.hash);
+        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+
+        expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
@@ -178,20 +180,20 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+            + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
 
         expect(result.ItemImageDatas.length).toBe(4);
 
