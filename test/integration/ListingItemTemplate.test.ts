@@ -371,7 +371,7 @@ describe('ListingItemTemplate', async () => {
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate1, testDataToSave);
     }, 600000); // timeout to 600s
 
-    test('Should findAll ListingItemTemplates consisting of the previously created one', async () => {
+    test('Should findAll ListingItemTemplates containing the previously created one', async () => {
         const listingItemTemplateCollection = await listingItemTemplateService.findAll();
         const listingItemTemplates = listingItemTemplateCollection.toJSON();
         const result = listingItemTemplates[0];

@@ -39,19 +39,16 @@ export class ImageFactory {
         originalImageData: ItemImageDataCreateRequest,
         toVersions: ImageVersion[]
     ): Promise<ItemImageDataCreateRequest[]> {
+        let startTime = new Date().getTime();
 
         if ( !originalImageData.data ) {
             throw new MessageException('image data was empty.');
         }
-        let originalData: string;
-        let startTime = new Date().getTime();
-        try {
-            originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
-            this.log.debug('ImageProcessing.convertToJPEG: ' + (new Date().getTime() - startTime) + 'ms');
-        } catch ( ex ) {
-            throw ex;
-        }
-        // this.log.debug('originalData: ', originalData);
+
+        const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
+        this.log.debug('ImageFactory.getImageDatas: ' + (new Date().getTime() - startTime) + 'ms');
+
+
         startTime = new Date().getTime();
         const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
         this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
