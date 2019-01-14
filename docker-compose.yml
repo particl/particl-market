@@ -57,51 +57,49 @@ services:
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
 
-  gui1:
-#    image: ludx/marketplace-gui:latest
-    image: marketplace-gui
-    build:
-      context: ../particl-desktop
-      dockerfile: Dockerfile
-    volumes:
-      - ../particl-desktop/:/app/:delegated
-      - ./data/gui1_node_modules:/app/node_modules:delegated
-    ports:
-      - 4300:4200
-    command: bin/entrypoint.sh
-    links:
-      - app1
-      - particld1
-    depends_on:
-      - app1
-      - particld1
-    environment:
-      - NODE_ENV=development
-      - GUI_ENV=docker1
-      - PORT=4200
+#  gui1:
+#    image: marketplace-gui
+#    build:
+#      context: ../particl-desktop
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ../particl-desktop/:/app/:delegated
+#      - ./data/gui1_node_modules:/app/node_modules:delegated
+#    ports:
+#      - 4300:4200
+#    command: bin/entrypoint.sh
+#    links:
+#      - app1
+#      - particld1
+#    depends_on:
+#      - app1
+#      - particld1
+#    environment:
+#      - NODE_ENV=development
+#      - GUI_ENV=docker1
+#      - PORT=4200
 
-  gui2:
-#    image: ludx/marketplace-gui:latest
-    image: marketplace-gui
-    build:
-     context: ../particl-desktop
-     dockerfile: Dockerfile
-    volumes:
-      - ../particl-desktop/:/app/:delegated
-      - ./data/gui2_node_modules:/app/node_modules:delegated
-    ports:
-      - 4400:4200
-    command: bin/entrypoint.sh
-    links:
-      - app2
-      - particld2
-    depends_on:
-      - app2
-      - particld2
-    environment:
-      - NODE_ENV=development
-      - GUI_ENV=docker2
-      - PORT=4200
+#  gui2:
+#    image: marketplace-gui
+#    build:
+#     context: ../particl-desktop
+#     dockerfile: Dockerfile
+#    volumes:
+#      - ../particl-desktop/:/app/:delegated
+#      - ./data/gui2_node_modules:/app/node_modules:delegated
+#    ports:
+#      - 4400:4200
+#    command: bin/entrypoint.sh
+#    links:
+#      - app2
+#      - particld2
+#    depends_on:
+#      - app2
+#      - particld2
+#    environment:
+#      - NODE_ENV=development
+#      - GUI_ENV=docker2
+#      - PORT=4200
 
   particld1:
     image: ludx/particl:0.17 # master # 0.16.2.0

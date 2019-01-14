@@ -3,6 +3,7 @@
 *.log
 *.log*
 
+
 # Node files #
 node_modules/
 npm-debug.log
@@ -56,4 +57,6 @@ data/gui2_node_modules/*
 
 codeship*.yml
 .scannerwork
+
+kontena.ovpn
 

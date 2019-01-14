@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -23,7 +23,7 @@ export class DatabaseSeedCommand extends AbstractCommand {
     public static description = 'Seeding database with testdata.';
 
     public async run(): Promise<void> {
-        const db = Knex(DatabaseConfig as Knex.Config);
+        const db = Knex(DatabaseConfig() as Knex.Config);
 
         // Close connection to the database
         await db.destroy();

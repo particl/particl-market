@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,6 +14,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import * as _ from 'lodash';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -21,7 +23,8 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);
@@ -40,7 +43,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        return this.itemInformationService.updateWithCheckListingTemplate({
+        return this.updateWithCheckListingTemplate({
             listing_item_template_id: data.params[0],
             title: data.params[1],
             shortDescription: data.params[2],
@@ -49,6 +52,18 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
                 id: data.params[4]
             }
         } as ItemInformationUpdateRequest);
+    }
+
+    // TODO: WTF FIX
+    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
+        const listingItemTemplateId = body.listing_item_template_id;
+        const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
+        if (_.isEmpty(itemInformation)) {
+            this.log.warn(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
+            throw new MessageException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
+        }
+        return this.itemInformationService.update(itemInformation.id, body);
     }
 
     /**

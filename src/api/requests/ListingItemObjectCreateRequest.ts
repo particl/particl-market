@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ListingItemObjectType } from '../../api/enums/ListingItemObjectType';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
+import { ListingItemObjectDataCreateRequest } from './ListingItemObjectDataCreateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemObjectCreateRequest extends RequestBody {
@@ -22,6 +23,6 @@ export class ListingItemObjectCreateRequest extends RequestBody {
     @IsNotEmpty()
     public order: number;
 
-    public listingItemObjectDatas;
+    public listingItemObjectDatas: ListingItemObjectDataCreateRequest[];
 }
 // tslint:enable:variable-name

@@ -1,27 +1,24 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-
 import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -34,19 +31,36 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { HashableListingItem } from '../../core/helpers/HashableListingItem';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { MessageSize } from '../responses/MessageSize';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ItemImageDataService } from './ItemImageDataService';
+import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ImageFactory } from '../factories/ImageFactory';
 
 export class ListingItemTemplateService {
+
+    public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+    private static FRACTION_TO_COMPRESS_BY = 0.8;
+    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.7;
+    private static OVERHEAD_PER_SMSG = 0;
+    private static OVERHEAD_PER_IMAGE = 0;
+    private static MAX_RESIZES = 20;
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -120,7 +134,7 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
-            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(result.toJSON(), null, 2));
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
@@ -282,6 +296,7 @@ export class ListingItemTemplateService {
      * @param value
      */
     private async checkExistingObject(objectArray: any[], fieldName: string, value: string | number): Promise<any> {
+
         return await _.find(objectArray, (object) => {
             return (object[fieldName] === value);
         });
