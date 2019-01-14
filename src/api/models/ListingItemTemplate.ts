@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
+import { SearchOrderField } from '../enums/SearchOrderField';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
@@ -72,23 +73,47 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
+
+        let sortingField = 'updated_at';
+        if (SearchOrderField.TITLE === options.orderField) {
+            sortingField = 'item_informations.title';
+        } else if (SearchOrderField.STATE === options.orderField) {
+            sortingField = 'listing_items.listing_item_template_id';
+        } else if (SearchOrderField.DATE === options.orderField) {
+            sortingField = 'updated_at';
+        }
+
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
+                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
                     qb.where('item_categories.key', '=', options.category);
                     qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                 }
+
                 if (options.profileId) {
                     qb.where('profile_id', '=', options.profileId);
                 }
-                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
+                if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
+                    if (options.hasItems) {
+                        qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    } else {
+                        qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        qb.whereNot('listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    }
+                } else {
+                    qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                }
+
             })
-            .orderBy('updated_at', options.order)
+            .orderBy(sortingField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

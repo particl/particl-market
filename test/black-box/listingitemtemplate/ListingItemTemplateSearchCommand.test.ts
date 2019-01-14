@@ -10,6 +10,8 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { SearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -20,6 +22,9 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateSearchCommand = Commands.TEMPLATE_SEARCH.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -68,6 +73,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -83,6 +89,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             1,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -102,6 +109,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             1,
             1,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -121,6 +129,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             2,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -136,7 +145,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
+            undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.key
         ]);
         res.expectJson();
@@ -153,7 +164,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
+            undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.id
         ]);
         res.expectJson();
@@ -170,9 +183,9 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
+            undefined,
             defaultProfile.id,
-            '',
-            listingItemTemplate1.ItemInformation.title
+            listingItemTemplate1.ItemInformation.title,
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -180,6 +193,17 @@ describe('ListingItemTemplateSearchCommand', () => {
         const result: resources.ListingItemTemplate = res.getBody()['result'];
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
+    });
+
+    test('Should fail because we want to search without searchOrder', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('searchOrder').getMessage());
     });
 
     test('Should fail because we want to search without profileId', async () => {
@@ -191,6 +215,98 @@ describe('ListingItemTemplateSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
+
+
+    test('Should filter templates with published listing items', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
+        expect(result).toHaveLength(2);
+    });
+
+
+
+    test('Should filter templates with non-published listing items', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
+        expect(result).toHaveLength(2);
+    });
+
+
+
+    test('Should filter templates with published listing items', async () => {
+        const daysRetention = 4;
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate1.id,
+            daysRetention,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+
+        const ress: any = res.getBody()['result'];
+        if (ress.result === 'Send failed.') {
+            log.debug(JSON.stringify(ress, null, 2));
+        }
+        res.expectStatusCode(200);
+
+        await testUtil.waitFor(5);
+
+        const response: any = await testUtil.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplate1.hash],
+            8 * 60,
+            200,
+            'hash',
+            listingItemTemplate1.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200)
+
+        await testUtil.waitFor(5);
+
+        const result: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            SearchOrderField.DATE,
+            defaultProfile.id,
+            undefined,
+            undefined,
+            true
+        ]);
+        result.expectJson();
+        result.expectStatusCode(200);
+
+        const resMain: resources.ListingItemTemplate[] = result.getBody()['result'];
+        expect(resMain).toHaveLength(1);
+    }, 6000000);  // timeout to 600s
+
 });

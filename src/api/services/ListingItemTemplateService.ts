@@ -288,146 +288,22 @@ export class ListingItemTemplateService {
     }
 
     /**
-     * creates resized versions of the template images, so that all of them fit in one smsgmessage
+     * find object with given field and value in given array, returns the object or undefined
+     * todo: rename
      *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @returns {Promise<"resources".ListingItemTemplate>}
+     * @param objectArray
+     * @param fieldName
+     * @param value
      */
-    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
-        const startTime = new Date().getTime();
+    private async checkExistingObject(objectArray: any[], fieldName: string, value: string | number): Promise<any> {
 
-        // ItemInformation has ItemImages, which is an array.
-        const itemImages = itemTemplate.ItemInformation.ItemImages;
-
-        // Each ItemImage has an array of ItemImageDatas, these represent different versions of the image.
-        // ImageVersions.ORIGINAL is the original uploaded one
-        // ImageVersions.RESIZED is the one resized to fit the smsgmessage
-
-        const maxSizePerImage =
-            ((ListingItemTemplateService.MAX_SMSG_SIZE - ListingItemTemplateService.OVERHEAD_PER_SMSG)
-                / itemImages.length) - ListingItemTemplateService.OVERHEAD_PER_IMAGE;
-
-        for (const itemImage of itemImages) {
-
-            const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
-            });
-            const itemImageDataResized: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.RESIZED.propName;
-            });
-
-            if (!itemImageDataOriginal) {
-                // there's something wrong with the ItemImage if original image doesnt have data
-                throw new MessageException('Original image data not found.');
-            }
-
-            if (itemImageDataResized) {
-                // resized one allready exists, so remove it
-                await this.itemImageDataService.removeImageFile(itemImageDataOriginal.imageHash, ImageVersions.RESIZED.propName);
-            }
-
-            let originalImageData = await this.itemImageDataService.loadImageFile(itemImageDataOriginal.imageHash, ImageVersions.ORIGINAL.propName);
-            let compressedImageData = originalImageData;
-
-            // image is over the max size, needs to be compressed and then resized if needed
-            for (let numResizings = 0; ;) {
-
-                if (compressedImageData.length <= maxSizePerImage) {
-                    this.log.debug('image: ' + itemImage.hash + ', ok size, no need to resize.');
-                    // image is smaller than the max size, we're done
-                    break;
-                }
-
-                this.log.debug('image: ' + itemImage.hash + ', downgrading quality...');
-
-                // need to compress more
-                const evenMoreCompressedImageData = await ImageProcessing.downgradeQuality(
-                    compressedImageData, ListingItemTemplateService.FRACTION_TO_COMPRESS_BY);
-
-                if (compressedImageData.length !== evenMoreCompressedImageData.length) {
-                    // we have not yet reached the limit of compression.
-                    compressedImageData = evenMoreCompressedImageData;
-                    continue;
-                } else {
-                    // sizes equal, so we reached the limit of compression, need to resize the image
-                    numResizings++;
-                    if (numResizings >= ListingItemTemplateService.MAX_RESIZES) {
-                        // a generous number of resizes has happened, but we haven't found a solution yet.
-                        // exit incase this is an infinite loop.
-                        throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
-                            + ' Image size = ${compressedImage.length}.');
-                    }
-
-                    this.log.debug('image: ' + itemImage.hash + ', reached the limit of compression, resizing image...');
-
-                    // we've reached the limits of compression. We need to resize the image for further size losses.
-                    compressedImageData = await ImageProcessing.resizeImageToFraction(
-                        originalImageData, ListingItemTemplateService.FRACTION_TO_RESIZE_IMAGE_BY);
-                    originalImageData = compressedImageData;
-                    continue;
-                }
-            }
-
-            // save the resized image
-            const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
-                itemImage.id, ImageVersions.RESIZED, itemImage.hash, itemImageDataOriginal.protocol, compressedImageData,
-                itemImageDataOriginal.encoding, itemImageDataOriginal.originalMime, itemImageDataOriginal.originalName);
-            await this.itemImageDataService.create(imageDataCreateRequest);
-        }
-        const updatedTemplateModel = await this.findOne(itemTemplate.id);
-        const updatedTemplate = updatedTemplateModel.toJSON();
-        // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
-
-        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return updatedTemplate;
-    }
-
-    /**
-     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
-     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
-     *
-     * @param listingItemTemplate
-     */
-    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
-
-        // convert the template to message
-        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate);
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            item: listingItemMessage
-        } as MarketplaceMessage;
-
-        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-
-        let imageDataSize = 0;
-        for (const image of listingItemMessage.information.images) {
-            imageDataSize = imageDataSize + image.data[0].data.length;
-            this.log.debug('imageDataSize: ', image.data[0].data.length);
-        }
-        const messageDataSize = JSON.stringify(marketPlaceMessage).length - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
-        const fits = spaceLeft > 0;
-
-        const messageSize: MessageSize = {
-            messageData: messageDataSize,
-            imageData: imageDataSize,
-            spaceLeft,
-            fits
-        };
-
-        return messageSize;
-    }
-
-    // check if object is exist in a array
-    private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }
 
     // find highest order number from listingItemObjects
-    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: any[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
             return itemObject['order'];
         });
