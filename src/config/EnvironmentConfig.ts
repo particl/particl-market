@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,10 +12,13 @@ import { AlphaEnvConfig } from './env/AlphaEnvConfig';
 let config;
 
 export const envConfig = (): EnvConfig => {
-    if (config) {
-        console.log('envConfig allready created...');
-        return config;
-    }
+
+    console.log('envConfig(), ...');
+
+    // if (config) {
+    //    console.log('envConfig(), allready created...');
+    //    return config;
+    // }
 
     if (Environment.isProduction()) {
         config = new ProductionEnvConfig();

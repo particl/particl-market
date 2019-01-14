@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,7 +8,6 @@ import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFac
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
-import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 import * as listingItemTemplateBasic1 from '../../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../../testdata/model/listingItemTemplateBasic2.json';
@@ -192,7 +191,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.images[0].data.length).toBe(1);
         expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
         expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
-        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].ItemImageDataContent.data);
+        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
 
         // message.payment
         expect(message.payment).toBeDefined();

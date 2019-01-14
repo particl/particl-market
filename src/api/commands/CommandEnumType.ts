@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -82,10 +82,14 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_REMOVE: Command         = new Command('templateremove', 'remove', false);
     public TEMPLATE_POST: Command           = new Command('templatepost', 'post', false);
     public TEMPLATE_IMPORT: Command         = new Command('templateimport', 'import', false);
+    public TEMPLATE_SIZE: Command           = new Command('templatesize', 'size', false);
+    public TEMPLATE_COMPRESS: Command       = new Command('templatecompress', 'compress', false);
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
-        [this.TEMPLATE_SEARCH, this.TEMPLATE_GET, this.TEMPLATE_ADD, this.TEMPLATE_REMOVE, this.TEMPLATE_POST, this.TEMPLATE_IMPORT,
-            this.ITEMINFORMATION_ROOT, this.ITEMIMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
-            this.MESSAGINGINFORMATION_ROOT, this.PAYMENTINFORMATION_ROOT, this.ESCROW_ROOT], EnvironmentType.ALL);
+        [this.TEMPLATE_SEARCH, this.TEMPLATE_GET, this.TEMPLATE_ADD, this.TEMPLATE_REMOVE, this.TEMPLATE_POST,
+            this.TEMPLATE_IMPORT, this.TEMPLATE_SIZE, this.TEMPLATE_COMPRESS, this.ITEMINFORMATION_ROOT, this.ITEMIMAGE_ROOT,
+            this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT, this.MESSAGINGINFORMATION_ROOT, this.PAYMENTINFORMATION_ROOT,
+            this.ESCROW_ROOT],
+        EnvironmentType.ALL);
 
     public CATEGORY_LIST: Command       = new Command('categorylist', 'list', false);
     public CATEGORY_GET: Command        = new Command('categoryget', 'get', false);

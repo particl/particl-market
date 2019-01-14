@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -81,30 +81,12 @@ describe('ItemInformation', () => {
         }],
         itemImages: [{
             hash: 'imagehash4',
-            data: [{
+            datas: [{
                 dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 imageVersion: 'ORIGINAL',
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
-            }]
-        }, {
-            hash: 'imagehash5',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatTall
-            }]
-        }, {
-            hash: 'imagehash6',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatWide
             }]
         }]
     } as ItemInformationCreateRequest;
@@ -140,30 +122,12 @@ describe('ItemInformation', () => {
         }],
         itemImages: [{
             hash: 'imagehash4',
-            data: [{
+            datas: [{
                 dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 imageVersion: 'ORIGINAL',
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
-            }]
-        }, {
-            hash: 'imagehash5',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatTall
-            }]
-        }, {
-            hash: 'imagehash6',
-            data: [{
-                dataId: null,
-                protocol: ImageDataProtocolType.LOCAL,
-                imageVersion: 'ORIGINAL',
-                encoding: 'BASE64',
-                data: ImageProcessing.milkcatWide
             }]
         }]
     } as ItemInformationUpdateRequest;
@@ -229,18 +193,18 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
 
     });
 
-    test('Should throw ValidationException because we want to create a empty item information', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemInformation', async () => {
         expect.assertions(1);
         await itemInformationService.create({} as ItemInformationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item informations with our new create one', async () => {
+    test('Should list ItemInformations with our new create one', async () => {
         const itemInformationCollection = await itemInformationService.findAll();
         const itemInformation = itemInformationCollection.toJSON();
         expect(itemInformation.length).toBe(1);
@@ -256,7 +220,7 @@ describe('ItemInformation', () => {
         expect(result.ItemImages).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item information', async () => {
+    test('Should return one ItemInformation', async () => {
         const itemInformationModel: ItemInformation = await itemInformationService.findOne(createdId);
         const result = itemInformationModel.toJSON();
 
@@ -272,7 +236,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
     });
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
@@ -282,7 +246,7 @@ describe('ItemInformation', () => {
         );
     });
 
-    test('Should update the item information', async () => {
+    test('Should update the ItemInformation', async () => {
 
         testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
 
@@ -301,11 +265,11 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemImages).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(1);
     });
 
-    test('Should delete the item information', async () => {
-        expect.assertions(10);
+    test('Should delete the ItemInformation', async () => {
+        expect.assertions(8);
         await itemInformationService.destroy(createdId);
         await itemInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
@@ -335,12 +299,6 @@ describe('ItemInformation', () => {
         // ItemImages
         await itemImageService.findOne(itemImages[0].id).catch(e =>
             expect(e).toEqual(new NotFoundException(itemImages[0].id))
-        );
-        await itemImageService.findOne(itemImages[1].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemImages[1].id))
-        );
-        await itemImageService.findOne(itemImages[2].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemImages[2].id))
         );
 
         // delete listing item

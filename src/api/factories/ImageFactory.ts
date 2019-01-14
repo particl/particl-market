@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -28,28 +28,27 @@ export class ImageFactory {
      * creates ItemImageDataCreateRequests for the required image versions from the original image data
      *
      * @param {number} itemImageId
+     * @param imageHash
      * @param {ItemImageDataCreateRequest} originalImageData
      * @param {ImageVersion[]} toVersions
      * @returns {Promise<ItemImageDataCreateRequest[]>}
      */
     public async getImageDatas(
         itemImageId: number,
+        imageHash: string,
         originalImageData: ItemImageDataCreateRequest,
         toVersions: ImageVersion[]
     ): Promise<ItemImageDataCreateRequest[]> {
+        let startTime = new Date().getTime();
 
         if ( !originalImageData.data ) {
             throw new MessageException('image data was empty.');
         }
-        let originalData: string;
-        let startTime = new Date().getTime();
-        try {
-            originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
-            this.log.debug('ImageProcessing.convertToJPEG: ' + (new Date().getTime() - startTime) + 'ms');
-        } catch ( ex ) {
-            throw ex;
-        }
-        // this.log.debug('originalData: ', originalData);
+
+        const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
+        this.log.debug('ImageFactory.getImageDatas: ' + (new Date().getTime() - startTime) + 'ms');
+
+
         startTime = new Date().getTime();
         const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
         this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
@@ -59,32 +58,37 @@ export class ImageFactory {
         const imageDatas: ItemImageDataCreateRequest[] = [];
 
         // first create the original
-        const imageDataForOriginal = {
-            item_image_id: itemImageId,
-            dataId: this.getImageUrl(itemImageId, ImageVersions.ORIGINAL.propName),
-            protocol: originalImageData.protocol,
-            imageVersion: ImageVersions.ORIGINAL.propName,
-            encoding: originalImageData.encoding,
-            originalMime: originalImageData.originalMime,
-            originalName: originalImageData.originalName,
-            data: originalData
-        } as ItemImageDataCreateRequest;
+        const imageDataForOriginal = await this.getImageDataCreateRequest(itemImageId, ImageVersions.ORIGINAL, imageHash,
+            originalImageData.protocol, originalData, originalImageData.encoding, originalImageData.originalMime,
+            originalImageData.originalName);
+
         imageDatas.push(imageDataForOriginal);
 
         for (const version of toVersions) {
-            const imageData = {
-                item_image_id: itemImageId,
-                dataId: this.getImageUrl(itemImageId, version.propName),
-                protocol: originalImageData.protocol,
-                imageVersion: version.propName,
-                encoding: originalImageData.encoding,
-                originalMime: originalImageData.originalMime,
-                originalName: originalImageData.originalName,
-                data: resizedDatas.get(version.propName)
-            } as ItemImageDataCreateRequest;
+            const imageData = await this.getImageDataCreateRequest(itemImageId, version, imageHash, originalImageData.protocol,
+                resizedDatas.get(version.propName) || '', originalImageData.encoding, originalImageData.originalMime,
+                originalImageData.originalName);
             imageDatas.push(imageData);
         }
         return imageDatas;
+    }
+
+    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: string,
+                                           data: string, encoding: string | null, originalMime: string | null, originalName: string | null
+    ): Promise<ItemImageDataCreateRequest> {
+
+        const imageData = {
+            item_image_id: itemImageId,
+            dataId: this.getImageUrl(itemImageId, imageVersion.propName),
+            protocol,
+            imageVersion: imageVersion.propName,
+            imageHash,
+            encoding,
+            originalMime,
+            originalName,
+            data
+        } as ItemImageDataCreateRequest;
+        return imageData;
     }
 
     public getImageUrl(itemImageId: number, version: string): string {

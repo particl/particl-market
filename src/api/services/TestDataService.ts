@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -22,11 +22,6 @@ import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
 import { ListingItem } from '../models/ListingItem';
-import { Profile } from '../models/Profile';
-import { ItemCategory } from '../models/ItemCategory';
-import { FavoriteItem } from '../models/FavoriteItem';
-import { PaymentInformation } from '../models/PaymentInformation';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -44,9 +39,6 @@ import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { ItemInformation } from '../models/ItemInformation';
-import { Bid } from '../models/Bid';
-import { ItemImage } from '../models/ItemImage';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -73,7 +65,6 @@ import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAd
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
@@ -95,10 +86,7 @@ import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest
 import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
-import { Proposal } from '../models/Proposal';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
-import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
-import {IsNotEmpty} from 'class-validator';
 
 export class TestDataService {
 
@@ -144,15 +132,29 @@ export class TestDataService {
      */
     public async clean(seed: boolean = true): Promise<void> {
 
-        await this.cleanDb();
+        await this.cleanDb()
+            .catch( reason => {
+                this.log.debug('failed cleaning the db: ' + reason);
+            });
+
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories();
-            await this.defaultProfileService.seedDefaultProfile();
-            await this.defaultMarketService.seedDefaultMarket();
-            this.log.info('cleanup & default seeds done.');
-            return;
+            await this.defaultItemCategoryService.seedDefaultCategories()
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+            await this.defaultProfileService.seedDefaultProfile()
+                .catch( reason => {
+                    this.log.debug('failed seeding default profile: ' + reason);
+                });
+            await this.defaultMarketService.seedDefaultMarket()
+                .catch( reason => {
+                    this.log.debug('failed seeding default market: ' + reason);
+                });
         }
+
+        this.log.info('cleanup & default seeds done.');
+        return;
     }
 
     /**
@@ -309,8 +311,9 @@ export class TestDataService {
             'smsg_messages'
         ];
 
+        this.log.debug('cleaning ' + tablesToClean.length + ' tables...');
+
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -363,6 +366,7 @@ export class TestDataService {
                     receivedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
 
+                // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
                 const listingItem = listingItemModel.toJSON();
@@ -928,9 +932,11 @@ export class TestDataService {
     private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
+            const fakeHash = Faker.random.uuid();
             const item = {
-                hash: Faker.random.uuid(),
-                data: [{
+                hash: fakeHash,
+                datas: [{
+                    itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
                     imageVersion: 'ORIGINAL',
@@ -950,7 +956,7 @@ export class TestDataService {
             : [];
 
         const itemImages = generateParams.generateItemImages
-            ? this.generateItemImagesData(_.random(1, 5))
+            ? this.generateItemImagesData(_.random(1, 2))
             : [];
 
         const itemLocation = generateParams.generateItemLocation
