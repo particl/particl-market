@@ -99,6 +99,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 throw new MessageException('ListingItem not found.');
             });
 
+        if (new Date().getTime() > listingItem.expiredAt) {
+            this.log.warn(`listingitem has expired!`);
+            throw new MessageException('An item in your basket has expired!');
+        }
+
         // profile that is doing the bidding
         const profileId = data.params.shift();
         const profile: resources.Profile = await this.profileService.findOne(profileId)

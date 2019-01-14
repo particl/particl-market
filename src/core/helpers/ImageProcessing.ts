@@ -742,10 +742,14 @@ export class ImageProcessing {
     public static async convertToJPEG(imageRaw: string): Promise<string> {
         const buf = Buffer.from(imageRaw, 'base64');
         const image = await Jimp.read(buf);
-        const retval: any = image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+        if (image.getMIME() !== 'image/jpeg') {
+          const retval: any = image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
             return buffer.toString('base64');
-        });
-        return retval;
+          });
+          return retval;
+        } else {
+          return imageRaw;
+        }
     }
 
     /**
@@ -783,11 +787,19 @@ export class ImageProcessing {
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
         if (version.imageWidth > 0 && version.imageHeight > 0) {
+          if (imageBuffer.getMIME() !== 'image/jpeg') {
             imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
             const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-                return buffer.toString('base64');
+              return buffer.toString('base64');
             });
             return resizedImage;
+          } else {
+            imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
+            const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+              return buffer.toString('base64');
+            });
+            return resizedImage;
+          }
         }
         return imageRaw;
     }
@@ -798,16 +810,24 @@ export class ImageProcessing {
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
         if (fraction !== 1.0) {
-            imageBuffer.scale(fraction);
+          imageBuffer.scale(fraction);
+          if (imageBuffer.getMIME() !== 'image/jpeg') {
             const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-                return buffer.toString('base64');
+              return buffer.toString('base64');
             });
             return resizedImage;
+          } else {
+            const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+              return buffer.toString('base64');
+            });
+            return resizedImage;
+          }
         }
         this.log.debug('ImageProcessing.resizeImageToFraction: ' + (new Date().getTime() - startTime) + 'ms');
         return imageRaw;
     }
-
+    // This doesnt seem to be used anywhere
+    /*
     public static async compressImage(imageRaw: string, byteLimit: number): Promise<string> {
         let quality = 100;
         // let imageData;
@@ -829,17 +849,27 @@ export class ImageProcessing {
         } while (imageRaw.length >= byteLimit);
         return imageRaw;
     }
+    */
 
     public static async downgradeQuality(imageRaw: string, quality: number): Promise<string> {
-        const startTime = new Date().getTime();
-        const dataBuffer = Buffer.from(imageRaw, 'base64');
-        let imageBuffer: any = await Jimp.read(dataBuffer);
-        imageBuffer = imageBuffer.quality(quality);
+      const dataBuffer = Buffer.from(imageRaw, 'base64');
+      let imageBuffer: any = await Jimp.read(dataBuffer);
+      imageBuffer = imageBuffer.quality(quality);
+      if (imageBuffer.getMIME() !== 'image/jpeg') {
         imageRaw = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-            return buffer.toString('base64');
+          return buffer.toString('base64');
         });
-
-        this.log.debug('ImageProcessing.downgradeQuality: ' + (new Date().getTime() - startTime) + 'ms');
+        console.log(imageRaw);
+        console.log('BASE64 Length:', imageRaw.length);
         return imageRaw;
+      } else {
+        imageRaw = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+          return buffer.toString('base64');
+        });
+        console.log(imageRaw);
+        console.log('BASE64 Length:', imageRaw.length);
+        return imageRaw;
+      }
+
     }
 }
