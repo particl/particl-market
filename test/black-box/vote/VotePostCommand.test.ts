@@ -6,7 +6,6 @@ import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import * as Faker from 'faker';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -24,6 +23,7 @@ describe('VotePostCommand', () => {
 
     let defaultProfile: resources.Profile;
     let proposal: resources.Proposal;
+    let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -161,9 +161,13 @@ describe('VotePostCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+
+        sent = result.result === 'Sent.';
     });
 
     test('Should find the posted Vote locally immediately after posting', async () => {
+        expect(sent).toBeTruthy();
+
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
@@ -177,9 +181,9 @@ describe('VotePostCommand', () => {
         );
         res.expectJson();
         res.expectStatusCode(200);
+        log.debug('Vote found!');
 
         const result: resources.Vote = res.getBody()['result'];
-        // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.weight).toBe(1);
@@ -200,9 +204,12 @@ describe('VotePostCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
+
     });
 
     test('Should find the updated Vote with different optionI', async () => {
+        expect(sent).toBeTruthy();
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
@@ -216,6 +223,7 @@ describe('VotePostCommand', () => {
         );
         res.expectJson();
         res.expectStatusCode(200);
+        log.debug('Vote found!');
 
         const result: resources.Vote = res.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
