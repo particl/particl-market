@@ -34,7 +34,7 @@ export class ItemImageController {
     }
 
     /**
-     * upload image
+     * upload images
      *
      * @param res
      * @param templateId

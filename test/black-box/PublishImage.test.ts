@@ -88,7 +88,7 @@ describe('/publish-image', () => {
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because invalid itemImageId', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because of invalid itemImageId', async () => {
         const itemImageId = 0;
         const imageVersion = ImageVersions.LARGE.propName;
 
@@ -97,13 +97,12 @@ describe('/publish-image', () => {
         expect(res.error.error.message).toBe('Entity with identifier ' + itemImageId + ' does not exist');
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage invalid imageVersion', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because of invalid imageVersion', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = 'INVALID_IMAGE:VERSION';
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(404);
-        // TODO: why is the error object different here than in the previous test, FIX
-        expect(res.error.error).toBe('Image Not found');
+        expect(res.error.error.message).toBe('Image not found!');
     });
 
     test('POST  /item-images/template/:listingItemTemplateId        Should POST new ItemImage', async () => {
