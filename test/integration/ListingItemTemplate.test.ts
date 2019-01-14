@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -371,7 +371,7 @@ describe('ListingItemTemplate', async () => {
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate1, testDataToSave);
     }, 600000); // timeout to 600s
 
-    test('Should findAll ListingItemTemplates consisting of the previously created one', async () => {
+    test('Should findAll ListingItemTemplates containing the previously created one', async () => {
         const listingItemTemplateCollection = await listingItemTemplateService.findAll();
         const listingItemTemplates = listingItemTemplateCollection.toJSON();
         const result = listingItemTemplates[0];

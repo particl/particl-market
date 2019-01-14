@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,7 +10,6 @@ import { validate, request } from '../../core/api/Validate';
 import { ListingItem } from '../models/ListingItem';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
-import { ItemInformationService } from './ItemInformationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
@@ -27,9 +26,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { CoreRpcService } from './CoreRpcService';
-import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalService } from './ProposalService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
@@ -39,20 +36,12 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 
 export class ListingItemActionService {
-    private static FRACTION_TO_COMPRESS_BY = 0.6;
-    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.6;
-    private static MAX_SMSG_SIZE = 400000; // TODO: Give these more accurate values
-    private static OVERHEAD_PER_SMSG = 0;
-    private static OVERHEAD_PER_IMAGE = 0;
-    private static MAX_RESIZES = 20;
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -91,7 +80,7 @@ export class ListingItemActionService {
         // TODO: should validate that the template has the required info
         // TODO: recalculate the template.hash in case the related data has changed
 
-        itemTemplate = await this.resizeTemplateImages(itemTemplate);
+        itemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(itemTemplate);
         this.log.debug('images resized');
 
         // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
@@ -249,71 +238,8 @@ export class ListingItemActionService {
         }
     }
 
-    /**
-     *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @returns {Promise<"resources".ListingItemTemplate>}
-     */
-    private async resizeTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
-
-        const itemImages = itemTemplate.ItemInformation.ItemImages;
-        // ItemInformation has ItemImages, which is an array.
-        // Each element in ItemImages has an array ItemImageDatas.
-        const sizePerImage = (ListingItemActionService.MAX_SMSG_SIZE - ListingItemActionService.OVERHEAD_PER_SMSG)
-            / (itemImages.length - ListingItemActionService.OVERHEAD_PER_IMAGE);
-        for (const tmpIndexOfImages in itemImages) {
-            if (tmpIndexOfImages) {
-                let resizedImage;
-                let indexOfData;
-                {
-                    let foundOriginal = false;
-                    const itemImage = itemImages[tmpIndexOfImages];
-                    for (const tmpIndexOfData in itemImage.ItemImageDatas) {
-                        if (tmpIndexOfData
-                            && itemImage.ItemImageDatas[tmpIndexOfData].imageVersion === ImageVersions.ORIGINAL.propName) {
-                            resizedImage = itemImage.ItemImageDatas[tmpIndexOfData].ItemImageDataContent.data;
-                            foundOriginal = true;
-                            indexOfData = tmpIndexOfData;
-                            // this.log.error('Found original. Continuing...');
-                            break;
-                        }
-                    }
-                    if (!foundOriginal) {
-                        // this.log.error('Couldn\'t find original. Skipping...');
-                        continue;
-                    }
-                }
-                let compressedImage = resizedImage;
-                /* stops if the compressed image is the correct size that we want */
-                if (compressedImage.length <= sizePerImage) {
-                    break;
-                }
-                for (let numResizings = 0; numResizings < ListingItemActionService.MAX_RESIZES; numResizings++ ) {
-                    resizedImage = await ImageProcessing.resizeImageToFraction(resizedImage, ListingItemActionService.FRACTION_TO_RESIZE_IMAGE_BY
-                                                                                - (0.1 * numResizings));
-                    if (resizedImage.length < sizePerImage) {
-                        compressedImage = resizedImage;
-                        break;
-                    }
-                    for (let k = 0; k < 5; k++) {
-                        compressedImage = await ImageProcessing.downgradeQuality(compressedImage, ListingItemActionService.FRACTION_TO_COMPRESS_BY);
-                        if (compressedImage.length <= sizePerImage) {
-                            break;
-                        }
-                    }
-                    if (compressedImage.length >= sizePerImage) {
-                        break;
-                    }
-                }
-                itemTemplate.ItemInformation.ItemImages[tmpIndexOfImages].ItemImageDatas[indexOfData].ItemImageDataContent.data = compressedImage;
-            }
-        }
-
-        return itemTemplate;
-    }
-
     private configureEventListeners(): void {
-        this.log.info('Configuring EventListeners ');
+        this.log.info('Configuring EventListeners');
 
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
             this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);

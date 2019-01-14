@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,11 +10,9 @@ import { validate, request } from '../../core/api/Validate';
 import * as _ from 'lodash';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { ActionMessageRepository } from '../repositories/ActionMessageRepository';
 import { ActionMessage } from '../models/ActionMessage';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
-import { ActionMessageUpdateRequest } from '../requests/ActionMessageUpdateRequest';
 import { MessageInfoService } from './MessageInfoService';
 import { MessageEscrowService } from './MessageEscrowService';
 import { MessageDataService } from './MessageDataService';

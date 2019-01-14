@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -83,8 +83,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     }
 
     public description(): string {
-        return 'Search listing items with pagination by category id or'
-        + ' category name or by profileId, or by perticular searchString matched with itemInformation title.';
+        return 'Search ListingItemTemplates.';
     }
 
     public example(): string {

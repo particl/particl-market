@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -212,7 +212,7 @@ describe('Bid', () => {
             orderItems: [{
                 itemHash: createdListingItem2.hash,
                 bid_id: createdBid2.id,
-                status: OrderStatus.AWAITING_ESCROW,
+                status: OrderStatus.AWAITING_ESCROW
             } as OrderItemCreateRequest],
             buyer: createdBid2.bidder,
             seller: 'selleraddress'

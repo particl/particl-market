@@ -1,18 +1,19 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../../src/app';
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as _ from 'lodash';
-import * as resources from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
 export class BlackBoxTestUtil {
 
@@ -99,15 +100,16 @@ export class BlackBoxTestUtil {
                 const addCommandParams = [
                     Commands.ADDRESS_ADD.commandName,
                     defaultProfile.id,
-                    addressCreateRequestSHIPPING_OWN.firstName,
-                    addressCreateRequestSHIPPING_OWN.lastName,
-                    addressCreateRequestSHIPPING_OWN.title,
-                    addressCreateRequestSHIPPING_OWN.addressLine1,
-                    addressCreateRequestSHIPPING_OWN.addressLine2,
-                    addressCreateRequestSHIPPING_OWN.city,
-                    addressCreateRequestSHIPPING_OWN.state,
-                    addressCreateRequestSHIPPING_OWN.country,
-                    addressCreateRequestSHIPPING_OWN.zipCode
+                    Faker.name.firstName(),
+                    Faker.name.lastName(),
+                    Faker.company.companyName(),
+                    Faker.address.streetAddress(),
+                    Faker.address.secondaryAddress(),
+                    Faker.address.city(),
+                    Faker.address.state(),
+                    Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                    Faker.address.zipCode(),
+                    AddressType.SHIPPING_OWN
                 ];
 
                 // create address for default profile

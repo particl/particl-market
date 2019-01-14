@@ -1,8 +1,8 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Bookshelf } from '../../config/Database';
+import {Bookshelf as Database, Bookshelf} from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import * as _ from 'lodash';
@@ -10,6 +10,13 @@ import * as _ from 'lodash';
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static RELATIONS = [];
+
+    public static async createAll(datas: any[]): Promise<number> {
+        const result = await Database.knex
+            .insert(datas, 'id')
+            .into('smsg_messages');
+        return result;
+    }
 
     public static async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = false): Promise<Collection<SmsgMessage>> {
 
