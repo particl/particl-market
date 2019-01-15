@@ -116,12 +116,13 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                         qb.whereNull('listing_items.listing_item_template_id');
                     }
                 } else {
-                    ListingItem.log.debug('hasItems undefined');
+                    // ListingItem.log.debug('hasItems undefined');
                     qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
 
+                qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
             })
-            .orderBy(sortingField, options.order)
+            // .orderBy(sortingField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

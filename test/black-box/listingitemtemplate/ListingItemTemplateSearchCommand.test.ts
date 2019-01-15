@@ -301,5 +301,4 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ListingItems.length).toBe(1);
     });
 
-
 });
