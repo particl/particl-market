@@ -43,7 +43,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profile id
+     *  [4]: profile id, number, optional
      *  [5]: searchString, string, optional
      *  [6]: category, number|string, if string, try to search using key, optional
      *  [7]: hasItems, boolean, optional
@@ -70,7 +70,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profileId
+     *  [4]: profileId, number, optional
      *  [5]: searchString, string, * for all, optional
      *  [6]: category, number|string, if string, try to search using key, * for all, optional
      *  [7]: hasItems, boolean, optional
@@ -86,8 +86,6 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             throw new MissingParamException('order');
         } else if (data.params.length < 4) {
             throw new MissingParamException('orderField');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('profileId');
         }
 
         data.params[0] = data.params[0] ? data.params[0] : 0;
@@ -115,16 +113,9 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             throw new InvalidParamException('orderField');
         }
 
-        if (typeof data.params[4] !== 'number') {
-            throw new InvalidParamException('profile');
+        if (data.params[4] && typeof data.params[4] !== 'number') {
+            throw new InvalidParamException('profileId');
         }
-        const profile: resources.Profile = await this.profileService.findOne(data.params[4])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
 
         data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
         data.params[6] = data.params[6] !== '*' ? data.params[6] : undefined;

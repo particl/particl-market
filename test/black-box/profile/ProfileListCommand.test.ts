@@ -41,7 +41,7 @@ describe('ProfileListCommand', () => {
         expect(result).toHaveLength(2);
     });
 
-    test('Should return 4 Profile', async () => {
+    test('Should return 4 Profiles', async () => {
         // generate three more profile
         const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 3);
 

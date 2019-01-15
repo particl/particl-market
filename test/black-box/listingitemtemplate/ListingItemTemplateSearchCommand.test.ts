@@ -245,20 +245,6 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('orderField').getMessage());
     });
 
-    test('Should fail because we want to search without profileId', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
-            0,
-            2,
-            SearchOrder.ASC,
-            SearchOrderField.DATE
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
-    });
-
-
     test('Should return ListingItemTemplates NOT having published ListingItems', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
