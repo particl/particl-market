@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -51,6 +51,7 @@ export class EnvConfig {
         MONITOR_ENABLED: true,
         MONITOR_ROUTE: '/status',
         DB_CLIENT: 'sqlite3',
+        DB_CONNECTION: './data/database/marketplace-test.db',
         DB_POOL_MIN: 2,
         DB_POOL_MAX: 10,
         DB_MIGRATION_TABLE: 'version',
@@ -70,16 +71,11 @@ export class EnvConfig {
      */
     constructor(dataDirLocation?: string, envFileName?: string) {
 
-        if (dataDirLocation) {
-            // console.log('EnvConfig: setting DataDir:', dataDirLocation);
-            // DataDir.set(dataDirLocation);
-            this.dataDir = dataDirLocation;
-        }
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
             this.envFile = envFileName;
         } else {
-            this.envFile = path.join(DataDir.getDefaultDataDirPath(), this.envFile);
+            this.envFile = path.join(dataDirLocation || DataDir.getDefaultDataDirPath(), this.envFile);
         }
 
         console.log('EnvConfig: envFile:', this.envFile);
@@ -101,6 +97,12 @@ export class EnvConfig {
             _.forOwn(this.defaultEnv, (value: any, key: string) => {
                 console.log('process.env.' + key + ':', process.env[key]);
             });
+        }
+
+        if (dataDirLocation) {
+            // console.log('EnvConfig: setting DataDir:', dataDirLocation);
+            // DataDir.set(dataDirLocation);
+            this.dataDir = dataDirLocation;
         }
 
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -40,7 +40,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      * data.params[]:
      *  [0]: page, number, optional
      *  [1]: pageLimit, number, default=10, optional
-     *  [2]: ordering ASC/DESC, orders by createdAt, optional
+     *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
      *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
@@ -60,7 +60,6 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const status = data.params[4];
         const searchString = data.params[5];
 
-        // TODO: ordering is by createdAt, but perhaps updatedAt would be better
         // TODO: also maybe we should add support for bid expiry at some point
 
         if (data.params[6]) {
@@ -96,7 +95,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      * data.params[]:
      *  [0]: page, number, optional
      *  [1]: pageLimit, number, default=10, optional
-     *  [2]: ordering ASC/DESC, orders by createdAt, optional
+     *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
      *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional

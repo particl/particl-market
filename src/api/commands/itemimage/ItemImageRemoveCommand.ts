@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -28,6 +28,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     /**
      * data.params[]:
      *  [0]: ItemImageId
+     * todo: we should propably switch to use hashes
+     *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
@@ -38,7 +40,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         const itemInformation = itemImage.related('ItemInformation').toJSON();
 
         // check if item already been posted
-        if (itemInformation.listingItemId) {
+        if (itemImage.ItemInformation.listingItemId) {
             throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
         }
         return this.itemImageService.destroy(data.params[0]);
