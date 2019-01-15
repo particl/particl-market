@@ -89,8 +89,8 @@ describe('ListingItemTemplateSearchCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
 
-        log.debug('templatesWithoutItems:', JSON.stringify(templatesWithoutItems, null, 2));
-        log.debug('templatesWithItems:', JSON.stringify(templatesWithItems, null, 2));
+        // log.debug('templatesWithoutItems:', JSON.stringify(templatesWithoutItems, null, 2));
+        // log.debug('templatesWithItems:', JSON.stringify(templatesWithItems, null, 2));
 
     });
 
@@ -275,7 +275,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ListingItemTemplate[] = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result).toHaveLength(2);
         expect(result[0].ListingItems.length).toBe(0);
     });

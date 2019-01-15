@@ -21,14 +21,8 @@ import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
-import { SmsgMessage } from '../models/SmsgMessage';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
-import { VoteMessageInterface } from '../messages/VoteMessageInterface';
-import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
 
 type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
 
@@ -196,9 +190,11 @@ export class MessageProcessor implements MessageProcessorInterface {
                 fetchNext = await this.getSmsgMessages(params.types, params.status, params.amount)
                     .then( async smsgMessages => {
 
-                        // this.log.debug('smsgMessages: ' + JSON.stringify(smsgMessages, null, 2));
+                        // this.log.debug('searching: ' + params.types);
 
                         if (!_.isEmpty(smsgMessages)) {
+                            this.log.debug('smsgMessages: ' + JSON.stringify(smsgMessages, null, 2));
+
                             for (const smsgMessage of smsgMessages) {
                                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING);
                                 smsgMessage.status = SmsgMessageStatus.PROCESSING;
