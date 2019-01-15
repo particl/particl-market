@@ -379,7 +379,7 @@ describe('ListingItemTemplate', async () => {
         ]);
 
         if (withListingItemAmount > 0) {
-            log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+            // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
             const generateParams = templateGenerateParams.toParamsArray();
             const templates: resources.ListingItemTemplate[] = await testDataService.generate({
                 model: CreatableModel.LISTINGITEMTEMPLATE,
@@ -392,19 +392,19 @@ describe('ListingItemTemplate', async () => {
 
         if (withoutListingItemAmount > 0) {
             templateGenerateParams.generateListingItem = false;
-            log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+            // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
 
             const generateParams = templateGenerateParams.toParamsArray();
             const templates: resources.ListingItemTemplate[] = await testDataService.generate({
                 model: CreatableModel.LISTINGITEMTEMPLATE,
-                amount: withListingItemAmount,
+                amount: withoutListingItemAmount,
                 withRelated: true,
                 generateParams
             } as TestDataGenerateRequest);
             generatedTemplates = generatedTemplates.concat(templates);
         }
 
-        log.debug('generatedTemplates:', JSON.stringify(generatedTemplates.length, null, 2));
+        // log.debug('generatedTemplates:', JSON.stringify(generatedTemplates.length, null, 2));
 
         for (const generatedListingItemTemplate of generatedTemplates) {
 
@@ -503,11 +503,7 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave)
-            .catch(reason => {
-                log.error('REASON:', JSON.stringify(reason, null, 2));
-                return {} as ListingItemTemplate;
-            });
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
@@ -668,7 +664,7 @@ describe('ListingItemTemplate', async () => {
         expect(listingItemTemplates).toHaveLength(0);
 
         // then generate some
-        generatedListingItemTemplates = await generateTemplatesAndListingItems(5, 5);
+        generatedListingItemTemplates = await generateTemplatesAndListingItems(6, 4);
         expect(generatedListingItemTemplates).toHaveLength(10);
 
     }, 600000); // timeout to 600s
@@ -690,8 +686,8 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(5);
-        log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
+        expect(templates.length).toBe(6);
+        // log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
         expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
     });
 
@@ -709,11 +705,11 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(5);
+        expect(templates.length).toBe(6);
         expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
     });
 
-    test('Should return ListingItemTemplates not having relation to ListingItem, descending order', async () => {
+    test('Should return ListingItemTemplates not having relation to ListingItem, DATE descending order', async () => {
         const searchParams = {
             page: 0,
             pageLimit: 100,
@@ -727,7 +723,7 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(5);
+        expect(templates.length).toBe(6);
         expect(templates[0].updatedAt).toBeGreaterThan(templates[4].updatedAt);
     });
 

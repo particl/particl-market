@@ -12,8 +12,11 @@ import { ListingItemObject } from './ListingItemObject';
 import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import {Logger as LoggerType} from '../../core/Logger';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'ItemInformation',
@@ -83,6 +86,8 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             sortingField = 'updated_at';
         }
 
+        ListingItem.log.debug('...search by options: ', JSON.stringify(options, null, 2));
+
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
@@ -103,13 +108,16 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 }
                 if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
                     if (options.hasItems) {
-                        qb.innerJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        ListingItem.log.debug('hasItems true');
+                        qb.innerJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     } else {
-                        qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
-                        qb.whereNot('listing_items.listing_item_template_id', 'listing_item_templates.id');
+                        ListingItem.log.debug('hasItems false');
+                        qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
+                        qb.whereNull('listing_items.listing_item_template_id');
                     }
                 } else {
-                    qb.leftJoin('listing_items', 'listing_items.listing_item_template_id', 'listing_item_templates.id');
+                    ListingItem.log.debug('hasItems undefined');
+                    qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
 
             })
