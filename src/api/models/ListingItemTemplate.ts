@@ -83,7 +83,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         } else if (SearchOrderField.STATE === options.orderField) {
             sortingField = 'listing_items.listing_item_template_id';
         } else if (SearchOrderField.DATE === options.orderField) {
-            sortingField = 'updated_at';
+            sortingField = 'listing_item_templates.updated_at';
         }
 
         ListingItem.log.debug('...search by options: ', JSON.stringify(options, null, 2));
