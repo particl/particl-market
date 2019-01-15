@@ -42,6 +42,14 @@ import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createreque
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 import * as resources from 'resources';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ListingItemTemplateSearchParams } from '../../src/api/requests/ListingItemTemplateSearchParams';
+import { SearchOrder } from '../../src/api/enums/SearchOrder';
+import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -77,6 +85,8 @@ describe('ListingItemTemplate', async () => {
     let createdListingItem1: resources.ListingItem;
 
     let updatedListingItemTemplate1: resources.ListingItemTemplate;
+
+    let generatedListingItemTemplates: resources.ListingItemTemplate[]; // for search tests
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -347,7 +357,85 @@ describe('ListingItemTemplate', async () => {
         }
     };
 
-    // TODO: missing search tests
+    const generateTemplatesAndListingItems = async (withListingItemAmount: number = 0, withoutListingItemAmount: number = 0):
+        Promise<resources.ListingItemTemplate[]> => {
+
+        let generatedTemplates: resources.ListingItemTemplate[] = [];
+
+        const templateGenerateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]);
+
+        if (withListingItemAmount > 0) {
+            // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+            const generateParams = templateGenerateParams.toParamsArray();
+            const templates: resources.ListingItemTemplate[] = await testDataService.generate({
+                model: CreatableModel.LISTINGITEMTEMPLATE,
+                amount: withListingItemAmount,
+                withRelated: true,
+                generateParams
+            } as TestDataGenerateRequest);
+            generatedTemplates = generatedTemplates.concat(templates);
+        }
+
+        if (withoutListingItemAmount > 0) {
+            templateGenerateParams.generateListingItem = false;
+            // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+
+            const generateParams = templateGenerateParams.toParamsArray();
+            const templates: resources.ListingItemTemplate[] = await testDataService.generate({
+                model: CreatableModel.LISTINGITEMTEMPLATE,
+                amount: withoutListingItemAmount,
+                withRelated: true,
+                generateParams
+            } as TestDataGenerateRequest);
+            generatedTemplates = generatedTemplates.concat(templates);
+        }
+
+        // log.debug('generatedTemplates:', JSON.stringify(generatedTemplates.length, null, 2));
+
+        for (const generatedListingItemTemplate of generatedTemplates) {
+
+            // expect the template to be related to correct profile
+            expect(generatedListingItemTemplate.Profile.id).toBe(defaultProfile.id);
+
+            if (generatedListingItemTemplate.ListingItems && generatedListingItemTemplate.ListingItems.length > 0 ) {
+                // expect to find the listingItem with relation to the template
+                const generatedListingItemModel = await listingItemService.findOne(generatedListingItemTemplate.ListingItems[0].id);
+                const generatedListingItem = generatedListingItemModel.toJSON();
+                expect(generatedListingItemTemplate.id).toBe(generatedListingItem.ListingItemTemplate.id);
+
+                // expect the listingitem to be posted to the correct market
+                expect(generatedListingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
+
+                // expect the item hash generated at the same time as template, matches with the templates one
+                // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
+                // log.debug('generatedListingItemTemplate.ListingItems[0].hash:', generatedListingItemTemplate.ListingItems[0].hash);
+                expect(generatedListingItemTemplate.hash).toBe(generatedListingItemTemplate.ListingItems[0].hash);
+            }
+
+            // expect template hash created on the server matches what we create here
+            const generatedTemplateHash = ObjectHash.getHash(generatedListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+            // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
+            // log.debug('generatedTemplateHash:', generatedTemplateHash);
+            expect(generatedListingItemTemplate.hash).toBe(generatedTemplateHash);
+
+        }
+
+        return generatedTemplates;
+    };
 
     // -------------------------------
     // TESTS
@@ -404,7 +492,7 @@ describe('ListingItemTemplate', async () => {
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
     }, 600000); // timeout to 600s
 
-    test('Should create a second ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
+    test('Should create a third ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
 
         // remove the stuff that we dont need in this test
@@ -415,21 +503,17 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave)
-            .catch(reason => {
-                log.error('REASON:', JSON.stringify(reason, null, 2));
-                return {} as ListingItemTemplate;
-            });
-        createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
+        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate2.id, testDataToSave);
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToSave);
@@ -452,15 +536,15 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should delete the ListingItemTemplate with ItemInformation', async () => {
         expect.assertions(6);
-        await listingItemTemplateService.destroy(createdListingItemTemplate2.id);
-        await expectListingItemTemplateWasDeleted(createdListingItemTemplate2);
+        await listingItemTemplateService.destroy(createdListingItemTemplate3.id);
+        await expectListingItemTemplateWasDeleted(createdListingItemTemplate3);
     });
 
     test('Should create a new ListingItemTemplate without MessagingInformation and ListingItemObjects', async () => {
@@ -473,22 +557,21 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should delete the ListingItemTemplate with ItemInformation and PaymentInformation', async () => {
         expect.assertions(11);
-        await listingItemTemplateService.destroy(createdListingItemTemplate2.id);
-        await expectListingItemTemplateWasDeleted(createdListingItemTemplate2);
+        await listingItemTemplateService.destroy(createdListingItemTemplate3.id);
+        await expectListingItemTemplateWasDeleted(createdListingItemTemplate3);
     });
 
-    // TODO: belongs to ListingItem.test
-    test('Should create ListingItem with relation to ListingItemTemplate', async () => {
+    test('Should create ListingItemTemplate with relation to ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic3));
 
-        log.debug('Should create ListingItem with relation to ListingItemTemplate');
+        log.debug('Should create ListingItemTemplate with relation to ListingItem');
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -536,27 +619,180 @@ describe('ListingItemTemplate', async () => {
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
-        let listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate1.id, testDataToUpdate);
+        let listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // remove some more data
         delete testDataToUpdate.messagingInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate1.id, testDataToUpdate);
+        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // and even more
         delete testDataToUpdate.paymentInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate1.id, testDataToUpdate);
+        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // and more
         delete testDataToUpdate.itemInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate1.id, testDataToUpdate);
+        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
+
+        // delete related ListingItem
+        await listingItemService.destroy(updatedListingItemTemplate1.ListingItems[0].id);
+
+        // finally delete the template
+        await listingItemTemplateService.destroy(updatedListingItemTemplate1.id);
+        await expectListingItemTemplateWasDeleted(updatedListingItemTemplate1);
+
     }, 600000); // timeout to 600s
+
+
+    // search tests
+    test('Should generate 10 templates for search tests', async () => {
+        await listingItemTemplateService.destroy(createdListingItemTemplate1.id);
+        await expectListingItemTemplateWasDeleted(createdListingItemTemplate1);
+        await listingItemTemplateService.destroy(createdListingItemTemplate2.id);
+        await expectListingItemTemplateWasDeleted(createdListingItemTemplate2);
+
+        // expect to have no templates at this point
+        const listingItemTemplateCollection = await listingItemTemplateService.findAll();
+        const listingItemTemplates = listingItemTemplateCollection.toJSON();
+        expect(listingItemTemplates).toHaveLength(0);
+
+        // then generate some
+        generatedListingItemTemplates = await generateTemplatesAndListingItems(6, 4);
+        expect(generatedListingItemTemplates).toHaveLength(10);
+
+    }, 600000); // timeout to 600s
+
+
+    // TODO: missing search tests
+
+    test('Should return ListingItemTemplates having relation to ListingItem', async () => {
+        const searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.ASC,
+            orderField: SearchOrderField.DATE,
+            profileId: defaultProfile.id,
+            // searchString: '*',
+            // category: '*',
+            hasItems: true
+        } as ListingItemTemplateSearchParams;
+
+        const templateCollection = await listingItemTemplateService.search(searchParams);
+        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(6);
+        // log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
+        expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
+    });
+
+    test('Should return ListingItemTemplates not having relation to ListingItem', async () => {
+        const searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.ASC,
+            orderField: SearchOrderField.DATE,
+            profileId: defaultProfile.id,
+            // searchString: '*',
+            // category: '*',
+            hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        const templateCollection = await listingItemTemplateService.search(searchParams);
+        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(6);
+        expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
+    });
+
+    test('Should return ListingItemTemplates not having relation to ListingItem, DATE descending order', async () => {
+        const searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.DESC,
+            orderField: SearchOrderField.DATE,
+            profileId: defaultProfile.id,
+            // searchString: '*',
+            // category: '*',
+            hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        const templateCollection = await listingItemTemplateService.search(searchParams);
+        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(6);
+        expect(templates[0].updatedAt).toBeGreaterThan(templates[4].updatedAt);
+    });
+
+    test('Should return ListingItemTemplates using searchString', async () => {
+        const searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.ASC,
+            orderField: SearchOrderField.DATE,
+            profileId: defaultProfile.id,
+            searchString: generatedListingItemTemplates[0].ItemInformation.title
+            // category: '*',
+            // hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        const templateCollection = await listingItemTemplateService.search(searchParams);
+        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(1);
+
+    });
+
+    test('Should return ListingItemTemplates using searchString ordered correctly', async () => {
+        const titleToSearchFor = 'titleToSearchFor';
+
+        let testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.itemInformation.title = titleToSearchFor + ' 1';
+        await listingItemTemplateService.create(testDataToSave);
+
+        testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.itemInformation.title = titleToSearchFor + ' 2';
+        await listingItemTemplateService.create(testDataToSave);
+
+        let searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.ASC,
+            orderField: SearchOrderField.TITLE,
+            profileId: defaultProfile.id,
+            searchString: titleToSearchFor
+            // category: '*',
+            // hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        let templateCollection = await listingItemTemplateService.search(searchParams);
+        let templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        expect(templates.length).toBe(2);
+        expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 1');
+        expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 2');
+
+        searchParams = {
+            page: 0,
+            pageLimit: 100,
+            order: SearchOrder.DESC,
+            orderField: SearchOrderField.TITLE,
+            profileId: defaultProfile.id,
+            searchString: titleToSearchFor
+            // category: '*',
+            // hasItems: false
+        } as ListingItemTemplateSearchParams;
+
+        templateCollection = await listingItemTemplateService.search(searchParams);
+        templates = templateCollection.toJSON();
+        expect(templates.length).toBe(2);
+        expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 2');
+        expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 1');
+
+    });
+
 
 });

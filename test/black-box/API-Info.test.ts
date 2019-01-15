@@ -22,7 +22,7 @@ describe('getnetworkinfo', () => {
         };
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const host = 'http://' + process.env.RPCHOSTNAME;
-        const port = process.env.TESTNET_PORT;
+        const port = 52935;
 
         // instanceNumber = 1, since we're assuming we're runnign against the docker-compose/kontena environment
         const res: any = await api('POST', '/', {
@@ -32,7 +32,7 @@ describe('getnetworkinfo', () => {
                 Authorization: auth
             },
             body: rpcRequestBody
-        }, 1);
+        }, 0);
 
         res.expectJson();
         res.expectStatusCode(200);
