@@ -108,10 +108,10 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 }
                 if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
                     if (options.hasItems) {
-                        ListingItem.log.debug('hasItems true');
+                        // ListingItem.log.debug('hasItems true');
                         qb.innerJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     } else {
-                        ListingItem.log.debug('hasItems false');
+                        // ListingItem.log.debug('hasItems false');
                         qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                         qb.whereNull('listing_items.listing_item_template_id');
                     }
