@@ -34,6 +34,7 @@ import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProfileService } from './ProfileService';
+import { BidService } from './BidService';
 import { Profile } from '../models/Profile';
 
 export class VoteActionService {
@@ -52,6 +53,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -168,39 +170,7 @@ export class VoteActionService {
 
                     if (voteMessage && event.smsgMessage.daysretention >= 1) {
                         const weight = await this.voteService.getVoteWeight(voteMessage.voter);
-
-                        // If vote has weight of 0, ignore, no point saving a weightless vote.
-                        // If vote has a weight > 0, process and save it.
-                        if (weight > 0) {
-                            const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight, event.smsgMessage);
-                            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
-
-                            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-                            if (!proposalResult) {
-                                proposalResult = await this.proposalService.createProposalResult(proposal);
-                            }
-                            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-                            // todo: extract method
-                            if (proposal.type === ProposalType.ITEM_VOTE
-                                && await this.shouldRemoveListingItem(proposalResult)) {
-
-                                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                                const listingItemId = await this.listingItemService.findOne(proposal.FlaggedItem.listingItemId, false)
-                                    .then(value => {
-                                        return value.Id;
-                                    }).catch(reason => {
-                                        // ignore
-                                        return null;
-                                    });
-                                if (listingItemId) {
-                                    await this.listingItemService.destroy(listingItemId);
-                                }
-                            } else {
-                                this.log.debug('No item destroyed.');
-                            }
-                            // TODO: do whatever else needs to be done
-                        }
+                        await this.decideOnProposal(voteMessage, proposal.FlaggedItem.listingItemId, proposal, weight);
                         return SmsgMessageStatus.PROCESSED;
                     } else {
                         throw new MessageException('Missing VoteMessage');
@@ -230,18 +200,30 @@ export class VoteActionService {
             return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
         });
 
+        const bid = await this.bidService.findAllByListingItemHash(proposalResult.Proposal.item, true);
+        if (bid) {
+            // We don't want to remove listings that have bids on them.
+            // Bids are only visible to buyer and seller so everybody else will remove eligable listings.
+            return false;
+        }
+
         // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
         // at minimum, a total of env.MINIMUM_REQUIRED_VOTES votes
         // at minimum, 50% of votes saying remove
 
+        const networkInfo = await this.coreRpcService.getNetworkInfo();
+        const networkSupply = 1000; // networkInfo.moneysupply * 100000000;
+
         this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
         if (removeOptionResult && okOptionResult) {
-            const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
+            // const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
             const totalWeight = okOptionResult.weight + removeOptionResult.weight;
-            if (
-                (totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000))
+            this.log.debug(`totalWeight / networkSupply = ${totalWeight} / ${networkSupply} = `
+                           + (totalWeight / networkSupply) + ' >=? 0.1 = ' + (totalWeight / networkSupply >= 0.1 ? 'TRUE' : 'FALSE'));
+            if (totalWeight / networkSupply >= 0.1) {
+                /*(totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000))
                 && (totalWeight > (process.env.MINIMUM_REQUIRED_WEIGHT || 100000000000))
-                && ((removeOptionResult.weight / (totalWeight)) > 0.5)) {
+                && ((removeOptionResult.weight / (totalWeight)) > 0.5)) {*/
                 this.log.debug('Item should be destroyed');
                 return true;
             }
@@ -260,11 +242,11 @@ export class VoteActionService {
         }
 
         // Local (instant) votes
-        this.log.debug('Casting instant vote for ' + senderAddress);
+        // this.log.debug('Casting instant vote for ' + senderAddress);
         const weight = await this.voteService.getVoteWeight(senderAddress);
-        this.log.debug('Weight calculated');
+        // this.log.debug('Weight calculated');
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderAddress);
-        this.log.debug('Vote message created');
+        // this.log.debug('Vote message created');
         const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
 
         let lastVote: any;
@@ -277,15 +259,15 @@ export class VoteActionService {
         const create: boolean = lastVote == null;
         let voteModel;
         if (create) {
-            this.log.debug('CREATE VOTE');
+            // this.log.debug('CREATE VOTE');
             // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.create(voteCreateRequest);
-            this.log.debug('Vote create request created');
+            // this.log.debug('Vote create request created');
         } else {
             // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
-            this.log.debug('UPDATE VOTE');
+            // this.log.debug('UPDATE VOTE');
             voteModel = await this.voteService.update(lastVote.id, voteCreateRequest);
-            this.log.debug('Vote create request updated');
+            // this.log.debug('Vote create request updated');
             // this.voteService.destroy(lastVote.id);
             // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
         }
@@ -293,8 +275,48 @@ export class VoteActionService {
             this.log.debug('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
             throw new MessageException('Vote wasn\'t saved or updated properly. Return val is empty.');
         }
+
+        const listingItem = await this.listingItemService.findOneByHash(proposal.item);
+        const listingItemId = listingItem.Id;
+        await this.decideOnProposal(voteMessage, listingItemId, proposal, weight);
+
         const vote = voteModel.toJSON();
         return vote;
+    }
+
+    private async decideOnProposal(voteMessage: VoteMessage, listingItemId: number, proposal: resources.Proposal, weight: number): Promise<void> {
+        // If vote has weight of 0, ignore, no point saving a weightless vote.
+        // If vote has a weight > 0, process and save it.
+        if (weight > 0) {
+            const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight);
+            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+
+            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
+            if (!proposalResult) {
+                proposalResult = await this.proposalService.createProposalResult(proposal);
+            }
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+            // todo: extract method
+            if (proposal.type === ProposalType.ITEM_VOTE
+                && await this.shouldRemoveListingItem(proposalResult)) {
+
+                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                const tmpListingItemId = await this.listingItemService.findOne(listingItemId, false)
+                    .then(value => {
+                        return value.Id;
+                    }).catch(reason => {
+                        // ignore
+                        return null;
+                    });
+                if (tmpListingItemId) {
+                    await this.listingItemService.destroy(tmpListingItemId);
+                }
+            } else {
+                this.log.debug('No item destroyed.');
+            }
+            // TODO: do whatever else needs to be done
+        }
     }
 
     private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
