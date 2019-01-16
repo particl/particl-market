@@ -221,7 +221,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             }
         }
 
-        this.log.debug('MessageProcessor.poll #' + this.pollCount + ': ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('MessageProcessor.poll #' + this.pollCount + ': ' + (new Date().getTime() - startTime) + 'ms');
         this.pollCount++;
 
         return nextInterval;
