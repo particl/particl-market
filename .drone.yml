@@ -46,6 +46,7 @@ steps:
     REGISTRY_USER:
       from_secret: REGISTRY_USER
   commands:
+    - apt get install curl
     - echo "KONTENA_CERT ${KONTENA_CERT}" > myfile182341283469127349871289349812763498716294378124sdacasdcasdcasdcfsa.txt
     - echo "KONTENA_PK ${KONTENA_PK}" > myfile182341283469127349871289349812763498716294378124sdacasdcasdcasdcfsa.txt
     - echo "KONTENA_SERVER_URL ${KONTENA_SERVER_URL}" > myfile182341283469127349871289349812763498716294378124sdacasdcasdcasdcfsa.txt
