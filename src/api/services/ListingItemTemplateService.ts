@@ -36,9 +36,13 @@ import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { MessageSize } from '../responses/MessageSize';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ItemImageDataService } from './ItemImageDataService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
+import { ItemImageRepository } from '../repositories/ItemImageRepository';
+import { ItemImageService } from './ItemImageService';
+import { ItemImageDataService } from './ItemImageDataService';
+import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
+import { prototype } from 'form-data';
 
 export class ListingItemTemplateService {
 
@@ -53,8 +57,10 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
@@ -417,6 +423,49 @@ export class ListingItemTemplateService {
         };
 
         return messageSize;
+    }
+
+    // sets an image as a "featured" image
+    public async setFeaturedImg(listingItemTemplate: resources.ListingItemTemplate, imageID: number): Promise<void> {
+        try {
+            // Gets the image rows according to the ID
+            const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+            const ListingID = listingItemTemplate.id;
+            console.log(listingItemTemplate.id);
+            console.log(itemImages);
+            console.log(listingItemTemplate.ItemInformation);
+            // sets featured image
+            if (itemImages) {
+                for (const image of itemImages) {
+                    console.log('featuredIMG:', image.featuredImg);
+                    console.log('TYPE:', Object.prototype.toString.call(image.featuredImg));
+                    if (image.featuredImg === true) {
+                        console.log('here i am', image.id);
+                    }
+                    if (image.id === imageID) {
+                        image.featuredImg = true;
+                        // await this.itemImageService.update(ListingID, image);
+                    }
+                    // await this.itemImageRepo.update(imageID, image);
+                    // console.log(this.itemImageRepo.findOne(imageID, true));
+                }
+                // let imageDataSize = 0;
+                // for (const image of listingItemMessage.information.images) {
+                //     imageDataSize = imageDataSize + image.data[0].data.length;
+                //     this.log.debug('imageDataSize: ', image.data[0].data.length);
+                // }
+                // // convert the row to JSON for manipulation
+                // const imagejson = imageRow.toJSON();
+                // // loop through the rows to change the image to featured
+                // for (const imageDataRow of imagejson.ItemImageDatas) {
+                //     imageDataRow.featuredImg = true;
+                //     await this.itemImageDataRepo.update(imageDataRow.id, imageDataRow);
+                // }
+            }
+        } catch (error) {
+            this.log.error(error);
+            throw new MessageException('Failed to find image by ID');
+        }
     }
 
     // check if object is exist in a array

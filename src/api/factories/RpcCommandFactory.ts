@@ -60,6 +60,7 @@ import { ItemImageRootCommand } from '../commands/itemimage/ItemImageRootCommand
 import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand';
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
+import { ItemImageFeaturedCommand } from '../commands/itemimage/ItemImageFeaturedCommand';
 
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
@@ -201,6 +202,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageListCommand) private itemImageListCommand: ItemImageListCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageFeaturedCommand) private itemImageFeaturedCommand: ItemImageFeaturedCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
@@ -349,6 +351,7 @@ export class RpcCommandFactory {
         this.commands.push(itemImageListCommand);
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageRemoveCommand);
+        this.commands.push(itemImageFeaturedCommand);
 
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);

@@ -49,6 +49,7 @@ export class ItemImageRepository {
             const itemImageUpdated = await itemImage.save(data, { patch: true });
             return await this.ItemImageModel.fetchById(itemImageUpdated.id);
         } catch (error) {
+            console.log('image data:', data);
             throw new DatabaseException('Could not update the itemImage!', error);
         }
     }
@@ -68,5 +69,31 @@ export class ItemImageRepository {
             throw new DatabaseException('Could not delete the itemImage!', error);
         }
     }
+
+    // public async setFeaturedImg(id: number): Promise<void> {
+    //     let itemImage = this.ItemImageModel.forge<ItemImage>({ id });
+    //     try {
+    //         itemImage = await this.ItemImageModel.fetchById(id, true);
+    //         this.log.info('SUSSCESSFULLY GOT ITEM IMAGE');
+    //     } catch (error) {
+    //         this.log.error('COULDNT GET ITEM IMAGE', error);
+    //         throw new NotFoundException(id);
+    //     }
+
+
+    //     try {
+    //         const imageDatas = itemImage.ItemImageDatas();
+    //         console.log(imageDatas);
+    //         for (const data of imageDatas.collect()) {
+    //             data.set({featured_img: true});
+    //         }
+    //         this.log.info('TRY WAS SUCCESSFUL');
+    //         return;
+    //     } catch (error) {
+    //         this.log.error('TRY FAILD', error);
+    //         console.log(error);
+    //         throw new DatabaseException('Could not set featured image', error);
+    //     }
+    // }
 
 }
