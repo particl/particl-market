@@ -135,6 +135,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             });
 
         data.params[2] = data.params.length >= 3 ? data.params[2] : 'This ListingItem should be removed.';
+
+        // todo: setting the original expiryTime from the ListingItem
+        // todo: instead we should calculate better value using expiredAt-now() ...
         data.params[3] = listingItem.expiryTime;
 
         return data;
@@ -147,7 +150,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemHash>  - String - The hash of the ListingItem we want to report. \n'
-            + '    <profileId>        - Numeric - The ID of the Profile reporting the item.';
+            + '    <profileId>        - Numeric - The ID of the Profile used to report the item.';
     }
 
     public description(): string {
