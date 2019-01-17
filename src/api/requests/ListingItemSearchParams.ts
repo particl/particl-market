@@ -20,8 +20,8 @@ export class ListingItemSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder;
     public category: string | number;
-    @ValidateIf(o => o.type)
-    @IsEnum(ListingItemSearchType)
+    // @ValidateIf(o => o.type)
+    // @IsEnum(ListingItemSearchType)
     public type: ListingItemSearchType;
     public profileId: string | number;
     public minPrice: number | null;

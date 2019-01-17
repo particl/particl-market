@@ -104,10 +104,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.expiredListingItemProcessor.scheduleProcess();
 
                 // start message polling, unless we're running tests
-                if (!Environment.isTest()) {
-                    this.smsgMessageProcessor.schedulePoll();
-                    this.messageProcessor.schedulePoll();
-                }
+                this.smsgMessageProcessor.schedulePoll();
+                this.messageProcessor.schedulePoll();
                 this.interval = 10000;
             }
 

@@ -20,7 +20,7 @@ export interface ApiOptions<T, T2> {
 export const api = async <T> ( method: string, path: string, options: ApiOptions<T, any> = {}, instanceNumber: number = 0) => {
 
     const HOST = options.host ? options.host : process.env.APP_HOST;
-    const PORT = parseInt((options.port ? options.port : process.env.APP_PORT), 10) + (1000 * instanceNumber);
+    const PORT = parseInt((options.port ? options.port : process.env.APP_PORT), 10) + (100 * instanceNumber);
     const uri = `${HOST}:${PORT}${path}`;
     const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
 

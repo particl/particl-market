@@ -6,8 +6,12 @@ import {Bookshelf as Database, Bookshelf} from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import * as _ from 'lodash';
+import {Logger as LoggerType} from '../../core/Logger';
+import {ListingItem} from './ListingItem';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [];
 

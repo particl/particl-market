@@ -53,5 +53,7 @@ export class SmsgMessageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public text: string;
 
+    public updated_at: number;
+    public created_at: number;
 }
 // tslint:enable:variable-name

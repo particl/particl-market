@@ -55,8 +55,17 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
 
+        this.log.info('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
+
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
+            .then(async value => {
+                this.log.info('process(), created: ', value);
+
+                const all = await this.smsgMessageService.findAll();
+                this.log.info('process(), created: ', JSON.stringify(all.toJSON(), null, 2));
+
+            })
             .catch(reason => {
                 this.log.error('ERROR: ', reason);
             });
@@ -115,6 +124,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      */
     private async pollMessages(): Promise<any> {
         const response = await this.smsgService.smsgInbox('unread');
+        this.log.info('pollMessages(): ' + response.result);
         return response;
     }
 }

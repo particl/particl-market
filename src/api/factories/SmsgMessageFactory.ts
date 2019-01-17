@@ -52,7 +52,10 @@ export class SmsgMessageFactory {
                     daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,
-                    text: message.text
+                    text: message.text,
+                    // need to set these manually since knex doesn't set these in correct format
+                    updated_at: Date.now(),
+                    created_at: Date.now()
                 } as SmsgMessageCreateRequest;
 
                 return createRequest;
@@ -75,7 +78,9 @@ export class SmsgMessageFactory {
                     daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,
-                    text: message.text
+                    text: message.text,
+                    updated_at: Date.now(),
+                    created_at: Date.now()
                 } as SmsgMessageCreateRequest;
 
                 return createRequest;
