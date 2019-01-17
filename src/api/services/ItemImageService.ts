@@ -253,7 +253,6 @@ export class ItemImageService {
             }
         }
         // sets the featured image
-        console.log(itemImage);
         if (itemImage) {
             const data = {
                 id: imageId,
