@@ -429,9 +429,31 @@ export class ListingItemTemplateService {
     // sets an image as a "featured" image
     public async setFeaturedImg(listingItemTemplate: resources.ListingItemTemplate, imageID: number): Promise<void> {
         try {
-            const ListingID = listingItemTemplate.id;
-            await this.itemImageService.updateFeaturedImage(ListingID, imageID);
-            this.log.info('Successfully set featured image');
+            const templateID = listingItemTemplate.id;
+            const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+            if (!itemImages.find((img) => img.id === imageID)) {
+                throw new MessageException('Image ID doesnt exist on template');
+            }
+            if (itemImages) {
+                // loop through templates to check for previous featured images, sets to false
+                for (const item of itemImages) {
+                    if (item.featuredImg && item.id !== imageID) {
+                        const data = {
+                            id: item.id,
+                            featured_img: false
+                        };
+                        await this.itemImageRepo.update(templateID, data);
+                    }
+                    if (item.id === imageID && !item.featuredImg) {
+                        const data = {
+                            id: item.id,
+                            featured_img: true
+                        };
+                        await this.itemImageRepo.update(templateID, data);
+                    }
+                }
+                this.log.info('Successfully set featured image');
+            }
         } catch (error) {
             this.log.error(error);
             throw new MessageException('Failed to set featured image');
