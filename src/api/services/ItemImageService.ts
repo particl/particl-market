@@ -231,11 +231,15 @@ export class ItemImageService {
         const allTemplates = await this.findAll()
         .then(value => {
             return value.toJSON();
+        }).catch (error => {
+            throw new MessageException('Couldnt get all templates!');
         });
         // findOne throws if not found
         const itemImage = await this.findOne(templateID)
         .then(value => {
             return value.toJSON();
+        }).catch (error => {
+            throw new MessageException('Couldnt get item templates!');
         });
         if (itemImage.itemInformationId !== imageId) {
             throw new MessageException('Image ID not found on template!');
@@ -253,7 +257,6 @@ export class ItemImageService {
             }
         }
         // sets the featured image
-        console.log(itemImage);
         if (itemImage) {
             const data = {
                 id: imageId,
