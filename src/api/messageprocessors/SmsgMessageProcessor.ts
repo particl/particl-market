@@ -124,7 +124,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      */
     private async pollMessages(): Promise<any> {
         const response = await this.smsgService.smsgInbox('unread');
-        this.log.info('pollMessages(): ' + response.result);
+        // this.log.info('pollMessages(): ' + response.result);
         return response;
     }
 }

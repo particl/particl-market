@@ -27,7 +27,6 @@ steps:
     - echo "DRONE_COMMIT_LINK ${DRONE_COMMIT_LINK}"
     - echo "DRONE_COMMIT_REF ${DRONE_COMMIT_REF}"
 
-
 - name: restore cache
   image: plugins/s3-cache:latest
   volumes:
@@ -158,6 +157,41 @@ steps:
       path: /app/node_modules
     - name: node_modules
       path: /workspace/particl-market/node_modules
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+    CACHE_ACCESS_KEY:
+      from_secret: CACHE_ACCESS_KEY
+    CACHE_SECRET_KEY:
+      from_secret: CACHE_SECRET_KEY
+    MINIO_ACCESS_KEY:
+      from_secret: MINIO_ACCESS_KEY
+    MINIO_SECRET_KEY:
+      from_secret: MINIO_SECRET_KEY
+    REGISTRY_PASSWORD:
+      from_secret: REGISTRY_PASSWORD
+    REGISTRY_USER:
+      from_secret: REGISTRY_USER
   commands:
     - cd /app
     - bin/ci-unit-tests.sh

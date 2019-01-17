@@ -705,8 +705,8 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(6);
-        expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
+        expect(templates.length).toBe(4);
+        expect(templates[0].updatedAt).toBeLessThan(templates[3].updatedAt);
     });
 
     test('Should return ListingItemTemplates not having relation to ListingItem, DATE descending order', async () => {
@@ -723,8 +723,8 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(6);
-        expect(templates[0].updatedAt).toBeGreaterThan(templates[4].updatedAt);
+        expect(templates.length).toBe(4);
+        expect(templates[0].updatedAt).toBeGreaterThan(templates[3].updatedAt);
     });
 
     test('Should return ListingItemTemplates using searchString', async () => {
