@@ -25,6 +25,9 @@ import { ItemVote } from '../../enums/ItemVote';
 import { ProposalFactory } from '../../factories/ProposalFactory';
 import * as _ from 'lodash';
 import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { SearchOrderField } from '../../enums/SearchOrderField';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -51,26 +54,20 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      *  [2]: reason, optional
      *  [3]: expiryTime (from listingitem, set in validate)
      *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const listingItemHash = data.params.shift();
-        const profileId = data.params.shift();
-        const proposalDescription = data.params.shift();
-        const daysRetention = data.params.shift();  // not perfect, but more than needed
+        const listingItemHash = data.params[0];
+        const profileId = data.params[1];
+        const proposalDescription = data.params[2];
+        const daysRetention = data.params[3];
 
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
-        const profileModel = await this.profileService.findOne(profileId) // throws if not found
-            .catch(reason => {
-                this.log.error('ERROR:', reason);
-                throw new MessageException('Profile not found.');
-            });
+        const profileModel = await this.profileService.findOne(profileId);
         const profile: resources.Profile = profileModel.toJSON();
 
         // Get the default market.
@@ -103,24 +100,22 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            this.log.error('Missing listingItemHash.');
-            throw new MessageException('Missing listingItemHash.');
-        }
-        if (data.params.length < 2) {
-            this.log.error('Missing profileId.');
-            throw new MessageException('Missing profileId.');
+            throw new MissingParamException('listingItemHash');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('profileId');
         }
 
-        let listingItemModel: ListingItem;
         if (typeof data.params[0] !== 'string') {
-            throw new MessageException('Invalid listingItemHash.');
-        } else {
-            listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
-                .catch(reason => {
-                    this.log.error('ListingItem not found.');
-                    throw new MessageException('ListingItem not found.');
-                });
+            throw new InvalidParamException('listingItemHash', 'string');
+        } else if (data.params[1] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
         }
+
+
+        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
         const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
         // check if item is already flagged
@@ -132,19 +127,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         // hash is what we need in execute()
         data.params[0] = listingItem.hash;  // set to hash
 
-        if (typeof data.params[1] !== 'number') {
-            this.log.error('profileId needs to be a number.');
-            throw new MessageException('profileId needs to be a number.');
-        } else {
-            // make sure profile with the id exists
-            await this.profileService.findOne(data.params[1])    // throws if not found
-                .catch(reason => {
-                    this.log.error('Profile not found. ' + reason);
-                    throw new MessageException('Profile not found.');
-                });
-        }
+        // make sure profile with the id exists
+        await this.profileService.findOne(data.params[1])
+            .catch(reason => {
+                this.log.error('Profile not found. ' + reason);
+                throw new ModelNotFoundException('Profile');
+            });
 
-        data.params[2] = data.params.length === 3 ? data.params[2] : 'This ListingItem should be removed.';
+        data.params[2] = data.params.length >= 3 ? data.params[2] : 'This ListingItem should be removed.';
         data.params[3] = listingItem.expiryTime;
 
         return data;
