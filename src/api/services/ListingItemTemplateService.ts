@@ -451,7 +451,7 @@ export class ListingItemTemplateService {
                             hash: image.hash,
                             featured_img: image.featuredImg,
                             datas: [{
-
+                                dataId: image.ItemImageDatas[0].dataId,
                                 protocol: ImageDataProtocolType.LOCAL,
                                 imageVersion: 'ORIGINAL',
                                 encoding: 'BASE64',
