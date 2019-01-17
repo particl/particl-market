@@ -49,7 +49,6 @@ export class ItemImageRepository {
             const itemImageUpdated = await itemImage.save(data, { patch: true });
             return await this.ItemImageModel.fetchById(itemImageUpdated.id);
         } catch (error) {
-            console.log('image data:', data);
             throw new DatabaseException('Could not update the itemImage!', error);
         }
     }

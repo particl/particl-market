@@ -429,56 +429,12 @@ export class ListingItemTemplateService {
     // sets an image as a "featured" image
     public async setFeaturedImg(listingItemTemplate: resources.ListingItemTemplate, imageID: number): Promise<void> {
         try {
-            // Gets the image rows according to the ID
-            const itemImages = listingItemTemplate.ItemInformation.ItemImages;
             const ListingID = listingItemTemplate.id;
-            console.log(listingItemTemplate.id);
-            console.log(itemImages);
-            console.log(listingItemTemplate.ItemInformation);
-            // sets featured image
-            if (itemImages) {
-                for (const image of itemImages) {
-                    console.log('featuredIMG:', image.featuredImg);
-                    console.log('TYPE:', Object.prototype.toString.call(image.featuredImg));
-                    if (image.featuredImg === true) {
-                        console.log('here i am', image.id);
-                    }
-                    if (image.id === imageID) {
-                        image.featuredImg = true;
-                        console.log('HERE I AM:', image);
-                        const imgDatas = {
-                            item_information_id: image.id,
-                            hash: image.hash,
-                            featured_img: image.featuredImg,
-                            datas: [{
-                                dataId: image.ItemImageDatas[0].dataId,
-                                protocol: ImageDataProtocolType.LOCAL,
-                                imageVersion: 'ORIGINAL',
-                                encoding: 'BASE64',
-                                data: image.ItemImageDatas[0].data
-                            }]
-                        } as ItemImageUpdateRequest;
-                        await this.itemImageService.update(ListingID, imgDatas as ItemImageUpdateRequest);
-                    }
-                    // await this.itemImageRepo.update(imageID, image);
-                    // console.log(this.itemImageRepo.findOne(imageID, true));
-                }
-                // let imageDataSize = 0;
-                // for (const image of listingItemMessage.information.images) {
-                //     imageDataSize = imageDataSize + image.data[0].data.length;
-                //     this.log.debug('imageDataSize: ', image.data[0].data.length);
-                // }
-                // // convert the row to JSON for manipulation
-                // const imagejson = imageRow.toJSON();
-                // // loop through the rows to change the image to featured
-                // for (const imageDataRow of imagejson.ItemImageDatas) {
-                //     imageDataRow.featuredImg = true;
-                //     await this.itemImageDataRepo.update(imageDataRow.id, imageDataRow);
-                // }
-            }
+            await this.itemImageService.updateFeaturedImage(ListingID, imageID);
+            this.log.info('Successfully set featured image');
         } catch (error) {
             this.log.error(error);
-            throw new MessageException('Failed to find image by ID');
+            throw new MessageException('Failed to set featured image');
         }
     }
 

@@ -225,6 +225,45 @@ export class ItemImageService {
         }
     }
 
+    public async updateFeaturedImage(templateID: number, imageId: number): Promise<ItemImage> {
+        let returnUpdate: any;
+        // get all templates errors if not found
+        const allTemplates = await this.findAll()
+        .then(value => {
+            return value.toJSON();
+        });
+        // findOne throws if not found
+        const itemImage = await this.findOne(templateID)
+        .then(value => {
+            return value.toJSON();
+        });
+        if (itemImage.itemInformationId !== imageId) {
+            throw new MessageException('Image ID not found on template!');
+        }
+        if (allTemplates) {
+            // loop through templates to check for previous featured images, sets to false
+            for (const item of allTemplates) {
+                if (item.itemInformationId === templateID && item.featuredImg === 1) {
+                    const data = {
+                        id: item.id,
+                        featured_img: false
+                    };
+                    await this.itemImageRepo.update(templateID, data);
+                }
+            }
+        }
+        // sets the featured image
+        console.log(itemImage);
+        if (itemImage) {
+            const data = {
+                id: imageId,
+                featured_img: true
+            };
+            returnUpdate = await this.itemImageRepo.update(templateID, data);
+        }
+        return returnUpdate;
+    }
+
     public async destroy(id: number): Promise<void> {
         await this.itemImageRepo.destroy(id);
     }

@@ -36,9 +36,9 @@ export class ItemImageFeaturedCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        if (data.params.length < 1) {
+        if (data.params.length < 2) {
             this.log.error('MISSING PARAMS');
-            throw new MessageException('Requires arg: ItemImageId');
+            throw new MessageException('Requires arg: TemplateID, ItemImageId');
         }
         const itemImageModel = await this.itemImageService.findOne(data.params[0]);
         const itemImage = itemImageModel.toJSON();
@@ -54,12 +54,12 @@ export class ItemImageFeaturedCommand extends BaseCommand implements RpcCommandI
     }
 
     public usage(): string {
-        return this.getName() + ' <itemImageId> ';
+        return this.getName() + ' <templateID> <itemImageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <itemImageId>                 - Numeric - The ID of the image we want to remove.';
+            + '   <templateID> <itemImageId>                 - Numeric - The ID of the image we want to remove.';
     }
 
     public description(): string {
