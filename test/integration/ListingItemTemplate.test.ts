@@ -705,7 +705,7 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(6);
+        expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
     });
 
@@ -723,7 +723,7 @@ describe('ListingItemTemplate', async () => {
 
         const templateCollection = await listingItemTemplateService.search(searchParams);
         const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
-        expect(templates.length).toBe(6);
+        expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeGreaterThan(templates[4].updatedAt);
     });
 
