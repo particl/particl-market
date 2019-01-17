@@ -43,6 +43,7 @@ import { ItemImageService } from './ItemImageService';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { prototype } from 'form-data';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ListingItemTemplateService {
 
@@ -444,7 +445,20 @@ export class ListingItemTemplateService {
                     }
                     if (image.id === imageID) {
                         image.featuredImg = true;
-                        // await this.itemImageService.update(ListingID, image);
+                        console.log('HERE I AM:', image);
+                        const imgDatas = {
+                            item_information_id: image.id,
+                            hash: image.hash,
+                            featured_img: image.featuredImg,
+                            datas: [{
+
+                                protocol: ImageDataProtocolType.LOCAL,
+                                imageVersion: 'ORIGINAL',
+                                encoding: 'BASE64',
+                                data: image.ItemImageDatas[0].data
+                            }]
+                        } as ItemImageUpdateRequest;
+                        await this.itemImageService.update(ListingID, imgDatas as ItemImageUpdateRequest);
                     }
                     // await this.itemImageRepo.update(imageID, image);
                     // console.log(this.itemImageRepo.findOne(imageID, true));
