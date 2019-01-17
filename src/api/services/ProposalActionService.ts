@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,8 +8,6 @@ import { inject, named} from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
-import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
-import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
 import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
@@ -30,8 +28,6 @@ import { VoteFactory } from '../factories/VoteFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { VoteService } from './VoteService';
-import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { ProposalResult } from '../models/ProposalResult';
 import { ItemVote } from '../enums/ItemVote';
 import { FlaggedItemService } from './FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';

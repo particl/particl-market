@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -108,6 +108,7 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should fail to search ListingItems if type is invalid', async () => {
+        // wtf, why pass defaultListingItemSearchParams?
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.type = 'INVALID';
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));

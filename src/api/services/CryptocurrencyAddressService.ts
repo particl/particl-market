@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -42,10 +42,7 @@ export class CryptocurrencyAddressService {
     @validate()
     public async create( @request(CryptocurrencyAddressCreateRequest) body: CryptocurrencyAddressCreateRequest): Promise<CryptocurrencyAddress> {
         // If the request body was valid we will create the cryptocurrencyAddress
-        const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body).catch(e => {
-            this.log.error('CryptocurrencyAddressService.create(): ', e);
-            throw e;
-        });
+        const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body);
 
         // finally find and return the created cryptocurrencyAddress
         return await this.findOne(cryptocurrencyAddress.Id);

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -97,9 +97,6 @@ describe('ShippingZips', () => {
             // TODO: FIX this is not working at all
             if ( true ) { // TODO: skipping andorra which doesnt work for some reason
                 const res = ShippingZips.isCountryCodeSupported(countryCode);
-                if ( res === false ) {
-                    console.log(`ShippingZips.isCountryCodeSupported(): 1: Country code <${countryCode}> not supported.`);
-                }
                 expect(res).toBe(true);
             }
         }
@@ -112,9 +109,6 @@ describe('ShippingZips', () => {
             if ( x ) {
                 const countryCode = x['countryCode'];
                 const res = ShippingZips.isCountryCodeSupported(countryCode);
-                if ( !res ) {
-                    console.log(`ShippingZips.tests: isCountryCodeSupported(): 2: Country code <${countryCode}> not supported.`);
-                }
                 expect(res).toBe(true);
             }
         }
@@ -177,9 +171,6 @@ describe('ShippingZips', () => {
                 for ( const zip of x['zip'] ) {
                     if ( true ) {
                         const res = ShippingZips.validate(countryCode, zip);
-                        if ( !res ) {
-                            console.log(`ShippingZips.tests: validate(): 2: Country code / zip combo <${countryCode}:${zip}> not supported, but should be.`);
-                        }
                         expect(res).toBe(true);
                     }
                 }

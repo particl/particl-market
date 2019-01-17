@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -24,7 +24,7 @@ export class DatabaseResetCommand extends AbstractCommand {
     public static description = 'Reverse all current migrations and migrate to latest.';
 
     public async run(): Promise<void> {
-        const knex = Knex(DatabaseConfig as Knex.Config);
+        const knex = Knex(DatabaseConfig() as Knex.Config);
 
         const migrate: any = knex.migrate;
 

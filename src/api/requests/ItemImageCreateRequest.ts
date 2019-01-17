@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,14 +12,10 @@ export class ItemImageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public item_information_id: number;
 
-    // hash should be created in the service
-    // @IsNotEmpty()
     public hash: string;
 
-    // TODO: rename to datas
-    // TODO: type should propably be ItemImageDataCreateRequest[]
     @IsNotEmpty()
-    public data: any;
+    public datas: ItemImageDataCreateRequest[];
 
 }
 // tslint:enable:variable-name

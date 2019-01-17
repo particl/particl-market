@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -57,7 +57,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     }
 
     public description(): string {
-        return 'Get listing item template via listingItemTemplateId.';
+        return 'Get ListingItemTemplate using its id.';
     }
 
     public example(): string {

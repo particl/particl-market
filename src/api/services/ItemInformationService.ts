@@ -1,17 +1,16 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
-import { MessageException } from '../exceptions/MessageException';
-
 import { ItemInformationRepository } from '../repositories/ItemInformationRepository';
 import { ItemInformation } from '../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -19,7 +18,6 @@ import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateR
 import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
-import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../models/ItemCategory';
@@ -34,7 +32,6 @@ export class ItemInformationService {
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) public shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Repository) @named(Targets.Repository.ItemInformationRepository) public itemInformationRepo: ItemInformationRepository,
-        @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepository: ListingItemTemplateRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -68,7 +65,7 @@ export class ItemInformationService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -105,6 +102,7 @@ export class ItemInformationService {
 
         for (const itemImage of itemImages) {
             itemImage.item_information_id = itemInformation.Id;
+            // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
             await this.itemImageService.create(itemImage);
         }
 
@@ -113,17 +111,6 @@ export class ItemInformationService {
         // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
-    }
-
-    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
-        const listingItemTemplateId = body.listing_item_template_id;
-        const listingItemTemplate = await this.listingItemTemplateRepository.findOne(listingItemTemplateId);
-        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
-        if (_.isEmpty(itemInformation)) {
-            this.log.warn(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
-            throw new MessageException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
-        }
-        return this.update(itemInformation.id, body);
     }
 
     @validate()

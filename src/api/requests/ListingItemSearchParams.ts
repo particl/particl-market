@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -20,8 +20,8 @@ export class ListingItemSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder;
     public category: string | number;
-    @ValidateIf(o => o.type)
-    @IsEnum(ListingItemSearchType)
+    // @ValidateIf(o => o.type)
+    // @IsEnum(ListingItemSearchType)
     public type: ListingItemSearchType;
     public profileId: string | number;
     public minPrice: number | null;

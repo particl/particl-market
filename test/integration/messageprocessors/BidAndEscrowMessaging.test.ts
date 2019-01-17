@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -122,7 +122,7 @@ describe('BidMessageProcessing', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,  // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -164,7 +164,6 @@ describe('BidMessageProcessing', () => {
         log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
         expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
-        delete listingItem.ItemInformation.ItemImages;
         log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         // expect the ListingItem have no Bids and one ActionMessage at this point

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,6 +10,7 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+
 
 export class SmsgMessageRepository {
 
@@ -47,6 +48,15 @@ export class SmsgMessageRepository {
         } catch (error) {
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
+    }
+
+    /**
+     * returns just the last id when using sqlite
+     *
+     * @param datas
+     */
+    public async createAll(datas: any[]): Promise<number> {
+        return await SmsgMessage.createAll(datas);
     }
 
     public async update(id: number, data: any): Promise<SmsgMessage> {

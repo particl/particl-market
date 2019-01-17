@@ -1,0 +1,432 @@
+
+workspace:
+  base: /workspace      # shared base volume available to all pipeline steps.
+  path: particl-market  # default working directory, where your code is cloned
+
+kind: pipeline
+name: Build and Push
+
+steps:
+
+- name: build info
+  image: docker
+  commands:
+    - echo "DRONE_MACHINE ${DRONE_MACHINE}"
+    - echo "DRONE_RUNNER_HOSTNAME ${DRONE_RUNNER_HOSTNAME}"
+    - echo "DRONE_RUNNER_LABEL ${DRONE_RUNNER_LABEL}"
+    - echo "DRONE_REPO ${DRONE_REPO}"
+    - echo "DRONE_BUILD_EVENT ${DRONE_BUILD_EVENT}"
+    - echo "DRONE_BUILD_NUMBER ${DRONE_BUILD_NUMBER}"
+    - echo "DRONE_COMMIT_MESSAGE ${DRONE_COMMIT_MESSAGE}"
+    - echo "DRONE_COMMIT_AUTHOR_EMAIL ${DRONE_COMMIT_AUTHOR_EMAIL}"
+    - echo "DRONE_COMMIT_BRANCH ${DRONE_COMMIT_BRANCH}"
+    - echo "DRONE_COMMIT_SHA ${DRONE_COMMIT_SHA}"
+    - echo "DRONE_PULL_REQUEST ${DRONE_PULL_REQUEST}"
+    - echo "DRONE_SOURCE_BRANCH ${DRONE_SOURCE_BRANCH}"
+    - echo "DRONE_TARGET_BRANCH ${DRONE_TARGET_BRANCH}"
+    - echo "DRONE_COMMIT_LINK ${DRONE_COMMIT_LINK}"
+    - echo "DRONE_COMMIT_REF ${DRONE_COMMIT_REF}"
+
+
+- name: restore cache
+  image: plugins/s3-cache:latest
+  volumes:
+    - name: node_modules
+      path: /workspace/particl-market/node_modules
+  settings:
+    pull: true
+    endpoint: http://minio.particl.xyz:9001
+    access_key:
+      from_secret: MINIO_ACCESS_KEY
+    secret_key:
+      from_secret: MINIO_SECRET_KEY
+    restore: true
+    path: /cache/particl-market/
+
+
+- name: build (feature-push)
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - feature                         # kontena feature env stack tag
+  when:
+    branch:
+      exclude:
+        - develop
+        - master
+    event:
+      - push
+    repo:
+      exclude:
+        - particl/particl-market
+      include:
+        - xludx/particl-market          # todo: others
+
+
+- name: build (feature-pr)
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - feature                         # kontena feature env stack tag
+  when:
+    branch:                           # target branch is evaluated for pull requests
+      - develop                       # ...and branch names are not available for tag events.
+    event:
+      - pull_request
+    repo:
+      include:
+        - particl/particl-market
+        - xludx/particl-market
+
+
+- name: build (develop-push)
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - develop                         # kontena develop env stack tag
+  when:
+    branch:
+      - develop
+    event:
+      - push
+
+
+- name: build (develop-pr)
+  image: plugins/docker
+  pull: always
+  storage_path: /workspace/docker
+  settings:
+    repo: ludx/particl-market-ci
+    dockerfile: Dockerfile.ci
+    username:
+      from_secret: REGISTRY_USER
+    password:
+      from_secret: REGISTRY_PASSWORD
+    debug: true
+    tags:
+      - latest
+      - ${DRONE_COMMIT_SHA}             # current commit tag
+      - ci-test                         # kontena blackbox/ui test env stack tag
+      - develop                         # kontena master env stack tag
+  when:
+    branch:
+      - master
+    event:
+      - pull_request
+
+
+- name: run unit tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+    - name: node_modules
+      path: /workspace/particl-market/node_modules
+  commands:
+    - cd /app
+    - bin/ci-unit-tests.sh
+
+
+- name: run integration tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+  commands:
+    - cd /app
+    - echo ".env -------------------------------------------------------------------------"
+    - cat .env
+    - echo ".env.test --------------------------------------------------------------------"
+    - cat .env.test
+    - echo ".env.blackbox ----------------------------------------------------------------"
+    - cat .env.blackbox
+    - bin/ci-integration-tests.sh
+
+
+- name: upgrade kontena stack for tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+      KONTENA_CERT:
+          from_secret: KONTENA_CERT
+      KONTENA_PK:
+          from_secret: KONTENA_PK
+      KONTENA_SERVER_URL:
+          from_secret: KONTENA_SERVER_URL
+      KONTENA_SERVER_NAME:
+          from_secret: KONTENA_SERVER_NAME
+      KONTENA_SERVER_USERNAME:
+          from_secret: KONTENA_SERVER_USERNAME
+      KONTENA_SERVER_GRID:
+          from_secret: KONTENA_SERVER_GRID
+      KONTENA_SERVER_TOKEN:
+          from_secret: KONTENA_SERVER_TOKEN
+      KONTENA_ACCOUNT_NAME:
+          from_secret: KONTENA_ACCOUNT_NAME
+      KONTENA_ACCOUNT_USERNAME:
+          from_secret: KONTENA_ACCOUNT_USERNAME
+      KONTENA_ACCOUNT_TOKEN:
+          from_secret: KONTENA_ACCOUNT_TOKEN
+      KONTENA_ACCOUNT_REFRESH_TOKEN:
+          from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+  commands:
+    - bin/ci-kontena-stack-upgrade.sh dappshellcircle-stack kontena-circle.yml
+
+
+- name: run blackbox tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+  commands:
+    - cd /app
+    - bin/ci-blackbox-tests.sh
+
+
+- name: run ui tests
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  volumes:
+    - name: node_modules
+      path: /app/node_modules
+  commands:
+    - cd /app
+    - bin/ci-ui-tests.sh
+
+
+- name: deploy (feature-push)
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+  commands:
+    - bin/ci-kontena-stack-upgrade.sh dappshellfeature-stack kontena-feature.yml
+  when:
+    branch:
+      exclude:
+        - develop
+        - master
+    event:
+      - push
+    repo:
+      exclude:
+        - particl/particl-market
+      include:
+        - xludx/particl-market          # todo: others
+
+
+- name: deploy (feature-pr)
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+  commands:
+    - bin/ci-kontena-stack-upgrade.sh dappshellfeature-stack kontena-feature.yml
+  when:
+    branch:
+      - develop
+    event:
+      - pull_request
+    repo:
+      include:
+        - particl/particl-market
+        - xludx/particl-market
+
+
+- name: deploy (develop-push)
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+  commands:
+    - bin/ci-kontena-stack-upgrade.sh dappshelldev-stack kontena-develop.yml
+  when:
+    branch:
+      - develop
+    event:
+      - push
+
+
+- name: deploy (develop-pr)
+  image: ludx/particl-market-ci:${DRONE_COMMIT_SHA}
+  environment:
+    KONTENA_CERT:
+      from_secret: KONTENA_CERT
+    KONTENA_PK:
+      from_secret: KONTENA_PK
+    KONTENA_SERVER_URL:
+      from_secret: KONTENA_SERVER_URL
+    KONTENA_SERVER_NAME:
+      from_secret: KONTENA_SERVER_NAME
+    KONTENA_SERVER_USERNAME:
+      from_secret: KONTENA_SERVER_USERNAME
+    KONTENA_SERVER_GRID:
+      from_secret: KONTENA_SERVER_GRID
+    KONTENA_SERVER_TOKEN:
+      from_secret: KONTENA_SERVER_TOKEN
+    KONTENA_ACCOUNT_NAME:
+      from_secret: KONTENA_ACCOUNT_NAME
+    KONTENA_ACCOUNT_USERNAME:
+      from_secret: KONTENA_ACCOUNT_USERNAME
+    KONTENA_ACCOUNT_TOKEN:
+      from_secret: KONTENA_ACCOUNT_TOKEN
+    KONTENA_ACCOUNT_REFRESH_TOKEN:
+      from_secret: KONTENA_ACCOUNT_REFRESH_TOKEN
+  commands:
+    - bin/ci-kontena-stack-upgrade.sh dappshelldev-stack kontena-develop.yml
+  when:
+    branch:
+      - master
+    event:
+      - pull_request
+
+
+- name: rebuild cache
+  image: plugins/s3-cache:latest
+  volumes:
+    - name: node_modules
+      path: /workspace/particl-market/node_modules
+  settings:
+    pull: true
+    endpoint: http://minio.particl.xyz:9001
+    access_key:
+      from_secret: MINIO_ACCESS_KEY
+    secret_key:
+      from_secret: MINIO_SECRET_KEY
+    rebuild: true
+    debug: true
+    mount:
+      - node_modules
+    path: /cache/particl-market/
+    fallback_path: /cache/particl-market/
+
+
+- name: flush cache
+  image: plugins/s3-cache:latest
+  settings:
+    pull: true
+    endpoint: http://minio.particl.xyz:9001
+    access_key:
+      from_secret: MINIO_ACCESS_KEY
+    secret_key:
+      from_secret: MINIO_SECRET_KEY
+    flush: true
+    flush_age: 14
+    flush_path: /cache/particl-market/
+
+
+volumes:
+# temporary node_modules volume.
+- name: node_modules
+  temp: {}
+
+# pipeline describes build steps
+#pipeline:
+    # every entry in the pipeline describes a single build step
+#    build_image:
+#        image: node
+#        environment:
+#            VERSION: "${DRONE_TAG}"
+#            COMMIT: "${DRONE_COMMIT_SHA:0:7}"
+
+        # commands executed in the container
+#        commands:
+#            - ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+#            - ./bin/ci-create-build-version.sh
+#            - docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+#            - docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1" -f Dockerfile.ci .
+#            - docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_SHA1

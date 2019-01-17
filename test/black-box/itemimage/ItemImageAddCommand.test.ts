@@ -1,8 +1,9 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -12,8 +13,7 @@ import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
 import * as Jimp from 'jimp';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import {Logger as LoggerType} from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemImageAddCommand', () => {
 
@@ -139,7 +139,11 @@ describe('ItemImageAddCommand', () => {
 
     });
 
-    test('Should return valid LARGE image dimension', async () => {
+    // TODO: this is not an api test and should be moved under unit/integration tests
+    test('Should return valid versions of createdImage', async () => {
+
+        expect(itemImages.length).toBe(4);
+
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -147,92 +151,6 @@ describe('ItemImageAddCommand', () => {
             expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
-
-            if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
-
-                const rawImage = imageData.ItemImageDataContent.data;
-                expect(typeof rawImage).toBe('string');
-
-                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-                const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
-                const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
-
-                // large
-                const largeData = resizedDatas.get(ImageVersions.LARGE.propName) || '';
-                expect(largeData).not.toEqual(null);
-                expect(largeData).not.toEqual('');
-
-                const dataBuffer = Buffer.from(largeData, 'base64');
-                const imageBuffer = await Jimp.read(dataBuffer);
-
-                expect(imageBuffer.bitmap.width).toBe(ImageVersions.LARGE.imageWidth);
-                expect(imageBuffer.bitmap.height).toBe(ImageVersions.LARGE.imageHeight);
-            }
-
-        }
-    });
-
-    test('Should return valid MEDIUM image dimension', async () => {
-        for ( const imageData of itemImages ) {
-            const imageUrl = process.env.APP_HOST
-                + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
-            expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
-            expect(imageData.encoding).toBe('BASE64');
-
-            if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
-
-                const rawImage = imageData.ItemImageDataContent.data;
-
-                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-                const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
-                const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
-
-                // medium
-                const mediumData = resizedDatas.get(ImageVersions.MEDIUM.propName) || '';
-                expect(mediumData).not.toEqual(null);
-                expect(mediumData).not.toEqual('');
-
-                const dataBuffer = Buffer.from(mediumData, 'base64');
-                const imageBuffer = await Jimp.read(dataBuffer);
-
-                expect(imageBuffer.bitmap.width).toBe(ImageVersions.MEDIUM.imageWidth);
-                expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.MEDIUM.imageHeight);
-            }
-
-        }
-    });
-
-    test('Should return valid THUMBNAIL image dimension', async () => {
-        for ( const imageData of itemImages ) {
-            const imageUrl = process.env.APP_HOST
-                + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
-            expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
-            expect(imageData.encoding).toBe('BASE64');
-
-            if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
-
-                const rawImage = imageData.ItemImageDataContent.data;
-
-                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-                const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
-                const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
-
-                // thumb
-                const thumbData = resizedDatas.get(ImageVersions.THUMBNAIL.propName) || '';
-                expect(thumbData).not.toEqual(null);
-                expect(thumbData).not.toEqual('');
-
-                const dataBuffer = Buffer.from(thumbData, 'base64');
-                const imageBuffer = await Jimp.read(dataBuffer);
-
-                expect(imageBuffer.bitmap.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
-                expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);
-            }
-
         }
     });
 

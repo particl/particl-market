@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -104,10 +104,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.expiredListingItemProcessor.scheduleProcess();
 
                 // start message polling, unless we're running tests
-                if (!Environment.isTest()) {
-                    this.smsgMessageProcessor.schedulePoll();
-                    this.messageProcessor.schedulePoll();
-                }
+                this.smsgMessageProcessor.schedulePoll();
+                this.messageProcessor.schedulePoll();
                 this.interval = 10000;
             }
 
