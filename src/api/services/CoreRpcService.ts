@@ -62,16 +62,35 @@ export class CoreRpcService {
         return await this.call('getnetworkinfo', [], false);
     }
 
-    public async getAddressBalance(address: string): Promise<any> {
-        return await this.call('getaddressbalance', [address]);
-    }
-
-    public async getAddressBalanceMulti(addresses: string[]): Promise<any> {
+    public async getAddressBalance(addresses: string[]): Promise<any> {
         return await this.call('getaddressbalance', addresses);
     }
 
-    public async getWalletAddresses(): Promise<any> {
-        return await this.call('listreceivedbyaddress', [0, false]);
+    /**
+     * List balances by receiving address.
+     *
+     * example result:
+     * [{
+     *    "involvesWatchonly": true,      (bool)    Only returned if imported addresses were involved in transaction
+     *    "address": "receivingaddress",  (string)  The receiving address
+     *    "account": "accountname",       (string)  DEPRECATED. Backwards compatible alias for label.
+     *    "amount": x.xxx,                (numeric) The total amount in PART received by the address
+     *    "confirmations": n,             (numeric) The number of confirmations of the most recent transaction included
+     *    "label": "label",               (string)  The label of the receiving address. The default label is "".
+     *    "txids": [
+     *       "txid",                      (string)  The ids of transactions received with the address
+     *       ...
+     *    ]
+     *  }, ... ]
+     *
+     * @param minconf
+     * @param includeEmpty
+     * @param includeWatchOnly
+     * @param addressFilter
+     */
+    public async listReceivedByAddress(minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
+                                       addressFilter?: string): Promise<any> {
+        return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
     }
 
     /**

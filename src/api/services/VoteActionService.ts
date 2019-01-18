@@ -66,15 +66,32 @@ export class VoteActionService {
     /**
      * vote for given Proposal and ProposalOption using given Profiles (wallets) addresses
      *
+     * - vote( profile, ... ):
+     *   - get all addresses having balance
+     *   - for (voteAddress: addresses):
+     *     - this.send( voteAddress )
+     *   - proposalService.recalculateProposalResult(proposal)
+     *
      * @param profile
      * @param marketplace
      * @param proposal
      * @param proposalOption
      */
     public async vote(profile: resources.Profile, marketplace: resources.Market, proposal: resources.Proposal,
-                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse> {
+                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse[]> {
 
+        const addresses: string[] = await this.getProfileWalletAddresses(profile);
+        const responses: SmsgSendResponse[] = [];
 
+        for (const address of addresses) {
+            const response: SmsgSendResponse = await this.send(proposal, proposalOption, address, marketplace);
+            responses.push(response);
+        }
+
+        // we just voted, so recalculate the ProposalResults
+        await this.proposalService.recalculateProposalResult(proposal);
+
+        return responses;
     }
 
     /**
@@ -85,8 +102,8 @@ export class VoteActionService {
      * @param {"resources".Market} marketplace
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                       senderAddress: string, marketplace: resources.Market): Promise<SmsgSendResponse> {
+    public async send(proposal: resources.Proposal, proposalOption: resources.ProposalOption,
+                      senderAddress: string, marketplace: resources.Market): Promise<SmsgSendResponse> {
         /*
          * If senderAddress has balance (weight) <= 0
          *     Skip sending this vote, waste of time since it has no weight.
@@ -246,12 +263,30 @@ export class VoteActionService {
     }
 
     /**
+     * get the Profiles wallets addresses
+     * minimum 3 confirmations, empty ones not included
+     *
+     * the profile param is not used for anything yet, but included allready while we wait and build multiwallet support
+     *
+     * @param profile
+     */
+    private async getProfileWalletAddresses(profile: resources.Profile): Promise<string[]> {
+        const addressList: string[] = [];
+        const addresses: any = await this.coreRpcService.listReceivedByAddress(3, false);
+        for (const address of addresses) {
+            addressList.push(address.address);
+        }
+        return addressList;
+    }
+
+    /**
+     * signs the VoteTicket, returns signature
      *
      * @param proposal
      * @param proposalOption
      * @param address
      */
-    public async signVote(proposal: resources.Proposal, proposalOption: resources.ProposalOption, address: string): Promise<string> {
+    private async signVote(proposal: resources.Proposal, proposalOption: resources.ProposalOption, address: string): Promise<string> {
         const voteTicket = {
             proposalHash: proposal.hash,
             proposalOptionHash: proposalOption.hash,
@@ -262,11 +297,12 @@ export class VoteActionService {
     }
 
     /**
+     * verifies VoteTicket, returns boolean
      *
      * @param voteMessage
      * @param address
      */
-    public async verifyVote(voteMessage: VoteMessage, address: string): Promise<boolean> {
+    private async verifyVote(voteMessage: VoteMessage, address: string): Promise<boolean> {
         const voteTicket = {
             proposalHash: voteMessage.proposalHash,
             proposalOptionHash: voteMessage.proposalOptionHash,

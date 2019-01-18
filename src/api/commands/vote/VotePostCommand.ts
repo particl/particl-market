@@ -23,7 +23,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
-export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
+export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse[]> {
 
     public log: LoggerType;
 
@@ -49,7 +49,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse[]> {
 
         const profileId = data.params[0];
         const proposalHash = data.params[1];
