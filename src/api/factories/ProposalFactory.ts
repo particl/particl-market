@@ -36,21 +36,9 @@ export class ProposalFactory {
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
                             proposalDescription: string, options: string[],
-                            senderProfile: resources.Profile, itemHash: string | null = null): Promise<ProposalMessage> {
+                            senderProfile: resources.Profile, itemHash?: string): Promise<ProposalMessage> {
 
-        const submitter = senderProfile.address;
-
-        const optionsList: any[] = [];
-        let optionId = 0;
-
-        for (const description of options) {
-            const option = {
-                optionId,
-                description
-            };
-            optionsList.push(option);
-            optionId++;
-        }
+        const optionsList: any[] = this.createOptionsList(options);
 
         let proposalType = ProposalType.PUBLIC_VOTE;
         if (itemHash) {
@@ -59,7 +47,7 @@ export class ProposalFactory {
 
         const message: ProposalMessage = {
             action: proposalMessageType,
-            submitter,
+            submitter: senderProfile.address,
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
@@ -75,6 +63,21 @@ export class ProposalFactory {
             option.hash = ObjectHash.getHash(option, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
         }
         return message;
+    }
+
+    private createOptionsList(options: string[]): any[] {
+        const optionsList: any[] = [];
+        let optionId = 0;
+
+        for (const description of options) {
+            const option = {
+                optionId,
+                description
+            };
+            optionsList.push(option);
+            optionId++;
+        }
+        return optionsList;
     }
 
     /**

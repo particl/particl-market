@@ -668,7 +668,7 @@ export class TestDataService {
             }
 
             // create and update ProposalResult
-            let proposalResult = await this.proposalService.createProposalResult(proposal);
+            let proposalResult = await this.proposalService.createFirstProposalResult(proposal);
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
             // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 

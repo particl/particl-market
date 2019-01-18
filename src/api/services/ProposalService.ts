@@ -81,7 +81,7 @@ export class ProposalService {
     }
 
     @validate()
-    public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest, skipOptions: boolean = false): Promise<Proposal> {
+    public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest): Promise<Proposal> {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
@@ -96,24 +96,16 @@ export class ProposalService {
         // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
 
-        // TODO: remove skipOptions
-        // skipOptions is just for tests
-        if (!skipOptions) {
-            let optionId = 0;
-            // create related options
-            for (const optionCreateRequest of options) {
-                optionCreateRequest.proposal_id = proposal.id;
-                optionCreateRequest.proposalHash = body.hash;
-
-                if (!optionCreateRequest.optionId) {
-                    optionCreateRequest.optionId = optionId;
-                    optionId++;
-                }
-                // this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
-                await this.proposalOptionService.create(optionCreateRequest);
-            }
-        } else {
-            this.log.debug('skipping creation of ProposalOptions...');
+        // create related options
+        for (const optionCreateRequest of options) {
+            optionCreateRequest.proposal_id = proposal.id;
+            // optionCreateRequest.proposalHash = body.hash;
+            // if (!optionCreateRequest.optionId) {
+            //     optionCreateRequest.optionId = optionId;
+            //     optionId++;
+            // }
+            // this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
+            await this.proposalOptionService.create(optionCreateRequest);
         }
 
         // finally find and return the created proposal
@@ -163,7 +155,7 @@ export class ProposalService {
      * @param {"resources".Proposal} proposal
      * @returns {Promise<"resources".ProposalResult>}
      */
-    public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+    public async createFirstProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
         const calculatedAt: number = new Date().getTime();
 
         let proposalResultModel = await this.proposalResultService.create({
@@ -191,7 +183,7 @@ export class ProposalService {
 
 
     /**
-     * todo: needs refactoring, perhaps combine with createProposalResult
+     * todo: needs refactoring, perhaps combine with createFirstProposalResult
      * todo: and move to proposalresultservice?
      * todo: this is just updating the latest one.. we should propably modify this so that we create a new
      * one periodically and can track the voting progress while proposal is active
@@ -213,7 +205,7 @@ export class ProposalService {
         let proposalResult: resources.ProposalResult;
         let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
         if (!proposalResultModel) {
-            proposalResult = await this.createProposalResult(proposal);
+            proposalResult = await this.createFirstProposalResult(proposal);
         } else {
             proposalResult = proposalResultModel.toJSON();
         }

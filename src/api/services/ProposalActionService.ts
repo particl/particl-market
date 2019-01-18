@@ -39,6 +39,8 @@ import { MarketService } from './MarketService';
 import { VoteActionService } from './VoteActionService';
 import { ProposalOptionService } from './ProposalOptionService';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
+import { Proposal } from '../models/Proposal';
 
 export class ProposalActionService {
 
@@ -66,13 +68,17 @@ export class ProposalActionService {
     }
 
     /**
-     * create ProposalMessage (of type MP_PROPOSAL_ADD) and post it
+     * creates ProposalMessage (of type MP_PROPOSAL_ADD) and post it
      *
-     * @param {ProposalType} proposalType
+     * - send():
+     *   - create ProposalMessage
+     *   - processProposal(), creates the Proposal locally
+     *   - post ProposalMessage
+     *   - if ProposalType.ITEM_VOTE:
+     *     - post the votes, voteActionService.vote( profile )
+     *
      * @param {string} proposalTitle
      * @param {string} proposalDescription
-     * @param {number} blockStart
-     * @param {number} blockEnd
      * @param {number} daysRetention
      * @param {string[]} options
      * @param {"resources".Profile} senderProfile
@@ -81,9 +87,8 @@ export class ProposalActionService {
      * @param {boolean} estimateFee
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send(proposalTitle: string, proposalDescription: string,
-                      daysRetention: number, options: string[],
-                      senderProfile: resources.Profile, marketplace: resources.Market, itemHash: string | null = null,
+    public async send(proposalTitle: string, proposalDescription: string, daysRetention: number, options: string[],
+                      senderProfile: resources.Profile, marketplace: resources.Market, itemHash?: string | undefined,
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         const proposalMessage = await this.proposalFactory.getMessage(
@@ -100,81 +105,46 @@ export class ProposalActionService {
             mpaction: proposalMessage
         };
 
+        // if were here to estimate the fee, then do it now.
         const paidMessage = proposalMessage.type === ProposalType.PUBLIC_VOTE;
+        if (estimateFee) {
+            return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+        }
 
-        // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
+        // first we create a ProposalCreateRequest with no smsgMessage data.
+        // later, when the smsgMessage for this proposal is received,
+        // the relevant smsgMessage data will be updated
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
 
-        if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
+        // processProposal "processes" the Proposal, creating or updating the Proposal.
+        // called from send() and processProposalReceivedEvent()
+        const proposal: resources.Proposal = await this.processProposal(proposalCreateRequest);
 
-            /*
-             * Vote once per profile
-             */
-            if (!estimateFee) {
-                let proposal;
-                try {
-                    proposal = await this.processProposal(proposalCreateRequest);
-                } catch (ex) {
-                    this.log.debug(JSON.stringify(ex, null, 2));
-                }
-                // Get the ItemVote.REMOVE (flag this item listing) ProposalOption
-                const removeVoteOption = ItemVote.REMOVE.toString();
-                const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-                    // we are creating proposal of type ITEM_VOTE,
-                    // that happens when we are flagging an item, which means we are voting for REMOVE option
-                    return o.description === removeVoteOption;
-                });
-                if (!proposalOption) {
-                    this.log.debug(`Proposal option ${proposalOptionId} wasn't found.`);
-                    throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
-                }
+        // proposal is processed, so we can now send it
+        const result = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
 
-                // Get the default market.
-                //     TODO: Might want to let users specify this later.
-                const marketModel = await this.marketService.getDefault();
-                if (!marketModel) {
-                    throw new MessageException(`Default market doesn't exist!`);
-                }
-                const market: resources.Market = marketModel.toJSON();
-
-                // For each profile, vote.
-                // The VoteActionService will ignore votes without weight (profile has no balance).
-                const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
-                const addrCollection: any = await this.coreRpcService.getWalletAddresses();
-                for (const addr of addrCollection) {
-                    await this.voteActionService.send(proposal, proposalOption, addr.address, market);
-                }
-
-                // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-                let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-                if (!proposalResult) {
-                    proposalResult = await this.proposalService.createProposalResult(proposal);
-                }
-                proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-                return smsgProposal;
-            } else {
-                return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+        if (ProposalType.ITEM_VOTE === proposalCreateRequest.type) {
+            // if the Proposal is of type ITEM_VOTE, we also need to send votes for the ListingItems removal
+            const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+                return o.description === ItemVote.REMOVE.toString();
+            });
+            if (!proposalOption) {
+                this.log.debug('ProposalOption ' + ItemVote.REMOVE.toString() + ' not found.');
+                throw new MessageException('ProposalOption ' + ItemVote.REMOVE.toString() + ' not found.');
             }
-        } else if (proposalCreateRequest.type === ProposalType.PUBLIC_VOTE) {
 
-            if (!estimateFee) {
-                const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
-                const proposal = await this.processGenericProposal(proposalCreateRequest);
+            // vote sends the VoteMessages from each of senderProfiles addresses
+            await this.voteActionService.vote(senderProfile, marketplace, proposal, proposalOption);
 
-                // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-                let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-                if (!proposalResult) {
-                    proposalResult = await this.proposalService.createProposalResult(proposal);
-                }
-                proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-                return smsgProposal;
-            } else {
-                return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
-            }
-        } else {
+            // ProposalResult will be calculated after votes have been sent...
+        }
+
+        if (proposalCreateRequest.type !== ProposalType.ITEM_VOTE
+            && proposalCreateRequest.type !== ProposalType.PUBLIC_VOTE) {
             throw new MessageException(`Unknown type of proposal = ${proposalCreateRequest.type}.`);
         }
+
+        return result;
     }
 
     /**
@@ -235,7 +205,7 @@ export class ProposalActionService {
             // finally, create ProposalResult, vote and recalculate proposalresult
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
             if (!proposalResult) {
-                proposalResult = await this.proposalService.createProposalResult(proposal);
+                proposalResult = await this.proposalService.createFirstProposalResult(proposal);
             }
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
@@ -247,12 +217,9 @@ export class ProposalActionService {
 
     /**
      *
-     * @param {module:resources.Proposal} proposal
-     * @returns {Promise<module:resources.FlaggedItem>}
+     * @param proposal
      */
     public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        // if listingitem exists && theres no relation -> add relation to listingitem
-
         const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
         const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
@@ -265,36 +232,6 @@ export class ProposalActionService {
         const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
         return flaggedItemModel.toJSON();
     }
-
-    /**
-     * TODO: This needs to be deleted, should not be used.
-     *        Use VoteActionProposal.send() instead.
-     * @param {module:resources.Proposal} createdProposal
-     * @param {ItemVote} itemVote
-     * @returns {Promise<module:resources.Vote>}
-     */
-    /* private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
-
-        const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
-            return option.description === itemVote;
-        });
-
-        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
-
-        if (!proposalOption) {
-            this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
-            throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
-        }
-
-        const weight = await this.voteService.getVoteWeight(createdProposal.submitter);
-        // We need to pass proposer profile
-        // If we are not the proposer we won't have their profile on file
-        // What do?
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, createdProposal, proposalOption, createdProposal.submitter);
-        const voteRequest = await this.voteFactory.getModel(voteMessage, createdProposal, weight, false /*, voteSmsg*//*);
-        const createdVoteModel = await this.voteService.create(voteRequest);
-        return createdVoteModel.toJSON();
-    }*/
 
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
@@ -312,68 +249,48 @@ export class ProposalActionService {
         });
     }
 
-    private async processProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
-        let proposal: any;
-        try {
-            proposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item);
-        } catch (ex) {
-            this.log.debug('ProposalActionService, processProposal, ' + JSON.stringify(ex, null, 2));
-        }
-        if (proposal) {
-            // Proposal already exists (for some unexplicable reason), so we use it
-            // this same function is called from send() and from processProposalReceivedEvent
-            // => if the proposal is yours, it's allready created in send
-            if (proposalCreateRequest.postedAt
-                && (proposalCreateRequest.postedAt < proposal.postedAt)) {
-                // update to use the one that was sent first
-                // incoming was posted before the existing -> update existing with incoming data
-                // TODO: WTF there should always be just one incoming?
-                // + the one created locally in send should not have postedAt field!!
-                const updatedProposalModel = await this.proposalService.update(proposal.id, proposalCreateRequest);
-                proposal = updatedProposalModel.toJSON();
-            } else {
-                proposal = proposal.toJSON();
-            }
+    /**
+     * processProposal "processes" the Proposal, creating or updating the Proposal.
+     * called from send() and processProposalReceivedEvent(), meaning before the ProposalMessage is sent
+     * and after the ProposalMessage is received.
+     *
+     * - private processProposal():
+     *   - save/update proposal locally (update: add the fields from smsgmessage)
+     *   - createFirstProposalResult(proposal), make sure empty ProposalResult is created/exists
+     *   - if ProposalType.ITEM_VOTE:
+     *     - create the FlaggedItem if not created yet
+     *
+     * @param proposalRequest
+     */
+    private async processProposal(proposalRequest: ProposalCreateRequest | ProposalUpdateRequest): Promise<resources.Proposal> {
+
+        const proposalModel: Proposal = await this.proposalService.findOneByItemHash(proposalRequest.item)
+            .catch(async reason => {
+                // proposal doesnt exist yet, so we need to create it.
+                const createdProposalModel = await this.proposalService.create(proposalRequest);
+                const createdProposal: resources.Proposal = createdProposalModel.toJSON();
+                // this.log.debug('processProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
+
+                if (ProposalType.ITEM_VOTE === createdProposal.type) {
+                    // in case of ITEM_VOTE, we also need to create the FlaggedItem
+                    await this.createFlaggedItemForProposal(createdProposal);
+                }
+
+                // create the first ProposalResult
+                await this.proposalService.createFirstProposalResult(createdProposal);
+                return await this.proposalService.findOne(createdProposal.id);
+            });
+
+        let proposal: resources.Proposal = proposalModel.toJSON();
+        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER && (proposalRequest.postedAt < proposal.postedAt)) {
+            // means processProposal was called from processProposalReceivedEvent() and we should update the Proposal data
+            const updatedProposalModel = await this.proposalService.update(proposal.id, proposalRequest);
+            proposal = updatedProposalModel.toJSON();
         } else {
-            // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
-            // proposal doesnt exist -> create Proposal
-            this.log.error('processProposal:1000, proposalCreateRequest = ' + JSON.stringify(proposalCreateRequest, null, 2));
-            let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
-            const createdProposal = createdProposalModel.toJSON();
-            // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
-
-            // also create the FlaggedItem
-            const flaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-            // this.log.debug('processItemVoteProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
-
-            createdProposalModel = await this.proposalService.findOne(createdProposal.id);
-            proposal = createdProposalModel.toJSON();
+            // called from send(), we already saved the Proposal so nothing needs to be done
         }
-        this.log.debug('processProposal. proposal = ' + JSON.stringify(proposal, null, 2));
-        this.log.debug('processProposal, Doing findOneByProposalHash');
-        let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-        if (!proposalResult) {
-            this.log.debug('processProposal, Doing createProposalResult');
-            proposalResult = await this.proposalService.createProposalResult(proposal);
-        }
-        this.log.debug('processProposal, Doing recalculateProposalResult');
-        proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
         return proposal;
     }
 
-    private async processGenericProposal(proposalCreateRequest: ProposalCreateRequest): Promise<resources.Proposal> {
-        // this.log.debug('processItemVoteProposal(): proposal doesnt exist -> create Proposal');
-        // proposal doesnt exist -> create Proposal
-        let createdProposalModel = await this.proposalService.create(proposalCreateRequest);
-        const createdProposal = createdProposalModel.toJSON();
-        // this.log.debug('processItemVoteProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
-
-        createdProposalModel = await this.proposalService.findOne(createdProposal.id);
-        return createdProposalModel.toJSON();
-    }
-
-    private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
-        const vote: any = await this.voteService.create(voteCreateRequest);
-        return vote;
-    }
 }

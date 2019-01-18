@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,9 +15,6 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import * as resources from 'resources';
-import { ProposalType } from '../../enums/ProposalType';
-import { ListingItem } from '../../models/ListingItem';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
 import { ProposalActionService } from '../../services/ProposalActionService';
@@ -23,10 +22,8 @@ import { CoreRpcService } from '../../services/CoreRpcService';
 import { ListingItemActionService } from '../../services/ListingItemActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ProposalFactory } from '../../factories/ProposalFactory';
-import * as _ from 'lodash';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import { SearchOrderField } from '../../enums/SearchOrderField';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -111,7 +108,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('profileId', 'number');
         }
 
-
         const listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
@@ -144,13 +140,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' [<listingItemHash>] <profileId> ';
+        return this.getName() + ' <listingItemHash> <profileId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemHash>  - String - The hash of the ListingItem we want to report. \n'
-            + '    <profileId>        - Numeric - The ID of the Profile used to report the item.';
+            + '    <profileId>        - Numeric - The ID of the Profile used to report the item. \n'
+            + '    <reason>           - String - Optional reason for the flagging';
     }
 
     public description(): string {

@@ -64,10 +64,24 @@ export class VoteActionService {
     }
 
     /**
+     * vote for given Proposal and ProposalOption using given Profiles (wallets) addresses
+     *
+     * @param profile
+     * @param marketplace
+     * @param proposal
+     * @param proposalOption
+     */
+    public async vote(profile: resources.Profile, marketplace: resources.Market, proposal: resources.Proposal,
+                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse> {
+
+
+    }
+
+    /**
      *
      * @param {"resources".Proposal} proposal
      * @param {"resources".ProposalOption} proposalOption
-     * @param {"resources".Profile} senderProfile
+     * @param senderAddress
      * @param {"resources".Market} marketplace
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -95,7 +109,7 @@ export class VoteActionService {
             // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
             if (!proposalResult) {
-                proposalResult = await this.proposalService.createProposalResult(proposal);
+                proposalResult = await this.proposalService.createFirstProposalResult(proposal);
             }
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
@@ -322,7 +336,7 @@ export class VoteActionService {
 
             let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
             if (!proposalResult) {
-                proposalResult = await this.proposalService.createProposalResult(proposal);
+                proposalResult = await this.proposalService.createFirstProposalResult(proposal);
             }
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
