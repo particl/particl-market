@@ -146,6 +146,7 @@ export class ProposalActionService {
      * process received ProposalMessage:
      *   - this.processProposal()
      *   - don't create votes, votes are created when they arrive
+     *   - flaggeditem and initial ProposalResult are created in processProposal
      *
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
