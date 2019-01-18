@@ -47,20 +47,12 @@ export class ProposalActionService {
     public log: LoggerType;
 
     constructor(@inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
-                @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
                 @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
                 @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
                 @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-                @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
-                @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
                 @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-                @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
-                @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
                 @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
-                @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-                @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
                 @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
-                @inject(Types.Service) @named(Targets.Service.ProposalOptionService) private proposalOptionService: ProposalOptionService,
                 @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
                 @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
