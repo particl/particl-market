@@ -38,6 +38,7 @@ import { Profile } from '../models/Profile';
 import { MarketService } from './MarketService';
 import { VoteActionService } from './VoteActionService';
 import { ProposalOptionService } from './ProposalOptionService';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 
 export class ProposalActionService {
 
@@ -99,11 +100,12 @@ export class ProposalActionService {
             mpaction: proposalMessage
         };
 
+        const paidMessage = proposalMessage.type === ProposalType.PUBLIC_VOTE;
+
         // Create a proposal request with no smsgMessage data: when the smsgMessage for this proposal is received, the relevant smsgMessage data will be updated
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
 
         if (proposalCreateRequest.type === ProposalType.ITEM_VOTE) {
-            const paidMessage = false;
 
             /*
              * Vote once per profile
@@ -115,10 +117,12 @@ export class ProposalActionService {
                 } catch (ex) {
                     this.log.debug(JSON.stringify(ex, null, 2));
                 }
-                // Get the YES (flag this item listing) proposal option
-                const proposalOptionId = 0;
+                // Get the ItemVote.REMOVE (flag this item listing) ProposalOption
+                const removeVoteOption = ItemVote.REMOVE.toString();
                 const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-                    return o.optionId === proposalOptionId; // TODO: Or is it 1????
+                    // we are creating proposal of type ITEM_VOTE,
+                    // that happens when we are flagging an item, which means we are voting for REMOVE option
+                    return o.description === removeVoteOption;
                 });
                 if (!proposalOption) {
                     this.log.debug(`Proposal option ${proposalOptionId} wasn't found.`);
@@ -153,7 +157,7 @@ export class ProposalActionService {
                 return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
             }
         } else if (proposalCreateRequest.type === ProposalType.PUBLIC_VOTE) {
-            const paidMessage = true;
+
             if (!estimateFee) {
                 const smsgProposal = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
                 const proposal = await this.processGenericProposal(proposalCreateRequest);
@@ -183,7 +187,7 @@ export class ProposalActionService {
      *          create Proposal
      *      add vote
      *      if listingitem exists && no relation
-     *          add relation to listingitem
+     *          add relation to listing
      *  else (ProposalType.PUBLIC_VOTE)
      *      create Proposal
      *  create ProposalResult

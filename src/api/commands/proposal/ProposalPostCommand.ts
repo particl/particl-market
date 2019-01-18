@@ -94,6 +94,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         market = marketModel.toJSON();
 
         // rest of the data.params are option descriptions
+        // todo: there should be minimum of two options
         const optionsList: string[] = data.params;
 
         // todo: get rid of the blocks

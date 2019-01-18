@@ -24,18 +24,20 @@ import { VoteMessage } from '../messages/VoteMessage';
 import { ProposalService } from './ProposalService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { ProposalResultService } from './ProposalResultService';
-import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
-import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalType } from '../enums/ProposalType';
-import { ProposalOptionResult } from '../models/ProposalOptionResult';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProfileService } from './ProfileService';
 import { BidService } from './BidService';
-import { Profile } from '../models/Profile';
+
+interface VoteTicket {
+    proposalHash: string;       // proposal being voted for
+    proposalOptionHash: string; // proposal option being voted for
+    address: string;            // voting address having balance
+}
 
 export class VoteActionService {
 
@@ -77,13 +79,10 @@ export class VoteActionService {
          */
         const weight = await this.voteService.getVoteWeight(senderAddress);
         if (weight > 0) {
-            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-                senderAddress);
 
-            // Sign message (daemon signmessage <addr> <msg>)
-            const signature = await this.coreRpcService.signMessage(senderAddress, voteMessage);
-            // Save signature
-            voteMessage.signature = signature;
+            const signature = await this.signVote(proposal, proposalOption, senderAddress);
+            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
+                senderAddress, signature);
 
             const msg: MarketplaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -123,12 +122,12 @@ export class VoteActionService {
         }
 
         const voteMessage: VoteMessage = event.marketplaceMessage.mpaction as VoteMessage;
-        if (voteMessage.voter !== event.smsgMessage.from) {
-            throw new MessageException('Voter does not match with sender.');
-        }
+        const sender = event.smsgMessage.from;
 
         // Get vote message signature
         // Verify signature
+        const signature = await this.verifyVote(voteMessage, sender);
+
         const passedVerification = await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteMessage);
         if (!passedVerification) {
             throw new MessageException('Received signature failed validation.');
@@ -230,6 +229,36 @@ export class VoteActionService {
         }
         this.log.debug('Item should NOT be destroyed');
         return false;
+    }
+
+    /**
+     *
+     * @param proposal
+     * @param proposalOption
+     * @param address
+     */
+    public async signVote(proposal: resources.Proposal, proposalOption: resources.ProposalOption, address: string): Promise<string> {
+        const voteTicket = {
+            proposalHash: proposal.hash,
+            proposalOptionHash: proposalOption.hash,
+            address
+        } as VoteTicket;
+
+        return await this.coreRpcService.signMessage(address, voteTicket);
+    }
+
+    /**
+     *
+     * @param voteMessage
+     * @param address
+     */
+    public async verifyVote(voteMessage: VoteMessage, address: string): Promise<boolean> {
+        const voteTicket = {
+            proposalHash: voteMessage.proposalHash,
+            proposalOptionHash: voteMessage.proposalOptionHash,
+            address
+        } as VoteTicket;
+        return await this.coreRpcService.verifyMessage(address, voteMessage.signature, voteTicket);
     }
 
     private async instaVote(senderAddress: string, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
