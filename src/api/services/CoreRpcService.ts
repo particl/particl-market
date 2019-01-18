@@ -62,8 +62,28 @@ export class CoreRpcService {
         return await this.call('getnetworkinfo', [], false);
     }
 
+    /**
+     * Returns the balance for an address(es) (requires addressindex to be enabled).
+     *
+     * Arguments:
+     * {
+     *   "addresses": [
+     *     "address"  (string) The base58check encoded address
+     *     ,...
+     *   ]
+     * }
+     *
+     * Result:
+     * {
+     *   "balance"   (string) The current balance in satoshis
+     *   "received"  (string) The total number of satoshis received (including change)
+     * }
+     * @param addresses
+     */
     public async getAddressBalance(addresses: string[]): Promise<any> {
-        return await this.call('getaddressbalance', addresses);
+        return await this.call('getaddressbalance', [{
+            addresses
+        }]);
     }
 
     /**

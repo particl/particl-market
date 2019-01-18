@@ -15,5 +15,6 @@ export class VoteMessage extends MessageBody implements VoteMessageInterface {
     public action: VoteMessageType;
     public proposalHash: string;
     public proposalOptionHash: string;
+    public voter: string;
     public signature: string;
 }

@@ -29,6 +29,7 @@ import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { Proposal } from '../models/Proposal';
+import { SmsgMessage } from '../models/SmsgMessage';
 
 export class ProposalActionService {
 
@@ -91,19 +92,14 @@ export class ProposalActionService {
             return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         }
 
-        // first we create a ProposalCreateRequest with no smsgMessage data.
-        // later, when the smsgMessage for this proposal is received,
-        // the relevant smsgMessage data will be updated
-        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
-
         // processProposal "processes" the Proposal, creating or updating the Proposal.
         // called from send() and processProposalReceivedEvent()
-        const proposal: resources.Proposal = await this.processProposal(proposalCreateRequest);
+        const proposal: resources.Proposal = await this.processProposal(proposalMessage);
 
         // proposal is processed, so we can now send it
         const result = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
 
-        if (ProposalType.ITEM_VOTE === proposalCreateRequest.type) {
+        if (ProposalType.ITEM_VOTE === proposal.type) {
             // if the Proposal is of type ITEM_VOTE, we also need to send votes for the ListingItems removal
             const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
                 return o.description === ItemVote.REMOVE.toString();
@@ -139,7 +135,7 @@ export class ProposalActionService {
         const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
 
         // processProposal will create or update the Proposal
-        return await this.processProposal(proposalCreateRequest)
+        return await this.processProposal(proposalCreateRequest, smsgMessage)
             .then(value => {
                 return SmsgMessageStatus.PROCESSED;
             })
@@ -193,15 +189,20 @@ export class ProposalActionService {
      *   - if ProposalType.ITEM_VOTE:
      *     - create the FlaggedItem if not created yet
      *
-     * @param proposalRequest
+     * @param proposalMessage
+     * @param smsgMessage
      */
-    private async processProposal(proposalRequest: ProposalCreateRequest | ProposalUpdateRequest): Promise<resources.Proposal> {
+    private async processProposal(proposalMessage: ProposalMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
 
-        const proposalModel: Proposal = await this.proposalService.findOneByItemHash(proposalRequest.item)
+        // when called from send() we create a ProposalCreateRequest with no smsgMessage data.
+        // later, when the smsgMessage for this proposal is received,
+        // the relevant smsgMessage data will be updated and included in the request
+        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
+        const proposalModel: Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
             .catch(async reason => {
                 // proposal doesnt exist yet, so we need to create it.
-                const createdProposalModel = await this.proposalService.create(proposalRequest);
-                const createdProposal: resources.Proposal = createdProposalModel.toJSON();
+                const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest)
+                    .then(value => value.toJSON());
                 // this.log.debug('processProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
 
                 if (ProposalType.ITEM_VOTE === createdProposal.type) {
@@ -215,12 +216,12 @@ export class ProposalActionService {
             });
 
         let proposal: resources.Proposal = proposalModel.toJSON();
-        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER && (proposalRequest.postedAt < proposal.postedAt)) {
+        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER/*|| (proposalRequest.postedAt < proposal.postedAt)*/) {
             // means processProposal was called from processProposalReceivedEvent() and we should update the Proposal data
             const updatedProposalModel = await this.proposalService.update(proposal.id, proposalRequest);
             proposal = updatedProposalModel.toJSON();
         } else {
-            // called from send(), we already saved the Proposal so nothing needs to be done
+            // called from send(), we already created the Proposal so nothing needs to be done
         }
 
         return proposal;

@@ -30,6 +30,10 @@ export class ProposalOptionRepository {
         return this.ProposalOptionModel.fetchById(id, withRelated);
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ProposalOption> {
+        return this.ProposalOptionModel.fetchByHash(hash, withRelated);
+    }
+
     public async findOneByProposalAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
         return this.ProposalOptionModel.fetchByProposalAndOptionId(proposalId, optionId);
     }

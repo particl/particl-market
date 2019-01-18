@@ -32,6 +32,10 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProfileService } from './ProfileService';
 import { BidService } from './BidService';
+import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
+import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
+import { Proposal } from '../models/Proposal';
+import { ProposalMessage } from '../messages/ProposalMessage';
 
 interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -88,13 +92,21 @@ export class VoteActionService {
             responses.push(response);
         }
 
-        // we just voted, so recalculate the ProposalResults
+        // we just created all the votes and sent them, so we can now recalculate the ProposalResults
         await this.proposalService.recalculateProposalResult(proposal);
 
         return responses;
     }
 
     /**
+     * send a VoteMessage from a single given address
+     *
+     * - send( voteAddress, ... ):
+     *   - create VoteMessage
+     *     - call signmessage "address" "message", address being the address with balance, message being the resources.VoteTicket
+     *     - add resulting signature to voteMessage.signature and voteticket to voteMessage.ticket
+     *   - this.processVote()
+     *   - post VoteMessage, as a free message, from voteAddress
      *
      * @param {"resources".Proposal} proposal
      * @param {"resources".ProposalOption} proposalOption
@@ -104,38 +116,37 @@ export class VoteActionService {
      */
     public async send(proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                       senderAddress: string, marketplace: resources.Market): Promise<SmsgSendResponse> {
-        /*
-         * If senderAddress has balance (weight) <= 0
-         *     Skip sending this vote, waste of time since it has no weight.
-         */
-        const weight = await this.voteService.getVoteWeight(senderAddress);
-        if (weight > 0) {
 
+        // confirm that the address actually has balance
+        const balance = await this.coreRpcService.getAddressBalance([senderAddress])
+            .then(value => value.balance);
+
+        if (balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress);
-            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
-                senderAddress, signature);
+            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
+                proposalOption.hash, senderAddress, signature);
 
             const msg: MarketplaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
                 mpaction: voteMessage
             };
 
-            const localVote = await this.instaVote(senderAddress, proposal, proposalOption.optionId);
-            this.log.debug('localVote = ' + JSON.stringify(localVote, null, 2));
+            // processVote "processes" the Vote, creating or updating the Vote.
+            // called from send() and processVoteReceivedEvent()
+            const vote: resources.Vote | undefined = await this.processVote(voteMessage);
 
-            // finally, create ProposalResult, vote and recalculate proposalresult [TODO: don't know if this code is required or not]
-            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-            if (!proposalResult) {
-                proposalResult = await this.proposalService.createFirstProposalResult(proposal);
+            if (vote) {
+                const daysRetention = Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+                return this.smsgService.smsgSend(senderAddress, marketplace.address, msg, false, daysRetention);
             }
-            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-            return this.smsgService.smsgSend(senderAddress, marketplace.address, msg, false,
-                                             Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24));
-
-        } else {
-            return {} as SmsgSendResponse;
         }
+
+        return {
+            result: 'skipping.',
+            txid: '0',
+            fee: 0,
+            error: 'no balance.'
+        } as SmsgSendResponse;
     }
 
     /**
@@ -262,6 +273,7 @@ export class VoteActionService {
         return false;
     }
 
+
     /**
      * get the Profiles wallets addresses
      * minimum 3 confirmations, empty ones not included
@@ -302,13 +314,13 @@ export class VoteActionService {
      * @param voteMessage
      * @param address
      */
-    private async verifyVote(voteMessage: VoteMessage, address: string): Promise<boolean> {
+    private async verifyVote(voteMessage: VoteMessage): Promise<boolean> {
         const voteTicket = {
             proposalHash: voteMessage.proposalHash,
             proposalOptionHash: voteMessage.proposalOptionHash,
-            address
+            address: voteMessage.voter
         } as VoteTicket;
-        return await this.coreRpcService.verifyMessage(address, voteMessage.signature, voteTicket);
+        return await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteTicket);
     }
 
     private async instaVote(senderAddress: string, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
@@ -398,66 +410,6 @@ export class VoteActionService {
         }
     }
 
-    private async processItemVoteVote(voteCreateRequest: VoteCreateRequest): Promise<resources.Vote> {
-        const vote: any = await this.voteService.create(voteCreateRequest);
-        return vote;
-    }
-
-    /**
-     *
-     * @param {VoteMessage} voteMessage
-     * @param {"resources".Proposal} proposal
-     * @param {number} weight
-     * @param voteSmsgMessage
-     * @returns {Promise<"resources".Vote>}
-     */
-    private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal,
-                                     weight: number, voteSmsgMessage?: resources.SmsgMessage): Promise<resources.Vote> {
-
-        let lastVote: any;
-        try {
-            const lastVoteModel = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id);
-            lastVote = lastVoteModel.toJSON();
-        } catch (ex) {
-            lastVote = null;
-        }
-        const create: boolean = lastVote == null;
-
-        // find the ProposalOption
-        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
-            return option.optionId === voteMessage.optionId;
-        });
-
-        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
-
-        if (!proposalOption) {
-            this.log.warn('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
-            throw new MessageException('ProposalOption ' + voteMessage.optionId + ' doesn\'t exists.');
-        }
-
-        // create a vote
-        const voteRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, create, voteSmsgMessage);
-
-        let voteModel;
-        if (create) {
-            this.log.error('CREATE VOTE');
-            // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
-            voteModel = await this.voteService.create(voteRequest);
-        } else {
-            // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
-            this.log.error('UPDATE VOTE');
-            voteModel = await this.voteService.update(lastVote.id, voteRequest as VoteUpdateRequest);
-            // this.voteService.destroy(lastVote.id);
-            // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
-        }
-        if (!voteModel) {
-            this.log.error('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
-            throw new MessageException('Vote wasn\'t saved or updated properly. Return val is empty.');
-        }
-        const vote = voteModel.toJSON();
-        return vote;
-    }
-
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
@@ -473,4 +425,56 @@ export class VoteActionService {
                 });
         });
     }
+
+    /**
+     * processVote "processes" the Vote, creating or updating the Vote.
+     * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
+     * and after the VoteMessage is received.
+     *
+     * - private processVote()
+     *   - verify the vote is valid
+     *     - verifymessage address votemessage.signature votemessage.voteticket
+     *     - get the balance for the address
+     *   - if Vote is valid and has balance:
+     *     - save/update Vote locally (update: add the fields from smsgmessage)
+     *
+     * @param voteMessage
+     * @param smsgMessage
+     */
+    private async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
+
+        // get the address balance
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter])
+            .then(value => value.balance);
+
+        const verified = this.verifyVote(voteMessage);
+
+        if (balance > 0 && verified) {
+
+            const proposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
+                .then(value => value.toJSON());
+
+            // when called from send() we create a VoteCreateRequest with no smsgMessage data.
+            // later, when the smsgMessage for this vote is received,
+            // the relevant smsgMessage data will be updated and included in the request
+            const voteRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposalOption, balance, smsgMessage);
+            const voteModel: Vote = await this.voteService.findOneBySignature(voteRequest.signature)
+                .catch(async reason => {
+                    // vote doesnt exist yet, so we need to create it.
+                    return await this.voteService.create(voteRequest);
+                });
+
+            let vote: resources.Vote = voteModel.toJSON();
+            if (voteRequest.postedAt !== Number.MAX_SAFE_INTEGER) {
+                // means processProposal was called from processVoteReceivedEvent() and we should update the Vote data
+                vote = await this.voteService.update(vote.id, voteRequest)
+                    .then(value => value.toJSON());
+            } else {
+                // called from send(), we already created the Vote so nothing needs to be done
+            }
+            return vote;
+        }
+        return;
+    }
+
 }

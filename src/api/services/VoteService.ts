@@ -26,19 +26,6 @@ export class VoteService {
         this.log = new Logger(__filename);
     }
 
-    public async getVoteWeight(voter: string): Promise<number> {
-        let voteWeight;
-        try {
-            const tmpWeight = await this.coreRpcService.getAddressBalance(voter);
-            // this.log.debug('Vote getaddressbalance retval = ' + JSON.stringify(tmpWeight, null, 2));
-            voteWeight = tmpWeight.balance;
-        } catch (ex) {
-            this.log.error('ERROR getting vote weight; ex = ' + JSON.stringify(ex));
-            voteWeight = 1;
-        }
-        return voteWeight;
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Vote>> {
         return this.voteRepo.findAll();
     }
@@ -52,6 +39,15 @@ export class VoteService {
         return vote;
     }
 
+    public async findOneBySignature(signature: string, withRelated: boolean = true): Promise<Vote> {
+        const vote = await this.voteRepo.findOneBySignature(signature, withRelated);
+        if (vote === null) {
+            this.log.warn(`Vote with the signature=${signature} was not found!`);
+            throw new NotFoundException(signature);
+        }
+        return vote;
+    }
+
     public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         const vote = await this.voteRepo.findOneByVoterAndProposalId(voter, proposalId, withRelated);
         if (!vote) {
@@ -59,15 +55,6 @@ export class VoteService {
             throw new NotFoundException(proposalId);
         }
         return vote;
-    }
-
-    public async findAllFromMeByProposalId(proposalId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
-        const votes = await this.voteRepo.findAllFromMeByProposalId(proposalId, withRelated);
-        if (!votes) {
-            this.log.warn(`No votes with proposalId=${proposalId} made by you were found!`);
-            throw new NotFoundException(proposalId);
-        }
-        return votes;
     }
 
     @validate()
@@ -90,6 +77,7 @@ export class VoteService {
         const vote = await this.findOne(id, false);
 
         // set new values
+        vote.set('signature', body.signature);
         vote.set('voter', body.voter);
         vote.set('weight', body.weight);
 

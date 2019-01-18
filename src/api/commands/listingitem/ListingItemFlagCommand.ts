@@ -49,7 +49,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      *  [0]: listingItemHash
      *  [1]: profileId
      *  [2]: reason, optional
-     *  [3]: expiryTime (from listingitem, set in validate)
+     *  [3]: expiryTime (set in validate)
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
@@ -132,9 +132,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         data.params[2] = data.params.length >= 3 ? data.params[2] : 'This ListingItem should be removed.';
 
-        // todo: setting the original expiryTime from the ListingItem
-        // todo: instead we should calculate better value using expiredAt-now() ...
-        data.params[3] = listingItem.expiryTime;
+        const daysRetention = Math.ceil((listingItem.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        data.params[3] = daysRetention;
 
         return data;
     }

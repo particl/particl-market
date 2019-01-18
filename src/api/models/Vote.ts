@@ -25,6 +25,16 @@ export class Vote extends Bookshelf.Model<Vote> {
         }
     }
 
+    public static async fetchBySignature(value: string, withRelated: boolean = true): Promise<Vote> {
+        if (withRelated) {
+            return await Vote.where<Vote>({ signature: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Vote.where<Vote>({ signature: value }).fetch();
+        }
+    }
+
     public static async fetchByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {
             const vote = Vote.forge<Vote>()
@@ -44,26 +54,6 @@ export class Vote extends Bookshelf.Model<Vote> {
                 qb.andWhere('voter', '=', voter);
             });
             return await vote.fetch();
-        }
-    }
-
-    public static async fetchAllFromMeByProposalId(proposalId: number, withRelated: boolean = true): Promise<Collection<Vote>> {
-        if (withRelated) {
-            const vote = Vote.forge<Vote>()
-            .query(qb => {
-                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
-                qb.where('proposal_options.proposal_id', '=', proposalId);
-            });
-            return await vote.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            const vote = Vote.forge<Vote>()
-            .query(qb => {
-                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
-                qb.where('proposal_options.proposal_id', '=', proposalId);
-            });
-            return await vote.fetchAll();
         }
     }
 

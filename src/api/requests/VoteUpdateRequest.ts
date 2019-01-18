@@ -11,6 +11,9 @@ export class VoteUpdateRequest extends RequestBody {
     public proposal_option_id: number;
 
     @IsNotEmpty()
+    public signature: string;
+
+    @IsNotEmpty()
     public voter: string;
 
     @IsNotEmpty()
