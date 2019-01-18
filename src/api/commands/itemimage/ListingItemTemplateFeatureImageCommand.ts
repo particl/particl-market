@@ -13,8 +13,10 @@ import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
-export class ItemImageFeaturedCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
@@ -29,16 +31,27 @@ export class ItemImageFeaturedCommand extends BaseCommand implements RpcCommandI
 
     /**
      * data.params[]:
-     *  [0]: featured_item_image_ID
-     *  [1]: image_ID
+     *  [0]: listing_item_template_ID
+     *  [1]: featured_item_image_ID
      * @param data
      * @returns {Promise<ItemImage>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        if (data.params.length < 2) {
+        // check if we got all the params
+        if (data.params.length < 1) {
             this.log.error('MISSING PARAMS');
-            throw new MessageException('Requires arg: TemplateID, ItemImageId');
+            throw new MissingParamException('ListingItemTemplate_ID');
+        } else if (data.params.length < 2) {
+            this.log.error('MISSING PARAMS');
+            throw new MissingParamException('Featured_ID');
+        }
+        if (typeof data.params[0] !== 'number') {
+            this.log.error('Typeof Error');
+            throw new InvalidParamException('ListingItemTemplate_ID');
+        } else if (typeof data.params[1] !== 'number') {
+            this.log.error('Typeof Error');
+            throw new InvalidParamException('Featured_ID');
         }
         const itemImageModel = await this.itemImageService.findOne(data.params[0]);
         const itemImage = itemImageModel.toJSON();
@@ -48,8 +61,16 @@ export class ItemImageFeaturedCommand extends BaseCommand implements RpcCommandI
             this.log.error('IMAGE IS ALREADY POSTED');
             throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
         }
+        // find the listing item template
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+
+        if (!itemImages.find((img) => img.id === data.params[1])) {
+            this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
+            throw new MessageException('Image ID doesnt exist on template');
+        }
         return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
     }
 

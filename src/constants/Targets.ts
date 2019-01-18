@@ -231,7 +231,7 @@ export const Targets = {
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageFeaturedCommand: 'ItemImageFeaturedCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ItemImageListCommand: 'ItemImageListCommand',
             ItemImageRemoveCommand: 'ItemImageRemoveCommand',
             ItemImageRootCommand: 'ItemImageRootCommand'

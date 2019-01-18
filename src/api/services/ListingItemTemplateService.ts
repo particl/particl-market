@@ -39,11 +39,8 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ItemImageRepository } from '../repositories/ItemImageRepository';
-import { ItemImageService } from './ItemImageService';
 import { ItemImageDataService } from './ItemImageDataService';
-import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
-import { prototype } from 'form-data';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import { ItemImageService } from './ItemImageService';
 
 export class ListingItemTemplateService {
 
@@ -64,7 +61,6 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
@@ -426,37 +422,32 @@ export class ListingItemTemplateService {
         return messageSize;
     }
 
-    // sets an image as a "featured" image
+    /**
+     * sets the featured image for the ListingItemTemlate
+     *
+     * @param listingItemTemplate
+     * @param imageID
+     *
+     */
     public async setFeaturedImg(listingItemTemplate: resources.ListingItemTemplate, imageID: number): Promise<void> {
-        try {
-            const templateID = listingItemTemplate.id;
-            const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-            if (!itemImages.find((img) => img.id === imageID)) {
-                throw new MessageException('Image ID doesnt exist on template');
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+        if (!_.isEmpty(itemImages)) {
+            // find image and set it to featured
+            const found = itemImages.find((img) => img.id === imageID && !img.featured);
+            if (found) {
+                await this.itemImageService.updateFeatured(found.id, true);
             }
-            if (itemImages) {
-                // loop through templates to check for previous featured images, sets to false
-                for (const item of itemImages) {
-                    if (item.featuredImg && item.id !== imageID) {
-                        const data = {
-                            id: item.id,
-                            featured_img: false
-                        };
-                        await this.itemImageRepo.update(templateID, data);
-                    }
-                    if (item.id === imageID && !item.featuredImg) {
-                        const data = {
-                            id: item.id,
-                            featured_img: true
-                        };
-                        await this.itemImageRepo.update(templateID, data);
-                    }
-                }
-                this.log.info('Successfully set featured image');
+
+            // check if other images are set to featured, unset as featured
+            const notFound = itemImages.filter((img) => img.id !== imageID && img.featured);
+            if (notFound.length) {
+                notFound.forEach( async (img) => await this.itemImageService.updateFeatured(img.id, false));
             }
-        } catch (error) {
-            this.log.error(error);
-            throw new MessageException('Failed to set featured image');
+
+            this.log.info('Successfully set featured image');
+        } else {
+            this.log.error('Listing Item Template has no Images.');
+            throw new MessageException('Listing Item Template has no Images.');
         }
     }
 

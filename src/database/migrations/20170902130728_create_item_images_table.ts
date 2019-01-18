@@ -19,7 +19,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
 
-            table.boolean('featured_img').defaultTo(false);
+            table.boolean('featured').defaultTo(false);
         })
     ]);
 };
