@@ -41,9 +41,9 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         // check if we got all the params
         if (data.params.length < 1) {
             this.log.error('MISSING PARAM ListingItemTemplate_ID');
-            throw new MissingParamException('ListingItemTemplate_ID');
+            throw new InvalidParamException('ListingItemTemplate_ID');
         } else if (data.params.length < 2) {
-            this.log.error('MISSING PARAM FeaturedImgae_ID');
+            this.log.error('MISSING PARAM FeaturedImage_ID');
             throw new InvalidParamException('Featured_ID');
         }
         if (typeof data.params[0] !== 'number') {
@@ -53,7 +53,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('Typeof Error');
             throw new InvalidParamException('Featured_ID', 'integer');
         }
-        const itemImageModel = await this.itemImageService.findOne(data.params[0]);
+        const itemImageModel = await this.itemImageService.findOne(data.params[1]);
         const itemImage = itemImageModel.toJSON();
 
         // check if item already been posted
@@ -61,12 +61,12 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('IMAGE IS ALREADY POSTED');
             throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
         }
+        this.log.error('here:', data[0]);
         // find the listing item template
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
         const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-
         if (!itemImages.find((img) => img.id === data.params[1])) {
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
             throw new MessageException('Image ID doesnt exist on template');

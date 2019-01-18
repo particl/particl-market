@@ -9,9 +9,6 @@ import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolT
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
-import * as Jimp from 'jimp';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
@@ -20,6 +17,7 @@ import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
@@ -39,6 +37,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     let listingItemId;
     let listingItemTemplate;
     let listingItems;
+
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
@@ -175,22 +174,45 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;
 
-        const data = [listingItemId, createdItemImageIdNew];
-
-        result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, data]);
+        const data = [newCreatedTemplateId, createdItemImageIdNew];
+        result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, ...data]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe('Can\'t set featured itemImage because the item has allready been posted!');
     });
 
-//     // test if image exists on template
-//     test('Should fail to set featured because ImageID is not found in the template', async () => {
-//         const res: any = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, imageIDNotFound]);
-//         res.expectJson();
-//         res.expectStatusCode(404);
-//         expect(res.error.error.success).toBe(false);
-//         expect(res.error.error.message).toBe('Image ID doesnt exist on template');
-//     });
-// });
+    // test if image exists on template
+    test('Should fail to set featured because ImageID is not found in the template', async () => {
+        // set listing item id
+        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
+
+        testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
+
+        // set hash
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        let result: any = addListingItemTempRes;
+        const newCreatedTemplateId = result.id;
+
+        // add item image
+        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
+            Commands.ITEMIMAGE_ADD.commandName,
+            newCreatedTemplateId,
+            'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatSmall]);
+        itemImageRes.expectJson();
+        itemImageRes.expectStatusCode(200);
+        createdItemImageIdNew = itemImageRes.getBody()['result'].id + 1;
+
+        const data = [newCreatedTemplateId, createdItemImageIdNew];
+        result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, ...data]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.message).toBe('Image ID doesnt exist on template');
+    });
+});
 
 
