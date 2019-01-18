@@ -19,6 +19,7 @@ import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/List
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
@@ -37,6 +38,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     let createdItemImageIdNew;
     let listingItemId;
     let listingItemTemplate;
+    let listingItems;
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
@@ -66,14 +68,11 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
-
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+        const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
             false,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             false,   // generatePaymentInformation
             false,   // generateEscrow
             false,   // generateItemPrice
@@ -81,14 +80,39 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        listingItemTemplate = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+        defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+
+        // create item template
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const result: any = addListingItemTempRes;
+        const createdTemplateId = result.id;
+        const createdItemInfoId = result.ItemInformation.id;
+
+        // generate listingitem
+        listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
             1,                          // how many to generate
             true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
+            generateListingItemParams   // what kind of data to generate
         ) as ListingItemTemplate[];
 
-        createdListingItemTemplate = listingItemTemplate[0];
+        listingItemId = listingItems[0]['id'];
+
+        // add item image
+        const addDataRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName,
+            createdTemplateId,
+            'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatSmall]);
+        addDataRes.expectJson();
+        addDataRes.expectStatusCode(200);
+        addDataRes.expectDataRpc(keys);
+        const createdItemImageId = addDataRes.getBody()['result'].id;
     });
     // tests if the params have been entered
     test('Should fail to set featured because missing ListingItemTemplate_ID', async () => {
@@ -124,40 +148,40 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 
-//     // test if image is posted
-//     test('Should fail to set featured because Image is already posted', async () => {
+    // test if image is posted
+    test('Should fail to set featured because Image is already posted', async () => {
 
-//         // set listing item id
-//         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
+        // set listing item id
+        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
-//         testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
+        testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
 
-//         // set hash
-//         testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        // set hash
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
-//         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-//         let res: any = addListingItemTempRes;
-//         const newCreatedTemplateId = res.id;
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        let result: any = addListingItemTempRes;
+        const newCreatedTemplateId = result.id;
 
-//         // add item image
-//         const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
-//             Commands.ITEMIMAGE_ADD.commandName,
-//             newCreatedTemplateId,
-//             'TEST-DATA-ID',
-//             ImageDataProtocolType.LOCAL,
-//             'BASE64',
-//             ImageProcessing.milkcatSmall]);
-//         console.log(itemImageRes);
-//         itemImageRes.expectJson();
-//         itemImageRes.expectStatusCode(200);
-//         createdItemImageIdNew = [1, itemImageRes.getBody()['result'].id];
+        // add item image
+        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
+            Commands.ITEMIMAGE_ADD.commandName,
+            newCreatedTemplateId,
+            'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatSmall]);
+        itemImageRes.expectJson();
+        itemImageRes.expectStatusCode(200);
+        createdItemImageIdNew = itemImageRes.getBody()['result'].id;
 
-//         res = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, createdItemImageIdNew]);
-//         res.expectJson();
-//         res.expectStatusCode(404);
-//         expect(res.error.error.success).toBe(false);
-//         expect(res.error.error.message).toBe('Can\'t set featured itemImage because the item has allready been posted!');
-//     });
+        const data = [listingItemId, createdItemImageIdNew];
+
+        result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, data]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.message).toBe('Can\'t set featured itemImage because the item has allready been posted!');
+    });
 
 //     // test if image exists on template
 //     test('Should fail to set featured because ImageID is not found in the template', async () => {
