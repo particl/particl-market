@@ -3,23 +3,25 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { VoteActionService } from '../../services/VoteActionService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommandInterface } from './../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalService } from '../../services/ProposalService';
-import * as resources from 'resources';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { CoreRpcService } from '../../services/CoreRpcService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -30,8 +32,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
     ) {
         super(Commands.VOTE_POST);
         this.log = new Logger(__filename);
@@ -50,48 +51,27 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-        const profileId = data.params.shift();
-        const proposalHash = data.params.shift();
-        // TODO: for now we'll use optionId, we may need to change it later to be something else like hash
-        const proposalOptionId = data.params.shift();
+        const profileId = data.params[0];
+        const proposalHash = data.params[1];
+        // TODO: for now we'll use optionId, but we should propably use the proposalOptionHash
+        const proposalOptionId = data.params[2];
 
-        const proposalModel = await this.proposalService.findOneByHash(proposalHash)
-            .catch(reason => {
-                throw new MessageException('Proposal not found.');
-            });
-        const proposal: resources.Proposal = proposalModel.toJSON();
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalHash)
+            .then(value => value.toJSON());
+
         const proposalOption = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
             return o.optionId === proposalOptionId;
-        });
+        }) || {} as resources.ProposalOption; // validate() makes sure proposalOption != undefined, this just fixes the TS code validation
 
-        if (!proposalOption) {
-            throw new MessageException(`ProposalOption not found.`);
-        }
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
+            .then(value => value.toJSON());
 
-        // Get profile from address.
-        // Profile that is doing the bidding.
-        const profileModel = await this.profileService.findOne(profileId);
-        if (!profileModel) {
-            throw new MessageException(`Profile with profileId <${profileId}> doesn't exist or doesn't belong to us.`);
-        }
-        const profile: resources.Profile = profileModel.toJSON();
+        // TODO: might want to let users specify this later.
+        const market: resources.Market = await this.marketService.getDefault()
+            .then(value => value.toJSON());
 
-        // Get the default market.
-        // TODO: Might want to let users specify this later.
-        const marketModel = await this.marketService.getDefault();
-        if (!marketModel) {
-            throw new MessageException(`Default market doesn't exist!`);
-        }
-        const market: resources.Market = marketModel.toJSON();
+        return await this.voteActionService.vote(profile, market, proposal, proposalOption);
 
-        const addrCollection: any = await this.coreRpcService.getWalletAddresses();
-        let voteMsg;
-        for (const addr of addrCollection) {
-            this.log.debug('Sending vote for ' + addr.address);
-            voteMsg = await this.voteActionService.send(proposal, proposalOption, addr.address, market);
-            this.log.debug('Sending vote for ' + addr.address + ': DONE');
-        }
-        return voteMsg;
     }
 
     /**
@@ -104,20 +84,43 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 3) {
-            throw new MessageException('Missing params.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('proposalHash');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('proposalOptionId');
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('Invalid profileId.');
+            throw new InvalidParamException('profileId', 'number');
+        } else if (data.params[1] !== 'string') {
+            throw new InvalidParamException('proposalHash', 'string');
+        } else if (data.params[2] !== 'number') {
+            throw new InvalidParamException('proposalOptionId', 'number');
         }
 
-        if (typeof data.params[1] !== 'string') {
-            throw new MessageException('Invalid proposalHash.');
-        }
+        // make sure Profile with the id exists
+        await this.profileService.findOne(data.params[0])
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
 
-        if (typeof data.params[2] !== 'number') {
-            throw new MessageException('Invalid proposalOptionId.');
+        // make sure Proposal with the id exists
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Proposal');
+            });
+
+        // make sure ProposalOption exists
+        const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+            return o.optionId === data.params[2];
+        });
+        if (!proposalOption) {
+            throw new MessageException('ProposalOption ' + data.params[2] + ' not found.');
         }
 
         return data;
