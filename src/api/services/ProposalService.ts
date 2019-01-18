@@ -150,7 +150,7 @@ export class ProposalService {
 
     /**
      * creates empty ProposalResult for the Proposal
-     * todo: create one after call to proposalservice.create, so this doesnt need to be called from anywhere else
+     * todo: perhaps create one after call to proposalservice.create, so this doesnt need to be called from anywhere else
      *
      * @param {"resources".Proposal} proposal
      * @returns {Promise<"resources".ProposalResult>}
@@ -183,7 +183,7 @@ export class ProposalService {
 
 
     /**
-     * todo: needs refactoring, perhaps combine with createFirstProposalResult
+     * todo: needs refactoring
      * todo: and move to proposalresultservice?
      * todo: this is just updating the latest one.. we should propably modify this so that we create a new
      * one periodically and can track the voting progress while proposal is active

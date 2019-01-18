@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named} from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -16,29 +15,18 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from './ProposalService';
-import { ProposalResultService } from './ProposalResultService';
-import { ProposalOptionResultService } from './ProposalOptionResultService';
-import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ListingItemService } from './ListingItemService';
-import { VoteFactory } from '../factories/VoteFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
-import { VoteService } from './VoteService';
 import { ItemVote } from '../enums/ItemVote';
 import { FlaggedItemService } from './FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { ProfileService } from './ProfileService';
-import { Profile } from '../models/Profile';
-import { MarketService } from './MarketService';
 import { VoteActionService } from './VoteActionService';
-import { ProposalOptionService } from './ProposalOptionService';
-import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { Proposal } from '../models/Proposal';
 
