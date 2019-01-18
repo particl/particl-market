@@ -40,18 +40,18 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         // check if we got all the params
         if (data.params.length < 1) {
-            this.log.error('MISSING PARAMS');
+            this.log.error('MISSING PARAM ListingItemTemplate_ID');
             throw new MissingParamException('ListingItemTemplate_ID');
         } else if (data.params.length < 2) {
-            this.log.error('MISSING PARAMS');
-            throw new MissingParamException('Featured_ID');
+            this.log.error('MISSING PARAM FeaturedImgae_ID');
+            throw new InvalidParamException('Featured_ID');
         }
         if (typeof data.params[0] !== 'number') {
             this.log.error('Typeof Error');
-            throw new InvalidParamException('ListingItemTemplate_ID');
+            throw new InvalidParamException('ListingItemTemplate_ID', 'integer');
         } else if (typeof data.params[1] !== 'number') {
             this.log.error('Typeof Error');
-            throw new InvalidParamException('Featured_ID');
+            throw new InvalidParamException('Featured_ID', 'integer');
         }
         const itemImageModel = await this.itemImageService.findOne(data.params[0]);
         const itemImage = itemImageModel.toJSON();

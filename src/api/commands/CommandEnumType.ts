@@ -67,7 +67,7 @@ export class CommandEnumType extends Enum<Command> {
 
     public ITEMIMAGE_LIST: Command          = new Command('itemimagelist', 'list', false);
     public ITEMIMAGE_ADD: Command           = new Command('itemimageadd', 'add', false);
-    public ITEMIMAGE_FEATURED: Command          = new Command('itemimagefeatured', 'featured', false);
+    public ITEMIMAGE_FEATURED: Command          = new Command('ListingItemTemplateFeatureImageCommand', 'featured', false);
     public ITEMIMAGE_REMOVE: Command        = new Command('itemimageremove', 'remove', false);
     public ITEMIMAGE_ROOT: Command          = new Command('itemimage', 'image', true,
         [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE, this.ITEMIMAGE_FEATURED], EnvironmentType.ALL);
