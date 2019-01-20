@@ -19,6 +19,26 @@ declare function unescape(s: string): string;
 
 let RPC_REQUEST_ID = 1;
 
+// todo: create interfaces for results, and move them to separate files
+
+interface BlockchainInfo {
+    chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
+    blocks: number;                     // the current number of blocks processed in the server
+    headers: number;                    // the current number of headers we have validated
+    bestblockhash: string;              // the hash of the currently best block
+    moneysupply: number;                // the total amount of coin in the network
+    blockindexsize: number;             // the total number of block headers indexed
+    delayedblocks: number;              // the number of delayed blocks
+    difficulty: number;                 // the current difficulty
+    mediantime: number;                 // median time for the current best block
+    verificationprogress: number;       // estimate of verification progress [0..1]
+    initialblockdownload: boolean;      // estimate of whether this node is in Initial Block Download mode.
+    chainwork: string;                  // total amount of work in active chain, in hexadecimal
+    size_on_disk: number;               // the estimated size of the block and undo files on disk
+    pruned: boolean;                    // if the blocks are subject to pruning
+    // todo: add pruning and softfork related data when needed
+}
+
 export class CoreRpcService {
 
     public log: LoggerType;
@@ -60,6 +80,15 @@ export class CoreRpcService {
 
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
+    }
+
+    /**
+     * Returns an object containing various state info regarding blockchain processing.
+     *
+     * @returns {Promise<BlockchainInfo>}
+     */
+    public async getBlockchainInfo(): Promise<BlockchainInfo> {
+        return await this.call('getblockchaininfo', [], false);
     }
 
     /**

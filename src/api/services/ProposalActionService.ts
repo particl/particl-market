@@ -132,10 +132,8 @@ export class ProposalActionService {
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const proposalMessage: ProposalMessage = marketplaceMessage.mpaction as ProposalMessage;
 
-        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
-
         // processProposal will create or update the Proposal
-        return await this.processProposal(proposalCreateRequest, smsgMessage)
+        return await this.processProposal(proposalMessage, smsgMessage)
             .then(value => {
                 return SmsgMessageStatus.PROCESSED;
             })

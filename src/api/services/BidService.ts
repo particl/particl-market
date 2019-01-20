@@ -59,7 +59,6 @@ export class BidService {
     }
 
     public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        // TODO: this does not seem to be implemented, see repo/model
         const params = {
             listingItemHash: hash
         } as BidSearchParams;

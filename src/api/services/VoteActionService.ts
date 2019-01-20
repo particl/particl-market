@@ -2,11 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
+import { Core, Events, Targets, Types } from '../../constants';
 import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { SmsgService } from './SmsgService';
@@ -22,7 +21,6 @@ import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { VoteMessage } from '../messages/VoteMessage';
 import { ProposalService } from './ProposalService';
-import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
@@ -32,10 +30,9 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProfileService } from './ProfileService';
 import { BidService } from './BidService';
-import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
-import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
-import { Proposal } from '../models/Proposal';
-import { ProposalMessage } from '../messages/ProposalMessage';
+import { ItemVote } from '../enums/ItemVote';
+import { EnvConfig } from '../../config/env/EnvConfig';
+import { Environment } from '../../core/helpers/Environment';
 
 interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -151,125 +148,156 @@ export class VoteActionService {
 
     /**
      * process received VoteMessage
-     * - save ActionMessage
-     * - create Proposal
+     * - this.processVote()
+     * - proposalService.recalculateProposalResult(proposal)
      *
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
     public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
-        }
 
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const voteMessage: VoteMessage = event.marketplaceMessage.mpaction as VoteMessage;
-        const sender = event.smsgMessage.from;
 
-        // Get vote message signature
-        // Verify signature
-        const signature = await this.verifyVote(voteMessage, sender);
-
-        const passedVerification = await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteMessage);
-        if (!passedVerification) {
-            throw new MessageException('Received signature failed validation.');
-        } else {
-            this.log.debug('Received signature passed validation.');
-        }
-
-        // get proposal and ignore vote if we're past the final block of the proposal
-        return await this.proposalService.findOneByHash(voteMessage.proposalHash)
-            .then(async proposalModel => {
-
-                const proposal = proposalModel.toJSON();
-                /*
-                 * Are any of these votes from one of our profiles?
-                 *     Ignore the vote, we've already created it locally
-                 * Else, process vote
-                 */
-                let weAreTheVoter = false;
-                const addrCollection: any = await this.coreRpcService.getWalletAddresses();
-                for (const addr of addrCollection) {
-                    if (addr.address === voteMessage.voter) {
-                        this.log.debug(`Address (${addr.address}) === voteMessage.voter (${voteMessage.voter})`);
-                        weAreTheVoter = true;
-                        break;
-                    }
-                }
-                if (weAreTheVoter) {
-                    this.log.debug('This vote should have already been created locally. Skipping.');
-                } else {
-                    this.log.debug('This vote should not exist already locally. Process the vote.');
-
-                    // just make sure we have one
-                    if (_.isEmpty(proposal.ProposalResults)) {
-                        throw new MessageException('ProposalResult should not be empty!');
-                    }
-
-                    // const currentBlock: number = await this.coreRpcService.getBlockCount();
-                    // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
-
-                    if (voteMessage && event.smsgMessage.daysretention >= 1) {
-                        const weight = await this.voteService.getVoteWeight(voteMessage.voter);
-                        await this.decideOnProposal(voteMessage, proposal.FlaggedItem.listingItemId, proposal, weight);
-                        return SmsgMessageStatus.PROCESSED;
-                    } else {
-                        throw new MessageException('Missing VoteMessage');
-                    }
-                }
+        // processProposal will create or update the Proposal
+        return await this.processVote(voteMessage, smsgMessage)
+            .then(value => {
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                return SmsgMessageStatus.WAITING;
+                this.log.debug('processing failed: ', JSON.stringify(reason, null, 2));
+                // todo: return different status for different reasons the vote was ignored
+                return SmsgMessageStatus.PROCESSING_FAILED;
             });
+
     }
 
     /**
-     * todo: move to listingItemService
+     * processVote "processes" the Vote, creating or updating the Vote.
+     * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
+     * and after the VoteMessage is received.
+     *
+     * - private processVote()
+     *   - verify the vote is valid
+     *     - verifymessage address votemessage.signature votemessage.voteticket
+     *     - get the balance for the address
+     *   - if Vote is valid and has balance:
+     *     - save/update Vote locally (update: add the fields from smsgmessage)
+     *
+     * @param voteMessage
+     * @param smsgMessage
+     */
+    private async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
+
+        // get the address balance
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter])
+            .then(value => value.balance);
+
+        // verify that the vote was actually sent by the owner of the address
+        const verified = await this.verifyVote(voteMessage);
+        if (!verified) {
+            throw new MessageException('Received signature failed validation.');
+        }
+
+        let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash)
+            .then(value => value.toJSON());
+
+        if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
+            // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
+            // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
+            throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
+        }
+
+        // address needs to have balance for the vote to matter
+        if (balance > 0) {
+
+            const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
+                .then(value => value.toJSON());
+
+            // when called from send() we create a VoteCreateRequest with no smsgMessage data.
+            // later, when the smsgMessage for this vote is received,
+            // the relevant smsgMessage data will be updated and included in the request
+            const voteRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, votedProposalOption, balance, smsgMessage);
+
+            // find the vote and if it exists, update it, and if not, then create it
+            const vote: resources.Vote = await this.voteService.findOneBySignature(voteRequest.signature)
+                .then(async value => {
+                    // if vote is found, we are either receiving our own vote or
+                    // someone is voting again, so we update the vote
+                    const foundVote: resources.Vote = value.toJSON();
+                    const voteModel: Vote = await this.voteService.update(foundVote.id, voteRequest);
+                    return voteModel.toJSON();
+                })
+                .catch(async reason => {
+                    // vote doesnt exist yet, so we need to create it.
+                    const voteModel: Vote = await this.voteService.create(voteRequest);
+                    return voteModel.toJSON();
+                });
+
+            proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash)
+                .then(value => value.toJSON());
+
+            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+            // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
+            // we can now check whether the ListingItem should be removed or not
+            if (proposal.type === ProposalType.ITEM_VOTE) {
+                await this.shouldRemoveListingItem(proposalResult)
+                    .then(async remove => {
+                        if (remove) {
+                            await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                                .then(async value => {
+                                    const listingItem: resources.ListingItem = value.toJSON();
+                                    await this.listingItemService.destroy(listingItem.id);
+                                });
+                        }
+                    });
+            }
+            return vote;
+        }
+
+        // returning undefined vote in case there's no balance
+        // we could also throw in this situation
+        return;
+    }
+
+    /**
+     * check whether ListingItem should be removed or not based on given ProposalResult
      *
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
      */
-    public async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
-        // TODO: Currently this should work fine, the new weights are calculated in recalculateProposalResult, which is called when we recieve a vote
-        // If this function is ever called somewhere other than just after we receive a vote, we need to make sure recalculateProposalResult is called first,
-        //     alternatively, we can calculate it here.
-        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 0;
-        });
-        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
-        });
+    private async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
 
-        const bid = await this.bidService.findAllByListingItemHash(proposalResult.Proposal.item, true);
-        if (bid) {
-            // We don't want to remove listings that have bids on them.
-            // Bids are only visible to buyer and seller so everybody else will remove eligable listings.
+        // make sure the Proposal is for removing an item
+        if (proposalResult.Proposal.type !== ProposalType.ITEM_VOTE) {
+            throw new MessageException('Invalid Proposal type.');
+        }
+
+        // we dont want to remove ListingItems that have related Bids
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+            .then(value => value.toJSON());
+        if (!_.isEmpty(listingItem.Bids)) {
             return false;
         }
 
+        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
+        });
+
+
         // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-        // at minimum, a total of env.MINIMUM_REQUIRED_VOTES votes
-        // at minimum, 50% of votes saying remove
+        // at minimum, 10% of total network weight for removal
+        const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        const networkSupply = blockchainInfo.moneysupply * 100000000;
 
-        const networkInfo = await this.coreRpcService.getNetworkInfo();
-        const networkSupply = 1000; // networkInfo.moneysupply * 100000000;
-
-        this.log.debug('process.env.MINIMUM_REQUIRED_VOTES = ' + process.env.MINIMUM_REQUIRED_VOTES);
-        if (removeOptionResult && okOptionResult) {
-            // const totalNumVoters = okOptionResult.voters + removeOptionResult.voters;
-            const totalWeight = okOptionResult.weight + removeOptionResult.weight;
-            this.log.debug(`totalWeight / networkSupply = ${totalWeight} / ${networkSupply} = `
-                           + (totalWeight / networkSupply) + ' >=? 0.1 = ' + (totalWeight / networkSupply >= 0.1 ? 'TRUE' : 'FALSE'));
-            if (totalWeight / networkSupply >= 0.1) {
-                /*(totalNumVoters > (process.env.MINIMUM_REQUIRED_VOTES || 1000))
-                && (totalWeight > (process.env.MINIMUM_REQUIRED_WEIGHT || 100000000000))
-                && ((removeOptionResult.weight / (totalWeight)) > 0.5)) {*/
-                this.log.debug('Item should be destroyed');
-                return true;
-            }
+        const removalPercentage = 10; // todo: configurable
+        if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
+            this.log.debug('Votes for ListingItem removal exceed 10%');
+            return true;
         }
-        this.log.debug('Item should NOT be destroyed');
+        this.log.debug('ListingItem should NOT be destroyed');
         return false;
     }
 
@@ -323,93 +351,6 @@ export class VoteActionService {
         return await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteTicket);
     }
 
-    private async instaVote(senderAddress: string, proposal: resources.Proposal, proposalOptionId: number): Promise<resources.Vote> {
-        const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-            return o.optionId === proposalOptionId; // TODO: Or is it 1????
-        });
-        if (!proposalOption) {
-            this.log.debug(`Proposal option ${proposalOptionId} wasn't found.`);
-            throw new MessageException(`Proposal option ${proposalOptionId} wasn't found.`);
-        }
-
-        // Local (instant) votes
-        // this.log.debug('Casting instant vote for ' + senderAddress);
-        const weight = await this.voteService.getVoteWeight(senderAddress);
-        // this.log.debug('Weight calculated');
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption, senderAddress);
-        // this.log.debug('Vote message created');
-        const voteCreateRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposal, proposalOption, weight, false);
-
-        let lastVote: any;
-        try {
-            const lastVoteModel = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id);
-            lastVote = lastVoteModel.toJSON();
-        } catch (ex) {
-            lastVote = null;
-        }
-        const create: boolean = lastVote == null;
-        let voteModel;
-        if (create) {
-            // this.log.debug('CREATE VOTE');
-            // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
-            voteModel = await this.voteService.create(voteCreateRequest);
-            // this.log.debug('Vote create request created');
-        } else {
-            // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
-            // this.log.debug('UPDATE VOTE');
-            voteModel = await this.voteService.update(lastVote.id, voteCreateRequest);
-            // this.log.debug('Vote create request updated');
-            // this.voteService.destroy(lastVote.id);
-            // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
-        }
-        if (!voteModel) {
-            this.log.debug('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');
-            throw new MessageException('Vote wasn\'t saved or updated properly. Return val is empty.');
-        }
-
-        const listingItem = await this.listingItemService.findOneByHash(proposal.item);
-        const listingItemId = listingItem.Id;
-        await this.decideOnProposal(voteMessage, listingItemId, proposal, weight);
-
-        const vote = voteModel.toJSON();
-        return vote;
-    }
-
-    private async decideOnProposal(voteMessage: VoteMessage, listingItemId: number, proposal: resources.Proposal, weight: number): Promise<void> {
-        // If vote has weight of 0, ignore, no point saving a weightless vote.
-        // If vote has a weight > 0, process and save it.
-        if (weight > 0) {
-            const createdVote = await this.createOrUpdateVote(voteMessage, proposal, weight);
-            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
-
-            let proposalResult: any = this.proposalResultService.findOneByProposalHash(proposal.hash);
-            if (!proposalResult) {
-                proposalResult = await this.proposalService.createFirstProposalResult(proposal);
-            }
-            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-            // todo: extract method
-            if (proposal.type === ProposalType.ITEM_VOTE
-                && await this.shouldRemoveListingItem(proposalResult)) {
-
-                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                const tmpListingItemId = await this.listingItemService.findOne(listingItemId, false)
-                    .then(value => {
-                        return value.Id;
-                    }).catch(reason => {
-                        // ignore
-                        return null;
-                    });
-                if (tmpListingItemId) {
-                    await this.listingItemService.destroy(tmpListingItemId);
-                }
-            } else {
-                this.log.debug('No item destroyed.');
-            }
-            // TODO: do whatever else needs to be done
-        }
-    }
-
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
@@ -426,55 +367,5 @@ export class VoteActionService {
         });
     }
 
-    /**
-     * processVote "processes" the Vote, creating or updating the Vote.
-     * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
-     * and after the VoteMessage is received.
-     *
-     * - private processVote()
-     *   - verify the vote is valid
-     *     - verifymessage address votemessage.signature votemessage.voteticket
-     *     - get the balance for the address
-     *   - if Vote is valid and has balance:
-     *     - save/update Vote locally (update: add the fields from smsgmessage)
-     *
-     * @param voteMessage
-     * @param smsgMessage
-     */
-    private async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
-
-        // get the address balance
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter])
-            .then(value => value.balance);
-
-        const verified = this.verifyVote(voteMessage);
-
-        if (balance > 0 && verified) {
-
-            const proposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
-                .then(value => value.toJSON());
-
-            // when called from send() we create a VoteCreateRequest with no smsgMessage data.
-            // later, when the smsgMessage for this vote is received,
-            // the relevant smsgMessage data will be updated and included in the request
-            const voteRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, proposalOption, balance, smsgMessage);
-            const voteModel: Vote = await this.voteService.findOneBySignature(voteRequest.signature)
-                .catch(async reason => {
-                    // vote doesnt exist yet, so we need to create it.
-                    return await this.voteService.create(voteRequest);
-                });
-
-            let vote: resources.Vote = voteModel.toJSON();
-            if (voteRequest.postedAt !== Number.MAX_SAFE_INTEGER) {
-                // means processProposal was called from processVoteReceivedEvent() and we should update the Vote data
-                vote = await this.voteService.update(vote.id, voteRequest)
-                    .then(value => value.toJSON());
-            } else {
-                // called from send(), we already created the Vote so nothing needs to be done
-            }
-            return vote;
-        }
-        return;
-    }
 
 }
