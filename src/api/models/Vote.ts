@@ -5,6 +5,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import {ProposalOption} from './ProposalOption';
+import { SearchOrder } from '../enums/SearchOrder';
 
 export class Vote extends Bookshelf.Model<Vote> {
 
@@ -14,6 +15,26 @@ export class Vote extends Bookshelf.Model<Vote> {
         'ProposalOption.Proposal.FlaggedItem',
         'ProposalOption.Proposal.FlaggedItem.ListingItem'
     ];
+
+    public static async fetchByProposalHash(hash: string, withRelated: boolean = true): Promise<Collection<Vote>> {
+        const proposalResultCollection = Vote.forge<Model<Vote>>()
+            .query(qb => {
+                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
+                qb.innerJoin('proposal_options.proposals', 'proposal_options.proposals.id', 'proposal_options.proposal_id');
+
+                qb.where('proposal_options.proposals.hash', '=', hash);
+            })
+            .orderBy('id', SearchOrder.DESC);
+
+
+        if (withRelated) {
+            return await proposalResultCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await proposalResultCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {

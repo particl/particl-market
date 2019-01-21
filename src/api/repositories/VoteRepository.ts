@@ -9,6 +9,7 @@ import { Vote } from '../models/Vote';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ProposalResult } from '../models/ProposalResult';
 
 export class VoteRepository {
 
@@ -25,6 +26,11 @@ export class VoteRepository {
         const list = await this.VoteModel.fetchAll();
         return list as Bookshelf.Collection<Vote>;
     }
+
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.VoteModel.fetchByProposalHash(hash, withRelated);
+    }
+
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {
         return this.VoteModel.fetchById(id, withRelated);

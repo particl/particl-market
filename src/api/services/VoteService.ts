@@ -13,6 +13,7 @@ import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
+import { ProposalResult } from '../models/ProposalResult';
 
 export class VoteService {
 
@@ -28,6 +29,10 @@ export class VoteService {
 
     public async findAll(): Promise<Bookshelf.Collection<Vote>> {
         return this.voteRepo.findAll();
+    }
+
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.voteRepo.findAllByProposalHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {

@@ -163,7 +163,7 @@ describe('ProposalResult', () => {
     });
 
     test('Should return one ProposalResult by proposalHash', async () => {
-        const proposalResultModel: ProposalResult = await proposalResultService.findOneByProposalHash(createdProposal.hash);
+        const proposalResultModel: ProposalResult = await proposalResultService.findLatestByProposalHash(createdProposal.hash);
         const result = proposalResultModel.toJSON();
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(createdProposal.id);

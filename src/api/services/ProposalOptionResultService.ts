@@ -69,8 +69,13 @@ export class ProposalOptionResultService {
         // set new values
         // proposalOptionResult.ProposalResultId = body.proposalResultId;
         // proposalOptionResult.ProposalOptionId = body.proposalOptionId;
-        proposalOptionResult.Weight = body.weight;
-        proposalOptionResult.Voters = body.voters;
+        // proposalOptionResult.Weight = body.weight;
+        // proposalOptionResult.Voters = body.voters;
+
+        proposalOptionResult.set('weight', body.weight);
+        proposalOptionResult.set('voters', body.voters);
+        proposalOptionResult.set('proposalResultId', body.proposal_result_id);
+        proposalOptionResult.set('proposalOptionId', body.proposal_option_id);
 
         // update proposalOptionResult record
         const updatedProposalOptionResult = await this.proposalOptionResultRepo.update(id, proposalOptionResult.toJSON());

@@ -184,6 +184,9 @@ export class VoteActionService {
      *     - get the balance for the address
      *   - if Vote is valid and has balance:
      *     - save/update Vote locally (update: add the fields from smsgmessage)
+     *     - proposalService.recalculateProposalResult(proposal)
+     *     - if ITEM_VOTE
+     *       - check if listingitem should be removed
      *
      * @param voteMessage
      * @param smsgMessage
@@ -263,7 +266,7 @@ export class VoteActionService {
     }
 
     /**
-     * check whether ListingItem should be removed or not based on given ProposalResult
+     * check whether ListingItem should be removed or not based on ProposalResult
      *
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
@@ -285,7 +288,6 @@ export class VoteActionService {
         const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
         });
-
 
         // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
         // at minimum, 10% of total network weight for removal
@@ -366,6 +368,4 @@ export class VoteActionService {
                 });
         });
     }
-
-
 }

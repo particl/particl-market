@@ -183,7 +183,7 @@ export class ProposalActionService {
      *
      * - private processProposal():
      *   - save/update proposal locally (update: add the fields from smsgmessage)
-     *   - createFirstProposalResult(proposal), make sure empty ProposalResult is created/exists
+     *   - createEmptyProposalResult(proposal), make sure empty ProposalResult is created/exists
      *   - if ProposalType.ITEM_VOTE:
      *     - create the FlaggedItem if not created yet
      *
@@ -209,7 +209,7 @@ export class ProposalActionService {
                 }
 
                 // create the first ProposalResult
-                await this.proposalService.createFirstProposalResult(createdProposal);
+                await this.proposalService.createEmptyProposalResult(createdProposal);
                 return await this.proposalService.findOne(createdProposal.id);
             });
 

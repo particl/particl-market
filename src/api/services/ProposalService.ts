@@ -26,6 +26,7 @@ import * as resources from 'resources';
 import {ProposalOptionResultCreateRequest} from '../requests/ProposalOptionResultCreateRequest';
 import {ProposalResultCreateRequest} from '../requests/ProposalResultCreateRequest';
 import {VoteService} from './VoteService';
+import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 
 export class ProposalService {
 
@@ -104,7 +105,7 @@ export class ProposalService {
             //     optionCreateRequest.optionId = optionId;
             //     optionId++;
             // }
-            // this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
+            this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
             await this.proposalOptionService.create(optionCreateRequest);
         }
 
@@ -155,7 +156,7 @@ export class ProposalService {
      * @param {"resources".Proposal} proposal
      * @returns {Promise<"resources".ProposalResult>}
      */
-    public async createFirstProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+    public async createEmptyProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
         const calculatedAt: number = new Date().getTime();
 
         let proposalResultModel = await this.proposalResultService.create({
@@ -174,78 +175,86 @@ export class ProposalService {
             // this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
         }
 
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        proposalResult = proposalResultModel.toJSON();
-
-        // this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        proposalResult = await this.proposalResultService.findOne(proposalResult.id)
+            .then(value => value.toJSON());
         return proposalResult;
     }
 
 
     /**
-     * todo: needs refactoring
-     * todo: and move to proposalresultservice?
-     * todo: this is just updating the latest one.. we should propably modify this so that we create a new
-     * one periodically and can track the voting progress while proposal is active
+     * - recalculateProposalResult(proposal):
+     *   - create new ProposalResult
+     *   - create new ProposalOptionResultCreateRequests for all options
+     *   - get all existing votes for Proposal
+     *   - for (vote: votes)
+     *     - check vote.address balance, update Vote if it has changed
+     *     - add vote to new ProposalOptionResult
+     *     - add vote.weight to proposalOptionResult.weight + voters
+     *   - save ProposalOptionResultCreateRequests
      *
-     * @param {number} proposalResultId
+     * @param proposal
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+        this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
 
         const calculatedAt: number = new Date().getTime();
 
-        // get the proposal
-        // const proposalModel = await this.proposalService.findOne(proposalId);
-        // const proposal = proposalModel.toJSON();
+        // create new empty ProposalResult
+        let proposalResult: resources.ProposalResult = await this.createEmptyProposalResult(proposal);
 
-        this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
-
-        // fetch the latest ProposalResult to get the latest id
-        let proposalResult: resources.ProposalResult;
-        let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
-        if (!proposalResultModel) {
-            proposalResult = await this.createFirstProposalResult(proposal);
-        } else {
-            proposalResult = proposalResultModel.toJSON();
-        }
-
-        // TODO: rather than update, we should create new ProposalResult
-        // first update the calculatedAt in ProposalResult
-        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            calculatedAt
-        } as ProposalResultUpdateRequest);
-        proposalResult = proposalResultModel.toJSON();
-
-        // then loop through ProposalOptionResults and update values
+        // create UpdateRequests for those just created ProposalOptionResults
+        // store them in a map for easy access
+        const proposalOptionResultUpdateRequests = new Map<number, ProposalOptionResultUpdateRequest>();
         for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
-            // get the votes
-            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
-            const proposalOption: resources.ProposalOption = proposalOptionModel.toJSON();
-
-            // this.log.debug('recalculateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
-            this.log.debug('recalculateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
-
-            // update
-            let totalWeight = 0;
-            for (const vote of proposalOption.Votes) {
-                // Recalculate weight instead of keeping old weight
-                const newWeight = await this.voteService.getVoteWeight(vote.voter);
-                totalWeight += newWeight;
-            }
-            this.log.debug('recalculateProposalResult(), totalWeight = ' + totalWeight);
-            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
-                weight: totalWeight,
-                voters: proposalOption.Votes.length
-            } as ProposalOptionResultUpdateRequest);
-            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
-            // this.log.debug('recalculateProposalResult(), proposalOption: ', JSON.stringify(updatedProposalOptionResult, null, 2));
+            const proposalOptionResultUpdateRequest = {
+                weight: 0,
+                voters: 0,
+                proposal_option_id: proposalOptionResult.ProposalOption.id,
+                proposal_result_id: proposalResult.id
+            } as ProposalOptionResultUpdateRequest;
+            proposalOptionResultUpdateRequest['id'] = proposalOptionResult.id; // stored just for easy update, removed later
+            proposalOptionResultUpdateRequests.set(proposalOptionResult.ProposalOption.optionId, proposalOptionResultUpdateRequest);
         }
 
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        proposalResult = proposalResultModel.toJSON();
-        // this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        // get all votes
+        const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
+            .then(value => value.toJSON());
 
+        // update all votes balances
+        // add vote weights to ProposalOptionResultUpdateRequests
+        for (const vote of votes) {
+            // get the address balance
+            const balance = await this.coreRpcService.getAddressBalance([vote.voter])
+                .then(value => value.balance);
+
+            // update vote weight
+            await this.voteService.update(vote.id, {
+                weight: balance
+            } as VoteUpdateRequest);
+
+            // add weight and voters to ProposalOptionResultUpdateRequest
+            const proposalOptionResultUpdateRequest = proposalOptionResultUpdateRequests.get(vote.ProposalOption.optionId);
+            if (proposalOptionResultUpdateRequest) {
+                proposalOptionResultUpdateRequest.weight = proposalOptionResultUpdateRequest.weight + vote.weight;
+                proposalOptionResultUpdateRequest.voters++;
+                proposalOptionResultUpdateRequests.set(vote.ProposalOption.optionId, proposalOptionResultUpdateRequest);
+            }
+        }
+
+        for (const [optionId, proposalOptionResultUpdateRequest] of proposalOptionResultUpdateRequests) {
+            this.log.debug('recalculateProposalResult(), update optionId: ', optionId);
+            const proposalOptionResultId = proposalOptionResultUpdateRequest['id'];
+            delete proposalOptionResultUpdateRequest['id'];
+            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResultId, proposalOptionResultUpdateRequest);
+            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
+            // this.log.debug('recalculateProposalResult(), updatedProposalOptionResult: ', JSON.stringify(updatedProposalOptionResult, null, 2));
+        }
+
+        proposalResult = await this.proposalResultService.findOne(proposalResult.id)
+            .then(value => value.toJSON());
+
+        this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
         return proposalResult;
     }
 

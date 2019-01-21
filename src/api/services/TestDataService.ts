@@ -87,6 +87,9 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
 
 export class TestDataService {
 
@@ -614,17 +617,19 @@ export class TestDataService {
 
         this.log.debug('generateProposals, generateParams: ', generateParams);
 
-        /*
-        TODO: add template and item generation
+        // TODO: add template and item generation
 
+        /*
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
 
         let listingItemTemplate: resources.ListingItemTemplate;
         let listingItem: resources.ListingItem;
-
+        */
         // generate template
         if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+            /*
             const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
             listingItemTemplate = listingItemTemplates[0];
 
@@ -634,11 +639,13 @@ export class TestDataService {
 
             // set the hash for listing item generation
             listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
+            */
         }
 
         // generate item
         if (generateParams.generateListingItem) {
-
+            throw new NotImplementedException();
+            /*
             // set the seller for listing item generation
             listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
 
@@ -653,22 +660,24 @@ export class TestDataService {
 
             // set the hash for bid generation
             generateParams.listingItemHash = listingItem.hash;
+            */
         }
         // TODO: proposalHash is not set to listingitem
-         */
 
         const items: resources.Proposal[] = [];
+
         for (let i = amount; i > 0; i--) {
             const proposalCreateRequest = await this.generateProposalData(generateParams);
             let proposalModel = await this.proposalService.create(proposalCreateRequest);
             let proposal: resources.Proposal = proposalModel.toJSON();
 
+            this.log.debug('generating ' + generateParams.voteCount + ' votes...');
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
             }
 
             // create and update ProposalResult
-            let proposalResult = await this.proposalService.createFirstProposalResult(proposal);
+            let proposalResult = await this.proposalService.createEmptyProposalResult(proposal);
             proposalResult = await this.proposalService.recalculateProposalResult(proposal);
             // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
@@ -690,6 +699,7 @@ export class TestDataService {
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
+                signature: 'signature' + Faker.finance.bitcoinAddress(),
                 voter,
                 weight: 1,
                 postedAt: new Date().getTime(),
@@ -749,13 +759,17 @@ export class TestDataService {
             expiredAt: timeEnd
         } as ProposalCreateRequest;
 
+        proposalCreateRequest.hash = ObjectHash.getHash(proposalCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
         const options: ProposalOptionCreateRequest[] = [];
         options.push({
+            proposalHash: proposalCreateRequest.hash,
             optionId: 0,
             description: ItemVote.KEEP.toString()
         } as ProposalOptionCreateRequest);
 
         options.push({
+            proposalHash: proposalCreateRequest.hash,
             optionId: 1,
             description: ItemVote.REMOVE.toString()
         } as ProposalOptionCreateRequest);
