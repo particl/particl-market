@@ -127,7 +127,7 @@ describe('ProposalResult', () => {
         );
     });
 
-    test('Should create a new ProposalResult', async () => {
+    test('Should create a new ProposalResult without ProposalOptions', async () => {
 
         testData.proposal_id = createdProposal.id;
 
@@ -144,7 +144,9 @@ describe('ProposalResult', () => {
         const proposalResultCollection = await proposalResultService.findAll();
         const proposalResult = proposalResultCollection.toJSON();
         // log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-        expect(proposalResult.length).toBe(2);
+
+        // testDataService.generate creates first 1 empty result, then 1 when recalculating result
+        expect(proposalResult.length).toBe(3);
     });
 
     test('Should list all ProposalResults by proposalHash', async () => {
@@ -152,7 +154,7 @@ describe('ProposalResult', () => {
         const proposalResult = proposalResultCollection.toJSON();
 
         log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-        expect(proposalResult.length).toBe(2);
+        expect(proposalResult.length).toBe(3);
         createdProposalResult = proposalResult[0];
 
         const result = proposalResult[0];
@@ -162,7 +164,7 @@ describe('ProposalResult', () => {
 
     });
 
-    test('Should return one ProposalResult by proposalHash', async () => {
+    test('Should return latest ProposalResult by proposalHash', async () => {
         const proposalResultModel: ProposalResult = await proposalResultService.findLatestByProposalHash(createdProposal.hash);
         const result = proposalResultModel.toJSON();
         expect(result.Proposal).toBeDefined();
