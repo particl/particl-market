@@ -36,7 +36,7 @@ export class VoteService {
     }
 
     public async findAllByVotersAndProposalHash(voters: string[], proposalHash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
-        return await await this.voteRepo.findAllByVotersAndProposalHash(voters, proposalHash, withRelated);
+        return await this.voteRepo.findAllByVotersAndProposalHash(voters, proposalHash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {

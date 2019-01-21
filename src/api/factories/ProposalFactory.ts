@@ -65,21 +65,6 @@ export class ProposalFactory {
         return message;
     }
 
-    private createOptionsList(options: string[]): any[] {
-        const optionsList: any[] = [];
-        let optionId = 0;
-
-        for (const description of options) {
-            const option = {
-                optionId,
-                description
-            };
-            optionsList.push(option);
-            optionId++;
-        }
-        return optionsList;
-    }
-
     /**
      *
      * @param {ProposalMessage} proposalMessage
@@ -119,6 +104,21 @@ export class ProposalFactory {
         }
 
         return proposalCreateRequest;
+    }
+
+    private createOptionsList(options: string[]): any[] {
+        const optionsList: any[] = [];
+        let optionId = 0;
+
+        for (const description of options) {
+            const option = {
+                optionId,
+                description
+            };
+            optionsList.push(option);
+            optionId++;
+        }
+        return optionsList;
     }
 
 }
