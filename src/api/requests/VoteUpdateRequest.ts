@@ -7,25 +7,16 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
 export class VoteUpdateRequest extends RequestBody {
-    // @IsNotEmpty()
+
     public proposal_option_id: number;
-
-    @IsNotEmpty()
     public signature: string;
-
-    @IsNotEmpty()
     public voter: string;
 
     @IsNotEmpty()
     public weight: number;
 
-    @IsNotEmpty()
     public postedAt: number;
-
-    @IsNotEmpty()
     public receivedAt: number;
-
-    @IsNotEmpty()
     public expiredAt: number;
 
 }

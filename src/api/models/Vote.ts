@@ -20,9 +20,8 @@ export class Vote extends Bookshelf.Model<Vote> {
         const proposalResultCollection = Vote.forge<Model<Vote>>()
             .query(qb => {
                 qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
-                qb.innerJoin('proposal_options.proposals', 'proposal_options.proposals.id', 'proposal_options.proposal_id');
-
-                qb.where('proposal_options.proposals.hash', '=', hash);
+                qb.innerJoin('proposals', 'proposals.id', 'proposal_options.proposal_id');
+                qb.where('proposals.hash', '=', hash);
             })
             .orderBy('id', SearchOrder.DESC);
 

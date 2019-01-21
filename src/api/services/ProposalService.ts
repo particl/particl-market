@@ -159,24 +159,32 @@ export class ProposalService {
     public async createEmptyProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
         const calculatedAt: number = new Date().getTime();
 
-        let proposalResultModel = await this.proposalResultService.create({
+        const proposalResultCreateRequest = {
             calculatedAt,
             proposal_id: proposal.id
-        } as ProposalResultCreateRequest);
-        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
+        } as ProposalResultCreateRequest;
+        // this.log.debug('createEmptyProposalResult(), proposalResultCreateRequest:', JSON.stringify(proposalResultCreateRequest, null, 2));
+
+        let proposalResult: resources.ProposalResult = await this.proposalResultService.create(proposalResultCreateRequest)
+            .then(value => value.toJSON());
 
         for (const proposalOption of proposal.ProposalOptions) {
-            const proposalOptionResult = await this.proposalOptionResultService.create({
+            const proposalOptionResultCreateRequest = {
                 weight: 0,
                 voters: 0,
                 proposal_option_id: proposalOption.id,
                 proposal_result_id: proposalResult.id
-            } as ProposalOptionResultCreateRequest);
-            // this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
+            } as ProposalOptionResultCreateRequest;
+            // this.log.debug('createEmptyProposalResult(), proposalOptionResultCreateRequest:', JSON.stringify(proposalOptionResultCreateRequest, null, 2));
+            const proposalOptionResult = await this.proposalOptionResultService.create(proposalOptionResultCreateRequest)
+                .then(value => value.toJSON());
+            // this.log.debug('createEmptyProposalResult(), proposalOptionResult:', JSON.stringify(proposalOptionResult, null, 2));
         }
 
         proposalResult = await this.proposalResultService.findOne(proposalResult.id)
             .then(value => value.toJSON());
+        this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
+
         return proposalResult;
     }
 
@@ -193,12 +201,11 @@ export class ProposalService {
      *   - save ProposalOptionResultCreateRequests
      *
      * @param proposal
+     * @param test, skips getaddressbalance rpc call for test data generation
      * @returns {Promise<"resources".ProposalResult>}
      */
-    public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+    public async recalculateProposalResult(proposal: resources.Proposal, test: boolean = false): Promise<resources.ProposalResult> {
         this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
-
-        const calculatedAt: number = new Date().getTime();
 
         // create new empty ProposalResult
         let proposalResult: resources.ProposalResult = await this.createEmptyProposalResult(proposal);
@@ -221,17 +228,24 @@ export class ProposalService {
         const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
             .then(value => value.toJSON());
 
+        this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
+
         // update all votes balances
         // add vote weights to ProposalOptionResultUpdateRequests
         for (const vote of votes) {
+            let balance = 1;
             // get the address balance
-            const balance = await this.coreRpcService.getAddressBalance([vote.voter])
-                .then(value => value.balance);
+            if (!test) { // todo: skipping balance check for test data generation
+                balance = await this.coreRpcService.getAddressBalance([vote.voter])
+                    .then(value => value.balance);
+            }
 
             // update vote weight
             await this.voteService.update(vote.id, {
                 weight: balance
             } as VoteUpdateRequest);
+
+            this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
 
             // add weight and voters to ProposalOptionResultUpdateRequest
             const proposalOptionResultUpdateRequest = proposalOptionResultUpdateRequests.get(vote.ProposalOption.optionId);
