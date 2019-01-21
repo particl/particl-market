@@ -31,8 +31,6 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProfileService } from './ProfileService';
 import { BidService } from './BidService';
 import { ItemVote } from '../enums/ItemVote';
-import { EnvConfig } from '../../config/env/EnvConfig';
-import { Environment } from '../../core/helpers/Environment';
 
 interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -144,6 +142,37 @@ export class VoteActionService {
             fee: 0,
             error: 'no balance.'
         } as SmsgSendResponse;
+    }
+
+    /**
+     *
+     * @param profile
+     * @param proposal
+     */
+    public async getCombinedVote(profile: resources.Profile, proposal: resources.Proposal): Promise<resources.Vote> {
+
+        const addresses: string[] = await this.getProfileWalletAddresses(profile);
+        const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
+            .then(value => value.toJSON());
+
+        const combinedVote = {
+            id: 0,
+            voter: profile.address,
+            weight: 0,
+            postedAt: Date.now(),
+            receivedAt: Date.now(),
+            expiredAt: Date.now(),
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            ProposalOption: {} as resources.ProposalOption
+        } as resources.Vote;
+
+        for (const vote of votes) {
+            combinedVote.weight = combinedVote.weight + vote.weight;
+            combinedVote.ProposalOption = vote.ProposalOption;
+        }
+
+        return combinedVote;
     }
 
     /**

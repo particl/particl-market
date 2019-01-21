@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -11,13 +10,15 @@ import { VoteService } from '../../services/VoteService';
 import { ProfileService } from '../../services/ProfileService';
 import { ProposalService } from '../../services/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Vote } from '../../models/Vote';
-import { RpcCommandInterface } from './../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import * as resources from 'resources';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { VoteActionService } from '../../services/VoteActionService';
 
 export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
 
@@ -25,6 +26,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -35,8 +37,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
 
     /**
      * command description
-     * [0] profileId
-     * [1] proposalHash
+     *  [0]: profileId
+     *  [1]: proposalHash
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -44,87 +46,54 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
-        /*
-         * Unused varg for the time being, but TODO: fix that when multiwallet becomes a thing.
-         */
-        const profileId = data.params.shift();
-        const profile = await this.profileService.findOne(profileId);
-        // profile = profile.toJSON();
 
-        const proposalHash = data.params.shift();
-        const proposal = await this.proposalService.findOneByHash(proposalHash);
+        const profileId = data.params[0];
+        const proposalHash = data.params[1];
 
-        const retVote = {} as resources.Vote;
-        if (data.params.length > 0) {
-            const voterAddress = data.params.shift();
-            let vote: any = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
-            vote = vote.toJSON();
-            retVote.weight = vote.weight;
-            retVote.ProposalOption = vote.ProposalOption;
-        } else {
-            let votes: any = await this.voteService.findAllFromMeByProposalId(proposal.id);
-            votes = votes.toJSON();
-            let totalWeight = 0;
-            let vote;
-            for (const i in votes) {
-                if (i) {
-                    vote = votes[i];
-                    totalWeight += vote.weight;
-                }
-            }
-            retVote.ProposalOption = vote.ProposalOption;
-            retVote.weight = totalWeight;
-        }
+        const profile = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON());
 
-        retVote.createdAt = new Date();
-        retVote.voter = profile.Address;
-        return retVote;
+        const proposal = await this.proposalService.findOneByHash(proposalHash)
+            .then(value => value.toJSON());
+
+        return await this.voteActionService.getCombinedVote(profile, proposal);
     }
 
     /**
      * data.params[]:
-     *  [0]: profileHash
-     *  [1]: voterAddress
+     *  [0]: profileId
+     *  [1]: proposalHash
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 2) {
-            throw new MessageException('Expected 2 args: profileId and proposalHash.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('proposalHash');
         }
 
-        const profileId = data.params[0];
-        if (!profileId || typeof profileId !== 'number') {
-            throw new MessageException(`Invalid profileId = ${profileId}, expected number.`);
-        }
-        const profile = await this.profileService.findOne(profileId);
-        if (!profile) {
-            throw new MessageException(`Profile with profileId = ${profileId} not found.`);
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        } else if (data.params[1] !== 'string') {
+            throw new InvalidParamException('proposalHash', 'string');
         }
 
-        // Get proposal id from proposal hash
-        const proposalHash = data.params[1];
-        if (!proposalHash || typeof proposalHash !== 'string') {
-            throw new MessageException(`Invalid proposalHash = ${proposalHash}, expected String.`);
-        }
-        const proposal = await this.proposalService.findOneByHash(proposalHash);
-        if (!proposal) {
-            throw new MessageException(`Proposal with the hash = ${proposalHash} doesn't seem to exist.`);
-        } else if (!proposal.id) {
-            throw new MessageException(`Proposal with the hash = ${proposalHash} doesn't seem to have an ID; something is terribly wrong.`);
-        }
+        // make sure profile with the id exists
+        await this.profileService.findOne(data.params[1])
+            .catch(reason => {
+                this.log.error('Profile not found. ' + reason);
+                throw new ModelNotFoundException('Profile');
+            });
 
-        if (data.params.length >= 3) {
-            const voterAddress = data.params[2];
-            if (!voterAddress || typeof voterAddress !== 'string') {
-                throw new MessageException(`Invalid voterAddress = ${voterAddress}, expected String.`);
-            }
-            const vote = await this.voteService.findOneByVoterAndProposalId(voterAddress, proposal.id);
-            if (!vote) {
-                throw new MessageException('User has not voted on proposal = ${proposalHash} yet.');
-            }
-        }
+        // make sure proposal with the hash exists
+        await this.proposalService.findOneByHash(data.params[1])
+            .catch(reason => {
+                this.log.error('Proposal not found. ' + reason);
+                throw new ModelNotFoundException('Proposal');
+            });
+
         return data;
     }
 

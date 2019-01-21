@@ -35,6 +35,26 @@ export class Vote extends Bookshelf.Model<Vote> {
         }
     }
 
+    public static async fetchByVotersAndProposalHash(voters: string[], hash: string, withRelated: boolean = true): Promise<Collection<Vote>> {
+        const proposalResultCollection = Vote.forge<Model<Vote>>()
+            .query(qb => {
+                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
+                qb.innerJoin('proposals', 'proposals.id', 'proposal_options.proposal_id');
+                qb.where('proposals.hash', '=', hash);
+                qb.whereIn('votes.voter', voters);
+            })
+            .orderBy('id', SearchOrder.DESC);
+
+
+        if (withRelated) {
+            return await proposalResultCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await proposalResultCollection.fetchAll();
+        }
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {
             return await Vote.where<Vote>({ id: value }).fetch({
