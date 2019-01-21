@@ -229,7 +229,7 @@ export class ProposalService {
         const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
             .then(value => value.toJSON());
 
-        this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
+        // this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
 
         // update all votes balances
         // add vote weights to ProposalOptionResultUpdateRequests
@@ -246,8 +246,6 @@ export class ProposalService {
                 weight: balance
             } as VoteUpdateRequest);
 
-            this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
-
             // add weight and voters to ProposalOptionResultUpdateRequest
             const proposalOptionResultUpdateRequest = proposalOptionResultUpdateRequests.get(vote.ProposalOption.optionId);
             if (proposalOptionResultUpdateRequest) {
@@ -258,7 +256,7 @@ export class ProposalService {
         }
 
         for (const [optionId, proposalOptionResultUpdateRequest] of proposalOptionResultUpdateRequests) {
-            this.log.debug('recalculateProposalResult(), update optionId: ', optionId);
+            // this.log.debug('recalculateProposalResult(), update optionId: ', optionId);
             const proposalOptionResultId = proposalOptionResultUpdateRequest['id'];
             delete proposalOptionResultUpdateRequest['id'];
             const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResultId, proposalOptionResultUpdateRequest);

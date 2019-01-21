@@ -44,16 +44,8 @@ export class ProposalOptionResultService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ProposalOptionResult, body: ', JSON.stringify(body, null, 2));
 
-        // TODO: extract and remove related models from request
-        // const proposalOptionResultRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the proposalOptionResult
         const proposalOptionResult = await this.proposalOptionResultRepo.create(body);
-
-        // TODO: create related models
-        // proposalOptionResultRelated._id = proposalOptionResult.Id;
-        // await this.proposalOptionResultRelatedService.create(proposalOptionResultRelated);
 
         // finally find and return the created proposalOptionResult
         const newProposalOptionResult = await this.findOne(proposalOptionResult.id);
