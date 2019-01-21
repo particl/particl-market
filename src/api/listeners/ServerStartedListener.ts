@@ -13,7 +13,6 @@ import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
-import { Environment } from '../../core/helpers/Environment';
 import { ListingItemActionService } from '../services/ListingItemActionService';
 import { BidActionService } from '../services/BidActionService';
 import { EscrowActionService } from '../services/EscrowActionService';
