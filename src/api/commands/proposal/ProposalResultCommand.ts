@@ -55,7 +55,7 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
         }
 
         // make sure proposal with the hash exists
-        await this.proposalService.findOneByHash(data.params[1])
+        await this.proposalService.findOneByHash(data.params[0])
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);
                 throw new ModelNotFoundException('Proposal');
