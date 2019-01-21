@@ -140,7 +140,6 @@ import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/Shoppi
 
 import { VotePostCommand } from '../commands/vote/VotePostCommand';
 import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
-import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
@@ -292,7 +291,6 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteGetCommand) private voteGetCommand: VoteGetCommand,
-        @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
@@ -441,7 +439,6 @@ export class RpcCommandFactory {
 
         this.commands.push(votePostCommand);
         this.commands.push(voteGetCommand);
-        this.commands.push(voteListCommand);
         this.commands.push(voteRootCommand);
 
         this.commands.push(smsgSearchCommand);
