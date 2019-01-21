@@ -4,12 +4,13 @@
 
 import { Bookshelf as Database } from '../../config/Database';
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
+import * as _ from 'lodash';
+import * as Faker from 'faker';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import * as _ from 'lodash';
-import * as Faker from 'faker';
 import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { ShippingCountries } from '../../core/helpers/ShippingCountries';
@@ -68,7 +69,6 @@ import { AddressType } from '../enums/AddressType';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import * as resources from 'resources';
 import { OrderService } from './OrderService';
 import { OrderFactory } from '../factories/OrderFactory';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';

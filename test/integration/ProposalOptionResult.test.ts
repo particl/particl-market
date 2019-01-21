@@ -23,10 +23,8 @@ import { GenerateProposalParams } from '../../src/api/requests/params/GeneratePr
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import { ProposalOption } from '../../src/api/models/ProposalOption';
 import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
 import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/ProposalOptionResultUpdateRequest';
-import { IsNotEmpty } from 'class-validator';
 
 describe('ProposalOptionResult', () => {
 
