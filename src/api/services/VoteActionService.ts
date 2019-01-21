@@ -26,7 +26,7 @@ import { ProposalType } from '../enums/ProposalType';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ItemVote } from '../enums/ItemVote';
+import { ProposalResultService } from './ProposalResultService';
 
 interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -43,6 +43,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
@@ -194,6 +195,7 @@ export class VoteActionService {
 
     }
 
+
     /**
      * processVote "processes" the Vote, creating or updating the Vote.
      * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
@@ -267,14 +269,12 @@ export class VoteActionService {
             // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
             // we can now check whether the ListingItem should be removed or not
             if (proposal.type === ProposalType.ITEM_VOTE) {
-                await this.shouldRemoveListingItem(proposalResult)
+                const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                    .then(value => value.toJSON());
+                await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
                     .then(async remove => {
                         if (remove) {
-                            await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                                .then(async value => {
-                                    const listingItem: resources.ListingItem = value.toJSON();
-                                    await this.listingItemService.destroy(listingItem.id);
-                                });
+                            await this.listingItemService.destroy(listingItem.id);
                         }
                     });
             }
@@ -284,44 +284,6 @@ export class VoteActionService {
         // returning undefined vote in case there's no balance
         // we could also throw in this situation
         return;
-    }
-
-    /**
-     * check whether ListingItem should be removed or not based on ProposalResult
-     *
-     * @param {"resources".ProposalResult} proposalResult
-     * @returns {Promise<boolean>}
-     */
-    private async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
-
-        // make sure the Proposal is for removing an item
-        if (proposalResult.Proposal.type !== ProposalType.ITEM_VOTE) {
-            throw new MessageException('Invalid Proposal type.');
-        }
-
-        // we dont want to remove ListingItems that have related Bids
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-            .then(value => value.toJSON());
-        if (!_.isEmpty(listingItem.Bids)) {
-            return false;
-        }
-
-        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
-        });
-
-        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-        // at minimum, 10% of total network weight for removal
-        const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
-        const networkSupply = blockchainInfo.moneysupply * 100000000;
-
-        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 10; // todo: configurable
-        if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
-            this.log.debug('Votes for ListingItem removal exceed 10%');
-            return true;
-        }
-        this.log.debug('ListingItem should NOT be destroyed');
-        return false;
     }
 
 
