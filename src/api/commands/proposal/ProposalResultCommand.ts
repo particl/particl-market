@@ -14,6 +14,8 @@ import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalResult } from '../../models/ProposalResult';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<ProposalResult> {
 
@@ -37,11 +39,19 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ProposalResult> {
-        if (data.params.length < 1) {
-            throw new MessageException('Expected proposalHash but received no params.');
-        }
         const proposalHash = data.params[0];
         return await this.proposalResultService.findLatestByProposalHash(proposalHash, true);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('proposalHash');
+        }
+
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('proposalHash', 'string');
+        }
+        return data;
     }
 
     public help(): string {
