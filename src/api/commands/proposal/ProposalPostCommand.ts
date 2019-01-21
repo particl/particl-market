@@ -106,16 +106,16 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('option2Description');
         }
 
-        if (typeof data.params[0] !== 'string') {
+        if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         } else if (data.params[3] !== 'number') {
             throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] !== 'number') {
+        } else if (data.params[4] !== 'boolean') {
             throw new InvalidParamException('estimateFee', 'boolean');
         }
 
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[1])
+        await this.profileService.findOne(data.params[0])
             .catch(reason => {
                 this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
