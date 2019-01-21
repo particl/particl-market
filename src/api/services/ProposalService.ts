@@ -98,13 +98,14 @@ export class ProposalService {
         const proposal = await this.proposalRepo.create(body);
 
         // create related options
+        let optionId = 0;
         for (const optionCreateRequest of options) {
             optionCreateRequest.proposal_id = proposal.id;
-            // optionCreateRequest.proposalHash = body.hash;
-            // if (!optionCreateRequest.optionId) {
-            //     optionCreateRequest.optionId = optionId;
-            //     optionId++;
-            // }
+            optionCreateRequest.proposalHash = body.hash;
+            if (!optionCreateRequest.optionId) {
+                optionCreateRequest.optionId = optionId;
+                optionId++;
+            }
             this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
             await this.proposalOptionService.create(optionCreateRequest);
         }

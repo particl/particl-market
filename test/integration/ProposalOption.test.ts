@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +16,6 @@ import { ProposalOptionService } from '../../src/api/services/ProposalOptionServ
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import * as resources from 'resources';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
