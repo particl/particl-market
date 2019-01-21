@@ -108,9 +108,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[3] !== 'number') {
+        } else if (typeof data.params[3] !== 'number') {
             throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] !== 'boolean') {
+        } else if (typeof data.params[4] !== 'boolean') {
             throw new InvalidParamException('estimateFee', 'boolean');
         }
 
