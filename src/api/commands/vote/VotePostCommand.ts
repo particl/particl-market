@@ -92,11 +92,11 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new MissingParamException('proposalOptionId');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[1] !== 'string') {
+        } else if (data.params[1] && typeof data.params[1] !== 'string') {
             throw new InvalidParamException('proposalHash', 'string');
-        } else if (data.params[2] !== 'number') {
+        } else if (data.params[2] && typeof data.params[2] !== 'number') {
             throw new InvalidParamException('proposalOptionId', 'number');
         }
 

@@ -50,7 +50,7 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
             throw new MissingParamException('proposalHash');
         }
 
-        if (typeof data.params[0] !== 'string') {
+        if (data.params[0] && typeof data.params[0] !== 'string') {
             throw new InvalidParamException('proposalHash', 'string');
         }
 

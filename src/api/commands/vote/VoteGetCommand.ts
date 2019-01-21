@@ -74,9 +74,9 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
             throw new MissingParamException('proposalHash');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[1] !== 'string') {
+        } else if (data.params[1] && typeof data.params[1] !== 'string') {
             throw new InvalidParamException('proposalHash', 'string');
         }
 

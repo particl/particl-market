@@ -102,9 +102,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MissingParamException('profileId');
         }
 
-        if (typeof data.params[0] !== 'string') {
+        if (data.params[0] && typeof data.params[0] !== 'string') {
             throw new InvalidParamException('listingItemHash', 'string');
-        } else if (data.params[1] !== 'number') {
+        } else if (data.params[1] && typeof data.params[1] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         }
 

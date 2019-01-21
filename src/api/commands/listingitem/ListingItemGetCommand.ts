@@ -12,6 +12,12 @@ import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import * as resources from "resources";
+import * as _ from 'lodash';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -36,14 +42,20 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        let listingItem;
-
         if (typeof data.params[0] === 'number') {
-            listingItem = await this.listingItemService.findOne(data.params[0]);
+            return await this.listingItemService.findOne(data.params[0]);
         } else {
-            listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+            return await this.listingItemService.findOneByHash(data.params[0]);
         }
-        return listingItem;
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('id or hash');
+        }
+
+        return data;
     }
 
     public usage(): string {
