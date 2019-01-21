@@ -34,7 +34,7 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
-            type: ProposalType.ITEM_VOTE,
+            // type: ProposalType.ITEM_VOTE,
             timeStart: Date.now(),
             timeEnd: '*'
         } as ProposalSearchParams;
