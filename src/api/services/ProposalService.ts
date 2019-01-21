@@ -44,8 +44,8 @@ export class ProposalService {
         this.log = new Logger(__filename);
     }
 
-    public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        const result = await this.proposalRepo.searchBy(options, withRelated);
+    public async search(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        const result = await this.proposalRepo.search(options, withRelated);
         // this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
         return result;
     }

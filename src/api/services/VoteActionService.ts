@@ -21,15 +21,11 @@ import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { VoteMessage } from '../messages/VoteMessage';
 import { ProposalService } from './ProposalService';
-import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionService } from './ProposalOptionService';
-import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalType } from '../enums/ProposalType';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ProfileService } from './ProfileService';
-import { BidService } from './BidService';
 import { ItemVote } from '../enums/ItemVote';
 
 interface VoteTicket {
@@ -48,13 +44,9 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
-        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -323,7 +315,7 @@ export class VoteActionService {
         const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const networkSupply = blockchainInfo.moneysupply * 100000000;
 
-        const removalPercentage = 10; // todo: configurable
+        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 10; // todo: configurable
         if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
             this.log.debug('Votes for ListingItem removal exceed 10%');
             return true;

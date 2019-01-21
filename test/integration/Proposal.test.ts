@@ -219,7 +219,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });
@@ -234,7 +234,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(0);
     });
@@ -248,7 +248,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(2);
     });
@@ -262,7 +262,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });
@@ -276,7 +276,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(2);
     });
@@ -303,7 +303,7 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should search Proposals with type ITEM_VOTE', async () => {
+    test('Should searchBy Proposals with type ITEM_VOTE', async () => {
 
         const searchParams = {
             timeStart: '*',
@@ -311,7 +311,7 @@ describe('Proposal', () => {
             order: SearchOrder.ASC, type: ProposalType.ITEM_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });

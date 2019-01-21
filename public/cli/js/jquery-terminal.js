@@ -1549,14 +1549,14 @@
             cursor.toggleClass('inverted');
         }
         // ---------------------------------------------------------------------
-        // :: Set prompt for reverse search
+        // :: Set prompt for reverse searchBy
         // ---------------------------------------------------------------------
         function draw_reverse_prompt() {
-            prompt = '(reverse-i-search)`' + rev_search_str + "': ";
+            prompt = '(reverse-i-searchBy)`' + rev_search_str + "': ";
             draw_prompt();
         }
         // ---------------------------------------------------------------------
-        // :: Disable reverse search
+        // :: Disable reverse searchBy
         // ---------------------------------------------------------------------
         function clear_reverse_state() {
             prompt = backup_prompt;
@@ -1567,7 +1567,7 @@
         // ---------------------------------------------------------------------
         // :: Search through command line history. If next is not defined or
         // :: false it searches for the first item from the end. If true it
-        // :: search for the next item
+        // :: searchBy for the next item
         // ---------------------------------------------------------------------
         function reverse_history_search(next) {
             var history_data = history.data();
@@ -2380,7 +2380,7 @@
                         self.set('');
                     }
                     redraw();
-                    // finish reverse search and execute normal event handler
+                    // finish reverse searchBy and execute normal event handler
                     /* jshint validthis:true */
                     keydown_event.call(this, e);
                 } else if ($.isFunction(keymap[key])) {

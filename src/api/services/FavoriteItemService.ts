@@ -42,7 +42,7 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item by profileId and itemId
+     * searchBy favorite item by profileId and itemId
      *
      * @param {number} profileId
      * @param {number} itemId

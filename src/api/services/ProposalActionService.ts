@@ -27,9 +27,7 @@ import { FlaggedItemService } from './FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
-import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { Proposal } from '../models/Proposal';
-import { SmsgMessage } from '../models/SmsgMessage';
 
 export class ProposalActionService {
 

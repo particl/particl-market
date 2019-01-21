@@ -94,7 +94,7 @@ export class ListingItemService {
     }
 
     /**
-     * search ListingItems using given ListingItemSearchParams
+     * searchBy ListingItems using given ListingItemSearchParams
      *
      * @param {ListingItemSearchParams} options
      * @param {boolean} withRelated
@@ -106,7 +106,7 @@ export class ListingItemService {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
 
-        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
         return await this.listingItemRepo.search(options, withRelated);
     }
 

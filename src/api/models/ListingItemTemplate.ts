@@ -86,7 +86,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             sortingField = 'listing_item_templates.updated_at';
         }
 
-        ListingItem.log.debug('...search by options: ', JSON.stringify(options, null, 2));
+        ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {

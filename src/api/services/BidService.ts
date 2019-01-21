@@ -66,7 +66,7 @@ export class BidService {
     }
 
     /**
-     * search Bid using given BidSearchParams
+     * searchBy Bid using given BidSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<Bid>>}
