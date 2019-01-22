@@ -26,6 +26,8 @@ describe('VotePostCommand', () => {
 
     let defaultProfile: resources.Profile;
     let proposal: resources.Proposal;
+    let createdVote: resources.Vote;
+
     let sent = false;
 
     beforeAll(async () => {
@@ -195,6 +197,7 @@ describe('VotePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Vote = res.getBody()['result'];
+        createdVote = result;
 
         log.debug('vote: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ProposalOption');
@@ -234,7 +237,7 @@ describe('VotePostCommand', () => {
 
         log.debug('vote updated: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBeGreaterThan(1);
+        expect(result.weight).toBe(createdVote.weight);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
 

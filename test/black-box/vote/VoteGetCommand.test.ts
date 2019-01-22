@@ -24,6 +24,9 @@ describe('VoteGetCommand', () => {
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
+    let createdVote: resources.Vote;
+
+    let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -59,12 +62,14 @@ describe('VoteGetCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(200);
-        const result: any = response.getBody()['result'];
-        expect(result.result).toEqual('Sent.');
-
+        const results: any = response.getBody()['result'];
+        expect(results[0].result).toEqual('Sent.');
+        sent = results[0].result === 'Sent.';
     });
 
     test('Should return Vote', async () => {
+        expect(sent).toBeTruthy();
+
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
@@ -78,10 +83,11 @@ describe('VoteGetCommand', () => {
         );
         response.expectJson();
         response.expectStatusCode(200);
-
         const result: resources.Vote = response.getBody()['result'];
+        createdVote = result;
+
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(1);
+        expect(result.weight).toBeGreaterThan(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
@@ -97,8 +103,9 @@ describe('VoteGetCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(200);
-        const votePostResult: any = response.getBody()['result'];
-        expect(votePostResult.result).toEqual('Sent.');
+        const results: any = response.getBody()['result'];
+        expect(results[0].result).toEqual('Sent.');
+        sent = results[0].result === 'Sent.';
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
@@ -116,7 +123,7 @@ describe('VoteGetCommand', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(1);
+        expect(result.weight).toBe(createdVote.weight);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
     });
