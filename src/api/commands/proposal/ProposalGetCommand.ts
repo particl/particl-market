@@ -9,13 +9,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { ProposalService } from '../../services/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Proposal } from '../../models/Proposal';
-import { RpcCommandInterface } from './../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {ProposalType} from '../../enums/ProposalType';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 

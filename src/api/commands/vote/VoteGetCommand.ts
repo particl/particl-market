@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -14,7 +15,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import * as resources from 'resources';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -25,7 +25,6 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,

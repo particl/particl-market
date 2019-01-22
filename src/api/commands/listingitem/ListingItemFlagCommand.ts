@@ -18,10 +18,7 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
 import { ProposalActionService } from '../../services/ProposalActionService';
-import { CoreRpcService } from '../../services/CoreRpcService';
-import { ListingItemActionService } from '../../services/ListingItemActionService';
 import { ItemVote } from '../../enums/ItemVote';
-import { ProposalFactory } from '../../factories/ProposalFactory';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -33,12 +30,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
-        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory
+        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);

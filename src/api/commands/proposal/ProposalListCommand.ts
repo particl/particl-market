@@ -19,8 +19,6 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalType } from '../../enums/ProposalType';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 

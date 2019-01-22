@@ -16,7 +16,6 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
-import { MessageException } from '../../exceptions/MessageException';
 import { ProposalService } from '../../services/ProposalService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
