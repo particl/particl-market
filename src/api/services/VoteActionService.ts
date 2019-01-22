@@ -69,21 +69,31 @@ export class VoteActionService {
      * @param proposalOption
      */
     public async vote(profile: resources.Profile, marketplace: resources.Market, proposal: resources.Proposal,
-                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse[]> {
+                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse> {
 
         const addresses: string[] = await this.getProfileWalletAddresses(profile);
         const responses: SmsgSendResponse[] = [];
         this.log.debug('posting votes from addresses: ', JSON.stringify(addresses, null, 2));
         if (_.isEmpty(addresses)) {
-            throw new MessageException('Wallet has no usable addresses.');
+            throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
+        const msgids: string[] = [];
         for (const address of addresses) {
             const response: SmsgSendResponse = await this.send(proposal, proposalOption, address, marketplace);
-            responses.push(response);
+            if (response.msgid) {
+                msgids.push(response.msgid);
+            }
         }
 
-        return responses;
+        if (msgids.length === 0) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
+        }
+
+        return {
+            result: 'Sent.',
+            msgids
+        } as SmsgSendResponse;
     }
 
     /**
@@ -108,6 +118,7 @@ export class VoteActionService {
         // confirm that the address actually has balance
         const balance = await this.coreRpcService.getAddressBalance([senderAddress])
             .then(value => value.balance);
+        this.log.debug('balance: ', balance);
 
         if (balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress);
@@ -127,7 +138,7 @@ export class VoteActionService {
                 const daysRetention = Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
                 return this.smsgService.smsgSend(senderAddress, marketplace.address, msg, false, daysRetention);
             }
-        }
+        } // else {}
 
         return {
             result: 'skipping.',

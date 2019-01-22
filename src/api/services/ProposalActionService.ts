@@ -108,8 +108,8 @@ export class ProposalActionService {
             }
 
             // send the VoteMessages from each of senderProfiles addresses
-            await this.voteActionService.vote(senderProfile, marketplace, proposal, proposalOption);
-
+            const smsgSendResponse = await this.voteActionService.vote(senderProfile, marketplace, proposal, proposalOption);
+            result.msgids = smsgSendResponse.msgids;
             // ProposalResult will be calculated after votes have been sent...
         }
 

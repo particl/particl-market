@@ -177,10 +177,10 @@ describe('VotePostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const results: any = res.getBody()['result'];
-        log.debug('results: ', JSON.stringify(results, null, 2));
-        expect(results[0].result).toEqual('Sent.');
-        sent = results[0].result === 'Sent.';
+        const result: resources.Vote = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
     });
 
     test('Should find the posted Vote locally immediately after posting', async () => {
@@ -215,10 +215,10 @@ describe('VotePostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const results: any = res.getBody()['result'];
-        log.debug('results: ', JSON.stringify(results, null, 2));
-        expect(results[0].result).toEqual('Sent.');
-        sent = results[0].result === 'Sent.';
+        const result: resources.Vote = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
     });
 
     test('Should find the updated Vote with different optionI', async () => {
@@ -242,4 +242,6 @@ describe('VotePostCommand', () => {
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
 
     }, 600000); // timeout to 600s
+
+
 });

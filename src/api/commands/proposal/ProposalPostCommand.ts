@@ -90,6 +90,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // TODO: set the max expiration for proposals of type PUBLIC_VOTE
+        // to whatever is the max expiration for free smsg messages
+
         if (data.params.length < 1) {
             throw new MissingParamException('profileId');
         } else if (data.params.length < 2) {
