@@ -184,7 +184,7 @@ export class ProposalService {
 
         proposalResult = await this.proposalResultService.findOne(proposalResult.id)
             .then(value => value.toJSON());
-        this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
+        // this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
 
         return proposalResult;
     }
@@ -229,7 +229,7 @@ export class ProposalService {
         const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
             .then(value => value.toJSON());
 
-        // this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
+        this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
 
         // update all votes balances
         // add vote weights to ProposalOptionResultUpdateRequests

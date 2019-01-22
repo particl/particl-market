@@ -139,7 +139,11 @@ export class CoreRpcService {
      */
     public async listReceivedByAddress(minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
                                        addressFilter?: string): Promise<any> {
-        return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
+        if (addressFilter) {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
+        } else {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly]);
+        }
     }
 
     /**

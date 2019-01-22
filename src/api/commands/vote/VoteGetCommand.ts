@@ -50,7 +50,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         const profileId = data.params[0];
         const proposalHash = data.params[1];
 
-        const profile = await this.profileService.findOne(data.params[0])
+        const profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON());
 
         const proposal = await this.proposalService.findOneByHash(proposalHash)
@@ -81,7 +81,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         }
 
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[1])
+        await this.profileService.findOne(data.params[0])
             .catch(reason => {
                 this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
@@ -98,7 +98,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <proposalHash> [<votingAddress>]';
+        return this.getName() + ' <profileId> <proposalHash>';
     }
 
     public description(): string {

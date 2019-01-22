@@ -120,7 +120,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             return o.optionId === data.params[2];
         });
         if (!proposalOption) {
-            throw new MessageException('ProposalOption ' + data.params[2] + ' not found.');
+            throw new ModelNotFoundException('ProposalOption');
         }
 
         return data;

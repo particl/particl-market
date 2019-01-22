@@ -62,7 +62,6 @@ export class VoteActionService {
      *   - get all addresses having balance
      *   - for (voteAddress: addresses):
      *     - this.send( voteAddress )
-     *   - proposalService.recalculateProposalResult(proposal)
      *
      * @param profile
      * @param marketplace
@@ -74,14 +73,15 @@ export class VoteActionService {
 
         const addresses: string[] = await this.getProfileWalletAddresses(profile);
         const responses: SmsgSendResponse[] = [];
+        this.log.debug('posting votes from addresses: ', JSON.stringify(addresses, null, 2));
+        if (_.isEmpty(addresses)) {
+            throw new MessageException('Wallet has no usable addresses.');
+        }
 
         for (const address of addresses) {
             const response: SmsgSendResponse = await this.send(proposal, proposalOption, address, marketplace);
             responses.push(response);
         }
-
-        // we just created all the votes and sent them, so we can now recalculate the ProposalResults
-        await this.proposalService.recalculateProposalResult(proposal);
 
         return responses;
     }
@@ -247,8 +247,9 @@ export class VoteActionService {
             const voteRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, votedProposalOption, balance, smsgMessage);
 
             // find the vote and if it exists, update it, and if not, then create it
-            const vote: resources.Vote = await this.voteService.findOneBySignature(voteRequest.signature)
+            const vote: resources.Vote = await this.voteService.findOneByVoterAndProposalId(voteRequest.voter, proposal.id)
                 .then(async value => {
+                    this.log.debug('found vote, updating the existing one');
                     // if vote is found, we are either receiving our own vote or
                     // someone is voting again, so we update the vote
                     const foundVote: resources.Vote = value.toJSON();
@@ -256,6 +257,7 @@ export class VoteActionService {
                     return voteModel.toJSON();
                 })
                 .catch(async reason => {
+                    this.log.debug('found vote, updating the existing one');
                     // vote doesnt exist yet, so we need to create it.
                     const voteModel: Vote = await this.voteService.create(voteRequest);
                     return voteModel.toJSON();
@@ -301,7 +303,8 @@ export class VoteActionService {
         for (const address of addresses) {
             addressList.push(address.address);
         }
-        return addressList;
+        const validChars = 'pP';
+        return addressList.filter(address => validChars.includes(address.charAt(0)));
     }
 
     /**
