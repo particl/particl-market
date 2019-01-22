@@ -229,7 +229,7 @@ export class ProposalService {
         const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
             .then(value => value.toJSON());
 
-        this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
+        // this.log.debug('recalculateProposalResult(), votes:', JSON.stringify(votes, null, 2));
 
         // update all votes balances
         // add vote weights to ProposalOptionResultUpdateRequests

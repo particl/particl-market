@@ -62,9 +62,9 @@ describe('VoteGetCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(200);
-        const results: any = response.getBody()['result'];
-        expect(results[0].result).toEqual('Sent.');
-        sent = results[0].result === 'Sent.';
+        const result: any = response.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
     });
 
     test('Should return Vote', async () => {
@@ -103,9 +103,9 @@ describe('VoteGetCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(200);
-        const results: any = response.getBody()['result'];
-        expect(results[0].result).toEqual('Sent.');
-        sent = results[0].result === 'Sent.';
+        let result: any = response.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
@@ -121,7 +121,7 @@ describe('VoteGetCommand', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        result = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.weight).toBe(createdVote.weight);
         expect(result.voter).toBe(defaultProfile.address);
