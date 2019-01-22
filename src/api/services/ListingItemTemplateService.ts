@@ -44,11 +44,8 @@ import { ListingItem } from '../models/ListingItem';
 export class ListingItemTemplateService {
 
     public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
-    private static FRACTION_TO_COMPRESS_BY = 0.8;
-    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.7;
     private static OVERHEAD_PER_SMSG = 0;
     private static OVERHEAD_PER_IMAGE = 0;
-    private static MAX_RESIZES = 20;
 
     private static IMG_BOUNDING_WIDTH = 800;
     private static IMG_BOUNDING_HEIGHT = 800;
