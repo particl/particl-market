@@ -12,6 +12,7 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { ListingItemFactory } from '../../factories/ListingItemFactory';
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -19,7 +20,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory
     ) {
         super(Commands.TEMPLATE_GET);
         this.log = new Logger(__filename);
@@ -37,13 +39,28 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         let listingItemTemplate;
+        let base64;
+        let count = 0;
 
         if (typeof data.params[0] === 'number') {
             listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
         } else {
             listingItemTemplate = await this.listingItemTemplateService.findOneByHash(data.params[0]);
         }
-        return listingItemTemplate;
+
+        let returnData = listingItemTemplate.toJSON();
+
+        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate.toJSON());
+        if (listingItemMessage) {
+            const images = listingItemMessage.information.images;
+            for (const image of images) {
+                base64 = image.data[0].data;
+                returnData.ItemInformation.ItemImages[count].OriginalRawImage = base64;
+                ++count;
+            }
+        }
+        
+        return returnData;
     }
 
     public usage(): string {
