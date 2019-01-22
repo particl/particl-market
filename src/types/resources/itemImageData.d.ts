@@ -14,6 +14,7 @@ declare module 'resources' {
         imageHash: string;
         originalMime: string;
         originalName: string;
+        itemImageId: number;
 
         createdAt: Date;
         updatedAt: Date;

@@ -80,8 +80,11 @@ export class ListingItemActionService {
         // TODO: should validate that the template has the required info
         // TODO: recalculate the template.hash in case the related data has changed
 
-        itemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(itemTemplate);
-        this.log.debug('images resized');
+        const listingMessageSizeData = await this.listingItemTemplateService.calculateMarketplaceMessageSize(itemTemplate);
+        if (!listingMessageSizeData.fits) {
+            itemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(itemTemplate);
+            this.log.debug('images resized');
+        }
 
         // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
