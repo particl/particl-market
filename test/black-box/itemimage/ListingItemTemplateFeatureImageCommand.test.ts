@@ -17,7 +17,9 @@ import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
+
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
@@ -29,13 +31,9 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const featuredImgaeCommand = Commands.ITEMIMAGE_FEATURED.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let createdListingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
+
     let createdItemImageIdNew;
     let listingItemId;
-    let listingItemTemplate;
     let listingItems;
 
     const keys = [
@@ -62,10 +60,28 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     const noFeaturedImage = [1];
     const WrongTypeListingTemplateID = ['string', 1];
     const wrongTypenoFeaturedImage = [1, 'string'];
-    const imageIDNotFound = [1, 10];
+
+    let defaultProfile: resources.Profile;
+
+    const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+        true,   // generateItemInformation
+        true,   // generateItemLocation
+        true,   // generateShippingDestinations
+        false,   // generateItemImages
+        true,   // generatePaymentInformation
+        true,   // generateEscrow
+        true,   // generateItemPrice
+        true,   // generateMessagingInformation
+        false    // generateListingItemObjects
+    ]).toParamsArray();
+
+
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -183,35 +199,21 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
 
     // test if image exists on template
     test('Should fail to set featured because ImageID is not found in the template', async () => {
-        // set listing item id
-        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
-        testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        const testData = listingItemTemplates[0];
 
-        // set hash
-        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
-
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        let result: any = addListingItemTempRes;
-        const newCreatedTemplateId = result.id;
-
-        // add item image
-        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
-            Commands.ITEMIMAGE_ADD.commandName,
-            newCreatedTemplateId,
-            'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcatSmall]);
-        itemImageRes.expectJson();
-        itemImageRes.expectStatusCode(200);
-        createdItemImageIdNew = itemImageRes.getBody()['result'].id + 1;
-
-        const data = [newCreatedTemplateId, createdItemImageIdNew];
-        result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, ...data]);
+        const data = [listingItemTemplates[0].id, 5];
+        
+        const result = await testUtil.rpc(itemImageCommand, [featuredImgaeCommand, ...data]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe('Image ID doesnt exist on template');
+        expect(result.error.error.message).toBe(new NotFoundException(5).getMessage());
     });
 });
 

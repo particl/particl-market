@@ -61,7 +61,6 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('IMAGE IS ALREADY POSTED');
             throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
         }
-        this.log.error('here:', data[0]);
         // find the listing item template
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
