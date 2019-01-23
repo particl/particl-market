@@ -188,7 +188,6 @@ export class VoteActionService {
      * @returns {Promise<module:resources.Bid>}
      */
     public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
-
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const voteMessage: VoteMessage = event.marketplaceMessage.mpaction as VoteMessage;
@@ -241,6 +240,7 @@ export class VoteActionService {
             .then(value => value.toJSON());
 
         if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
+            this.log.debug('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
             // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
             // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
             throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');

@@ -33,6 +33,7 @@ describe('ProposalPostCommand', () => {
     options.push('optionA1');
     options.push('optionB2');
 
+    let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -203,9 +204,16 @@ describe('ProposalPostCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+
     });
 
     test('Should receive the posted Proposal', async () => {
+
+        expect(sent).toEqual(true);
 
         const res = await testUtil.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],

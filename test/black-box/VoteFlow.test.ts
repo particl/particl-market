@@ -38,15 +38,17 @@ describe('Happy Vote Flow', () => {
 
     let proposalNode1: resources.Proposal;
     let proposalNode2: resources.Proposal;
+    let voteNode1: resources.Vote;
+    let voteNode2: resources.Vote;
 
     const estimateFee = false;
     const daysRetention = 3;
-    const testTimeStamp = new Date().getTime();
+    const testStartTimeStamp = new Date().getTime();
 
     const proposalTitle = Faker.lorem.words();
     const proposalDescription = Faker.lorem.paragraph();
 
-    let sent = true;
+    let sent = false;
 
     beforeAll(async () => {
 
@@ -78,8 +80,7 @@ describe('Happy Vote Flow', () => {
 
         await testUtilNode1.waitFor(5);
 
-        const response: any = await testUtilNode1.rpc(proposalCommand, [
-            proposalPostCommand,
+        const response: any = await testUtilNode1.rpc(proposalCommand, [proposalPostCommand,
             profileNode1.id,
             proposalTitle,
             proposalDescription,
@@ -152,10 +153,10 @@ describe('Happy Vote Flow', () => {
         const result: resources.Proposal = response.getBody()['result'];
         expect(result.title).toBe(proposalNode1.title);
         expect(result.description).toBe(proposalNode1.description);
-        expect(result.timeStart).toBeGreaterThan(testTimeStamp);
-        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
+        expect(result.timeStart).toBeGreaterThan(testStartTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.postedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testStartTimeStamp);
 
         expect(result.ProposalOptions[0].description).toBe(proposalNode1.ProposalOptions[0].description);
         expect(result.ProposalOptions[1].description).toBe(proposalNode1.ProposalOptions[1].description);
@@ -183,6 +184,10 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
 
     });
@@ -209,15 +214,15 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: resources.Vote = response.getBody()['result'];
+        voteNode1 = result;
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
-
-        expect(result.weight).toBe(1);
+        expect(result.postedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.weight).toBeGreaterThan(1);
         expect(result.voter).toBe(profileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[0].optionId);
-    });
+    }, 600000); // timeout to 600s
 
     test('Receive Vote1 on node2', async () => {
 
@@ -238,13 +243,15 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: resources.Vote = response.getBody()['result'];
+        voteNode2 = result;
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
         expect(result.ProposalOptionResults[0].voters).toBe(1);
         expect(result.ProposalOptionResults[0].weight).toBe(1);
-    });
-
+        expect(result.weight).toBe(voteNode1.weight);
+    }, 600000); // timeout to 600s
+/*
     test('Post Vote2 from node2', async () => {
 
         expect(sent).toEqual(true);
@@ -263,6 +270,10 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
 
     });
@@ -290,13 +301,13 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.postedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
+        expect(result.receivedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.postedAt).toBeGreaterThan(testStartTimeStamp);
+        expect(result.expiredAt).toBeGreaterThan(testStartTimeStamp);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(profileNode2.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode2.ProposalOptions[0].optionId);
-    });
+    }, 600000); // timeout to 600s
 
     test('Receive Vote2 on node1', async () => {
 
@@ -324,7 +335,7 @@ describe('Happy Vote Flow', () => {
         expect(result.ProposalOptionResults[0].weight).toBe(2);
         expect(result.ProposalOptionResults[1].voters).toBe(0);
         expect(result.ProposalOptionResults[1].weight).toBe(0);
-    });
+    }, 600000); // timeout to 600s
 
     // right now we have 2 votes for optionId=0 on both nodes
     // default profiles on both nodes have voted
@@ -347,7 +358,12 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
+
     });
 
     test('Receive Vote2 on node2 again', async () => {
@@ -379,6 +395,6 @@ describe('Happy Vote Flow', () => {
         expect(result.ProposalOptionResults[0].weight).toBe(1);
         expect(result.ProposalOptionResults[1].voters).toBe(1);
         expect(result.ProposalOptionResults[1].weight).toBe(1);
-    });
-
+    }, 600000); // timeout to 600s
+*/
 });
