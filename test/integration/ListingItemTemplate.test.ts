@@ -86,7 +86,7 @@ describe('ListingItemTemplate', async () => {
 
     let updatedListingItemTemplate1: resources.ListingItemTemplate;
 
-    let generatedListingItemTemplates: resources.ListingItemTemplate[]; // for search tests
+    let generatedListingItemTemplates: resources.ListingItemTemplate[]; // for searchBy tests
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -651,8 +651,8 @@ describe('ListingItemTemplate', async () => {
     }, 600000); // timeout to 600s
 
 
-    // search tests
-    test('Should generate 10 templates for search tests', async () => {
+    // searchBy tests
+    test('Should generate 10 templates for searchBy tests', async () => {
         await listingItemTemplateService.destroy(createdListingItemTemplate1.id);
         await expectListingItemTemplateWasDeleted(createdListingItemTemplate1);
         await listingItemTemplateService.destroy(createdListingItemTemplate2.id);
@@ -670,7 +670,7 @@ describe('ListingItemTemplate', async () => {
     }, 600000); // timeout to 600s
 
 
-    // TODO: missing search tests
+    // TODO: missing searchBy tests
 
     test('Should return ListingItemTemplates having relation to ListingItem', async () => {
         const searchParams = {

@@ -13,6 +13,7 @@ import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
+import { ProposalResult } from '../models/ProposalResult';
 
 export class VoteService {
 
@@ -26,21 +27,16 @@ export class VoteService {
         this.log = new Logger(__filename);
     }
 
-    public async getVoteWeight(voter: string): Promise<number> {
-        let voteWeight;
-        try {
-            const tmpWeight = await this.coreRpcService.getAddressBalance(voter);
-            this.log.debug('Vote getaddressbalance retval = ' + JSON.stringify(tmpWeight, null, 2));
-            voteWeight = tmpWeight.balance;
-        } catch (ex) {
-            this.log.error('ERROR getting vote weight; ex = ' + JSON.stringify(ex));
-            voteWeight = 1;
-        }
-        return voteWeight;
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Vote>> {
         return this.voteRepo.findAll();
+    }
+
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.voteRepo.findAllByProposalHash(hash, withRelated);
+    }
+
+    public async findAllByVotersAndProposalHash(voters: string[], proposalHash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.voteRepo.findAllByVotersAndProposalHash(voters, proposalHash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {
@@ -48,6 +44,15 @@ export class VoteService {
         if (vote === null) {
             this.log.warn(`Vote with the id=${id} was not found!`);
             throw new NotFoundException(id);
+        }
+        return vote;
+    }
+
+    public async findOneBySignature(signature: string, withRelated: boolean = true): Promise<Vote> {
+        const vote = await this.voteRepo.findOneBySignature(signature, withRelated);
+        if (vote === null) {
+            this.log.warn(`Vote with the signature=${signature} was not found!`);
+            throw new NotFoundException(signature);
         }
         return vote;
     }
@@ -81,6 +86,7 @@ export class VoteService {
         const vote = await this.findOne(id, false);
 
         // set new values
+        vote.set('signature', body.signature);
         vote.set('voter', body.voter);
         vote.set('weight', body.weight);
 

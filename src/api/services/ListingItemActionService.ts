@@ -221,7 +221,7 @@ export class ListingItemActionService {
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
      */
-    private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
+    /*private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
         const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
             return proposalOptionResult.ProposalOption.optionId === 0;
         });
@@ -233,13 +233,14 @@ export class ListingItemActionService {
         // at minimum, a total of 10 votes
         // at minimum, 30% of votes saying remove
 
+        // TODO: This needs to call the same code we use for removigng votes!!!!!!
         if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
             && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
             return false;
         } else {
             return true;
         }
-    }
+    }*/
 
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners');

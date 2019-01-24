@@ -109,10 +109,7 @@ services:
       - 52935:51935
       - 52936:51936
       - 52938:51938
-#    network_mode: "host"
-#    networks:
-#      - partnet
-#      - hostnet
+#    command: entrypoint.sh particld -reindex-chainstate
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
@@ -143,10 +140,7 @@ services:
       - 53935:51935
       - 53936:51936
       - 53938:51938
-#    network_mode: "host"
-#    networks:
-#      - partnet
-#      - hostnet
+#    command: entrypoint.sh particld -reindex-chainstate
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
@@ -157,8 +151,3 @@ services:
       - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
       - CREATEDEFAULTMASTERKEY=true
 
-#networks:
-#  partnet:
-#  hostnet:
-#    external: true
-#    name: host

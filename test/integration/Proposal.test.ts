@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +16,6 @@ import { ProposalService } from '../../src/api/services/ProposalService';
 import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../../src/api/requests/ProposalUpdateRequest';
-import * as resources from 'resources';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalSearchParams } from '../../src/api/requests/ProposalSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
@@ -82,7 +82,7 @@ describe('Proposal', () => {
         );
     });
 
-    test('Should create a new Proposal', async () => {
+    test('Should create a new Proposal without ProposalOptions', async () => {
 
         const proposalModel: Proposal = await proposalService.create(testData);
         const result: resources.Proposal = proposalModel.toJSON();
@@ -97,7 +97,6 @@ describe('Proposal', () => {
         expect(result.expiredAt).toBe(testData.expiredAt);
 
         createdId = result.id;
-        // todo: should test that creating proposal with options works too..
     });
 
     test('Should list Proposals with our newly created one', async () => {
@@ -220,7 +219,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });
@@ -235,7 +234,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(0);
     });
@@ -249,7 +248,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(2);
     });
@@ -263,7 +262,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });
@@ -277,7 +276,7 @@ describe('Proposal', () => {
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(2);
     });
@@ -304,7 +303,7 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should search Proposals with type ITEM_VOTE', async () => {
+    test('Should searchBy Proposals with type ITEM_VOTE', async () => {
 
         const searchParams = {
             timeStart: '*',
@@ -312,7 +311,7 @@ describe('Proposal', () => {
             order: SearchOrder.ASC, type: ProposalType.ITEM_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposalCollection = await proposalService.search(searchParams, true);
         const proposals = proposalCollection.toJSON();
         expect(proposals).toHaveLength(1);
     });

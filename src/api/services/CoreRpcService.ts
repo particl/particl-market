@@ -19,6 +19,26 @@ declare function unescape(s: string): string;
 
 let RPC_REQUEST_ID = 1;
 
+// todo: create interfaces for results, and move them to separate files
+
+interface BlockchainInfo {
+    chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
+    blocks: number;                     // the current number of blocks processed in the server
+    headers: number;                    // the current number of headers we have validated
+    bestblockhash: string;              // the hash of the currently best block
+    moneysupply: number;                // the total amount of coin in the network
+    blockindexsize: number;             // the total number of block headers indexed
+    delayedblocks: number;              // the number of delayed blocks
+    difficulty: number;                 // the current difficulty
+    mediantime: number;                 // median time for the current best block
+    verificationprogress: number;       // estimate of verification progress [0..1]
+    initialblockdownload: boolean;      // estimate of whether this node is in Initial Block Download mode.
+    chainwork: string;                  // total amount of work in active chain, in hexadecimal
+    size_on_disk: number;               // the estimated size of the block and undo files on disk
+    pruned: boolean;                    // if the blocks are subject to pruning
+    // todo: add pruning and softfork related data when needed
+}
+
 export class CoreRpcService {
 
     public log: LoggerType;
@@ -62,12 +82,68 @@ export class CoreRpcService {
         return await this.call('getnetworkinfo', [], false);
     }
 
-    public async getAddressBalance(address: string): Promise<any> {
-        return await this.call('getaddressbalance', [address]);
+    /**
+     * Returns an object containing various state info regarding blockchain processing.
+     *
+     * @returns {Promise<BlockchainInfo>}
+     */
+    public async getBlockchainInfo(): Promise<BlockchainInfo> {
+        return await this.call('getblockchaininfo', [], false);
     }
 
-    public async getAddressBalanceMulti(addresses: string[]): Promise<any> {
-        return await this.call('getaddressbalance', addresses);
+    /**
+     * Returns the balance for an address(es) (requires addressindex to be enabled).
+     *
+     * Arguments:
+     * {
+     *   "addresses": [
+     *     "address"  (string) The base58check encoded address
+     *     ,...
+     *   ]
+     * }
+     *
+     * Result:
+     * {
+     *   "balance"   (string) The current balance in satoshis
+     *   "received"  (string) The total number of satoshis received (including change)
+     * }
+     * @param addresses
+     */
+    public async getAddressBalance(addresses: string[], logCall: boolean = false): Promise<any> {
+        return await this.call('getaddressbalance', [{
+            addresses
+        }], logCall);
+    }
+
+    /**
+     * List balances by receiving address.
+     *
+     * example result:
+     * [{
+     *    "involvesWatchonly": true,      (bool)    Only returned if imported addresses were involved in transaction
+     *    "address": "receivingaddress",  (string)  The receiving address
+     *    "account": "accountname",       (string)  DEPRECATED. Backwards compatible alias for label.
+     *    "amount": x.xxx,                (numeric) The total amount in PART received by the address
+     *    "confirmations": n,             (numeric) The number of confirmations of the most recent transaction included
+     *    "label": "label",               (string)  The label of the receiving address. The default label is "".
+     *    "txids": [
+     *       "txid",                      (string)  The ids of transactions received with the address
+     *       ...
+     *    ]
+     *  }, ... ]
+     *
+     * @param minconf
+     * @param includeEmpty
+     * @param includeWatchOnly
+     * @param addressFilter
+     */
+    public async listReceivedByAddress(minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
+                                       addressFilter?: string): Promise<any> {
+        if (addressFilter) {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
+        } else {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly]);
+        }
     }
 
     /**
@@ -368,12 +444,25 @@ export class CoreRpcService {
      * Sign an object.
      *
      * @param {string} address
-     * @param {any} obj
+     * @param {any} message
      * @returns {Promise<string>}
      */
-    public async signMessage(address: string, obj: any): Promise<string> {
-        const message = JSON.stringify(obj).split('').sort().toString();
-        return await this.call('signmessage', [address, message]);
+    public async signMessage(address: string, message: any): Promise<string> {
+        const signableMessage = JSON.stringify(message).split('').sort().toString();
+        return await this.call('signmessage', [address, signableMessage]);
+    }
+
+    /**
+     * Verify a signature on a message.
+     *
+     * @param {string} address
+     * @param signature
+     * @param {any} message
+     * @returns {Promise<string>}
+     */
+    public async verifyMessage(address: string, signature: string, message: any): Promise<boolean> {
+        const signableMessage = JSON.stringify(message).split('').sort().toString();
+        return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {

@@ -360,6 +360,7 @@ export const Targets = {
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
+        ProposalResultProcessor: 'ProposalResultProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',

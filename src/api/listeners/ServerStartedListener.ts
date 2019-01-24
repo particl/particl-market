@@ -13,12 +13,12 @@ import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
-import { Environment } from '../../core/helpers/Environment';
 import { ListingItemActionService } from '../services/ListingItemActionService';
 import { BidActionService } from '../services/BidActionService';
 import { EscrowActionService } from '../services/EscrowActionService';
 import { ProposalActionService } from '../services/ProposalActionService';
 import { VoteActionService } from '../services/VoteActionService';
+import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -38,6 +38,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: SmsgMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -102,6 +103,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
                 // start expiredListingItemProcessor
                 this.expiredListingItemProcessor.scheduleProcess();
+                this.proposalResultProcessor.scheduleProcess();
 
                 // start message polling, unless we're running tests
                 this.smsgMessageProcessor.schedulePoll();

@@ -25,6 +25,16 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
         }
     }
 
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ProposalOption> {
+        if (withRelated) {
+            return await ProposalOption.where<ProposalOption>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ProposalOption.where<ProposalOption>({ hash: value }).fetch();
+        }
+    }
+
     public static async fetchByProposalAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
         if (withRelated) {
             return await ProposalOption.where<ProposalOption>({ proposal_id: proposalId, option_id: optionId }).fetch({

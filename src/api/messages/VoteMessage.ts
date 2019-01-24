@@ -5,16 +5,16 @@
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { VoteMessageInterface } from './VoteMessageInterface';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ProposalMessageType } from '../enums/ProposalMessageType';
 
 export class VoteMessage extends MessageBody implements VoteMessageInterface {
 
-    // @IsNotEmpty()
-    // @IsEnum(VoteMessageType)
+    @IsNotEmpty()
+    @IsEnum(VoteMessageType)
     public action: VoteMessageType;
-
     public proposalHash: string;
-    public optionId: number;
-    // public optionHash: string; // todo: use hash instead?
-    public voter: string; // todo: will be removed later
+    public proposalOptionHash: string;
+    public voter: string;
     public signature: string;
 }

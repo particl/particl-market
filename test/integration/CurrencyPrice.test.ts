@@ -190,7 +190,7 @@ describe('CurrencyPrice', () => {
 
     });
 
-    test('Should search currency price by from PART and to USD currency', async () => {
+    test('Should searchBy currency price by from PART and to USD currency', async () => {
         const result = await currencyPriceService.search({from: createdCurrencyPricePARTUSD.from, to: createdCurrencyPricePARTUSD.to} as CurrencyPriceParams);
         expect(result.From).toBe(createdCurrencyPricePARTUSD.from);
         expect(result.To).toBe(createdCurrencyPricePARTUSD.to);
@@ -198,17 +198,17 @@ describe('CurrencyPrice', () => {
         expect(result.Id).toBe(createdCurrencyPricePARTUSD.id);
     });
 
-    test('Should return null search result because invalid from currency', async () => {
+    test('Should return null searchBy result because invalid from currency', async () => {
         const currencyPriceModel = await currencyPriceService.search({from: 'INR', to: 'USD'} as CurrencyPriceParams);
         expect(currencyPriceModel).toBe(null);
     });
 
-    test('Should return null search result because not supported to currency', async () => {
+    test('Should return null searchBy result because not supported to currency', async () => {
         const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'TEST'} as CurrencyPriceParams);
         expect(currencyPriceModel).toBe(null);
     });
 
-    test('Should return null search result because currency price does not exist in the db for the given to currency', async () => {
+    test('Should return null searchBy result because currency price does not exist in the db for the given to currency', async () => {
         const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'PKR'} as CurrencyPriceParams);
         expect(currencyPriceModel).toBe(null);
     });

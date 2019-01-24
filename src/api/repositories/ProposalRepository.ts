@@ -30,7 +30,7 @@ export class ProposalRepository {
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
-    public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+    public async search(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         return this.ProposalModel.searchBy(options, withRelated);
     }
 
@@ -41,7 +41,7 @@ export class ProposalRepository {
             order: SearchOrder.ASC,
             type: ProposalType.PUBLIC_VOTE
         } as ProposalSearchParams;
-        return await this.searchBy(searchParams, withRelated);
+        return await this.search(searchParams, withRelated);
     }
 
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {

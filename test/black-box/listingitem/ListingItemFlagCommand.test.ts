@@ -3,12 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ListingItemFlagCommand', () => {
 
@@ -27,10 +30,6 @@ describe('ListingItemFlagCommand', () => {
     let createdListingItem1: resources.ListingItem;
     let createdListingItem2: resources.ListingItem;
 
-    const invalidListingItemHash = 0;
-    const invalidListingItemHashNotFound = 'INVALID-HASH';
-    const invalidProfileId = 'INVALID-PROFILE-ID';
-    const invalidProfileIdNotFound = 0;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -55,7 +54,7 @@ describe('ListingItemFlagCommand', () => {
             null                        // categoryId
         ]).toParamsArray();
 
-        // create listing item for testing
+        // create ListingItem for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             2,                      // how many to generate
@@ -71,7 +70,7 @@ describe('ListingItemFlagCommand', () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing listingItemHash.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemHash').getMessage());
     });
 
     test('Should fail to flag ListingItem because of missing profileId', async () => {
@@ -80,47 +79,55 @@ describe('ListingItemFlagCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing profileId.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
     test('Should fail to flag ListingItem because of invalid listingItemHash (number)', async () => {
+        const invalidListingItemHash = 99999999999999;
+
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             invalidListingItemHash,
             defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Invalid listingItemHash.`);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemHash', 'string').getMessage());
     });
 
     test('Should fail to flag ListingItem because of invalid profileId (string)', async () => {
+        const invalidProfileId = 'INVALID-PROFILE-ID';
+
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             createdListingItem1.hash,
             invalidProfileId
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`profileId needs to be a number.`);
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to flag the ListingItem because of invalid profileId (not found)', async () => {
+    test('Should fail to flag the ListingItem because Profile not found', async () => {
+        const invalidProfileIdNotFound = 0;
+
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             createdListingItem1.hash,
             invalidProfileIdNotFound
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Profile not found.`);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should fail to flag the ListingItem because of invalid listingItemHash (not found)', async () => {
+    test('Should fail to flag the ListingItem because ListingItem not found', async () => {
+        const invalidListingItemHashNotFound = 'INVALID-HASH';
+
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             invalidListingItemHashNotFound,
             defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`ListingItem not found.`);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
 
     test('Should get empty FlaggedItem relation for the ListingItem, because ListingItem is not flagged yet', async () => {
@@ -131,7 +138,7 @@ describe('ListingItemFlagCommand', () => {
         expect(result.FlaggedItem).toMatchObject({});
     });
 
-    test('Should flag the ListingItem by listingItemHash and profileId', async () => {
+    test('Should flag the ListingItem using listingItemHash and profileId', async () => {
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             createdListingItem1.hash,
             defaultProfile.id
@@ -163,7 +170,6 @@ describe('ListingItemFlagCommand', () => {
     }, 600000); // timeout to 600s
 
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
-        // add flagged item by item id
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             createdListingItem1.hash,
             defaultProfile.id

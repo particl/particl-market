@@ -180,7 +180,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         let fetchNext = true;
         let nextInterval = 1000;
 
-        // search for different types of messages in order: proposal -> vote -> listingitem -> ...
+        // searchBy for different types of messages in order: proposal -> vote -> listingitem -> ...
         for (const params of searchParams) {
 
             // if we find messages, skip fetching more until we poll for more

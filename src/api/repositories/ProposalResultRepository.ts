@@ -26,7 +26,6 @@ export class ProposalResultRepository {
         return list as Bookshelf.Collection<ProposalResult>;
     }
 
-    // we can have multiple of these in the future
     public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
         return await this.ProposalResultModel.fetchByProposalHash(hash, withRelated);
     }

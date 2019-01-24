@@ -19,7 +19,7 @@ export class BidSearchParams extends RequestBody {
     // order status filtering
     public status: BidMessageType | OrderStatus;
 
-    // search by string
+    // searchBy by string
     public searchString: string;
 
     // pagination
