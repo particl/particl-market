@@ -41,19 +41,23 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
             timeEnd: '*'
         } as ProposalSearchParams;
 
-        // - search active proposals
+        // - find all currently active proposals
         // - for proposals
         //   - get latest proposalresult
-        //   - if enough time has passed since lastt recalculation -> recalculateProposalResult
+        //   - if enough time has passed since last recalculation -> recalculateProposalResult
         //     - remove listingitems which have been voted off
         await this.proposalService.search(proposalSearchParams)
             .then(async proposalModels => {
                 const proposals: resources.Proposal[] = proposalModels.toJSON();
+
                 for (const proposal of proposals) {
                     const proposalResult: resources.ProposalResult = await this.proposalResultService.findLatestByProposalHash(proposal.hash)
                         .then(async proposalResultModel => proposalResultModel.toJSON());
+
+                    // time to recalculate?
                     if (proposalResult.calculatedAt + this.recalculationInterval < Date.now()) {
                         this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
+
                         await this.proposalService.recalculateProposalResult(proposal);
                         // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
                         // we can now check whether the ListingItem should be removed or not

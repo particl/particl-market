@@ -109,10 +109,10 @@ export class CoreRpcService {
      * }
      * @param addresses
      */
-    public async getAddressBalance(addresses: string[]): Promise<any> {
+    public async getAddressBalance(addresses: string[], logCall: boolean = false): Promise<any> {
         return await this.call('getaddressbalance', [{
             addresses
-        }]);
+        }], logCall);
     }
 
     /**

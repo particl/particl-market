@@ -225,7 +225,7 @@ export class ProposalService {
             proposalOptionResultUpdateRequests.set(proposalOptionResult.ProposalOption.optionId, proposalOptionResultUpdateRequest);
         }
 
-        // get all votes
+        // get all proposal votes
         const votes: resources.Vote[] = await this.voteService.findAllByProposalHash(proposal.hash)
             .then(value => value.toJSON());
 
@@ -234,7 +234,7 @@ export class ProposalService {
         // update all votes balances
         // add vote weights to ProposalOptionResultUpdateRequests
         for (const vote of votes) {
-            let balance = 1;
+            let balance = 0;
             // get the address balance
             if (!test) { // todo: skipping balance check for test data generation
                 balance = await this.coreRpcService.getAddressBalance([vote.voter])
@@ -268,6 +268,10 @@ export class ProposalService {
             .then(value => value.toJSON());
 
         this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        this.log.debug('recalculateProposalResult(), proposal: ' + proposalResult.id);
+        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
+            this.log.debug('recalculateProposalResult(), proposal: ' + proposalOptionResult.ProposalOption.description + ': ' + proposalOptionResult.weight);
+        }
         return proposalResult;
     }
 

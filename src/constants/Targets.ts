@@ -340,6 +340,7 @@ export const Targets = {
         },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
+            VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
         }

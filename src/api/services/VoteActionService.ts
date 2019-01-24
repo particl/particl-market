@@ -118,7 +118,7 @@ export class VoteActionService {
         // confirm that the address actually has balance
         const balance = await this.coreRpcService.getAddressBalance([senderAddress])
             .then(value => value.balance);
-        this.log.debug('balance: ', balance);
+        this.log.debug('send(), balance: ', balance);
 
         if (balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress);
@@ -194,7 +194,10 @@ export class VoteActionService {
 
         // processProposal will create or update the Proposal
         return await this.processVote(voteMessage, smsgMessage)
-            .then(value => {
+            .then(vote => {
+                if (vote) {
+                    this.log.debug('processed vote: ', vote.id);
+                }
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
@@ -247,6 +250,7 @@ export class VoteActionService {
         }
 
         // address needs to have balance for the vote to matter
+        // allready checked in send, but doing it again since we call this also from processVoteReceivedEvent()
         if (balance > 0) {
 
             const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
@@ -261,6 +265,9 @@ export class VoteActionService {
             const vote: resources.Vote = await this.voteService.findOneByVoterAndProposalId(voteRequest.voter, proposal.id)
                 .then(async value => {
                     this.log.debug('found vote, updating the existing one');
+                    this.log.debug('voteRequest.voter: ' + voteRequest.voter);
+                    this.log.debug('proposal.id: ' + proposal.id);
+                    this.log.debug('vote: ', JSON.stringify(vote, null, 2));
                     // if vote is found, we are either receiving our own vote or
                     // someone is voting again, so we update the vote
                     const foundVote: resources.Vote = value.toJSON();
@@ -268,7 +275,7 @@ export class VoteActionService {
                     return voteModel.toJSON();
                 })
                 .catch(async reason => {
-                    this.log.debug('found vote, updating the existing one');
+                    this.log.debug('did not find vote, creating...');
                     // vote doesnt exist yet, so we need to create it.
                     const voteModel: Vote = await this.voteService.create(voteRequest);
                     return voteModel.toJSON();
