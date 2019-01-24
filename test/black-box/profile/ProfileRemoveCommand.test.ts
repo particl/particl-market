@@ -32,6 +32,42 @@ describe('ProfileRemoveCommand', () => {
 
     });
 
+    test('Should fail to remove the Profile because bad id', async () => {
+        // set up the test data
+        const createdId = 123123;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier ${createdId} does not exist`);
+    });
+
+    test('Should fail to remove the Profile because null id', async () => {
+        // set up the test data
+        const createdId = null;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdId]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid ${createdId}, should be of type: number|string`);
+    });
+
+    test('Should fail to remove the Profile because bad id', async () => {
+        // set up the test data
+        const createdId = -1;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier ${createdId} does not exist`);
+    });
+
     test('Should fail to delete Profile with invalid id', async () => {
         const invalidProfileId = 0;
         const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, invalidProfileId]);
@@ -68,5 +104,4 @@ describe('ProfileRemoveCommand', () => {
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Entity with identifier ' + createdProfile2.name + ' does not exist');
     });
-
 });

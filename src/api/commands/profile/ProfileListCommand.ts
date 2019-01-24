@@ -40,6 +40,10 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
         return await this.profileService.findAll();
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' ';
     }

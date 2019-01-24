@@ -22,6 +22,70 @@ describe('ProfileUpdateCommand', () => {
         await testUtil.cleanDb();
     });
 
+    test('Should fail to update the Profile because bad id', async () => {
+        // set up the test data
+        const createdId = 123123;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier ${createdId} does not exist`);
+    });
+
+    test('Should fail to update the Profile because null id', async () => {
+        // set up the test data
+        const createdId = null;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid ${createdId}, should be of type: number`);
+    });
+
+    test('Should fail to update the Profile because string id', async () => {
+        // set up the test data
+        const createdId = 'BAD STRING ID';
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid ${createdId}, should be of type: number`);
+    });
+
+    test('Should fail to update the Profile because null profileName', async () => {
+        // set up the test data
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        const createdId = generatedProfile.id;
+
+        const profileName = null;
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid ${profileName}, should be of type: string`);
+    });
+
+    test('Should fail to update the Profile because bad profileName', async () => {
+        // set up the test data
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        const createdId = generatedProfile.id;
+
+        const profileName = -1;
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid ${profileName}, should be of type: string`);
+    });
+
     test('Should update the Profile', async () => {
         // set up the test data
         let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);

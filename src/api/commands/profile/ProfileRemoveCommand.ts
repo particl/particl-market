@@ -12,6 +12,9 @@ import { ProfileService } from '../../services/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import {MessageException} from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
@@ -46,6 +49,31 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
            profileId = profile ? profile.id : data.params[0];
         }
         return this.profileService.destroy(profileId);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        }
+
+        const profileId = data.params[0];
+        if (typeof profileId !== 'number' && typeof profileId !== 'string') {
+            throw new InvalidParamException(profileId, 'number|string');
+        }
+
+        if (typeof profileId === 'number') {
+            const profile = this.profileService.findOne(profileId);
+            if (!profile) {
+                throw new NotFoundException(profileId);
+            }
+        } else {
+            const profile = await this.profileService.findOneByName(data.params[0]);
+            if (!profile) {
+                throw new NotFoundException(profileId);
+            }
+        }
+
+        return data;
     }
 
     public usage(): string {
