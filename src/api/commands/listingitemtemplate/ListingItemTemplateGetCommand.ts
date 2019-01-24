@@ -30,6 +30,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     /**
      * data.params[]:
      *  [0]: id or hash
+     *  [1]: returnImageData (optional)
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -39,8 +40,6 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         let listingItemTemplate;
-        let base64;
-        let count = 0;
 
         if (typeof data.params[0] === 'number') {
             listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
@@ -48,19 +47,15 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
             listingItemTemplate = await this.listingItemTemplateService.findOneByHash(data.params[0]);
         }
 
-        let returnData = listingItemTemplate.toJSON();
-
-        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate.toJSON());
-        if (listingItemMessage) {
+        if (data[1]) {
+            const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate.toJSON());
             const images = listingItemMessage.information.images;
             for (const image of images) {
-                base64 = image.data[0].data;
-                returnData.ItemInformation.ItemImages[count].OriginalRawImage = base64;
-                ++count;
+                listingItemTemplate.ItemInformation.ItemImages.ItemImageData.data = image.data[0].data;
             }
         }
-        
-        return returnData;
+
+        return listingItemTemplate;
     }
 
     public usage(): string {

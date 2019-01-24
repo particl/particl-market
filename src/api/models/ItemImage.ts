@@ -37,9 +37,6 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public get OriginalRawImage(): string { return this.get('originalRawImage'); }
-    public set OriginalRawImage(value: string) { this.set('originalRawImage', value); }
-
     public ItemImageDatas(): Collection<ItemImageData> {
         return this.hasMany(ItemImageData, 'item_image_id', 'id');
     }

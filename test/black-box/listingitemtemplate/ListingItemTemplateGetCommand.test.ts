@@ -99,4 +99,18 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);
     });
+
+    test('Should return base64 of image if return image data is true', async () => {
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        const testData = listingItemTemplates[0];
+
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplates[0].id, true]);
+        res.expectJson();
+        res.expectStatusCode(200);
+    });
 });
