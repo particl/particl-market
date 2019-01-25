@@ -61,7 +61,7 @@ export class VoteService {
         const vote = await this.voteRepo.findOneByVoterAndProposalId(voter, proposalId, withRelated);
         if (!vote) {
             this.log.warn(`Vote with the voter=${voter} and proposalId=${proposalId} was not found!`);
-            throw new NotFoundException(proposalId);
+            throw new NotFoundException(voter + ' and ' + proposalId);
         }
         return vote;
     }

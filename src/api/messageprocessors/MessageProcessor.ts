@@ -23,6 +23,8 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
+import {SmsgMessage} from '../models/SmsgMessage';
+import {MessageException} from '../exceptions/MessageException';
 
 type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
 
@@ -193,10 +195,18 @@ export class MessageProcessor implements MessageProcessorInterface {
                         // this.log.debug('searching: ' + params.types);
 
                         if (!_.isEmpty(smsgMessages)) {
-                            this.log.debug('smsgMessages: ' + JSON.stringify(smsgMessages, null, 2));
+                            // this.log.debug('poll(), smsgMessages: ' + JSON.stringify(smsgMessages, null, 2));
+                            this.log.debug('poll(), smsgMessages.length: ' + smsgMessages.length);
 
                             for (const smsgMessage of smsgMessages) {
-                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING);
+                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING)
+                                    .then(value => {
+                                        const msg: resources.SmsgMessage = value.toJSON();
+                                        if (msg.status !== SmsgMessageStatus.PROCESSING) {
+                                            throw new MessageException('Failed to set SmsgMessageStatus.');
+                                        }
+                                    });
+
                                 smsgMessage.status = SmsgMessageStatus.PROCESSING;
                             }
                             await this.process(smsgMessages, emitEvent);

@@ -50,14 +50,14 @@ export class VoteFactory {
     /**
      *
      * @param {VoteMessage} voteMessage
-     * @param {"resources".Proposal} proposal
      * @param proposalOption
      * @param {number} weight
+     * @param create
      * @param smsgMessage
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
     public async getModel(voteMessage: VoteMessage, proposalOption: resources.ProposalOption, weight: number,
-                          smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+                          create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
@@ -71,17 +71,23 @@ export class VoteFactory {
             smsgData.expiredAt = smsgMessage.expiration;
         }
 
-        const voteRequest = {
-            proposal_option_id: proposalOption.id,
-            signature: voteMessage.signature,
-            voter: voteMessage.voter,
-            weight,
-            ...smsgData
-        } as VoteCreateRequest;
-
-        // this.log.debug('getModel(), voteRequest:', JSON.stringify(voteRequest, null, 2));
-
-        return voteRequest;
+        if (create) {
+            return {
+                proposal_option_id: proposalOption.id,
+                signature: voteMessage.signature,
+                voter: voteMessage.voter,
+                weight,
+                ...smsgData
+            } as VoteCreateRequest;
+        } else {
+            return {
+                proposal_option_id: proposalOption.id,
+                signature: voteMessage.signature,
+                voter: voteMessage.voter,
+                weight,
+                ...smsgData
+            } as VoteUpdateRequest;
+        }
     }
 
 }

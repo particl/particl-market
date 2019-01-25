@@ -17,7 +17,7 @@ import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
-import { CoreRpcService } from './CoreRpcService';
+import { CoreRpcService, UnspentOutput } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
@@ -235,10 +235,10 @@ export class BidActionService {
         const defaultselectedOutputsIdxs: number[] = [];
 
         // get all unspent transaction outputs
-        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
 
         // Loop over all outputs once to obtain various fitlering information
-        unspentOutputs.filter(
+        unspentOutputs = unspentOutputs.filter(
             (output: any, outIdx: number) => {
                 if (output.spendable && output.solvable && output.safe ) {
                     if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {

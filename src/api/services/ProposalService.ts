@@ -236,15 +236,17 @@ export class ProposalService {
         for (const vote of votes) {
             let balance = 0;
             // get the address balance
-            if (!test) { // todo: skipping balance check for test data generation
+            if (!test) { // todo: skipping balance update for test data generation
                 balance = await this.coreRpcService.getAddressBalance([vote.voter])
                     .then(value => value.balance);
             }
 
-            // update vote weight
-            await this.voteService.update(vote.id, {
-                weight: balance
-            } as VoteUpdateRequest);
+            // update vote weight in case it's changed
+            if (vote.weight !== balance) {
+                await this.voteService.update(vote.id, {
+                    weight: balance
+                } as VoteUpdateRequest);
+            }
 
             // add weight and voters to ProposalOptionResultUpdateRequest
             const proposalOptionResultUpdateRequest = proposalOptionResultUpdateRequests.get(vote.ProposalOption.optionId);
@@ -259,8 +261,9 @@ export class ProposalService {
             // this.log.debug('recalculateProposalResult(), update optionId: ', optionId);
             const proposalOptionResultId = proposalOptionResultUpdateRequest['id'];
             delete proposalOptionResultUpdateRequest['id'];
-            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResultId, proposalOptionResultUpdateRequest);
-            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
+            // const updatedProposalOptionResult: resources.ProposalOptionResult =
+            await this.proposalOptionResultService.update(proposalOptionResultId, proposalOptionResultUpdateRequest)
+                .then(value => value.toJSON());
             // this.log.debug('recalculateProposalResult(), updatedProposalOptionResult: ', JSON.stringify(updatedProposalOptionResult, null, 2));
         }
 
@@ -268,7 +271,7 @@ export class ProposalService {
             .then(value => value.toJSON());
 
         this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
-        this.log.debug('recalculateProposalResult(), proposal: ' + proposalResult.id);
+        // this.log.debug('recalculateProposalResult(), proposal: ' + proposalResult.id);
         for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
             this.log.debug('recalculateProposalResult(), proposal: ' + proposalOptionResult.ProposalOption.description + ': ' + proposalOptionResult.weight);
         }

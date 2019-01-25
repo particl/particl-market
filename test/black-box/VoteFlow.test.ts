@@ -8,6 +8,7 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';
 
 describe('Happy Vote Flow', () => {
 
@@ -105,7 +106,7 @@ describe('Happy Vote Flow', () => {
 
     test('Should have created Proposal on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
@@ -134,7 +135,7 @@ describe('Happy Vote Flow', () => {
 
     test('Should have created Proposal on node2', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
@@ -160,7 +161,7 @@ describe('Happy Vote Flow', () => {
         expect(result.postedAt).toBeGreaterThan(testStartTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testStartTimeStamp);
 
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('proposal: ', JSON.stringify(result, null, 2));
         expect(result.ProposalOptions[0].description).toBe(proposalNode1.ProposalOptions[0].description);
         expect(result.ProposalOptions[1].description).toBe(proposalNode1.ProposalOptions[1].description);
 
@@ -171,7 +172,8 @@ describe('Happy Vote Flow', () => {
 
     test('Should post Vote1 from node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
+        sent = false;
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node1 POSTS MP_VOTE_ADD (default profile)');
@@ -188,6 +190,8 @@ describe('Happy Vote Flow', () => {
 
         const result: any = response.getBody()['result'];
         vote1AddressCount = result.msgids.length;
+        expect(vote1AddressCount).toBeGreaterThan(0);
+
         sent = result.result === 'Sent.';
         if (!sent) {
             log.debug(JSON.stringify(result, null, 2));
@@ -198,7 +202,8 @@ describe('Happy Vote Flow', () => {
 
     test('Should have created Vote1 on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
+        expect(vote1AddressCount).toBeGreaterThan(0);
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
@@ -207,8 +212,7 @@ describe('Happy Vote Flow', () => {
 
         await testUtilNode1.waitFor(3);
 
-        const response: any = await testUtilNode1.rpcWaitFor(
-            voteCommand,
+        const response: any = await testUtilNode1.rpcWaitFor(voteCommand,
             [voteGetCommand, profileNode1.id, proposalNode1.hash],
             8 * 60,
             200,
@@ -232,7 +236,7 @@ describe('Happy Vote Flow', () => {
 
     test('Should have created ProposalResults after receiving Vote1 on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node1 ProposalResults');
@@ -251,7 +255,7 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
@@ -260,7 +264,7 @@ describe('Happy Vote Flow', () => {
 
     test('Should have created ProposalResults after receiving Vote1 on node2', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -279,7 +283,7 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
@@ -288,7 +292,7 @@ describe('Happy Vote Flow', () => {
 
     test('Post Vote1 again from node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node1 POSTS MP_VOTE_ADD with different optionId');
@@ -307,6 +311,8 @@ describe('Happy Vote Flow', () => {
         expect(result.msgids.length).toBe(vote1AddressCount); // same addresses should still be voting
 
         vote1AddressCount = result.msgids.length;
+        expect(vote1AddressCount).toBeGreaterThan(0);
+
         sent = result.result === 'Sent.';
         if (!sent) {
             log.debug(JSON.stringify(result, null, 2));
@@ -316,7 +322,7 @@ describe('Happy Vote Flow', () => {
 
     test('Should have recreated ProposalResults after receiving Vote1 on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote1 - Node1 ProposalResults');
@@ -334,7 +340,7 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
         expect(result.ProposalOptionResults[0].voters).toBe(0);
@@ -343,11 +349,9 @@ describe('Happy Vote Flow', () => {
         expect(result.ProposalOptionResults[1].weight).toBe(vote1Node1.weight);
     }, 600000); // timeout to 600s
 
+    test('Should post Vote2 from node2', async () => {
 
-    /*
-    test('Post Vote2 from node2', async () => {
-
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 - Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -372,9 +376,9 @@ describe('Happy Vote Flow', () => {
 
     });
 
-    test('Vote2 exists on node2', async () => {
+    test('Should have created Vote2 on node2', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 - Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
@@ -407,9 +411,9 @@ describe('Happy Vote Flow', () => {
         expect(result.ProposalOption.optionId).toBe(proposalNode2.ProposalOptions[0].optionId);
     }, 600000); // timeout to 600s
 
-    test('Check ProposalResults after receiving Vote2 on node2', async () => {
+    test('Should have updated ProposalResults after receiving Vote2 on node2', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 - Node2 ProposalResults');
@@ -423,22 +427,24 @@ describe('Happy Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[0].voters',
-            vote1AddressCount + vote2AddressCount,
+            vote2AddressCount,
             '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount + vote2AddressCount);
-        expect(result.ProposalOptionResults[0].weight).toBe(vote1Node1.weight + vote2Node2.weight);
+        expect(result.ProposalOptionResults[0].voters).toBe(vote2AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(vote2Node2.weight);
+        expect(result.ProposalOptionResults[1].voters).toBe(vote1AddressCount);
+        expect(result.ProposalOptionResults[1].weight).toBe(vote1Node1.weight);
     }, 600000); // timeout to 600s
 
-    test('Receive Vote2 on node1, check ProposalResults', async () => {
+    test('Should have updated ProposalResults after receiving Vote2 on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 - Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -452,27 +458,27 @@ describe('Happy Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[0].voters',
-            vote1AddressCount + vote2AddressCount,
+             vote2AddressCount,
             '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount + vote2AddressCount);
-        expect(result.ProposalOptionResults[0].weight).toBe(vote1Node1.weight + vote2Node2.weight);
-        expect(result.ProposalOptionResults[1].voters).toBe(0);
-        expect(result.ProposalOptionResults[1].weight).toBe(0);
+        expect(result.ProposalOptionResults[0].voters).toBe(vote2AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(vote2Node2.weight);
+        expect(result.ProposalOptionResults[1].voters).toBe(vote1AddressCount);
+        expect(result.ProposalOptionResults[1].weight).toBe(vote1Node1.weight);
     }, 600000); // timeout to 600s
 
     // right now we have 2 votes for optionId=0 on both nodes
     // default profiles on both nodes have voted
 
-    test('Post Vote2 again from node2 changing the vote optionId', async () => {
+    test('Should post Vote2 again from node2 to change the vote optionId', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 repost - Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -487,7 +493,7 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: SmsgSendResponse = response.getBody()['result'];
         sent = result.result === 'Sent.';
         if (!sent) {
             log.debug(JSON.stringify(result, null, 2));
@@ -496,9 +502,9 @@ describe('Happy Vote Flow', () => {
 
     });
 
-    test('Receive Vote2 on node2 again, check ProposalResulVote2 - Node1 RECEIVES MP_Vts', async () => {
+    test('Should have updated ProposalResults after receiving reposted Vote2 on node2', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 repost - Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -514,23 +520,23 @@ describe('Happy Vote Flow', () => {
             200,
             'ProposalOptionResults[0].voters',
             0,
-            '>'
+            '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
-        expect(result.ProposalOptionResults[0].weight).toBe(vote1Node1.weight);
-        expect(result.ProposalOptionResults[1].voters).toBe(vote2AddressCount);
-        expect(result.ProposalOptionResults[1].weight).toBe(vote2Node2.weight);
+        expect(result.ProposalOptionResults[0].voters).toBe(0);
+        expect(result.ProposalOptionResults[0].weight).toBe(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(vote1AddressCount + vote2AddressCount);
+        expect(result.ProposalOptionResults[1].weight).toBe(vote1Node1.weight + vote2Node2.weight);
     }, 600000); // timeout to 600s
 
-    test('Check ProposalResults after receiving Vote2 again on node1', async () => {
+    test('Should have updated ProposalResults after receiving reposted Vote2 on node1', async () => {
 
-        expect(sent).toEqual(true);
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Vote2 - Node1 ProposalResults');
@@ -542,19 +548,19 @@ describe('Happy Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[0].voters',
-            vote1AddressCount,
+            0,
             '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Vote = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
-        expect(result.ProposalOptionResults[0].weight).toBe(vote1Node1.weight);
-        expect(result.ProposalOptionResults[1].voters).toBe(vote2AddressCount);
-        expect(result.ProposalOptionResults[1].weight).toBe(vote2Node2.weight);
+        expect(result.ProposalOptionResults[0].voters).toBe(0);
+        expect(result.ProposalOptionResults[0].weight).toBe(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(vote1AddressCount + vote2AddressCount);
+        expect(result.ProposalOptionResults[1].weight).toBe(vote1Node1.weight + vote2Node2.weight);
     }, 600000); // timeout to 600s
-*/
+
 });

@@ -3,35 +3,41 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Events, Targets, Types } from '../../constants';
-import { Vote } from '../models/Vote';
-import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { SmsgService } from './SmsgService';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { EventEmitter } from 'events';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Core, Events, Targets, Types} from '../../constants';
+import {Vote} from '../models/Vote';
+import {VoteCreateRequest} from '../requests/VoteCreateRequest';
+import {SmsgService} from './SmsgService';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {EventEmitter} from 'events';
 import * as resources from 'resources';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { VoteFactory } from '../factories/VoteFactory';
-import { VoteService } from './VoteService';
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { CoreRpcService } from './CoreRpcService';
-import { MessageException } from '../exceptions/MessageException';
-import { VoteMessage } from '../messages/VoteMessage';
-import { ProposalService } from './ProposalService';
-import { ProposalOptionService } from './ProposalOptionService';
-import { ProposalType } from '../enums/ProposalType';
-import { ListingItemService } from './ListingItemService';
-import { SmsgMessageService } from './SmsgMessageService';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ProposalResultService } from './ProposalResultService';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
+import {VoteFactory} from '../factories/VoteFactory';
+import {VoteService} from './VoteService';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import {VoteMessageType} from '../enums/VoteMessageType';
+import {CoreRpcService} from './CoreRpcService';
+import {MessageException} from '../exceptions/MessageException';
+import {VoteMessage} from '../messages/VoteMessage';
+import {ProposalService} from './ProposalService';
+import {ProposalOptionService} from './ProposalOptionService';
+import {ProposalType} from '../enums/ProposalType';
+import {ListingItemService} from './ListingItemService';
+import {SmsgMessageService} from './SmsgMessageService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import {ProposalResultService} from './ProposalResultService';
+import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
 
-interface VoteTicket {
+export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
     proposalOptionHash: string; // proposal option being voted for
     address: string;            // voting address having balance
+}
+
+export interface AddressInfo {
+    address: string;
+    balance: number;            // in satoshis
 }
 
 export class VoteActionService {
@@ -71,16 +77,16 @@ export class VoteActionService {
     public async vote(profile: resources.Profile, marketplace: resources.Market, proposal: resources.Proposal,
                       proposalOption: resources.ProposalOption): Promise<SmsgSendResponse> {
 
-        const addresses: string[] = await this.getProfileWalletAddresses(profile);
-        const responses: SmsgSendResponse[] = [];
-        this.log.debug('posting votes from addresses: ', JSON.stringify(addresses, null, 2));
-        if (_.isEmpty(addresses)) {
+        const addressInfos: AddressInfo[] = await this.getProfileAddressInfos(profile);
+
+        this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
+        if (_.isEmpty(addressInfos)) {
             throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
         const msgids: string[] = [];
-        for (const address of addresses) {
-            const response: SmsgSendResponse = await this.send(proposal, proposalOption, address, marketplace);
+        for (const addressInfo of addressInfos) {
+            const response: SmsgSendResponse = await this.send(proposal, proposalOption, addressInfo, marketplace);
             if (response.msgid) {
                 msgids.push(response.msgid);
             }
@@ -90,10 +96,13 @@ export class VoteActionService {
             throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
-        return {
+        const result = {
             result: 'Sent.',
             msgids
         } as SmsgSendResponse;
+
+        this.log.debug('vote(), result: ', JSON.stringify(result, null, 2));
+        return result;
     }
 
     /**
@@ -113,17 +122,14 @@ export class VoteActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                      senderAddress: string, marketplace: resources.Market): Promise<SmsgSendResponse> {
+                      senderAddress: AddressInfo, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        // confirm that the address actually has balance
-        const balance = await this.coreRpcService.getAddressBalance([senderAddress])
-            .then(value => value.balance);
-        this.log.debug('send(), balance: ', balance);
+        this.log.debug('send(), senderAddressInfo: ', senderAddress);
 
-        if (balance > 0) {
-            const signature = await this.signVote(proposal, proposalOption, senderAddress);
+        if (senderAddress.balance > 0) {
+            const signature = await this.signVote(proposal, proposalOption, senderAddress.address);
             const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
-                proposalOption.hash, senderAddress, signature);
+                proposalOption.hash, senderAddress.address, signature);
 
             const msg: MarketplaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -135,10 +141,10 @@ export class VoteActionService {
             const vote: resources.Vote | undefined = await this.processVote(voteMessage);
 
             if (vote) {
-                const daysRetention = Math.ceil((proposal.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
-                return this.smsgService.smsgSend(senderAddress, marketplace.address, msg, false, daysRetention);
+                const daysRetention = Math.ceil((proposal.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
+                return this.smsgService.smsgSend(senderAddress.address, marketplace.address, msg, false, daysRetention);
             }
-        } // else {}
+        }
 
         return {
             result: 'skipping.',
@@ -155,7 +161,11 @@ export class VoteActionService {
      */
     public async getCombinedVote(profile: resources.Profile, proposal: resources.Proposal): Promise<resources.Vote> {
 
-        const addresses: string[] = await this.getProfileWalletAddresses(profile);
+        const addressInfos: AddressInfo[] = await this.getProfileAddressInfos(profile);
+        const addresses = addressInfos.map(addressInfo => {
+            return addressInfo.address;
+        });
+
         const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
             .then(value => value.toJSON());
 
@@ -196,13 +206,17 @@ export class VoteActionService {
         return await this.processVote(voteMessage, smsgMessage)
             .then(vote => {
                 if (vote) {
-                    this.log.debug('processed vote: ', vote.id);
+                    this.log.debug('==> PROCESSED VOTE: ', vote.id);
+                    return SmsgMessageStatus.PROCESSED;
+                } else {
+                    this.log.debug('==> IGNORED VOTE: ', 'voter: ' + voteMessage.voter + ', proposal: ' + voteMessage.proposalHash);
+                    return SmsgMessageStatus.IGNORED;
                 }
-                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
                 this.log.debug('processing failed: ', JSON.stringify(reason, null, 2));
                 // todo: return different status for different reasons the vote was ignored
+                // todo: some of the errors should set return SmsgMessageStatus.IGNORED
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
 
@@ -256,49 +270,64 @@ export class VoteActionService {
             const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
                 .then(value => value.toJSON());
 
-            // when called from send() we create a VoteCreateRequest with no smsgMessage data.
-            // later, when the smsgMessage for this vote is received,
-            // the relevant smsgMessage data will be updated and included in the request
-            const voteRequest: VoteCreateRequest = await this.voteFactory.getModel(voteMessage, votedProposalOption, balance, smsgMessage);
-
             // find the vote and if it exists, update it, and if not, then create it
-            const vote: resources.Vote = await this.voteService.findOneByVoterAndProposalId(voteRequest.voter, proposal.id)
-                .then(async value => {
-                    this.log.debug('found vote, updating the existing one');
-                    this.log.debug('voteRequest.voter: ' + voteRequest.voter);
-                    this.log.debug('proposal.id: ' + proposal.id);
-                    this.log.debug('vote: ', JSON.stringify(vote, null, 2));
-                    // if vote is found, we are either receiving our own vote or
-                    // someone is voting again, so we update the vote
-                    const foundVote: resources.Vote = value.toJSON();
-                    const voteModel: Vote = await this.voteService.update(foundVote.id, voteRequest);
-                    return voteModel.toJSON();
-                })
-                .catch(async reason => {
-                    this.log.debug('did not find vote, creating...');
-                    // vote doesnt exist yet, so we need to create it.
-                    const voteModel: Vote = await this.voteService.create(voteRequest);
-                    return voteModel.toJSON();
+            let vote: resources.Vote | undefined = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
+                // empty .catch() wont work!
+                .catch(reason => this.log.debug('Vote not found: ', reason))
+                .then(value => {
+                    if (value) {
+                        return value.toJSON();
+                    }
                 });
 
-            proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash)
-                .then(value => value.toJSON());
-
-            const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-            // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
-            // we can now check whether the ListingItem should be removed or not
-            if (proposal.type === ProposalType.ITEM_VOTE) {
-                const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                    .then(value => value.toJSON());
-                await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                    .then(async remove => {
-                        if (remove) {
-                            await this.listingItemService.destroy(listingItem.id);
-                        }
+            // todo: createOrUpdateVote
+            if (vote) {
+                // Vote was found, update it
+                // when vote is found, we are either receiving our own vote or someone is voting again
+                // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
+                const voteUpdateRequest: VoteUpdateRequest
+                    = await this.voteFactory.getModel(voteMessage, votedProposalOption, balance, false, smsgMessage);
+                this.log.debug('found vote, updating the existing one');
+                this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
+                this.log.debug('proposal.id: ' + proposal.id);
+                vote = await this.voteService.update(vote.id, voteUpdateRequest)
+                    .then(value => {
+                        return value.toJSON();
                     });
+
+            } else {
+                // Vote doesnt exist yet, so we need to create it.
+                // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
+                this.log.debug('did not find vote, creating...');
+                const voteCreateRequest: VoteCreateRequest
+                    = await this.voteFactory.getModel(voteMessage, votedProposalOption, balance, true, smsgMessage);
+                vote = await this.voteService.create(voteCreateRequest)
+                    .then(value => {
+                        return value.toJSON();
+                    });
+                this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
             }
-            return vote;
+
+            if (vote) {
+                // after creating/updating the Vote, recalculate the ProposalResult
+                proposal = await this.proposalService.findOne(vote.ProposalOption.Proposal.id)
+                    .then(value => value.toJSON());
+                const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+                // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
+                // we can now check whether the ListingItem should be removed or not
+                if (proposal.type === ProposalType.ITEM_VOTE) {
+                    const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                        .then(value => value.toJSON());
+                    await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                        .then(async remove => {
+                            if (remove) {
+                                await this.listingItemService.destroy(listingItem.id);
+                            }
+                        });
+                }
+                return vote;
+            }
         }
 
         // returning undefined vote in case there's no balance
@@ -309,20 +338,29 @@ export class VoteActionService {
 
     /**
      * get the Profiles wallets addresses
-     * minimum 3 confirmations, empty ones not included
+     * minimum 3 confirmations, ones without balance not included
      *
-     * the profile param is not used for anything yet, but included allready while we wait and build multiwallet support
+     * the profile param is not used for anything yet, but included already while we wait and build multiwallet support
      *
      * @param profile
+     * @param addresses
      */
-    private async getProfileWalletAddresses(profile: resources.Profile): Promise<string[]> {
-        const addressList: string[] = [];
-        const addresses: any = await this.coreRpcService.listReceivedByAddress(3, false);
-        for (const address of addresses) {
-            addressList.push(address.address);
+    private async getProfileAddressInfos(profile: resources.Profile, addresses: string[] = []): Promise<AddressInfo[]> {
+        const addressList: AddressInfo[] = [];
+        const outputs: any = await this.coreRpcService.listUnspent(1, 9999999, addresses);
+        this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
+
+        for (const output of outputs) {
+            if (output.spendable && output.solvable && output.safe && output.amount > 0) {
+                addressList.push({
+                    address: output.address,
+                    balance: output.amount * 100000000 // in satoshis
+                } as AddressInfo);
+            }
         }
-        const validChars = 'pP';
-        return addressList.filter(address => validChars.includes(address.charAt(0)));
+        return addressList;
+        // const validChars = 'pP';
+        // return addressList.filter(address => validChars.includes(address.charAt(0)));
     }
 
     /**
@@ -364,7 +402,13 @@ export class VoteActionService {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processVoteReceivedEvent(event)
                 .then(async status => {
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status)
+                        .then(value => {
+                            const msg: resources.SmsgMessage = value.toJSON();
+                            if (msg.status !== status) {
+                                throw new MessageException('Failed to set SmsgMessageStatus.');
+                            }
+                        });
                 })
                 .catch(async reason => {
                     this.log.error('PROCESSING ERROR: ', reason);

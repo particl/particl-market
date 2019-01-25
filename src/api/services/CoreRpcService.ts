@@ -21,7 +21,7 @@ let RPC_REQUEST_ID = 1;
 
 // todo: create interfaces for results, and move them to separate files
 
-interface BlockchainInfo {
+export interface BlockchainInfo {
     chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
     blocks: number;                     // the current number of blocks processed in the server
     headers: number;                    // the current number of headers we have validated
@@ -38,6 +38,25 @@ interface BlockchainInfo {
     pruned: boolean;                    // if the blocks are subject to pruning
     // todo: add pruning and softfork related data when needed
 }
+
+export interface UnspentOutput   {
+    txid: string;                   // (string) the transaction id
+    vout: number;                   // (numeric) the vout value
+    address: string;                // (string) the particl address
+    coldstaking_address: string;    // (string) the particl address this output must stake on
+    label: string;                  // (string) The associated label, or "" for the default label
+    scriptPubKey: string;           // (string) the script key
+    amount: number;                 // (numeric) the transaction output amount in PART
+    confirmations: number;          // (numeric) The number of confirmations
+    redeemScript: string;           // (string) The redeemScript if scriptPubKey is P2SH
+    spendable: boolean;             // (bool) Whether we have the private keys to spend this output
+    solvable: boolean;              // (bool) Whether we know how to spend this output, ignoring the lack of keys
+    safe: boolean;                  // (bool) Whether this output is considered safe to spend. Unconfirmed transactions
+                                    // from outside keys and unconfirmed replacement transactions are considered unsafe
+                                    // and are not eligible for spending by fundrawtransaction and sendtoaddress.
+    stakeable: boolean;             // (bool) Whether we have the private keys to stake this output
+}
+
 
 export class CoreRpcService {
 
@@ -108,6 +127,7 @@ export class CoreRpcService {
      *   "received"  (string) The total number of satoshis received (including change)
      * }
      * @param addresses
+     * @param logCall
      */
     public async getAddressBalance(addresses: string[], logCall: boolean = false): Promise<any> {
         return await this.call('getaddressbalance', [{
@@ -385,8 +405,8 @@ export class CoreRpcService {
      * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number, maxconf: number,
-                             addresses: string[] = [], includeUnsafe: boolean = true, queryOptions: any = {}): Promise<any> {
+    public async listUnspent(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
+                             queryOptions: any = {}): Promise<any> {
 
         const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
         if (!_.isEmpty(queryOptions)) {

@@ -48,7 +48,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
 
         const votes: resources.Vote[] = [];
         for (const proposalOption of proposal.ProposalOptions) {
-            votes.concat(proposalOption.Votes);
+            votes.push(...proposalOption.Votes);
         }
         return votes;
     }
