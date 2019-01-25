@@ -27,7 +27,7 @@ export class ProposalResultRepository {
     }
 
     public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
-        return await this.ProposalResultModel.fetchByProposalHash(hash, withRelated);
+        return await this.ProposalResultModel.fetchAllByProposalHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {

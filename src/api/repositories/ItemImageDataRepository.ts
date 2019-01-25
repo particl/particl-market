@@ -26,6 +26,10 @@ export class ItemImageDataRepository {
         return list as Bookshelf.Collection<ItemImageData>;
     }
 
+    public async findAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
+        return await this.ItemImageDataModel.fetchAllOriginalsByImageHash(hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {
         return this.ItemImageDataModel.fetchById(id, withRelated);
     }

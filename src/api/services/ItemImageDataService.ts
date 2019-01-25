@@ -5,6 +5,7 @@
 import * as Bookshelf from 'bookshelf';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -31,6 +32,10 @@ export class ItemImageDataService {
 
     public async findAll(): Promise<Bookshelf.Collection<ItemImageData>> {
         return this.itemImageDataRepo.findAll();
+    }
+
+    public async findAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
+        return await this.itemImageDataRepo.findAllOriginalsByImageHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {
@@ -121,10 +126,8 @@ export class ItemImageDataService {
 
     public async destroy(id: number): Promise<void> {
         // find the existing one without related
-        const itemImageData = await this.findOne(id, false)
+        const itemImageData: resources.ItemImageData = await this.findOne(id, false)
             .then(value => value.toJSON());
-
-        await this.findOne()
 
         await this.removeImageFile(itemImageData.imageHash, itemImageData.imageVersion);
         await this.itemImageDataRepo.destroy(id);
@@ -158,13 +161,23 @@ export class ItemImageDataService {
      * @param imageVersion
      */
     public async removeImageFile(imageHash: string, imageVersion: string): Promise<void> {
-        const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-        // this.log.debug('removeImageFile(): ', filename);
-        try {
-            fs.unlinkSync(filename);
-        } catch (err) {
-            throw new MessageException('Image remove failed: ' + err);
+
+        const itemImageDatas: resources.ItemImageData[] = await this.findAllOriginalsByImageHash(imageHash)
+            .then(value => value.toJSON());
+
+        // only remove the file if theres just this one Image related to it
+        if (itemImageDatas.length === 1) {
+            const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
+            // this.log.debug('removeImageFile(): ', filename);
+            try {
+                fs.unlinkSync(filename);
+            } catch (err) {
+                throw new MessageException('Image remove failed: ' + err);
+            }
+        } else {
+            this.log.debug('removeImageFile(): multiple images using the same file, skipping...');
         }
+
     }
 
     /**
