@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -35,7 +36,6 @@ import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
-import * as resources from 'resources';
 import { ProposalService } from './ProposalService';
 
 export class ListingItemService {

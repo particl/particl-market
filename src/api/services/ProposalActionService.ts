@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named} from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -10,7 +11,6 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import * as resources from 'resources';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';

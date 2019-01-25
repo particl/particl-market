@@ -6,7 +6,6 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { VoteMessageInterface } from './VoteMessageInterface';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
 
 export class VoteMessage extends MessageBody implements VoteMessageInterface {
 

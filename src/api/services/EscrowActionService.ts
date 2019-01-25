@@ -2,18 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-import * as resources from 'resources';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-
 import { EventEmitter } from 'events';
 import { ActionMessageService } from './ActionMessageService';
 import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
 import { MessageException } from '../exceptions/MessageException';
-import * as _ from 'lodash';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { OrderFactory } from '../factories/OrderFactory';
@@ -25,10 +24,8 @@ import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowRequest } from '../requests/EscrowRequest';
 import { OrderStatus } from '../enums/OrderStatus';
-import { Output } from 'resources';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { OrderItemObjectService } from './OrderItemObjectService';
-import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateRequest';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
@@ -38,6 +35,7 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
+import {Output} from './BidActionService';
 
 export class EscrowActionService {
 

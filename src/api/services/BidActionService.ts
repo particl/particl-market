@@ -23,7 +23,6 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
-import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
@@ -45,6 +44,13 @@ export interface OutputData {
     outputs: Output[];
     outputsSum: number;
     outputsChangeAmount: number;
+}
+
+export interface Output {
+    txid?: string;
+    vout?: number;
+    amount?: number;
+    data?: string;
 }
 
 // todo: move

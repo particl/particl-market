@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -17,15 +18,13 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
-import {ProposalOptionResultUpdateRequest} from '../requests/ProposalOptionResultUpdateRequest';
-import {ProposalResultUpdateRequest} from '../requests/ProposalResultUpdateRequest';
-import {CoreRpcService} from './CoreRpcService';
-import {ProposalResultService} from './ProposalResultService';
-import {ProposalOptionResultService} from './ProposalOptionResultService';
-import * as resources from 'resources';
-import {ProposalOptionResultCreateRequest} from '../requests/ProposalOptionResultCreateRequest';
-import {ProposalResultCreateRequest} from '../requests/ProposalResultCreateRequest';
-import {VoteService} from './VoteService';
+import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
+import { CoreRpcService } from './CoreRpcService';
+import { ProposalResultService } from './ProposalResultService';
+import { ProposalOptionResultService } from './ProposalOptionResultService';
+import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
+import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
+import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 
 export class ProposalService {

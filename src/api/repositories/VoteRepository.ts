@@ -9,7 +9,6 @@ import { Vote } from '../models/Vote';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ProposalResult } from '../models/ProposalResult';
 
 export class VoteRepository {
 

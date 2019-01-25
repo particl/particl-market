@@ -53,8 +53,24 @@ describe('VoteGetCommand', () => {
         ) as resources.Proposal[];
         proposal = proposals[0];
 
-        // post a vote
+    });
+
+    test('Should fail to return a Vote', async () => {
+
         const response: any = await testUtil.rpc(voteCommand, [
+            voteGetCommand,
+            defaultProfile.id,
+            proposal.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe('No Votes found.');
+    });
+
+    test('Should create and return a Vote', async () => {
+
+        // post a vote
+        let response: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
             defaultProfile.id,
             proposal.hash,
@@ -65,15 +81,13 @@ describe('VoteGetCommand', () => {
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
         sent = result.result === 'Sent.';
-    });
 
-    test('Should return Vote', async () => {
         expect(sent).toBeTruthy();
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        const response: any = await testUtil.rpcWaitFor(
+        response = await testUtil.rpcWaitFor(
             voteCommand,
             [voteGetCommand, defaultProfile.id, proposal.hash],
             8 * 60,
@@ -83,13 +97,13 @@ describe('VoteGetCommand', () => {
         );
         response.expectJson();
         response.expectStatusCode(200);
-        const result: resources.Vote = response.getBody()['result'];
-        createdVote = result;
+        const vote: resources.Vote = response.getBody()['result'];
+        createdVote = vote;
 
-        expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBeGreaterThan(1);
-        expect(result.voter).toBe(defaultProfile.address);
-        expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
+        expect(vote).hasOwnProperty('ProposalOption');
+        expect(vote.weight).toBeGreaterThan(1);
+        expect(vote.voter).toBe(defaultProfile.address);
+        expect(vote.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
 
     test('Should return Vote with different result after voting again', async () => {

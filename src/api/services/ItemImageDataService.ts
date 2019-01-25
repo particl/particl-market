@@ -121,8 +121,10 @@ export class ItemImageDataService {
 
     public async destroy(id: number): Promise<void> {
         // find the existing one without related
-        const itemImageDataModel = await this.findOne(id, false);
-        const itemImageData = itemImageDataModel.toJSON();
+        const itemImageData = await this.findOne(id, false)
+            .then(value => value.toJSON());
+
+        await this.findOne()
 
         await this.removeImageFile(itemImageData.imageHash, itemImageData.imageVersion);
         await this.itemImageDataRepo.destroy(id);

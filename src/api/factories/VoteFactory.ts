@@ -3,12 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
 import { VoteMessageType } from '../enums/VoteMessageType';
-import * as resources from 'resources';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { ProposalOptionService } from '../services/ProposalOptionService';

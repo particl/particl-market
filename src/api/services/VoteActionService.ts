@@ -3,31 +3,30 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Core, Events, Targets, Types} from '../../constants';
-import {Vote} from '../models/Vote';
-import {VoteCreateRequest} from '../requests/VoteCreateRequest';
-import {SmsgService} from './SmsgService';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {EventEmitter} from 'events';
 import * as resources from 'resources';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
-import {VoteFactory} from '../factories/VoteFactory';
-import {VoteService} from './VoteService';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {VoteMessageType} from '../enums/VoteMessageType';
-import {CoreRpcService} from './CoreRpcService';
-import {MessageException} from '../exceptions/MessageException';
-import {VoteMessage} from '../messages/VoteMessage';
-import {ProposalService} from './ProposalService';
-import {ProposalOptionService} from './ProposalOptionService';
-import {ProposalType} from '../enums/ProposalType';
-import {ListingItemService} from './ListingItemService';
-import {SmsgMessageService} from './SmsgMessageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {ProposalResultService} from './ProposalResultService';
-import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Core, Events, Targets, Types } from '../../constants';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { SmsgService } from './SmsgService';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { EventEmitter } from 'events';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { VoteFactory } from '../factories/VoteFactory';
+import { VoteService } from './VoteService';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { CoreRpcService } from './CoreRpcService';
+import { MessageException } from '../exceptions/MessageException';
+import { VoteMessage } from '../messages/VoteMessage';
+import { ProposalService } from './ProposalService';
+import { ProposalOptionService } from './ProposalOptionService';
+import { ProposalType } from '../enums/ProposalType';
+import { ListingItemService } from './ListingItemService';
+import { SmsgMessageService } from './SmsgMessageService';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { ProposalResultService } from './ProposalResultService';
+import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -168,6 +167,10 @@ export class VoteActionService {
 
         const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
             .then(value => value.toJSON());
+
+        if (_.isEmpty(votes)) {
+            throw new MessageException('No Votes found.');
+        }
 
         const combinedVote = {
             id: 0,

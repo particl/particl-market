@@ -3,16 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as WebRequest from 'web-request';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
-import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
-import {Output} from 'resources';
+import { Output } from './BidActionService';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;

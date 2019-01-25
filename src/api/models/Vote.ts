@@ -4,7 +4,7 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import {ProposalOption} from './ProposalOption';
+import { ProposalOption } from './ProposalOption';
 import { SearchOrder } from '../enums/SearchOrder';
 
 export class Vote extends Bookshelf.Model<Vote> {

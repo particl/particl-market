@@ -13,7 +13,6 @@ import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
-import { ProposalResult } from '../models/ProposalResult';
 
 export class VoteService {
 
