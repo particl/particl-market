@@ -95,13 +95,40 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length >= 1) {
+            const orderItemId = data.params[0];
+            if (typeof orderItemId !== 'number') {
+                throw new MessageException('orderItemId must be number.');
+            }
+            const orderItemModel = await this.orderItemService.findOne(orderItemId);
+            if (!orderItemModel) {
+                throw new MessageException(`orderItemModel with orderItemId = <${orderItemId}> not found.`);
+            }
+        }
+        if (data.params.length >= 2) {
+            const nonce = data.params[1];
+            if (typeof nonce !== 'string') {
+                throw new MessageException('nonce must be string.');
+            }
+        }
+        if (data.params.length >= 3) {
+            const memo = data.params[2];
+            if (typeof memo !== 'string') {
+                throw new MessageException('memo must be string.');
+            }
+        }
+
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to lock the Escrow.\n'
+            + '    <orderItemId>            - Number - The id of the OrderItem for which we want to lock the Escrow.\n'
             + '    <nonce>                  - String - The nonce of the Escrow.\n'
             + '    <memo>                   - String - The memo of the Escrow.';
     }

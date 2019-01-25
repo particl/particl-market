@@ -23,6 +23,10 @@ import { OrderItemService } from '../../services/OrderItemService';
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
+    private validOrderStatuses = [
+        OrderStatus.ESCROW_LOCKED,
+        OrderStatus.SHIPPING
+    ];
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -62,27 +66,35 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
+            throw new MessageException('Missing params orderItemId and memo.');
         }
 
-        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
+        const orderItemId = data.params[0];
+        if (typeof orderItemId !== 'number' || orderItemId < 0) {
+            throw new MessageException('orderItemId needs to be a number >= 0.');
+        }
+
+        const memo = data.params[1];
+        if (typeof memo !== 'string') {
+            throw new MessageException('memo needs to be a string.');
+        }
+
+        const orderItemModel = await this.orderItemService.findOne(orderItemId);
+        if (!orderItemModel) {
+            throw new MessageException(`OrderItem with orderItemId = ${orderItemId} not found.`);
+        }
         const orderItem = orderItemModel.toJSON();
 
-        const validOrderStatuses = [
-            OrderStatus.ESCROW_LOCKED,
-            OrderStatus.SHIPPING
-        ];
-
         // check if in the right state.
-        if (validOrderStatuses.indexOf(orderItem.status) === -1) {
-            this.log.error('Order is in invalid state');
-            throw new MessageException('Order is in invalid state');
+        if (this.validOrderStatuses.indexOf(orderItem.status) === -1) {
+            this.log.error(`Order is in invalid state ${orderItem.status}.`);
+            throw new MessageException(`Order is in invalid state ${orderItem.status}.`);
         }
 
         const bid = orderItem.Bid;
         if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
-            this.log.error('No valid information to finalize escrow');
-            throw new MessageException('No valid information to finalize escrow');
+            this.log.error('No valid information to finalize escrow.');
+            throw new MessageException('No valid information to finalize escrow.');
         }
 
         const listingItem = orderItem.Bid.ListingItem;
@@ -113,12 +125,12 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<memo>]] ';
+        return this.getName() + ' <orderItemId> <memo> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to release the Escrow.\n'
+            + '    <orderItemId>            - Number - The id of the OrderItem for which we want to release the Escrow.\n'
             + '    <memo>                   - String - The memo of the Escrow ';
     }
 

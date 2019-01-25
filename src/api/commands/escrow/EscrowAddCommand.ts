@@ -65,6 +65,25 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
 
         // get the template
         const listingItemTemplateId = data.params[0];
+        if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId < 0) {
+            throw new MessageException('listingItemTemplateId must be numeric and >= 0.');
+        }
+
+        const escrowType = data.params[1];
+        if (typeof escrowType !== 'string' || (escrowType !== 'NOP' && escrowType !== 'MAD')) {
+            throw new MessageException('escrowType must be either NOP or MAD.');
+        }
+
+        const buyerRatio = data.params[2];
+        if (typeof buyerRatio !== 'number' || buyerRatio < 0) {
+            throw new MessageException('buyerRatio must be numeric and >= 0.');
+        }
+
+        const sellerRatio = data.params[3];
+        if (typeof sellerRatio !== 'number' || sellerRatio < 0) {
+            throw new MessageException('sellerRatio must be numeric and >= 0.');
+        }
+
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
@@ -75,7 +94,7 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
 
         this.log.debug('escrow: ', JSON.stringify(listingItemTemplate.PaymentInformation, null, 2));
         if (!_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
-            throw new MessageException(`Escrow allready exists.`);
+            throw new MessageException(`Escrow already exists.`);
         }
 
         return data;
@@ -91,8 +110,8 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
             + '                                to associate with this escrow. \n'
             + '    <escrowType>             - Enum{NOP,MAD} - The type of the escrow we want to \n'
             + '                                create. \n'
-            + '    <buyerRatio>             - Numeric - [TODO] \n'
-            + '    <sellerRatio>            - Numeric - [TODO] ';
+            + '    <buyerRatio>             - Numeric - The ratio of the buyer in the escrow. \n'
+            + '    <sellerRatio>            - Numeric - The ratio of the seller in the escrow. ';
     }
 
     public description(): string {

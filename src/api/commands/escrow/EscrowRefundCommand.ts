@@ -44,44 +44,9 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-
-        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
+        const orderItemId = data.params[0];
+        const orderItemModel = await this.orderItemService.findOne(orderItemId);
         const orderItem = orderItemModel.toJSON();
-
-        if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
-            this.log.error('Order is in invalid state');
-            throw new MessageException('Order is in invalid state');
-        }
-
-        const bid = orderItem.Bid;
-        if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
-            this.log.error('No valid information to finalize escrow');
-            throw new MessageException('No valid information to finalize escrow');
-        }
-
-        const listingItem = orderItem.Bid.ListingItem;
-        if (_.isEmpty(listingItem)) {
-            this.log.error('ListingItem not found!');
-            throw new MessageException('ListingItem not found!');
-        }
-
-        const paymentInformation = orderItem.Bid.ListingItem.PaymentInformation;
-        if (_.isEmpty(paymentInformation)) {
-            this.log.error('PaymentInformation not found!');
-            throw new MessageException('PaymentInformation not found!');
-        }
-
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
-        if (_.isEmpty(escrow)) {
-            this.log.error('Escrow not found!');
-            throw new MessageException('Escrow not found!');
-        }
-
-        const escrowRatio = orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio;
-        if (_.isEmpty(escrowRatio)) {
-            this.log.error('EscrowRatio not found!');
-            throw new MessageException('EscrowRatio not found!');
-        }
 
         return this.escrowActionService.refund({
             orderItem,
@@ -91,6 +56,71 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         } as EscrowRequest);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        let orderItem;
+        if (data.params.length >= 1) {
+            const orderItemId = data.params[0];
+            if (typeof orderItemId !== 'number' || orderItemId < 0) {
+                throw new MessageException('orderItemId must be number and >= 0.');
+            }
+            const orderItemModel = await this.orderItemService.findOne(orderItemId);
+            if (!orderItemModel) {
+                throw new MessageException(`orderItemModel with orderItemId = <${orderItemId}> not found.`);
+            }
+            orderItem = orderItemModel.toJSON();
+
+            if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
+                this.log.error('Order is in invalid state');
+                throw new MessageException('Order is in invalid state');
+            }
+
+            const bid = orderItem.Bid;
+            if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
+                this.log.error('No valid information to finalize escrow');
+                throw new MessageException('No valid information to finalize escrow');
+            }
+
+            const listingItem = orderItem.Bid.ListingItem;
+            if (_.isEmpty(listingItem)) {
+                this.log.error('ListingItem not found!');
+                throw new MessageException('ListingItem not found!');
+            }
+
+            const paymentInformation = orderItem.Bid.ListingItem.PaymentInformation;
+            if (_.isEmpty(paymentInformation)) {
+                this.log.error('PaymentInformation not found!');
+                throw new MessageException('PaymentInformation not found!');
+            }
+
+            const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
+            if (_.isEmpty(escrow)) {
+                this.log.error('Escrow not found!');
+                throw new MessageException('Escrow not found!');
+            }
+
+            const escrowRatio = orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio;
+            if (_.isEmpty(escrowRatio)) {
+                this.log.error('EscrowRatio not found!');
+                throw new MessageException('EscrowRatio not found!');
+            }
+        }
+        if (data.params.length >= 2) {
+            // TODO: Accepted status seems like something that needs validation as it sounds like an enum
+            const accepted = data.params[1];
+            if (typeof accepted !== 'boolean') {
+                throw new MessageException('accepted must be boolean.');
+            }
+        }
+        if (data.params.length >= 3) {
+            const memo = data.params[2];
+            if (typeof memo !== 'string') {
+                throw new MessageException('memo must be string.');
+            }
+        }
+
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' [<itemhash> [<accepted> [<memo>]]] ';
     }
@@ -98,7 +128,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <orderItemId>            - String - The id of the OrderItem for which we want to refund the Escrow.\n'
-            + '    <accepted>               - String - The accepted status of the escrow \n'
+            + '    <accepted>               - Boolean - The accepted status of the escrow \n'
             + '    <memo>                   - String - The memo of the Escrow ';
     }
 
