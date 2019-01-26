@@ -45,7 +45,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profile id, number, optional
      *  [5]: searchString, string, optional
-     *  [6]: category, number|string, if string, try to search using key, optional
+     *  [6]: category, number|string, if string, try to searchBy using key, optional
      *  [7]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -72,7 +72,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profileId, number, optional
      *  [5]: searchString, string, * for all, optional
-     *  [6]: category, number|string, if string, try to search using key, * for all, optional
+     *  [6]: category, number|string, if string, try to searchBy using key, * for all, optional
      *  [7]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -136,19 +136,19 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <page>                   - Numeric - The number page we want to view of search \n'
+            + '    <page>                   - Numeric - The number page we want to view of searchBy \n'
             + '                                listing item template results. \n'
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
             + '    <order>                  - ENUM{ASC} - The order of the returned results. \n'
             + '    <orderField>             - ENUM{STATE, TITLE, DATE} - The order field \n'
             + '                                by which make sorting of templates. \n'
             + '    <profileId>              - Numeric - The ID of the profile linked to the listing item \n'
-            + '                                templates we want to search for. \n'
-            + '    <searchString>           - [optional] String - A string that is used to search for \n'
+            + '                                templates we want to searchBy for. \n'
+            + '    <searchString>           - [optional] String - A string that is used to searchBy for \n'
             + '                                listing item templats via title. \n'
             + '    <category>               - [optional] String - The key identifying the category \n'
             + '                                associated with the listing item templates we want to \n'
-            + '                                search for. \n'
+            + '                                searchBy for. \n'
             + '    <hasItems>               - [optional] Boolean - if true then filter ListingItemTemplates \n'
             + '                                by having or not having ListingItems. \n';
     }

@@ -134,10 +134,10 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemTemplateNode1.hash).toBeDefined();
 
         // we should be also able to get the same template
-        const templateGetRes: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand, listingItemTemplateNode1.id]);
-        templateGetRes.expectJson();
-        templateGetRes.expectStatusCode(200);
-        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
+        const response: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand, listingItemTemplateNode1.id]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = response.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
     });
@@ -150,17 +150,17 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilNode1.waitFor(5);
 
-        const res: any = await testUtilNode1.rpc(templateCommand, [
+        const response: any = await testUtilNode1.rpc(templateCommand, [
             templatePostCommand,
             listingItemTemplateNode1.id,
             DAYS_RETENTION,
             marketNode1.id
         ]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
         // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
+        const result: any = response.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
@@ -216,7 +216,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilNode2.waitFor(5);
 
-        const itemGetRes: any = await testUtilNode2.rpcWaitFor(
+        const response: any = await testUtilNode2.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplateNode1.hash],
             8 * 60,
@@ -224,10 +224,10 @@ describe('Happy ListingItem Vote Flow', () => {
             'hash',
             listingItemTemplateNode1.hash
         );
-        itemGetRes.expectJson();
-        itemGetRes.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.ListingItem = itemGetRes.getBody()['result'];
+        const result: resources.ListingItem = response.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
         // store ListingItem for later tests
@@ -443,12 +443,12 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilNode1.waitFor(3);
 
-        const res: any = await testUtilNode1.rpc(proposalCommand, [proposalResultCommand, proposalNode1.hash]);
-        res.expectStatusCode(200);
-        const proposalResult = res.getBody()['result'];
+        const response: any = await testUtilNode1.rpc(proposalCommand, [proposalResultCommand, proposalNode1.hash]);
+        response.expectStatusCode(200);
+        const proposalResult = response.getBody()['result'];
         log.debug('NODE1 proposalResult:', JSON.stringify(proposalResult, null, 2));
 
-        const result: any = res.getBody()['result'];
+        const result: any = response.getBody()['result'];
         expect(result.ProposalOptionResults[0].voters).toBe(0);
         expect(result.ProposalOptionResults[0].weight).toBe(0);
         expect(result.ProposalOptionResults[1].voters).toBe(2);

@@ -30,7 +30,7 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' (list|get|add|update|remove|search)  -  ' + this.description();
+        return this.getName() + ' (list|get|add|update|remove|searchBy)  -  ' + this.description();
     }
 
     public help(): string {

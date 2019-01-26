@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -35,7 +36,6 @@ import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
-import * as resources from 'resources';
 import { ProposalService } from './ProposalService';
 
 export class ListingItemService {
@@ -94,7 +94,7 @@ export class ListingItemService {
     }
 
     /**
-     * search ListingItems using given ListingItemSearchParams
+     * searchBy ListingItems using given ListingItemSearchParams
      *
      * @param {ListingItemSearchParams} options
      * @param {boolean} withRelated
@@ -106,7 +106,7 @@ export class ListingItemService {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
 
-        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
         return await this.listingItemRepo.search(options, withRelated);
     }
 
@@ -348,6 +348,7 @@ export class ListingItemService {
     public async destroy(id: number): Promise<void> {
         const listingItemModel = await this.findOne(id, true);
         if (!listingItemModel) {
+            this.log.error('Item listing does not exist. id = ' + id);
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
         const listingItem = listingItemModel.toJSON();

@@ -60,12 +60,10 @@ describe('FlaggedItem', () => {
         await testDataService.clean();
 
         // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
 
         // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         // create ListingItems
         const generateListingItemParams = new GenerateListingItemParams([
@@ -97,7 +95,8 @@ describe('FlaggedItem', () => {
             false,                                      // generateListingItem
             createdListingItem.hash,                    // listingItemHash,
             false,                                      // generatePastProposal,
-            0                                           // voteCount
+            0,                                          // voteCount
+            defaultProfile.address                      // submitter
         ]).toParamsArray();
 
         const proposals = await testDataService.generate({

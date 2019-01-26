@@ -3,6 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
@@ -15,7 +17,6 @@ import { ProfileService } from '../../../src/api/services/ProfileService';
 import { AddressService } from '../../../src/api/services/AddressService';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
-import * as resources from 'resources';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import { BidActionService } from '../../../src/api/services/BidActionService';
@@ -27,7 +28,6 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
 import { BidFactory } from '../../../src/api/factories/BidFactory';
-import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
@@ -38,7 +38,7 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 
 
-describe('BidMessageProcessing', () => {
+describe('BidAndEscrowMessageProcessing', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

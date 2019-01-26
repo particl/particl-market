@@ -3,12 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
 import { VoteMessageType } from '../enums/VoteMessageType';
-import * as resources from 'resources';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { ProposalOptionService } from '../services/ProposalOptionService';
@@ -27,39 +27,37 @@ export class VoteFactory {
     /**
      *
      * @param {VoteMessageType} voteMessageType
-     * @param proposal
-     * @param proposalOption
+     * @param proposalHash
+     * @param proposalOptionHash
      * @param voter
+     * @param signature
      * @returns {Promise<VoteMessage>}
      */
-    public async getMessage(voteMessageType: VoteMessageType, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                            voter: string): Promise<VoteMessage> {
+    public async getMessage(voteMessageType: VoteMessageType, proposalHash: string, proposalOptionHash: string,
+                            voter: string, signature: string): Promise<VoteMessage> {
 
-        const proposalHash = proposal.hash;
-        const optionId = proposalOption.optionId;
-        const weight = 1;
-
-        return {
+        const voteMessage = {
             action: voteMessageType,
             proposalHash,
-            optionId,
-            voter,
-            weight
+            proposalOptionHash,
+            signature,
+            voter
         } as VoteMessage;
+
+        return voteMessage;
     }
 
     /**
      *
      * @param {VoteMessage} voteMessage
-     * @param {"resources".Proposal} proposal
      * @param proposalOption
      * @param {number} weight
-     * @param {boolean} create
+     * @param create
      * @param smsgMessage
      * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
      */
-    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                          weight: number, create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+    public async getModel(voteMessage: VoteMessage, proposalOption: resources.ProposalOption, weight: number,
+                          create: boolean, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
@@ -73,16 +71,23 @@ export class VoteFactory {
             smsgData.expiredAt = smsgMessage.expiration;
         }
 
-        const voteRequest = {
-            proposal_option_id: proposalOption.id,
-            voter: voteMessage.voter,
-            weight,
-            ...smsgData
-        } as VoteCreateRequest;
-
-        // this.log.debug('getModel(), voteRequest:', JSON.stringify(voteRequest, null, 2));
-
-        return voteRequest;
+        if (create) {
+            return {
+                proposal_option_id: proposalOption.id,
+                signature: voteMessage.signature,
+                voter: voteMessage.voter,
+                weight,
+                ...smsgData
+            } as VoteCreateRequest;
+        } else {
+            return {
+                proposal_option_id: proposalOption.id,
+                signature: voteMessage.signature,
+                voter: voteMessage.voter,
+                weight,
+                ...smsgData
+            } as VoteUpdateRequest;
+        }
     }
 
 }

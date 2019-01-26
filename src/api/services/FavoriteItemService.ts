@@ -42,7 +42,7 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item by profileId and itemId
+     * searchBy favorite item by profileId and itemId
      *
      * @param {number} profileId
      * @param {number} itemId
@@ -66,7 +66,7 @@ export class FavoriteItemService {
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
      */
     public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
+        return await this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
     }
 
 

@@ -251,7 +251,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -266,7 +266,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(1);
     });
 
-    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -281,7 +281,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
     });
 
-    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -297,7 +297,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages[0].received).toBeGreaterThan(smsgMessages[2].received);
     });
 
-    test('Should search for SmsgMessages: empty [] should find all',async () => {
+    test('Should searchBy for SmsgMessages: empty [] should find all',async () => {
         const types: any[] = [];
         const searchParams = {
             order: SearchOrder.ASC,
@@ -343,7 +343,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',

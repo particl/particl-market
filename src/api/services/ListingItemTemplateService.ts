@@ -39,15 +39,17 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
+import { ListingItem } from '../models/ListingItem';
 
 export class ListingItemTemplateService {
 
     public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
-    private static FRACTION_TO_COMPRESS_BY = 0.8;
-    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.7;
     private static OVERHEAD_PER_SMSG = 0;
     private static OVERHEAD_PER_IMAGE = 0;
-    private static MAX_RESIZES = 20;
+
+    private static IMG_BOUNDING_WIDTH = 800;
+    private static IMG_BOUNDING_HEIGHT = 800;
+    private static FRACTION_LOWEST_COMPRESSION = 0.8;
 
     public log: LoggerType;
 
@@ -95,7 +97,7 @@ export class ListingItemTemplateService {
     }
 
     /**
-     * search ListingItemTemplates using given ListingItemTemplateSearchParams
+     * searchBy ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
@@ -298,17 +300,15 @@ export class ListingItemTemplateService {
 
         // ItemInformation has ItemImages, which is an array.
         const itemImages = itemTemplate.ItemInformation.ItemImages;
+        const originalImageDatas: resources.ItemImageData[] = [];
 
-        // Each ItemImage has an array of ItemImageDatas, these represent different versions of the image.
-        // ImageVersions.ORIGINAL is the original uploaded one
-        // ImageVersions.RESIZED is the one resized to fit the smsgmessage
-
-        const maxSizePerImage =
-            ((ListingItemTemplateService.MAX_SMSG_SIZE - ListingItemTemplateService.OVERHEAD_PER_SMSG)
-                / itemImages.length) - ListingItemTemplateService.OVERHEAD_PER_IMAGE;
+        const messageSize = await this.calculateMarketplaceMessageSize(itemTemplate);
+        const imageSpaceAvail = ListingItemTemplateService.MAX_SMSG_SIZE -
+            ListingItemTemplateService.OVERHEAD_PER_SMSG -
+            (ListingItemTemplateService.OVERHEAD_PER_IMAGE * itemImages.length) -
+            messageSize.messageData;
 
         for (const itemImage of itemImages) {
-
             const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
             });
@@ -321,59 +321,49 @@ export class ListingItemTemplateService {
                 throw new MessageException('Original image data not found.');
             }
 
+            originalImageDatas.push(itemImageDataOriginal);
+
             if (itemImageDataResized) {
                 // resized one allready exists, so remove it
-                await this.itemImageDataService.removeImageFile(itemImageDataOriginal.imageHash, ImageVersions.RESIZED.propName);
+                await this.itemImageDataService.destroy(itemImageDataResized.id).catch(err => {
+                    // ignore errors - if the file was not found it doesn't matter since we overwrite it anyway
+                });
             }
+        }
 
-            let originalImageData = await this.itemImageDataService.loadImageFile(itemImageDataOriginal.imageHash, ImageVersions.ORIGINAL.propName);
-            let compressedImageData = originalImageData;
+        const qualityFactorStep = (1.0 - ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION) / 4.0; // max of 4 attempts to improve quality
+        let qualityFactor = ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION;
 
-            // image is over the max size, needs to be compressed and then resized if needed
-            for (let numResizings = 0; ;) {
-
-                if (compressedImageData.length <= maxSizePerImage) {
-                    this.log.debug('image: ' + itemImage.hash + ', ok size, no need to resize.');
-                    // image is smaller than the max size, we're done
+        // Determine the highest percentage that we can compress the images to so that they still fit within limits
+        for ( ; qualityFactor <= 1.0; qualityFactor += qualityFactorStep) {
+            let compressedSizeTotal = 0;
+            for (const originalImageData of originalImageDatas) {
+                // Yes, we load the file each time. The alternative is reading and storing the data in memory.
+                //  Which could be used to cause problems with large enough files. So trading execution (I/O) speed for safety
+                const compressedImage = await this.getResizedImage(originalImageData.imageHash, qualityFactor * 100);
+                compressedSizeTotal += compressedImage.length;
+                if (compressedSizeTotal > imageSpaceAvail) {
                     break;
                 }
-
-                this.log.debug('image: ' + itemImage.hash + ', downgrading quality...');
-
-                // need to compress more
-                const evenMoreCompressedImageData = await ImageProcessing.downgradeQuality(
-                    compressedImageData, ListingItemTemplateService.FRACTION_TO_COMPRESS_BY);
-
-                if (compressedImageData.length !== evenMoreCompressedImageData.length) {
-                    // we have not yet reached the limit of compression.
-                    compressedImageData = evenMoreCompressedImageData;
-                    continue;
-                } else {
-                    // sizes equal, so we reached the limit of compression, need to resize the image
-                    numResizings++;
-                    if (numResizings >= ListingItemTemplateService.MAX_RESIZES) {
-                        // a generous number of resizes has happened, but we haven't found a solution yet.
-                        // exit incase this is an infinite loop.
-                        throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
-                            + ' Image size = ${compressedImage.length}.');
-                    }
-
-                    this.log.debug('image: ' + itemImage.hash + ', reached the limit of compression, resizing image...');
-
-                    // we've reached the limits of compression. We need to resize the image for further size losses.
-                    compressedImageData = await ImageProcessing.resizeImageToFraction(
-                        originalImageData, ListingItemTemplateService.FRACTION_TO_RESIZE_IMAGE_BY);
-                    originalImageData = compressedImageData;
-                    continue;
-                }
             }
+            if (compressedSizeTotal > imageSpaceAvail) {
+                break;
+            }
+        }
 
+        // If still at lowest quality, then leave quality factor as is. Otherwise, reduce to previous (good) quality setting
+        const actualQualityFactor = qualityFactor === ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION ?
+            ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION : (qualityFactor >= 1 ? 0.99 : qualityFactor - qualityFactorStep);
+
+        for (const originalImageData of originalImageDatas) {
+            const compressedImage = await this.getResizedImage(originalImageData.imageHash, actualQualityFactor * 100);
             // save the resized image
             const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
-                itemImage.id, ImageVersions.RESIZED, itemImage.hash, itemImageDataOriginal.protocol, compressedImageData,
-                itemImageDataOriginal.encoding, itemImageDataOriginal.originalMime, itemImageDataOriginal.originalName);
+                originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
+                originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
             await this.itemImageDataService.create(imageDataCreateRequest);
         }
+
         const updatedTemplateModel = await this.findOne(itemTemplate.id);
         const updatedTemplate = updatedTemplateModel.toJSON();
         // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
@@ -432,5 +422,31 @@ export class ListingItemTemplateService {
             return itemObject['order'];
         });
         return highestOrder ? highestOrder['order'] : 0;
+    }
+
+    /**
+     *  Reads ORIGINAL version of an image from file (throws exception if file cannot be read), resizes and reduces quality,
+     *  returning the modified image value.
+     *
+     * @param {string} imageHash
+     * @param {boolean} qualityFactor
+     * @returns {Promise<string>}
+     */
+    private async getResizedImage(imageHash: string, qualityFactor: number): Promise<string> {
+        if (qualityFactor <= 0) {
+            return '';
+        }
+        const originalItemImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+
+        let compressedImage = await ImageProcessing.resizeImageToFit(
+            originalItemImage,
+            ListingItemTemplateService.IMG_BOUNDING_WIDTH,
+            ListingItemTemplateService.IMG_BOUNDING_HEIGHT
+        );
+        compressedImage = await ImageProcessing.downgradeQuality(
+            compressedImage,
+            qualityFactor
+        );
+        return compressedImage;
     }
 }

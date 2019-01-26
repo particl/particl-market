@@ -93,7 +93,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new MessageException('listingItemTemplateId should be a number.');
         } else {
             // make sure template with the id exists
-            await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
+            const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
+            const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate.toJSON());
+            if (!templateMessageDataSize.fits) {
+                throw new MessageException('Template details exceed message size limitations');
+            }
         }
 
         if (daysRetention && typeof daysRetention !== 'number') {

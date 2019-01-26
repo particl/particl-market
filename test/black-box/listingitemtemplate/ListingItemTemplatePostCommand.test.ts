@@ -5,11 +5,14 @@
 // tslint:disable:max-line-length
 import * from 'jest';
 import * as resources from 'resources';
+import * as fs from 'fs';
+import * as path from 'path';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 // tslint:enable:max-line-length
 
 describe('ListingItemTemplatePostCommand', () => {
@@ -24,9 +27,13 @@ describe('ListingItemTemplatePostCommand', () => {
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
+    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
+
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
+    let brokenListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -50,11 +57,12 @@ describe('ListingItemTemplatePostCommand', () => {
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
+            2,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
         listingItemTemplate = listingItemTemplates[0];
+        brokenListingItemTemplate = listingItemTemplates[1];
     });
 
     test('Should post a ListingItem in to the default marketplace', async () => {
@@ -116,5 +124,38 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
 
     }, 600000); // timeout to 600s
+
+    test('Should fail to post a ListingItem due to excessive smsgmessage size', async () => {
+
+        expect(brokenListingItemTemplate.id).toBeDefined();
+
+        // Upload large image to template
+        const filename = path.join('test', 'testdata', 'images', 'testimage2.jpg');
+        log.debug('loadImageFile(): ', filename);
+        const filedata = fs.readFileSync(filename, { encoding: 'base64' });
+
+        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            brokenListingItemTemplate.id,
+            'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            filedata,
+            true        // skip resize
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // Attempt to post listing
+        const daysRetention = 4;
+        res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            brokenListingItemTemplate.id,
+            daysRetention,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBeDefined();
+        expect(res.error.error.message).toBe('Template details exceed message size limitations');
+    });
 
 });

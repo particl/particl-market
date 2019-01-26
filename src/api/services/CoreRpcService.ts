@@ -3,21 +3,60 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as WebRequest from 'web-request';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
-import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
-import {Output} from 'resources';
+import { Output } from './BidActionService';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
 let RPC_REQUEST_ID = 1;
+
+// todo: create interfaces for results, and move them to separate files
+
+export interface BlockchainInfo {
+    chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
+    blocks: number;                     // the current number of blocks processed in the server
+    headers: number;                    // the current number of headers we have validated
+    bestblockhash: string;              // the hash of the currently best block
+    moneysupply: number;                // the total amount of coin in the network
+    blockindexsize: number;             // the total number of block headers indexed
+    delayedblocks: number;              // the number of delayed blocks
+    difficulty: number;                 // the current difficulty
+    mediantime: number;                 // median time for the current best block
+    verificationprogress: number;       // estimate of verification progress [0..1]
+    initialblockdownload: boolean;      // estimate of whether this node is in Initial Block Download mode.
+    chainwork: string;                  // total amount of work in active chain, in hexadecimal
+    size_on_disk: number;               // the estimated size of the block and undo files on disk
+    pruned: boolean;                    // if the blocks are subject to pruning
+    // todo: add pruning and softfork related data when needed
+}
+
+export interface UnspentOutput   {
+    txid: string;                   // (string) the transaction id
+    vout: number;                   // (numeric) the vout value
+    address: string;                // (string) the particl address
+    coldstaking_address: string;    // (string) the particl address this output must stake on
+    label: string;                  // (string) The associated label, or "" for the default label
+    scriptPubKey: string;           // (string) the script key
+    amount: number;                 // (numeric) the transaction output amount in PART
+    confirmations: number;          // (numeric) The number of confirmations
+    redeemScript: string;           // (string) The redeemScript if scriptPubKey is P2SH
+    spendable: boolean;             // (bool) Whether we have the private keys to spend this output
+    solvable: boolean;              // (bool) Whether we know how to spend this output, ignoring the lack of keys
+    safe: boolean;                  // (bool) Whether this output is considered safe to spend. Unconfirmed transactions
+                                    // from outside keys and unconfirmed replacement transactions are considered unsafe
+                                    // and are not eligible for spending by fundrawtransaction and sendtoaddress.
+    stakeable: boolean;             // (bool) Whether we have the private keys to stake this output
+}
+
 
 export class CoreRpcService {
 
@@ -60,6 +99,71 @@ export class CoreRpcService {
 
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
+    }
+
+    /**
+     * Returns an object containing various state info regarding blockchain processing.
+     *
+     * @returns {Promise<BlockchainInfo>}
+     */
+    public async getBlockchainInfo(): Promise<BlockchainInfo> {
+        return await this.call('getblockchaininfo', [], false);
+    }
+
+    /**
+     * Returns the balance for an address(es) (requires addressindex to be enabled).
+     *
+     * Arguments:
+     * {
+     *   "addresses": [
+     *     "address"  (string) The base58check encoded address
+     *     ,...
+     *   ]
+     * }
+     *
+     * Result:
+     * {
+     *   "balance"   (string) The current balance in satoshis
+     *   "received"  (string) The total number of satoshis received (including change)
+     * }
+     * @param addresses
+     * @param logCall
+     */
+    public async getAddressBalance(addresses: string[], logCall: boolean = false): Promise<any> {
+        return await this.call('getaddressbalance', [{
+            addresses
+        }], logCall);
+    }
+
+    /**
+     * List balances by receiving address.
+     *
+     * example result:
+     * [{
+     *    "involvesWatchonly": true,      (bool)    Only returned if imported addresses were involved in transaction
+     *    "address": "receivingaddress",  (string)  The receiving address
+     *    "account": "accountname",       (string)  DEPRECATED. Backwards compatible alias for label.
+     *    "amount": x.xxx,                (numeric) The total amount in PART received by the address
+     *    "confirmations": n,             (numeric) The number of confirmations of the most recent transaction included
+     *    "label": "label",               (string)  The label of the receiving address. The default label is "".
+     *    "txids": [
+     *       "txid",                      (string)  The ids of transactions received with the address
+     *       ...
+     *    ]
+     *  }, ... ]
+     *
+     * @param minconf
+     * @param includeEmpty
+     * @param includeWatchOnly
+     * @param addressFilter
+     */
+    public async listReceivedByAddress(minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
+                                       addressFilter?: string): Promise<any> {
+        if (addressFilter) {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
+        } else {
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly]);
+        }
     }
 
     /**
@@ -301,8 +405,8 @@ export class CoreRpcService {
      * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number, maxconf: number,
-                             addresses: string[] = [], includeUnsafe: boolean = true, queryOptions: any = {}): Promise<any> {
+    public async listUnspent(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
+                             queryOptions: any = {}): Promise<any> {
 
         const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
         if (!_.isEmpty(queryOptions)) {
@@ -354,6 +458,31 @@ export class CoreRpcService {
     public async dumpPrivKey(address: string): Promise<string> {
         const params: any[] = [address];
         return await this.call('dumpprivkey', params);
+    }
+
+    /**
+     * Sign an object.
+     *
+     * @param {string} address
+     * @param {any} message
+     * @returns {Promise<string>}
+     */
+    public async signMessage(address: string, message: any): Promise<string> {
+        const signableMessage = JSON.stringify(message).split('').sort().toString();
+        return await this.call('signmessage', [address, signableMessage]);
+    }
+
+    /**
+     * Verify a signature on a message.
+     *
+     * @param {string} address
+     * @param signature
+     * @param {any} message
+     * @returns {Promise<string>}
+     */
+    public async verifyMessage(address: string, signature: string, message: any): Promise<boolean> {
+        const signableMessage = JSON.stringify(message).split('').sort().toString();
+        return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {

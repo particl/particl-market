@@ -15,5 +15,6 @@ export enum SmsgMessageStatus {
     PROCESSED = 'PROCESSED',                    // processing done
     PROCESSING_FAILED = 'PROCESSING_FAILED',    // processing failed, can't recover
     WAITING = 'WAITING',                        // these are waiting for some other messages
+    IGNORED = 'IGNORED',                        // ignored for some reason, perhaps for expiration...
     DB_LOCKED = 'DB_LOCKED'                     // db was locked, retry asap TODO: get rid of this
 }

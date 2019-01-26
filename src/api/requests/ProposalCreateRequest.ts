@@ -14,25 +14,26 @@ export class ProposalCreateRequest extends RequestBody {
     public submitter: string;
 
     @IsNotEmpty()
-    public timeStart: number;
-    // @IsNotEmpty()
-    public postedAt: number;
-    // @IsNotEmpty()
-    public expiredAt: number;
-    // @IsNotEmpty()
-    public receivedAt: number;
-
-    // @IsNotEmpty()
-    public hash: string;
-    public item: string;
-
-    @IsNotEmpty()
     @IsEnum(ProposalType)
     public type: ProposalType;
+
+    public item: string;
 
     @IsNotEmpty()
     public title: string;
     public description: string;
+
+    @IsNotEmpty()
+    public timeStart: number;
+    // @IsNotEmpty()
+    public postedAt: number;
+    // @IsNotEmpty()
+    public receivedAt: number;
+    // @IsNotEmpty()
+    public expiredAt: number;
+
+    // @IsNotEmpty()
+    public hash: string;
     public options: ProposalOptionCreateRequest[];
 
 }

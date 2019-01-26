@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,9 +16,6 @@ import { ProposalOptionService } from '../../src/api/services/ProposalOptionServ
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import * as resources from 'resources';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -25,6 +23,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { Proposal } from '../../src/api/models/Proposal';
+import { ItemVote } from '../../src/api/enums/ItemVote';
 
 describe('ProposalOption', () => {
 
@@ -47,12 +46,12 @@ describe('ProposalOption', () => {
 
     const testData = {
         optionId: 2,
-        description: 'REMOVE_MAYBE'
+        description: ItemVote.REMOVE
     } as ProposalOptionCreateRequest;
 
     const testDataUpdated = {
         optionId: 3,
-        description: 'KEEP_MAYBE'
+        description: ItemVote.KEEP
     } as ProposalOptionUpdateRequest;
 
     beforeAll(async () => {

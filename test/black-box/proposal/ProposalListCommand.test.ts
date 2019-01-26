@@ -21,7 +21,6 @@ describe('ProposalListCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -39,10 +38,13 @@ describe('ProposalListCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generatePastProposalParams = new GenerateProposalParams([
-            false,   // generateListingItemTemplate
-            false,   // generateListingItem
-            null,   // listingItemHash,
-            true    // generatePastProposal
+            false,                  // generateListingItemTemplate
+            false,                  // generateListingItem
+            null,                   // listingItemHash,
+            true,                   // generatePastProposal,
+            0,                      // voteCount
+            defaultProfile.address  // submitter
+
         ]).toParamsArray();
 
         // generate past proposals
@@ -54,10 +56,12 @@ describe('ProposalListCommand', () => {
         ) as resources.Proposal[];
 
         const generateActiveProposalParams = new GenerateProposalParams([
-            false,   // generateListingItemTemplate
-            false,   // generateListingItem
-            null,   // listingItemHash,
-            false   // generatePastProposal
+            false,                  // generateListingItemTemplate
+            false,                  // generateListingItem
+            null,                   // listingItemHash,
+            false,                  // generatePastProposal,
+            0,                      // voteCount
+            defaultProfile.address  // submitter
         ]).toParamsArray();
 
         // generate active proposals

@@ -50,12 +50,12 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <searchString>                - String - A search string for finding \n'
+            + '    <searchString>                - String - A searchBy string for finding \n'
             + '                                     categories by name. ';
     }
 
     public description(): string {
-        return 'Command for getting an item categories search by particular search string';
+        return 'Command for getting an item categories searchBy by particular searchBy string';
     }
 
     public example(): string {
