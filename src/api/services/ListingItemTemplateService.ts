@@ -97,7 +97,7 @@ export class ListingItemTemplateService {
     }
 
     /**
-     * search ListingItemTemplates using given ListingItemTemplateSearchParams
+     * searchBy ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}

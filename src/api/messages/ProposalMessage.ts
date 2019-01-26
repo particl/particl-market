@@ -12,7 +12,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 export class ProposalMessage extends MessageBody implements ProposalMessageInterface {
 
     @IsNotEmpty()
-    @IsEnum(BidMessageType)
+    @IsEnum(ProposalMessageType)
     public action: ProposalMessageType;
     public submitter: string;
     public title: string;

@@ -31,7 +31,7 @@ export class FavoriteItemRepository {
     }
 
     /**
-     * search favorite item by profile id and item id
+     * searchBy favorite item by profile id and item id
      *
      * @param {number} profileId
      * @param {number} itemId

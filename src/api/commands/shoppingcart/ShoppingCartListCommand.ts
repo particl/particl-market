@@ -77,8 +77,8 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to search for. \n'
-            + '    <profileName>            - The name of the profile associated with the shopping cart we want to search for. ';
+            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to searchBy for. \n'
+            + '    <profileName>            - The name of the profile associated with the shopping cart we want to searchBy for. ';
     }
 
     public description(): string {

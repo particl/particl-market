@@ -9,6 +9,12 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class ProposalOptionResultUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
+    public proposal_result_id: number;
+
+    @IsNotEmpty()
+    public proposal_option_id: number;
+
+    @IsNotEmpty()
     public weight: number;
 
     @IsNotEmpty()
