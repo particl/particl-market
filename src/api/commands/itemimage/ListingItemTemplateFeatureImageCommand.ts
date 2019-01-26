@@ -45,7 +45,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         const itemImages = listingItemTemplate.ItemInformation.ItemImages;
         if (!itemImages.find((img) => img.id === data.params[1])) {
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
-            throw new MessageException('Image ID doesnt exist on template');
+            throw new MessageException('imageId doesnt exist on template');
         }
         return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
     }
@@ -88,16 +88,17 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     }
 
     public usage(): string {
-        return this.getName() + ' <templateID> <itemImageId> ';
+        return this.getName() + ' <templateId> <itemImageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '   <templateID> <itemImageId>                 - Numeric - The ID of the image we want to remove.';
+            + '   <templateId>                 - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
+            + '   <itemImageId>                - Numeric - The Id of the Image we want to remove.';
     }
 
     public description(): string {
-        return 'Set an item image as a featured image, identified by its ID.';
+        return 'Set an item image as a featured image, identified by its Id.';
     }
 
     public example(): string {
