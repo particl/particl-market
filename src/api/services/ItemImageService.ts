@@ -225,12 +225,12 @@ export class ItemImageService {
         }
     }
 
-    public async updateFeatured(imageID: number, feature: boolean): Promise<ItemImage> {
+    public async updateFeatured(imageId: number, feature: boolean): Promise<ItemImage> {
         const data = {
-            id: imageID,
+            id: imageId,
             featured: feature
         };
-        return await this.itemImageRepo.update(imageID, data);
+        return await this.itemImageRepo.update(imageId, data);
     }
 
     public async destroy(id: number): Promise<void> {
