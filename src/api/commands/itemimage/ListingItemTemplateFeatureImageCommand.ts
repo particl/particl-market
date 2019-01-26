@@ -31,36 +31,13 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_ID
-     *  [1]: featured_item_image_ID
+     *  [0]: listingItemTemplateId
+     *  [1]: itemImageId
      * @param data
      * @returns {Promise<ItemImage>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        // check if we got all the params
-        if (data.params.length < 1) {
-            this.log.error('MISSING PARAM ListingItemTemplate_ID');
-            throw new InvalidParamException('ListingItemTemplate_ID');
-        } else if (data.params.length < 2) {
-            this.log.error('MISSING PARAM FeaturedImage_ID');
-            throw new InvalidParamException('Featured_ID');
-        }
-        if (typeof data.params[0] !== 'number') {
-            this.log.error('Typeof Error');
-            throw new InvalidParamException('ListingItemTemplate_ID', 'integer');
-        } else if (typeof data.params[1] !== 'number') {
-            this.log.error('Typeof Error');
-            throw new InvalidParamException('Featured_ID', 'integer');
-        }
-        const itemImageModel = await this.itemImageService.findOne(data.params[1]);
-        const itemImage = itemImageModel.toJSON();
-
-        // check if item already been posted
-        if (itemImage.ItemInformation.listingItemId) {
-            this.log.error('IMAGE IS ALREADY POSTED');
-            throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
-        }
         // find the listing item template
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
@@ -71,6 +48,43 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             throw new MessageException('Image ID doesnt exist on template');
         }
         return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: itemImageId
+     * @param data
+     * @returns {Promise<ItemImage>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // check if we got all the params
+        if (data.params.length < 1) {
+            this.log.error('MISSING PARAM listingItemTemplateId');
+            throw new InvalidParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            this.log.error('MISSING PARAM itemImageId');
+            throw new InvalidParamException('itemImageId');
+        }
+        if (typeof data.params[0] !== 'number') {
+            this.log.error('Typeof Error');
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            this.log.error('Typeof Error');
+            throw new InvalidParamException('itemImageId', 'number');
+        }
+
+        const itemImageModel = await this.itemImageService.findOne(data.params[1]);
+        const itemImage = itemImageModel.toJSON();
+
+        // check if item already been posted
+        if (itemImage.ItemInformation.listingItemId) {
+            this.log.error('IMAGE IS ALREADY POSTED');
+            throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
+        }
+
+        return data;
     }
 
     public usage(): string {
