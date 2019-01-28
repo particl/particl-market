@@ -261,17 +261,15 @@ describe('EscrowAddCommand', () => {
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
 
         // Double check the object was created with the new values.
-        {
-            const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand,
-                listingItemTemplate.id
-            ]);
-            res2.expectJson();
-            res2.expectStatusCode(200);
-            const result2: any = res2.getBody()['result'];
-            expect(result2.PaymentInformation.Escrow.type).toBe(testData.type);
-            expect(result2.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.ratio.buyer);
-            expect(result2.PaymentInformation.Escrow.Ratio.seller).toBe(testData.ratio.seller);
-        }
+        const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplate.id
+        ]);
+        res2.expectJson();
+        res2.expectStatusCode(200);
+        const result2: any = res2.getBody()['result'];
+        expect(result2.PaymentInformation.Escrow.type).toBe(testData.type);
+        expect(result2.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.ratio.buyer);
+        expect(result2.PaymentInformation.Escrow.Ratio.seller).toBe(testData.ratio.seller);
     });
 
     test('Should fail to create Escrow because it already exists', async () => {
