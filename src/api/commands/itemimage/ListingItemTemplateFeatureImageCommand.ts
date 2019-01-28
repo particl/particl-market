@@ -31,28 +31,50 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_ID
-     *  [1]: featured_item_image_ID
+     *  [0]: listingItemTemplateId
+     *  [1]: itemImageId
      * @param data
      * @returns {Promise<ItemImage>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        // find the listing item template
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+        if (!itemImages.find((img) => img.id === data.params[1])) {
+            this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
+            throw new MessageException('imageId doesnt exist on template');
+        }
+        return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: itemImageId
+     * @param data
+     * @returns {Promise<ItemImage>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
         // check if we got all the params
         if (data.params.length < 1) {
-            this.log.error('MISSING PARAM ListingItemTemplate_ID');
-            throw new InvalidParamException('ListingItemTemplate_ID');
+            this.log.error('MISSING PARAM listingItemTemplateId');
+            throw new InvalidParamException('listingItemTemplateId');
         } else if (data.params.length < 2) {
-            this.log.error('MISSING PARAM FeaturedImage_ID');
-            throw new InvalidParamException('Featured_ID');
+            this.log.error('MISSING PARAM itemImageId');
+            throw new InvalidParamException('itemImageId');
         }
         if (typeof data.params[0] !== 'number') {
             this.log.error('Typeof Error');
-            throw new InvalidParamException('ListingItemTemplate_ID', 'integer');
+            throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'number') {
             this.log.error('Typeof Error');
-            throw new InvalidParamException('Featured_ID', 'integer');
+            throw new InvalidParamException('itemImageId', 'number');
         }
+
         const itemImageModel = await this.itemImageService.findOne(data.params[1]);
         const itemImage = itemImageModel.toJSON();
 
@@ -61,29 +83,22 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('IMAGE IS ALREADY POSTED');
             throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
         }
-        // find the listing item template
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
 
-        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-        if (!itemImages.find((img) => img.id === data.params[1])) {
-            this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
-            throw new MessageException('Image ID doesnt exist on template');
-        }
-        return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
+        return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <templateID> <itemImageId> ';
+        return this.getName() + ' <templateId> <itemImageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '   <templateID> <itemImageId>                 - Numeric - The ID of the image we want to remove.';
+            + '   <templateId>                 - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
+            + '   <itemImageId>                - Numeric - The Id of the Image we want to remove.';
     }
 
     public description(): string {
-        return 'Set an item image as a featured image, identified by its ID.';
+        return 'Set an item image as a featured image, identified by its Id.';
     }
 
     public example(): string {

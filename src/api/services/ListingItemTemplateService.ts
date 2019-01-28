@@ -37,7 +37,6 @@ import { MessageSize } from '../responses/MessageSize';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
-import { ItemImageRepository } from '../repositories/ItemImageRepository';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
 
@@ -55,7 +54,6 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,

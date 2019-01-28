@@ -16,7 +16,6 @@ declare module 'resources' {
         originalName: string;
         itemImageId: number;
         featured: boolean;
-
         createdAt: Date;
         updatedAt: Date;
 
