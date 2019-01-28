@@ -11,6 +11,7 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import {Environment} from '../../core/helpers/Environment';
 import * as resources from 'resources';
 import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
+import {MessageException} from '../exceptions/MessageException';
 
 export class SmsgService {
 
@@ -99,6 +100,10 @@ export class SmsgService {
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
+        if (response.error) {
+            this.log.error('ERROR: ', JSON.stringify(response, null, 2));
+            throw new MessageException('Failed to send message.');
+        }
         return response;
     }
 
