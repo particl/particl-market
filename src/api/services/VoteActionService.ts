@@ -355,10 +355,14 @@ export class VoteActionService {
 
         for (const output of outputs) {
             if (output.spendable && output.solvable && output.safe && output.amount > 0) {
-                addressList.push({
-                    address: output.address,
-                    balance: output.amount * 100000000 // in satoshis
-                } as AddressInfo);
+                // we could have multiple outputs from one address and we only want to send one Vote per address.
+                const exists = addressList.find(addressInfo => addressInfo.address === output.address);
+                if (!exists) {
+                    addressList.push({
+                        address: output.address,
+                        balance: output.amount * 100000000 // in satoshis
+                    } as AddressInfo);
+                }
             }
         }
         return addressList;
