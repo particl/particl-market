@@ -68,5 +68,4 @@ export class ItemImageRepository {
             throw new DatabaseException('Could not delete the itemImage!', error);
         }
     }
-
 }

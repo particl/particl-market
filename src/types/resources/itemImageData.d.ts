@@ -15,6 +15,7 @@ declare module 'resources' {
         originalMime: string;
         originalName: string;
         itemImageId: number;
+        featured: boolean;
 
         createdAt: Date;
         updatedAt: Date;

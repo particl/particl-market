@@ -9,6 +9,7 @@ declare module 'resources' {
         hash: string;
         createdAt: Date;
         updatedAt: Date;
+        featured: boolean;
 
         ItemImageDatas: ItemImageData[];
         ItemInformation: ItemInformation;

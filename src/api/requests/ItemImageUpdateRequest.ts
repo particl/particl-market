@@ -18,6 +18,7 @@ export class ItemImageUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public datas: ItemImageDataUpdateRequest[];
 
+    public featured: boolean;
 
 }
 // tslint:enable:variable-name

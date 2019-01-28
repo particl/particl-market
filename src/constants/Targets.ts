@@ -231,6 +231,7 @@ export const Targets = {
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ItemImageListCommand: 'ItemImageListCommand',
             ItemImageRemoveCommand: 'ItemImageRemoveCommand',
             ItemImageRootCommand: 'ItemImageRootCommand'
@@ -258,12 +259,12 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {

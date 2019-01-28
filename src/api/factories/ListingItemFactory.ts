@@ -383,7 +383,8 @@ export class ListingItemFactory {
             const imageData = await this.getMessageInformationImageData(image.ItemImageDatas);
             imagesArray.push({
                 hash: image.hash,
-                data: imageData
+                data: imageData,
+                featured: image.featured
             });
         }
         return imagesArray;
