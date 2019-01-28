@@ -10,6 +10,7 @@ import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import {Logger as LoggerType} from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
 describe('EscrowRemoveCommand', () => {
@@ -61,39 +62,39 @@ describe('EscrowRemoveCommand', () => {
 
     });
 
-    test('Should fail destroy Escrow because missing escrowId', async () => {
+    test('Should fail destroy Escrow because missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected listingItemTemplateId but received no params.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail destroy Escrow because missing escrowId', async () => {
+    test('Should fail destroy Escrow because missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
             null
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail destroy Escrow because invalid escrowId', async () => {
+    test('Should fail destroy Escrow because invalid listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
             -1
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail destroy Escrow because invalid escrowId', async () => {
+    test('Should fail destroy Escrow because invalid listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand,
             'INVALLID'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Should destroy Escrow', async () => {

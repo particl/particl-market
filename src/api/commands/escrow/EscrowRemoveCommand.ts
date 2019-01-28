@@ -16,6 +16,7 @@ import { ListingItemTemplateService } from '../../services/ListingItemTemplateSe
 import * as resources from 'resources';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -52,17 +53,17 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Expected listingItemTemplateId but received no params.');
+            throw new MissingParamException('listingItemTemplateId');
         }
 
         const listingItemTemplateId = data.params[0];
         if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId < 0) {
-            throw new MessageException('listingItemTemplateId must be a number and >= 0.');
+            throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         if (!listingItemTemplateModel) {
-            throw new MessageException(`ListingItemTemplate with listingItemTemplateId = ${listingItemTemplateId} not found.`);
+            throw new NotFoundException(listingItemTemplateId);
         }
         const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
