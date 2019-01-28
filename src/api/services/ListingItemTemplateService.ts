@@ -353,10 +353,15 @@ export class ListingItemTemplateService {
 
         // If still at lowest quality, then leave quality factor as is. Otherwise, reduce to previous (good) quality setting
         const actualQualityFactor = qualityFactor === ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION ?
-            ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION : (qualityFactor >= 1 ? 0.99 : qualityFactor - qualityFactorStep);
+            ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION : (qualityFactor >= 1 ? 1 : qualityFactor - qualityFactorStep);
 
         for (const originalImageData of originalImageDatas) {
-            const compressedImage = await this.getResizedImage(originalImageData.imageHash, actualQualityFactor * 100);
+            let compressedImage;
+            if (actualQualityFactor !== 1) {
+                compressedImage = await this.getResizedImage(originalImageData.imageHash, actualQualityFactor * 100);
+            } else {
+                compressedImage = await this.itemImageDataService.loadImageFile(originalImageData.imageHash, ImageVersions.ORIGINAL.propName);
+            }
             // save the resized image
             const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
                 originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
