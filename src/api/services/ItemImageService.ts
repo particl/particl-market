@@ -189,6 +189,7 @@ export class ItemImageService {
 
             // set new values
             itemImage.Hash = body.hash;
+            itemImage.Featured = body.featured;
 
             // update itemImage record
             const updatedItemImageModel = await this.itemImageRepo.update(id, itemImage.toJSON());
@@ -225,11 +226,10 @@ export class ItemImageService {
         }
     }
 
-    public async updateFeatured(imageId: number, feature: boolean): Promise<ItemImage> {
+    public async updateFeatured(imageId: number, featured: boolean): Promise<ItemImage> {
         const data = {
-            id: imageId,
-            featured: feature
-        };
+            featured
+        } as ItemImageUpdateRequest;
         return await this.itemImageRepo.update(imageId, data);
     }
 

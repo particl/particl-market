@@ -14,7 +14,8 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
                 withRelated: [
                     'ItemImageDatas',
-                    'ItemInformation'
+                    'ItemInformation',
+                    'ItemInformation.ListingItem'
                 ]
             });
         } else {

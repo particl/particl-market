@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -15,8 +16,9 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ItemImage } from '../../models/ItemImage';
 
-export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
 
@@ -25,7 +27,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(Commands.ITEMIMAGE_FEATURED);
+        super(Commands.TEMPLATE_FEATURED_IMAGE);
         this.log = new Logger(__filename);
     }
 
@@ -37,7 +39,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
         // find the listing item template
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
@@ -47,7 +49,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
             throw new MessageException('imageId doesnt exist on template');
         }
-        return await this.listingItemTemplateService.setFeaturedImg(listingItemTemplate, data.params[1]);
+        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, data.params[1]);
     }
 
     /**
@@ -62,26 +64,25 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         // check if we got all the params
         if (data.params.length < 1) {
             this.log.error('MISSING PARAM listingItemTemplateId');
-            throw new InvalidParamException('listingItemTemplateId');
+            throw new MissingParamException('listingItemTemplateId');
         } else if (data.params.length < 2) {
             this.log.error('MISSING PARAM itemImageId');
-            throw new InvalidParamException('itemImageId');
+            throw new MissingParamException('itemImageId');
         }
         if (typeof data.params[0] !== 'number') {
-            this.log.error('Typeof Error');
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'number') {
-            this.log.error('Typeof Error');
             throw new InvalidParamException('itemImageId', 'number');
         }
 
         const itemImageModel = await this.itemImageService.findOne(data.params[1]);
         const itemImage = itemImageModel.toJSON();
 
+        this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
         // check if item already been posted
-        if (itemImage.ItemInformation.listingItemId) {
+        if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
             this.log.error('IMAGE IS ALREADY POSTED');
-            throw new MessageException(`Can't set featured itemImage because the item has allready been posted!`);
+            throw new MessageException(`Can't set featured flag on ItemImage because the ListingItemTemplate has already been posted!`);
         }
 
         return data;

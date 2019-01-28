@@ -39,6 +39,7 @@ import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
+import {ItemImage} from '../models/ItemImage';
 
 export class ListingItemTemplateService {
 
@@ -412,28 +413,29 @@ export class ListingItemTemplateService {
      * sets the featured image for the ListingItemTemlate
      *
      * @param listingItemTemplate
-     * @param imageID
+     * @param imageId
      *
      */
-    public async setFeaturedImg(listingItemTemplate: resources.ListingItemTemplate, imageID: number): Promise<void> {
+    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
         const itemImages = listingItemTemplate.ItemInformation.ItemImages;
         if (!_.isEmpty(itemImages)) {
             // find image and set it to featured
-            const found = itemImages.find((img) => img.id === imageID && !img.featured);
+            const found = itemImages.find((img) => img.id === imageId && !img.featured);
             if (found) {
                 await this.itemImageService.updateFeatured(found.id, true);
             }
 
             // check if other images are set to featured, unset as featured
-            const notFound = itemImages.filter((img) => img.id !== imageID && img.featured);
+            const notFound = itemImages.filter((img) => img.id !== imageId && img.featured);
             if (notFound.length) {
                 notFound.forEach( async (img) => await this.itemImageService.updateFeatured(img.id, false));
             }
 
             this.log.info('Successfully set featured image');
+            return await this.itemImageService.findOne(imageId);
         } else {
-            this.log.error('Listing Item Template has no Images.');
-            throw new MessageException('Listing Item Template has no Images.');
+            this.log.error('ListingItemTemplate has no ItemImages.');
+            throw new MessageException('ListingItemTemplate has no Images.');
         }
     }
 

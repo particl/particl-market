@@ -231,7 +231,6 @@ export const Targets = {
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
-            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ItemImageListCommand: 'ItemImageListCommand',
             ItemImageRemoveCommand: 'ItemImageRemoveCommand',
             ItemImageRootCommand: 'ItemImageRootCommand'
@@ -265,6 +264,7 @@ export const Targets = {
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
