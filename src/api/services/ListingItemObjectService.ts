@@ -44,7 +44,7 @@ export class ListingItemObjectService {
     }
 
     /**
-     * search ListingItemObject using given ListingItemObjectSearchParams
+     * searchBy ListingItemObject using given ListingItemObjectSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemObject>>}

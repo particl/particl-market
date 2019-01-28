@@ -49,7 +49,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         const type = 'ALL';         // todo: use * instead of ALL
         const profileId = 'ALL';    // todo: use * instead of ALL
 
-        // search for listingitem(s) with certain seller and having bids from certain buyer
+        // searchBy for listingitem(s) with certain seller and having bids from certain buyer
         const listingItemsModel: Bookshelf.Collection<ListingItem> = await this.listingItemService.search({
             itemHash,
             buyer,
@@ -140,7 +140,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
     // tslint:enable:max-line-length
 
     public description(): string {
-        return 'Fetch statuses of OrderItems specified by given search params. Shows the first 100 orders.';
+        return 'Fetch statuses of OrderItems specified by given searchBy params. Shows the first 100 orders.';
     }
 
     public example(): string {

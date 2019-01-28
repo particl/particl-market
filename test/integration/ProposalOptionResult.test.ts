@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -14,7 +15,6 @@ import { ProposalOptionResult } from '../../src/api/models/ProposalOptionResult'
 import { ProposalOptionResultService } from '../../src/api/services/ProposalOptionResultService';
 import { ProposalOptionResultCreateRequest } from '../../src/api/requests/ProposalOptionResultCreateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import * as resources from 'resources';
 import { ProposalResultService } from '../../src/api/services/ProposalResultService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
@@ -23,7 +23,6 @@ import { GenerateProposalParams } from '../../src/api/requests/params/GeneratePr
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import { ProposalOption } from '../../src/api/models/ProposalOption';
 import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
 import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/ProposalOptionResultUpdateRequest';
 
@@ -141,7 +140,7 @@ describe('ProposalOptionResult', () => {
 
     test('Should create a new ProposalOptionResult', async () => {
 
-        // first add new proposalOption
+        // first add new ProposalOption
         const proposalOptionCreateRequest = {
             proposal_id: createdProposal.id,
             proposalHash: createdProposal.hash,
@@ -149,10 +148,10 @@ describe('ProposalOptionResult', () => {
             description: 'REMOVE_MAYBE'
         } as ProposalOptionCreateRequest;
 
-        const proposalOptionModel: ProposalOption = await proposalOptionService.create(proposalOptionCreateRequest);
-        createdProposalOption = proposalOptionModel.toJSON();
+        createdProposalOption = await proposalOptionService.create(proposalOptionCreateRequest)
+            .then(value => value.toJSON());
 
-        // then add new proposaloptionresult
+        // then add new ProposalOptionResult
         const testData = {
             proposal_result_id: createdProposalResult.id,
             proposal_option_id: createdProposalOption.id,
@@ -160,8 +159,8 @@ describe('ProposalOptionResult', () => {
             voters: 5
         } as ProposalOptionResultCreateRequest;
 
-        const proposalOptionResultModel: ProposalOptionResult = await proposalOptionResultService.create(testData);
-        createdProposalOptionResult = proposalOptionResultModel.toJSON();
+        createdProposalOptionResult = await proposalOptionResultService.create(testData)
+            .then(value => value.toJSON());
         const result = createdProposalOptionResult;
 
         // test the values
@@ -171,18 +170,24 @@ describe('ProposalOptionResult', () => {
         expect(result.voters).toBe(testData.voters);
     });
 
-    test('Should list ProposalOptionResults with our new create one', async () => {
-        const proposalOptionResultCollection = await proposalOptionResultService.findAll();
-        const proposalOptionResult = proposalOptionResultCollection.toJSON();
-        expect(proposalOptionResult.length).toBe(3);
+    test('Should list ProposalOptionResults with our newly create one', async () => {
+        const proposalOptionResults = await proposalOptionResultService.findAll()
+            .then(value => value.toJSON());
 
-        const resultWeights = proposalOptionResult[0].weight + proposalOptionResult[1].weight + proposalOptionResult[2].weight;
+        // testDataService.generate creates first 2 empty results, then recalculates and generates 2 more, +1 generated here === 5
+        expect(proposalOptionResults.length).toBe(5);
+
+        log.debug('proposalOptionResults:', JSON.stringify(proposalOptionResults, null, 2));
+
+        const resultWeights = proposalOptionResults[0].weight + proposalOptionResults[1].weight + proposalOptionResults[2].weight
+            + proposalOptionResults[3].weight + proposalOptionResults[4].weight;
         expect(resultWeights).toBe(25); // 20 votes originally + 5
     });
 
     test('Should return one ProposalOptionResult', async () => {
-        const proposalOptionResultModel: ProposalOptionResult = await proposalOptionResultService.findOne(createdProposalOptionResult.id);
-        const result = proposalOptionResultModel.toJSON();
+        const proposalOptionResult: resources.ProposalOptionResult = await proposalOptionResultService.findOne(createdProposalOptionResult.id)
+            .then(value => value.toJSON());
+        const result = proposalOptionResult;
 
         expect(result.ProposalResult.id).toBe(createdProposalResult.id);
         expect(result.ProposalOption.id).toBe(createdProposalOption.id);
@@ -193,6 +198,8 @@ describe('ProposalOptionResult', () => {
     test('Should update the ProposalOptionResult', async () => {
 
         const testDataUpdated = {
+            proposal_result_id: createdProposalOptionResult.ProposalResult.id,
+            proposal_option_id: createdProposalOptionResult.ProposalOption.id,
             weight: 15,
             voters: 15
         } as ProposalOptionResultUpdateRequest;

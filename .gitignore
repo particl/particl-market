@@ -39,6 +39,8 @@ coverage/
 test/testdata/test.json
 test/reports/*
 
+data/wallet1.dat
+data/wallet2.dat
 data/database/*
 data/uploads/*
 data/tests/*

@@ -33,10 +33,12 @@ describe('ProposalGetCommand', () => {
 
         // Generate a proposal
         const generateProposalsParams = new GenerateProposalParams([
-            false, // generateListingItemTemplate = true;
-            false, // generateListingItem = true;
-            null, // listingItemHash: string;
-            false // generatePastProposal = false;
+            false,                  // generateListingItemTemplate = true;
+            false,                  // generateListingItem = true;
+            null,                   // listingItemHash: string;
+            false,                  // generatePastProposal = false;
+            0,                      // voteCount
+            defaultProfile.address  // submitter
         ]).toParamsArray();
 
         // create Proposal for testing

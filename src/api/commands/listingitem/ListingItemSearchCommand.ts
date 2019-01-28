@@ -38,8 +38,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [3]: category, number|string, if string, try to find using key, can be null
      *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
      *  [5]: profileId, (NUMBER | OWN | ALL | *)
-     *  [6]: minPrice, number to search item basePrice between 2 range
-     *  [7]: maxPrice, number to search item basePrice between 2 range
+     *  [6]: minPrice, number to searchBy item basePrice between 2 range
+     *  [7]: maxPrice, number to searchBy item basePrice between 2 range
      *  [8]: country, string, can be null
      *  [9]: shippingDestination, string, can be null
      *  [10]: searchString, string, can be null
@@ -54,12 +54,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         const type = data.params[4] || 'ALL';
         const profileId = data.params[5] || 'ALL';
 
-        // check valid search type
+        // check valid searchBy type
         if (!ListingItemSearchType[type]) {
             throw new MessageException('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
         }
 
-        // check valid profile profileId search params
+        // check valid profile profileId searchBy params
         if (typeof profileId !== 'number' && profileId !== 'OWN' && profileId !== 'ALL' && profileId !== '*') {
             throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
         }
@@ -98,13 +98,13 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
-            + '                                view of search listing item results. \n'
+            + '                                view of searchBy listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. \n'
             + '    <categoryId>             - [optional] Numeric - The ID identifying the category associated \n'
-            + '                                with the listing items we want to search for. \n'
+            + '                                with the listing items we want to searchBy for. \n'
             + '    <categoryName>           - [optional] String - The key identifying the category associated \n'
-            + '                                with the listing items we want to search for. \n'
+            + '                                with the listing items we want to searchBy for. \n'
             + '    <type>                  -  ENUM{FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL} \n'
             + '                                 FLAGGED = ListingItems you have flagged \n'
             + '                                 PENDING = ListingItemTemplates posted to marketplace\n'
@@ -119,13 +119,13 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                 OWN - ListingItems belonging to any profile \n'
             + '                                 ALL / * - ALL ListingItems\n'
             + '    <minPrice>               - [optional] Numeric - The minimum price of the listing item price \n'
-            + '                                we want to search for between basePrice range. \n'
+            + '                                we want to searchBy for between basePrice range. \n'
             + '    <maxPrice>               - [optional] Numeric - The maximum price of the listing item price \n'
-            + '                                we want to search for between basePrice range. \n'
+            + '                                we want to searchBy for between basePrice range. \n'
             + '    <country>                - [optional] String - The country of the listing item \n'
-            + '                                we want to search for. \n'
+            + '                                we want to searchBy for. \n'
             + '    <shippingDestination>    - [optional] String - The shipping destination of the listing item \n'
-            + '                                we want to search for. \n'
+            + '                                we want to searchBy for. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
             + '                                find listing items by their titles. \n'
             + '    <flagged>                - [optional] Boolean - Search for flagged or non-flagged \n'

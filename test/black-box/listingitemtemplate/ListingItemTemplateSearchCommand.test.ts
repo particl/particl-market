@@ -166,7 +166,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(0);
     });
 
-    test('Should search ListingItemTemplates by ItemCategory key', async () => {
+    test('Should searchBy ListingItemTemplates by ItemCategory key', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -185,7 +185,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.ItemCategory.key).toBe(listingItemTemplate1.ItemInformation.ItemCategory.key);
     });
 
-    test('Should search ListingItemTemplates by ItemCategory id', async () => {
+    test('Should searchBy ListingItemTemplates by ItemCategory id', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -204,7 +204,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.ItemCategory.id).toBe(listingItemTemplate1.ItemInformation.ItemCategory.id);
     });
 
-    test('Should search ListingItemTemplates by ItemInformation title', async () => {
+    test('Should searchBy ListingItemTemplates by ItemInformation title', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -222,7 +222,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
     });
 
-    test('Should fail because we search without order', async () => {
+    test('Should fail because we searchBy without order', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,
@@ -233,7 +233,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('order').getMessage());
     });
 
-    test('Should fail because we search without orderField', async () => {
+    test('Should fail because we searchBy without orderField', async () => {
         const res: any = await testUtil.rpc(templateCommand, [
             templateSearchCommand,
             0,

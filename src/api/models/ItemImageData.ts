@@ -4,12 +4,32 @@
 
 import { Bookshelf } from '../../config/Database';
 import { ItemImage } from './ItemImage';
+import { Collection, Model } from 'bookshelf';
+import { SearchOrder } from '../enums/SearchOrder';
 
 export class ItemImageData extends Bookshelf.Model<ItemImageData> {
 
     public static RELATIONS = [
         'ItemImage'
     ];
+
+    public static async fetchAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Collection<ItemImageData>> {
+        const proposalResultCollection = ItemImageData.forge<Model<ItemImageData>>()
+            .query(qb => {
+                qb.where('image_hash', '=', hash);
+                qb.where('image_version', '=', 'ORIGINAL');
+            })
+            .orderBy('id', SearchOrder.DESC);
+
+
+        if (withRelated) {
+            return await proposalResultCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await proposalResultCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImageData> {
         if (withRelated) {

@@ -22,7 +22,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     public log: LoggerType;
 
     private timeout: any;
-    private interval = 5000;
+    private interval = 5000; // todo: configurable
 
     // tslint:disable:max-line-length
     constructor(
@@ -59,13 +59,6 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
-            .then(async value => {
-                this.log.info('process(), created: ', value);
-
-                const all = await this.smsgMessageService.findAll();
-                this.log.info('process(), created: ', JSON.stringify(all.toJSON(), null, 2));
-
-            })
             .catch(reason => {
                 this.log.error('ERROR: ', reason);
             });
@@ -73,6 +66,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         // after messages are stored, remove them
         for (const message of messages) {
             await this.smsgService.smsg(message.msgid, true, true)
+                .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
                 });
@@ -103,10 +97,11 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        await this.pollMessages()
+        await this.smsgService.smsgInbox('unread')
             .then( async messages => {
                 if (messages.result !== '0') {
                     const smsgMessages: IncomingSmsgMessage[] = messages.messages;
+                    this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 }
                 return;
@@ -115,16 +110,5 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
                 this.log.error('poll(), error: ' + reason);
                 return;
             });
-    }
-
-    /**
-     * TODO: should not fetch all unreads at the same time
-     *
-     * @returns {Promise<any>}
-     */
-    private async pollMessages(): Promise<any> {
-        const response = await this.smsgService.smsgInbox('unread');
-        // this.log.info('pollMessages(): ' + response.result);
-        return response;
     }
 }

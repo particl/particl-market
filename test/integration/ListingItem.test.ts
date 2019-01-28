@@ -320,7 +320,7 @@ describe('ListingItem', () => {
         }
     };
 
-    // TODO: missing search tests
+    // TODO: missing searchBy tests
 
     // -------------------------------
     // TESTS

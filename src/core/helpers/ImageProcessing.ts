@@ -804,6 +804,29 @@ export class ImageProcessing {
         return imageRaw;
     }
 
+    /**
+     * resize a single image to the largest size that fits inside the given width and height
+     *
+     * @param {string} imageRaw, base64
+     * @param {number} maxWidth
+     * @param {number} maxHeight
+     * @returns {Promise<string>}
+     */
+    public static async resizeImageToFit(imageRaw: string, maxWidth: number, maxHeight: number): Promise<string> {
+        const dataBuffer = Buffer.from(imageRaw, 'base64');
+        const imageBuffer: any = await Jimp.read(dataBuffer);
+        // resize only if target sizes > 0, else return original
+        if (maxWidth > 0 && maxHeight > 0) {
+            imageBuffer.scaleToFit(maxWidth, maxHeight);
+            const mimeType = imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg';
+            const resizedImage = await imageBuffer.getBuffer(mimeType, (err, buffer) => {
+                return buffer.toString('base64');
+            });
+            return resizedImage;
+        }
+        return imageRaw;
+    }
+
     public static async resizeImageToFraction(imageRaw: string, fraction: number): Promise<string> {
         const startTime = new Date().getTime();
         const dataBuffer = Buffer.from(imageRaw, 'base64');
@@ -826,48 +849,20 @@ export class ImageProcessing {
         this.log.debug('ImageProcessing.resizeImageToFraction: ' + (new Date().getTime() - startTime) + 'ms');
         return imageRaw;
     }
-    // This doesnt seem to be used anywhere
-    /*
-    public static async compressImage(imageRaw: string, byteLimit: number): Promise<string> {
-        let quality = 100;
-        // let imageData;
-        let numIterations = 0;
-        do {
-            ++numIterations;
-            if (numIterations > this.MAX_COMPRESSION_ITERATIONS) {
-                // Too many iterations. Exit.
-                throw new MessageException(`Couldn't compress image enough within ${this.MAX_COMPRESSION_ITERATIONS}`
-                    + ` iterations! Size is ${imageRaw.length}!`);
-            }
-            const imageRaw2 = await this.downgradeQuality(imageRaw, quality);
-            if (imageRaw2.length === imageRaw.length) {
-                // We reached the compression limit. Just return.
-                return imageRaw2;
-            }
-            imageRaw = imageRaw2;
-            quality = 0.60 * quality; // Decrease quality on next iteration to 60% of this iteration.
-        } while (imageRaw.length >= byteLimit);
-        return imageRaw;
-    }
-    */
 
     public static async downgradeQuality(imageRaw: string, quality: number): Promise<string> {
       const dataBuffer = Buffer.from(imageRaw, 'base64');
-      let imageBuffer: any = await Jimp.read(dataBuffer);
-      imageBuffer = imageBuffer.quality(quality);
+      const imageBuffer: any = await Jimp.read(dataBuffer);
+      imageBuffer.quality(quality);
       if (imageBuffer.getMIME() !== 'image/jpeg') {
         imageRaw = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
           return buffer.toString('base64');
         });
-        console.log(imageRaw);
-        console.log('BASE64 Length:', imageRaw.length);
         return imageRaw;
       } else {
         imageRaw = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
           return buffer.toString('base64');
         });
-        console.log(imageRaw);
-        console.log('BASE64 Length:', imageRaw.length);
         return imageRaw;
       }
 

@@ -44,16 +44,8 @@ export class ProposalOptionResultService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ProposalOptionResult, body: ', JSON.stringify(body, null, 2));
 
-        // TODO: extract and remove related models from request
-        // const proposalOptionResultRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the proposalOptionResult
         const proposalOptionResult = await this.proposalOptionResultRepo.create(body);
-
-        // TODO: create related models
-        // proposalOptionResultRelated._id = proposalOptionResult.Id;
-        // await this.proposalOptionResultRelatedService.create(proposalOptionResultRelated);
 
         // finally find and return the created proposalOptionResult
         const newProposalOptionResult = await this.findOne(proposalOptionResult.id);
@@ -69,8 +61,13 @@ export class ProposalOptionResultService {
         // set new values
         // proposalOptionResult.ProposalResultId = body.proposalResultId;
         // proposalOptionResult.ProposalOptionId = body.proposalOptionId;
-        proposalOptionResult.Weight = body.weight;
-        proposalOptionResult.Voters = body.voters;
+        // proposalOptionResult.Weight = body.weight;
+        // proposalOptionResult.Voters = body.voters;
+
+        proposalOptionResult.set('weight', body.weight);
+        proposalOptionResult.set('voters', body.voters);
+        proposalOptionResult.set('proposalResultId', body.proposal_result_id);
+        proposalOptionResult.set('proposalOptionId', body.proposal_option_id);
 
         // update proposalOptionResult record
         const updatedProposalOptionResult = await this.proposalOptionResultRepo.update(id, proposalOptionResult.toJSON());

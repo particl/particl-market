@@ -44,7 +44,7 @@ export class CurrencyPriceService {
     }
 
     /**
-     * search CurrencyPrice using given CurrencyPriceParams
+     * searchBy CurrencyPrice using given CurrencyPriceParams
      *
      * @param options
      * @returns {Promise<CurrencyPrice>}

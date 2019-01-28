@@ -29,7 +29,7 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
     }
 
     public usage(): string {
-        return this.getName() + ' (search|accept|cancel|reject|send)  -  ' + this.description();
+        return this.getName() + ' (searchBy|accept|cancel|reject|send)  -  ' + this.description();
     }
 
     public help(): string {
