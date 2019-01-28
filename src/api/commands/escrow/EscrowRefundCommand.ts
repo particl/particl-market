@@ -19,6 +19,9 @@ import * as _ from 'lodash';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessageType} from '../../enums/BidMessageType';
 import { OrderItemService } from '../../services/OrderItemService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -61,11 +64,11 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         if (data.params.length >= 1) {
             const orderItemId = data.params[0];
             if (typeof orderItemId !== 'number' || orderItemId < 0) {
-                throw new MessageException('orderItemId must be number and >= 0.');
+                throw new InvalidParamException('orderItemId must be number and >= 0.', 'number');
             }
             const orderItemModel = await this.orderItemService.findOne(orderItemId);
             if (!orderItemModel) {
-                throw new MessageException(`orderItemModel with orderItemId = <${orderItemId}> not found.`);
+                throw new NotFoundException(orderItemId);
             }
             orderItem = orderItemModel.toJSON();
 
@@ -101,20 +104,20 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             const escrowRatio = orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio;
             if (_.isEmpty(escrowRatio)) {
                 this.log.error('EscrowRatio not found!');
-                throw new MessageException('EscrowRatio not found!');
+                throw new InvalidParamException('EscrowRatio not found!');
             }
         }
         if (data.params.length >= 2) {
             // TODO: Accepted status seems like something that needs validation as it sounds like an enum
             const accepted = data.params[1];
             if (typeof accepted !== 'boolean') {
-                throw new MessageException('accepted must be boolean.');
+                throw new InvalidParamException('accepted must be boolean.', 'boolean');
             }
         }
         if (data.params.length >= 3) {
             const memo = data.params[2];
             if (typeof memo !== 'string') {
-                throw new MessageException('memo must be string.');
+                throw new InvalidParamException('memo must be string.', 'string');
             }
         }
 

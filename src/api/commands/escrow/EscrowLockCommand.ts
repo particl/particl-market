@@ -20,6 +20,8 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { OrderStatus } from '../../enums/OrderStatus';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -99,7 +101,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         if (data.params.length >= 1) {
             const orderItemId = data.params[0];
             if (typeof orderItemId !== 'number') {
-                throw new MessageException('orderItemId must be number.');
+                throw new MissingParamException('orderItemId must be number.');
             }
             const orderItemModel = await this.orderItemService.findOne(orderItemId);
             if (!orderItemModel) {
@@ -109,13 +111,13 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         if (data.params.length >= 2) {
             const nonce = data.params[1];
             if (typeof nonce !== 'string') {
-                throw new MessageException('nonce must be string.');
+                throw new InvalidParamException('nonce must be string.', 'string');
             }
         }
         if (data.params.length >= 3) {
             const memo = data.params[2];
             if (typeof memo !== 'string') {
-                throw new MessageException('memo must be string.');
+                throw new InvalidParamException('memo must be string.', 'string');
             }
         }
 

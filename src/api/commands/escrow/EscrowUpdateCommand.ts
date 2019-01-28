@@ -16,6 +16,8 @@ import { MessageException } from '../../exceptions/MessageException';
 import { EscrowUpdateRequest } from '../../requests/EscrowUpdateRequest';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import * as _ from 'lodash';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -66,22 +68,22 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
         // get the template
         const listingItemTemplateId = data.params[0];
         if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId < 0) {
-            throw new MessageException('listingItemTemplateId must be numeric and >= 0.');
+            throw new InvalidParamException('number');
         }
 
         const escrowType = data.params[1];
         if (typeof escrowType !== 'string' || (escrowType !== 'NOP' && escrowType !== 'MAD')) {
-            throw new MessageException('escrowType must be either NOP or MAD.');
+            throw new InvalidParamException('escrowType');
         }
 
         const buyerRatio = data.params[2];
         if (typeof buyerRatio !== 'number' || buyerRatio < 0) {
-            throw new MessageException('buyerRatio must be numeric and >= 0.');
+            throw new InvalidParamException('number');
         }
 
         const sellerRatio = data.params[3];
         if (typeof sellerRatio !== 'number' || sellerRatio < 0) {
-            throw new MessageException('sellerRatio must be numeric and >= 0.');
+            throw new InvalidParamException('number');
         }
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);

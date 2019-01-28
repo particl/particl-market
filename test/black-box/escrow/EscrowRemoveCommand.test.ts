@@ -9,6 +9,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import {Logger as LoggerType} from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
 describe('EscrowRemoveCommand', () => {
 
@@ -64,7 +66,6 @@ describe('EscrowRemoveCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Expected listingItemTemplateId but received no params.');
     });
 
@@ -74,7 +75,6 @@ describe('EscrowRemoveCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
     });
 
@@ -84,7 +84,6 @@ describe('EscrowRemoveCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
     });
 
@@ -94,45 +93,37 @@ describe('EscrowRemoveCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('listingItemTemplateId must be a number and >= 0.');
     });
 
     test('Should destroy Escrow', async () => {
         // Check escrow exists.
-        {
-            const res0: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
-            res0.expectJson();
-            res0.expectStatusCode(200);
-            const result0: any = res0.getBody()['result'];
-            expect(result0.PaymentInformation.Escrow).not.toBeNull();
-            expect(result0.PaymentInformation.Escrow).not.toBeUndefined();
-            expect(result0.PaymentInformation.Escrow).not.toEqual({});
-        }
+        const res0: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
+        res0.expectJson();
+        res0.expectStatusCode(200);
+        const result0: any = res0.getBody()['result'];
+        expect(result0.PaymentInformation.Escrow).not.toBeNull();
+        expect(result0.PaymentInformation.Escrow).not.toBeUndefined();
+        expect(result0.PaymentInformation.Escrow).not.toEqual({});
 
         // Destroy escrow.
-        {
-            const res1: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
-            res1.expectJson();
-            res1.expectStatusCode(200);
-        }
+        const res1: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
+        res1.expectJson();
+        res1.expectStatusCode(200);
 
         // Check escrow no longer exists.
-        {
-            const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
-            res2.expectJson();
-            res2.expectStatusCode(200);
-            const result2: any = res2.getBody()['result'];
-            // throw new Error('result2.PaymentInformation.Escrow = ' + JSON.stringify(result2.PaymentInformation.Escrow, null, 2));
-            expect(result2.PaymentInformation.Escrow).toEqual({});
-        }
+        const res2: any = await testUtil.rpc(templateCommand, [templateGetCommand, createdListingItemTemplate.id]);
+        res2.expectJson();
+        res2.expectStatusCode(200);
+        const result2: any = res2.getBody()['result'];
+        // throw new Error('result2.PaymentInformation.Escrow = ' + JSON.stringify(result2.PaymentInformation.Escrow, null, 2));
+        expect(result2.PaymentInformation.Escrow).toEqual({});
     });
 
     test('Should fail destroy Escrow because already been destroyed', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Entity with identifier undefined does not exist');
+        expect(res.error.error.message).toBe(new NotFoundException(createdListingItemTemplate.id).getMessage();
     });
 });

@@ -14,6 +14,8 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import * as resources from 'resources';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 

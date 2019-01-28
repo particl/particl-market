@@ -19,6 +19,8 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessageType} from '../../enums/BidMessageType';
 import { OrderItemService } from '../../services/OrderItemService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 

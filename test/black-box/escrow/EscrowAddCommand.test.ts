@@ -10,6 +10,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('EscrowAddCommand', () => {
 
@@ -78,8 +80,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing params.');
+        expect(res.error.error.message).toBe(new MissingParamException('sellerRatio').getMessage());
     });
 
     test('Fail to create new escrow because invalid buyerRatio', async () => {
@@ -89,8 +90,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing params.');
+        expect(res.error.error.message).toBe(new MissingParamException('buyerRatio').getMessage());
     });
 
 
@@ -100,8 +100,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing params.');
+        expect(res.error.error.message).toBe(new MissingParamException('escrowType').getMessage());
     });
 
 
@@ -110,8 +109,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing params.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
 
@@ -124,8 +122,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid listingItemTemplateId', async () => {
@@ -137,8 +134,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid listingItemTemplateId', async () => {
@@ -150,8 +146,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('listingItemTemplateId must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Fail to create new escrow because missing escrowType', async () => {
@@ -163,8 +158,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('escrowType must be either NOP or MAD.');
+        expect(res.error.error.message).toBe(new InvalidParamException('escrowType', 'enum').getMessage());
     });
 
     test('Fail to create new escrow because invalid escrowType', async () => {
@@ -176,8 +170,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('escrowType must be either NOP or MAD.');
+        expect(res.error.error.message).toBe(new InvalidParamException('escrowType', 'enum').getMessage());
     });
 
     test('Fail to create new escrow because missing buyerRatio', async () => {
@@ -189,8 +182,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('buyerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('buyerRatio', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid buyerRatio', async () => {
@@ -202,8 +194,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('buyerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('buyerRatio', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid buyerRatio', async () => {
@@ -215,8 +206,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('buyerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('buyerRatio', 'number').getMessage());
     });
 
     test('Fail to create new escrow because missing sellerRatio', async () => {
@@ -228,8 +218,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('sellerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid sellerRatio', async () => {
@@ -241,8 +230,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('sellerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
     });
 
     test('Fail to create new escrow because invalid sellerRatio', async () => {
@@ -254,8 +242,7 @@ describe('EscrowAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('sellerRatio must be numeric and >= 0.');
+        expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
     });
 
     test('Should Create new Escrow', async () => {

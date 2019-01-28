@@ -16,6 +16,8 @@ import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -59,29 +61,38 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        }
+        if (data.params.length < 2) {
+            throw new MissingParamException('escrowType');
+        }
+        if (data.params.length < 3) {
+            throw new MissingParamException('buyerRatio');
+        }
         if (data.params.length < 4) {
-            throw new MessageException('Missing params.');
+            throw new MissingParamException('sellerRatio');
         }
 
         // get the template
         const listingItemTemplateId = data.params[0];
         if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId < 0) {
-            throw new MessageException('listingItemTemplateId must be numeric and >= 0.');
+            throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 
         const escrowType = data.params[1];
         if (typeof escrowType !== 'string' || (escrowType !== 'NOP' && escrowType !== 'MAD')) {
-            throw new MessageException('escrowType must be either NOP or MAD.');
+            throw new InvalidParamException('escrowType', 'enum');
         }
 
         const buyerRatio = data.params[2];
         if (typeof buyerRatio !== 'number' || buyerRatio < 0) {
-            throw new MessageException('buyerRatio must be numeric and >= 0.');
+            throw new InvalidParamException('buyerRatio', 'number');
         }
 
         const sellerRatio = data.params[3];
         if (typeof sellerRatio !== 'number' || sellerRatio < 0) {
-            throw new MessageException('sellerRatio must be numeric and >= 0.');
+            throw new InvalidParamException('sellerRatio', 'number');
         }
 
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
