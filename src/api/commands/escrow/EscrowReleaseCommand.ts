@@ -67,23 +67,25 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params.length < 2) {
-            throw new MessageException('Missing params orderItemId and memo.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('orderItemId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('memo');
         }
 
         const orderItemId = data.params[0];
         if (typeof orderItemId !== 'number' || orderItemId < 0) {
-            throw new MessageException('orderItemId needs to be a number >= 0.');
+            throw new InvalidParamException('orderItemId', 'number');
         }
 
         const memo = data.params[1];
         if (typeof memo !== 'string') {
-            throw new MessageException('memo needs to be a string.');
+            throw new InvalidParamException('memo', 'string');
         }
 
         const orderItemModel = await this.orderItemService.findOne(orderItemId);
         if (!orderItemModel) {
-            throw new MessageException(`OrderItem with orderItemId = ${orderItemId} not found.`);
+            throw new NotFoundException(orderItemId);
         }
         const orderItem = orderItemModel.toJSON();
 
