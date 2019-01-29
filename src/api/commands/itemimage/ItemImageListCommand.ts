@@ -62,6 +62,42 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         }
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.length < 1) {
+            throw new MissingParamException('template/item');
+        }
+        if (data.length < 2) {
+            throw new MissingParamException('listingItemTemplateId/listingItemId');
+        }
+
+        const typeSpecifier = data.params[0];
+        if (typeSpecifier === 'template') {
+            const listingItemTemplateId = data.params[1];
+            if(!typeof listingItemTemplateId !== 'number'){
+                throw new InvalidParamException('listingItemTemplateId', 'number');
+            }
+            try {
+                const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+            } catch (ex) {
+                this.log.error('Error: ' + ex);
+                throw new NotFoundException(listingItemTemplateId);
+            }
+        } else if (typeSpecifier === 'item') {
+            const listingItemId = data.params[1];
+            if(!typeof listingItemId !== 'number'){
+                throw new InvalidParamException('listingItemId', 'number');
+            }
+            try {
+                const listingItemModel = await this.listingItemService.findOne(listingItemId);
+            } catch (ex) {
+                this.log.error('Error: ' + ex);
+                throw new NotFoundException(listingItemId);
+            }
+        } else {
+            throw new InvalidParamException('typeSpecifier', 'template/item');
+        }
+    }
+
     public usage(): string {
         return this.getName() + ' (template <listingItemTemplateId>|item <listingItemId>) ';
     }

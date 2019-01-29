@@ -15,7 +15,9 @@ import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { ImageDataEncodingType } from '../../enums/ImageDataEncodingType';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -44,11 +46,6 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
-
-        // check listingItemTemplate id present in params
-        if (!data.params[0]) {
-            throw new MessageException('ListingItemTemplate id can not be null.');
-        }
         // find listing item template
         let listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         let listingItemTemplate = listingItemTemplateModel.toJSON();
@@ -74,6 +71,48 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         }
 
         return itemImage;
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        }
+
+        const listingItemTemplateId = data.params[0];
+        if(!typeof listingItemTemplateId !== 'number'){
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+        try {
+            const listingItemTemplateModel = await this.listingItemTemplateService.findOne();
+        } catch (ex) {
+            this.log.error('Error: ' + ex);
+            throw new NotFoundException(listingItemTemplateId);
+        }
+
+        if (data.length >= 2) {
+            const dataId = data.params[1];
+            if(!typeof dataId !== 'number'){
+                throw new InvalidParamException('dataId', 'number');
+            }
+        }
+        if (data.length >= 3) {
+            const protocol = data.params[2];
+            if(!typeof protocol !== 'string' && !ImageDataProtocolType[protocol]){
+                throw new InvalidParamException('protocol', 'enum:ImageDataProtocolType');
+            }
+        }
+        if (data.length >= 4) {
+            const encoding = data.params[3];
+            if(!typeof encoding !== 'string' && !ImageDataEncodingType[encoding]){
+                throw new InvalidParamException('encoding', 'enum:ImageDataEncodingType');
+            }
+        }
+        if (data.length >= 5) {
+            const data = data.params[4];
+            if(!typeof data !== 'number'){
+                throw new InvalidParamException('data', 'string');
+            }
+        }
     }
 
     public usage(): string {

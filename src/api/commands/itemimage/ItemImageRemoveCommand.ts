@@ -47,6 +47,23 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         return this.itemImageService.destroy(data.params[0]);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.length < 1) {
+            throw new MissingParamException('itemImageId');
+        }
+
+        const itemImageId = data.params[1];
+        if(!typeof itemImageId !== 'number'){
+            throw new InvalidParamException('itemImageId', 'number');
+        }
+        try {
+            const itemImageModel = await this.itemImageService.findOne(itemImageId);
+        } catch (ex) {
+            this.log.error('Error: ' + ex);
+            throw new NotFoundException(itemImageId);
+        }
+    }
+
     public usage(): string {
         return this.getName() + ' <itemImageId> ';
     }

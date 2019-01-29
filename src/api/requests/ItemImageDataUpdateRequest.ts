@@ -5,7 +5,8 @@
 import {IsEnum, IsNotEmpty, ValidateIf} from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import {ImageVersion} from '../../core/helpers/ImageVersion';
+import { ImageVersion } from '../../core/helpers/ImageVersion';
+import { ImageDataEncodingType } from '../enums/ImageDataEncodingType';
 
 // tslint:disable:variable-name
 export class ItemImageDataUpdateRequest extends RequestBody {
@@ -26,7 +27,7 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     public imageHash: string;
 
     // @IsNotEmpty()
-    public encoding: string | null;
+    public encoding: ImageDataEncodingType | null;
 
     // @IsNotEmpty()
     public data: string;
