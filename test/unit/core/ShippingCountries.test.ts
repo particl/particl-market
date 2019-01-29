@@ -17,64 +17,64 @@ this.questionableCountries = ['Europe', 'Asia'];
 describe('ShippingCountries', () => {
     test('isValidCountryCode() should return true for all country codes', () => {
         // Check valid country codes
-        for ( const x in this.countryCodeList ) {
-            if ( x ) {
+        for ( const countryCode in this.countryCodeList ) {
+            if ( countryCode ) {
                 // Check country code is correct
-                expect(ShippingCountries.isValidCountryCode(x)).toBe(true);
+                expect(ShippingCountries.isValidCountryCode(countryCode)).toBe(true);
                 // Check country from country code is correct
-                expect(ShippingCountries.isValidCountry(ShippingCountries.getCountry(x))).toBe(true);
+                expect(ShippingCountries.isValidCountry(ShippingCountries.getCountry(countryCode))).toBe(true);
             }
         }
     });
 
     test('isValidCountry() should return true for all country names', () => {
         // Check valid contry names
-        for ( const x in this.countryList ) {
-            if (x) {
+        for ( const country in this.countryList ) {
+            if (country) {
                 // Check country name is valid
-                expect(ShippingCountries.isValidCountry(x)).toBe(true);
+                expect(ShippingCountries.isValidCountry(country)).toBe(true);
                 // Check country code from country name is valid
-                expect(ShippingCountries.isValidCountryCode(ShippingCountries.getCountryCode(x))).toBe(true);
+                expect(ShippingCountries.isValidCountryCode(ShippingCountries.getCountryCode(country))).toBe(true);
             }
         }
     });
 
     test('isValidCountryCode() should return false for fake country codes', () => {
-        for ( const x in this.invalidCountryCodes ) {
-            if ( x ) {
-                expect(ShippingCountries.isValidCountryCode(x)).toBe(false);
+        for ( const countryCode in this.invalidCountryCodes ) {
+            if ( countryCode ) {
+                expect(ShippingCountries.isValidCountryCode(countryCode)).toBe(false);
             }
         }
     });
 
     test('isValidCountry() should return true for all countries', () => {
-        for ( const x in this.countryCodeList ) {
-            if ( x ) {
-                expect(ShippingCountries.isValidCountry(this.countryCodeList[x].name)).toBe(true);
+        for ( const countryCode in this.countryCodeList ) {
+            if ( countryCode ) {
+                expect(ShippingCountries.isValidCountry(this.countryCodeList[countryCode].name)).toBe(true);
             }
         }
     });
 
     test('isValidCountry() should return false for invalid countries', () => {
-        for ( const x in this.invalidCountries ) {
-            if ( x ) {
-                expect(ShippingCountries.isValidCountry(x)).toBe(false);
+        for ( const country in this.invalidCountries ) {
+            if ( country ) {
+                expect(ShippingCountries.isValidCountry(country)).toBe(false);
             }
         }
     });
 
     test('isValidCountryCode() should return false for questionable country codes', () => {
-        for ( const x in this.questionableCountryCodes ) {
-            if ( x ) {
-                expect(ShippingCountries.isValidCountryCode(x)).toBe(false);
+        for ( const countryCode in this.questionableCountryCodes ) {
+            if ( countryCode ) {
+                expect(ShippingCountries.isValidCountryCode(countryCode)).toBe(false);
             }
         }
     });
 
     test('isValidCountry() should return false for questionable countries', () => {
-        for ( const x in this.questionableCountries ) {
-            if ( x ) {
-                expect(ShippingCountries.isValidCountry(x)).toBe(false);
+        for ( const country in this.questionableCountries ) {
+            if ( country ) {
+                expect(ShippingCountries.isValidCountry(country)).toBe(false);
             }
         }
     });
