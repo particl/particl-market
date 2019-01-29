@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * ListingItem search type
+ * ListingItem searchBy type
  *
  */
 

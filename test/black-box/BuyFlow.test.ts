@@ -116,10 +116,10 @@ describe('Happy Buy Flow', () => {
         expect(listingItemTemplatesSellerNode[0].hash).toBeDefined();
 
         // we should be also able to get the template
-        const templateGetRes: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand, listingItemTemplatesSellerNode[0].id]);
-        templateGetRes.expectJson();
-        templateGetRes.expectStatusCode(200);
-        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
+        let res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand, listingItemTemplatesSellerNode[0].id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
 
         log.debug('listingItemTemplates[0].hash:', listingItemTemplatesSellerNode[0].hash);
         log.debug('result.hash:', result.hash);
@@ -127,7 +127,7 @@ describe('Happy Buy Flow', () => {
 
         // add image
         const base64Image = await testUtilSellerNode.getRandomBase64Image();
-        const imageAddRes: any = await testUtilSellerNode.rpc(imageCommand, [
+        res = await testUtilSellerNode.rpc(imageCommand, [
             imageAddCommand,
             listingItemTemplatesSellerNode[0].id,
             'uniqueid',
@@ -135,26 +135,24 @@ describe('Happy Buy Flow', () => {
             'BASE64',
             base64Image
         ]);
-        imageAddRes.expectJson();
-        imageAddRes.expectStatusCode(200);
-        const imageResult: resources.ListingItemTemplate = imageAddRes.getBody()['result'];
-        // log.debug('imageResult:', imageResult);
+        res.expectJson();
+        res.expectStatusCode(200);
 
         // start with clean outputs incase something went wrong earlier
         // incase something went wrong last time.. unlock the locked outputs
-        let response: any = await testUtilSellerNode.rpc(daemonCommand, [
+        res = await testUtilSellerNode.rpc(daemonCommand, [
             'lockunspent',
             true
         ]);
-        response.expectJson();
-        response.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        response = await testUtilBuyerNode.rpc(daemonCommand, [
+        res = await testUtilBuyerNode.rpc(daemonCommand, [
             'lockunspent',
             true
         ]);
-        response.expectJson();
-        response.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
     });
 
@@ -166,17 +164,17 @@ describe('Happy Buy Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [
             templatePostCommand,
             listingItemTemplatesSellerNode[0].id,
             DAYS_RETENTION,
             defaultMarket.id
         ]);
-        templatePostRes.expectJson();
-        templatePostRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
         // make sure we got the expected result from posting the template
-        const result: any = templatePostRes.getBody()['result'];
+        const result: any = res.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
@@ -244,7 +242,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const itemGetRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesSellerNode[0].hash],
             8 * 60,
@@ -252,10 +250,10 @@ describe('Happy Buy Flow', () => {
             'hash',
             listingItemTemplatesSellerNode[0].hash
         );
-        itemGetRes.expectJson();
-        itemGetRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.ListingItem = itemGetRes.getBody()['result'];
+        const result: resources.ListingItem = res.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
 
         // store ListingItem for later tests
@@ -282,11 +280,11 @@ describe('Happy Buy Flow', () => {
             'xl'
         ];
 
-        const bidSendRes: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
-        bidSendRes.expectJson();
-        bidSendRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: any = bidSendRes.getBody()['result'];
+        const result: any = res.getBody()['result'];
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
 
@@ -317,7 +315,7 @@ describe('Happy Buy Flow', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -325,10 +323,10 @@ describe('Happy Buy Flow', () => {
             '[0].action',
             BidMessageType.MPA_BID.toString()
         );
-        bidSearchRes.expectJson();
-        bidSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
@@ -362,7 +360,7 @@ describe('Happy Buy Flow', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+        const res: any = await testUtilSellerNode.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -370,10 +368,10 @@ describe('Happy Buy Flow', () => {
             '[0].action',
             BidMessageType.MPA_BID.toString()
         );
-        bidSearchRes.expectJson();
-        bidSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
@@ -445,7 +443,7 @@ describe('Happy Buy Flow', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+        const res: any = await testUtilSellerNode.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -453,10 +451,10 @@ describe('Happy Buy Flow', () => {
             '[0].action',
             BidMessageType.MPA_ACCEPT.toString()
         );
-        bidSearchRes.expectJson();
-        bidSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnSellerNode.ListingItem.hash);
@@ -492,7 +490,7 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+        const res: any = await testUtilSellerNode.rpcWaitFor(
             orderCommand,
             orderSearchCommandParams,
             8 * 60,
@@ -500,10 +498,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderStatus.AWAITING_ESCROW.toString()
         );
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: should match bidOnSellerNode.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -540,7 +538,7 @@ describe('Happy Buy Flow', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -548,10 +546,10 @@ describe('Happy Buy Flow', () => {
             '[0].action',
             BidMessageType.MPA_ACCEPT.toString()
         );
-        bidSearchRes.expectJson();
-        bidSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result[0].bidder).toBe(buyerProfile.address);
@@ -587,11 +585,11 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -647,12 +645,12 @@ describe('Happy Buy Flow', () => {
             'WANTITPLEASETAKEMYMONEYS!'
         ];
 
-        const escrowLockRes: any = await testUtilBuyerNode.rpc(escrowCommand, escrowLockCommandParams);
-        escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(escrowCommand, escrowLockCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
         // make sure we got the expected result from sending the bid
-        const result: any = escrowLockRes.getBody()['result'];
+        const result: any = res.getBody()['result'];
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
 
@@ -684,11 +682,11 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -719,7 +717,7 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+        const res: any = await testUtilSellerNode.rpcWaitFor(
             orderCommand,
             orderSearchCommandParams,
             8 * 60,
@@ -727,10 +725,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderStatus.ESCROW_LOCKED.toString()
         );
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -758,11 +756,11 @@ describe('Happy Buy Flow', () => {
             'tracking1234'
         ];
 
-        const escrowReleaseRes: any = await testUtilSellerNode.rpc(escrowCommand, escrowReleaseCommandParams);
-        escrowReleaseRes.expectJson();
-        escrowReleaseRes.expectStatusCode(200);
+        const res: any = await testUtilSellerNode.rpc(escrowCommand, escrowReleaseCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: any = escrowReleaseRes.getBody()['result'];
+        const result: any = res.getBody()['result'];
         log.debug('result', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
@@ -794,11 +792,11 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilSellerNode.rpc(orderCommand, orderSearchCommandParams);
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        const res: any = await testUtilSellerNode.rpc(orderCommand, orderSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -832,7 +830,7 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             orderCommand,
             orderSearchCommandParams,
             8 * 60,
@@ -840,10 +838,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderStatus.SHIPPING.toString()
         );
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -871,11 +869,11 @@ describe('Happy Buy Flow', () => {
             'kthanxbye'
         ];
 
-        const escrowReleaseRes: any = await testUtilBuyerNode.rpc(escrowCommand, escrowReleaseCommandParams);
-        escrowReleaseRes.expectJson();
-        escrowReleaseRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(escrowCommand, escrowReleaseCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: any = escrowReleaseRes.getBody()['result'];
+        const result: any = res.getBody()['result'];
         log.debug('result', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
@@ -907,11 +905,11 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        const res: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
@@ -943,7 +941,7 @@ describe('Happy Buy Flow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+        const res: any = await testUtilBuyerNode.rpcWaitFor(
             orderCommand,
             orderSearchCommandParams,
             8 * 60,
@@ -951,10 +949,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderStatus.COMPLETE.toString()
         );
-        orderSearchRes.expectJson();
-        orderSearchRes.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: resources.Order = orderSearchRes.getBody()['result'];
+        const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderStatus.COMPLETE);
         expect(result[0].buyer).toBe(buyerProfile.address);

@@ -258,12 +258,13 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
@@ -360,6 +361,7 @@ export const Targets = {
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
+        ProposalResultProcessor: 'ProposalResultProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',

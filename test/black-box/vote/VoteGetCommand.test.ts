@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 
 describe('VoteGetCommand', () => {
@@ -20,11 +20,13 @@ describe('VoteGetCommand', () => {
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
+    let createdVote: resources.Vote;
+
+    let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -34,11 +36,12 @@ describe('VoteGetCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateProposalParams = new GenerateProposalParams([
-            false,   // generateListingItemTemplate
-            false,   // generateListingItem
-            null,   // listingItemHash,
-            false,  // generatePastProposal,
-            0       // voteCount
+            false,                  // generateListingItemTemplate
+            false,                  // generateListingItem
+            null,                   // listingItemHash,
+            false,                  // generatePastProposal,
+            0,                      // voteCount
+            defaultProfile.address  // submitter
         ]).toParamsArray();
 
         // generate proposal, no votes
@@ -50,25 +53,41 @@ describe('VoteGetCommand', () => {
         ) as resources.Proposal[];
         proposal = proposals[0];
 
+    });
+
+    test('Should fail to return a Vote', async () => {
+
+        const response: any = await testUtil.rpc(voteCommand, [
+            voteGetCommand,
+            defaultProfile.id,
+            proposal.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe('No Votes found.');
+    });
+
+    test('Should create and return a Vote', async () => {
+
         // post a vote
-        const votePostRes: any = await testUtil.rpc(voteCommand, [
+        let response: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
             defaultProfile.id,
             proposal.hash,
             proposal.ProposalOptions[0].optionId
         ]);
-        votePostRes.expectJson();
-        votePostRes.expectStatusCode(200);
-        const result: any = votePostRes.getBody()['result'];
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
 
-    });
+        expect(sent).toBeTruthy();
 
-    test('Should return Vote', async () => {
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        const voteGetRes: any = await testUtil.rpcWaitFor(
+        response = await testUtil.rpcWaitFor(
             voteCommand,
             [voteGetCommand, defaultProfile.id, proposal.hash],
             8 * 60,
@@ -76,34 +95,36 @@ describe('VoteGetCommand', () => {
             'ProposalOption.optionId',
             proposal.ProposalOptions[0].optionId
         );
-        voteGetRes.expectJson();
-        voteGetRes.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const vote: resources.Vote = response.getBody()['result'];
+        createdVote = vote;
 
-        const result: resources.Vote = voteGetRes.getBody()['result'];
-        expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(1);
-        expect(result.voter).toBe(defaultProfile.address);
-        expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
+        expect(vote).hasOwnProperty('ProposalOption');
+        expect(vote.weight).toBeGreaterThan(1);
+        expect(vote.voter).toBe(defaultProfile.address);
+        expect(vote.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
 
     test('Should return Vote with different result after voting again', async () => {
 
         // post a vote
-        const votePostRes: any = await testUtil.rpc(voteCommand, [
+        let response: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
             defaultProfile.id,
             proposal.hash,
             proposal.ProposalOptions[1].optionId
         ]);
-        votePostRes.expectJson();
-        votePostRes.expectStatusCode(200);
-        const votePostResult: any = votePostRes.getBody()['result'];
-        expect(votePostResult.result).toEqual('Sent.');
+        response.expectJson();
+        response.expectStatusCode(200);
+        let result: any = response.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        const voteGetRes: any = await testUtil.rpcWaitFor(
+        response = await testUtil.rpcWaitFor(
             voteCommand,
             [voteGetCommand, defaultProfile.id, proposal.hash],
             8 * 60,
@@ -111,12 +132,12 @@ describe('VoteGetCommand', () => {
             'ProposalOption.optionId',
             proposal.ProposalOptions[1].optionId
         );
-        voteGetRes.expectJson();
-        voteGetRes.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Vote = voteGetRes.getBody()['result'];
+        result = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(1);
+        expect(result.weight).toBe(createdVote.weight);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
     });

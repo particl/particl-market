@@ -138,19 +138,19 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
-            + '                                view of search listing item results. \n'
+            + '                                view of searchBy listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
-            + '    <itemhash>               - String - The hash of the item we want to search bids for. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. \n'
+            + '    <itemhash>               - String - The hash of the item we want to searchBy bids for. \n'
             + '                                The value * specifies that status can be anything. \n'
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                             - or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE} - \n'
-            + '                                The status of the bids or status of the orderItem we want to search for. \n'
+            + '                                The status of the bids or status of the orderItem we want to searchBy for. \n'
             + '                                The value * specifies that status can be anything. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
             + '                                find bids related to listing items by their titles and descriptions. \n'
             + '                                The value * specifies that status can be anything. \n'
-            + '    <bidderAddress>          - [optional] String(s) - The addresses of the bidders we want to search bids for. ';
+            + '    <bidderAddress>          - [optional] String(s) - The addresses of the bidders we want to searchBy bids for. ';
 
     }
 

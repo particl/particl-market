@@ -30,7 +30,7 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
     }
 
     public usage(): string {
-        return this.getName() + ' (search|get|add|remove|post)  -  ' + this.description();
+        return this.getName() + ' (searchBy|get|add|remove|post)  -  ' + this.description();
     }
 
     public help(): string {

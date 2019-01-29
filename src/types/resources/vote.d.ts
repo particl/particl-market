@@ -15,8 +15,8 @@ declare module 'resources' {
 
         ProposalOption: ProposalOption;
 
-        createdAt: Date;
-        updatedAt: Date;
+        createdAt: number;
+        updatedAt: number;
     }
 
 }

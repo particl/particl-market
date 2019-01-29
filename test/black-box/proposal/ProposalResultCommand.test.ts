@@ -25,7 +25,7 @@ describe('ProposalResultCommand', () => {
     let defaultMarket: resources.Market;
     let proposal: resources.Proposal;
 
-    let testTimeStamp = new Date().getTime();
+    const testTimeStamp = new Date().getTime();
     const voteCount = 50;
 
     beforeAll(async () => {
@@ -36,11 +36,13 @@ describe('ProposalResultCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateProposalParams = new GenerateProposalParams([
-            false,   // generateListingItemTemplate
-            false,   // generateListingItem
-            null,   // listingItemHash,
-            false,  // generatePastProposal,
-            voteCount       // voteCount
+            false,                  // generateListingItemTemplate
+            false,                  // generateListingItem
+            null,                   // listingItemHash,
+            false,                  // generatePastProposal,
+            voteCount,              // voteCount,
+            defaultProfile.address  // submitter
+
         ]).toParamsArray();
 
         // generate proposals

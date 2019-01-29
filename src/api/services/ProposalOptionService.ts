@@ -42,7 +42,16 @@ export class ProposalOptionService {
         return proposalOption;
     }
 
-    public async findOneByProposalAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ProposalOption> {
+        const proposalOption = await this.proposalOptionRepo.findOneByHash(hash, withRelated);
+        if (proposalOption === null) {
+            this.log.warn(`ProposalOption with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return proposalOption;
+    }
+
+    public async findOneByProposalIdAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
         const proposalOption = await this.proposalOptionRepo.findOneByProposalAndOptionId(proposalId, optionId, withRelated);
         if (proposalOption === null) {
             this.log.warn(`ProposalOption with the proposalId=${proposalId} and optionId=${optionId} was not found!`);

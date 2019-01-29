@@ -9,13 +9,12 @@ import { Types, Core, Targets } from '../../../constants';
 import { ProposalService } from '../../services/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Proposal } from '../../models/Proposal';
-import { RpcCommandInterface } from './../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {ProposalType} from '../../enums/ProposalType';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProposalGetCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -45,8 +44,13 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Expected proposalHash but received no params.');
+            throw new MissingParamException('proposalHash');
         }
+
+        if (data.params[0] && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('proposalHash', 'string');
+        }
+
         return data;
     }
 

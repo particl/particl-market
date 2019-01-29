@@ -67,7 +67,7 @@ export class ItemCategoryFactory {
             // root case
             return rootCategory;
         } else {
-            // search the children for a match
+            // searchBy the children for a match
             const childCategories = rootCategory.ChildItemCategories;
             const found = _.find(childCategories, (childCategory) => {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);

@@ -52,7 +52,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             order: data.params[3]
         } as ProposalSearchParams;
 
-        return await this.proposalService.searchBy(searchParams, true);
+        return await this.proposalService.search(searchParams, true);
     }
 
     /**

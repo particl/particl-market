@@ -49,14 +49,14 @@ describe('ListingItemObjectSearchCommand', () => {
         listingItemObjects = listingItemTemplates[0].ListingItemObjects;
     });
 
-    test('Should fail to search ListingItemObject when missing the searchString', async () => {
+    test('Should fail to searchBy ListingItemObject when missing the searchString', async () => {
         const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Missing searchString.');
     });
 
-    test('Should search empty ListingItemObject for the invalid string search', async () => {
+    test('Should searchBy empty ListingItemObject for the invalid string searchBy', async () => {
         const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand, 'dapp']);
         res.expectJson();
         res.expectStatusCode(200);

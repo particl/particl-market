@@ -30,7 +30,7 @@ export class ShoppingCartService {
     }
 
     public async findAllByProfileId(profileId: number): Promise<Bookshelf.Collection<ShoppingCart>> {
-        return this.shoppingCartRepo.findAllByProfileId(profileId);
+        return await this.shoppingCartRepo.findAllByProfileId(profileId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCart> {

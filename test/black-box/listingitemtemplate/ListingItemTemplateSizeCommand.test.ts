@@ -13,9 +13,6 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MessageSize } from '../../../src/api/responses/MessageSize';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
-import {DataDir} from '../../../src/core/helpers/DataDir';
 
 describe('ListingItemTemplatSizeCommand', () => {
 
