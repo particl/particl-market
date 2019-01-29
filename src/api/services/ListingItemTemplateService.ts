@@ -16,7 +16,6 @@ import { ListingItemTemplateRepository } from '../repositories/ListingItemTempla
 import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
-import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
@@ -36,10 +35,11 @@ import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { MessageSize } from '../responses/MessageSize';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ItemImageDataService } from './ItemImageDataService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
-import { ListingItem } from '../models/ListingItem';
+import { ItemImageDataService } from './ItemImageDataService';
+import { ItemImageService } from './ItemImageService';
+import {ItemImage} from '../models/ItemImage';
 
 export class ListingItemTemplateService {
 
@@ -57,9 +57,9 @@ export class ListingItemTemplateService {
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
@@ -407,6 +407,36 @@ export class ListingItemTemplateService {
         };
 
         return messageSize;
+    }
+
+    /**
+     * sets the featured image for the ListingItemTemlate
+     *
+     * @param listingItemTemplate
+     * @param imageId
+     *
+     */
+    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+        if (!_.isEmpty(itemImages)) {
+            // find image and set it to featured
+            const found = itemImages.find((img) => img.id === imageId && !img.featured);
+            if (found) {
+                await this.itemImageService.updateFeatured(found.id, true);
+            }
+
+            // check if other images are set to featured, unset as featured
+            const notFound = itemImages.filter((img) => img.id !== imageId && img.featured);
+            if (notFound.length) {
+                notFound.forEach( async (img) => await this.itemImageService.updateFeatured(img.id, false));
+            }
+
+            this.log.info('Successfully set featured image');
+            return await this.itemImageService.findOne(imageId);
+        } else {
+            this.log.error('ListingItemTemplate has no ItemImages.');
+            throw new MessageException('ListingItemTemplate has no Images.');
+        }
     }
 
     // check if object is exist in a array

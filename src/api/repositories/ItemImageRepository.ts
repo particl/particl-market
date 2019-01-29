@@ -49,6 +49,7 @@ export class ItemImageRepository {
             const itemImageUpdated = await itemImage.save(data, { patch: true });
             return await this.ItemImageModel.fetchById(itemImageUpdated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not update the itemImage!', error);
         }
     }
@@ -68,5 +69,4 @@ export class ItemImageRepository {
             throw new DatabaseException('Could not delete the itemImage!', error);
         }
     }
-
 }

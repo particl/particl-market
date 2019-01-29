@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -40,7 +41,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         const itemImage = itemImageModel.toJSON();
 
         // check if item already been posted
-        if (itemImage.ItemInformation.listingItemId) {
+        if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
             throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
         }
         return this.itemImageService.destroy(data.params[0]);

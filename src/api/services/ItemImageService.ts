@@ -23,6 +23,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { ItemImageDataRepository } from '../repositories/ItemImageDataRepository';
 
 
 export class ItemImageService {
@@ -32,6 +33,7 @@ export class ItemImageService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ItemImageDataRepository) public itemImageDataRepo: ItemImageDataRepository,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -187,6 +189,7 @@ export class ItemImageService {
 
             // set new values
             itemImage.Hash = body.hash;
+            itemImage.Featured = body.featured;
 
             // update itemImage record
             const updatedItemImageModel = await this.itemImageRepo.update(id, itemImage.toJSON());
@@ -223,9 +226,14 @@ export class ItemImageService {
         }
     }
 
+    public async updateFeatured(imageId: number, featured: boolean): Promise<ItemImage> {
+        const data = {
+            featured
+        } as ItemImageUpdateRequest;
+        return await this.itemImageRepo.update(imageId, data);
+    }
+
     public async destroy(id: number): Promise<void> {
         await this.itemImageRepo.destroy(id);
     }
-
-
 }
