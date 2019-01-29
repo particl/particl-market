@@ -33,7 +33,7 @@ export class ShippingCountries {
     public static getCountry( countryCode: string ): string {
         countryCode = countryCode.toString().toUpperCase();
         if ( this.countryCodeList[countryCode] ) {
-            return this.countryCodeList[countryCode].iso;
+            return this.countryCodeList[countryCode].name;
         }
         throw new CountryCodeNotFoundException(countryCode);
     }

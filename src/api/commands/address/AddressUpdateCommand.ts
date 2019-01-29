@@ -152,7 +152,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <addressId> <title> <firstName> <lastName> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <addressId> <title> <firstName> <lastName> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) <zip> ';
     }
     // tslint:enable:max-line-length
 
@@ -172,7 +172,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Update the details of an address given by ID.';
+        return 'Update the details of a shipping address given by addressId.';
     }
 
     public example(): string {
