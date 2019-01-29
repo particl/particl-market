@@ -75,6 +75,141 @@ describe('AddressUpdateCommand', () => {
         createdAddress = res.getBody()['result'];
     });
 
+        test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('zipCode').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('city').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
+    });
+
+        test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('addressLine1').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('lastName').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('firstName').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
+    });
+
+    test('Should fail because we want to create an empty Address without required fields', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new MissingParamException('addressId').getMessage());
+    });
+
     test('Should update the Address', async () => {
 
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,

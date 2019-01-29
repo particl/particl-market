@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -31,23 +32,42 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: ItemImageId
+     *  [0]: itemImageId
      * todo: we should propably switch to use hashes
      *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+
+        return this.itemImageService.destroy(data.params[0]);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: itemImageId
+     * @param data
+     * @returns {Promise<ItemImage>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // check if we got all the params
         if (data.params.length < 1) {
-            throw new MessageException('Requires arg: ItemImageId');
+            throw new MissingParamException('itemImageId');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('itemImageId', 'number');
+        }
+
         const itemImageModel = await this.itemImageService.findOne(data.params[0]);
         const itemImage = itemImageModel.toJSON();
 
         // check if item already been posted
         if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
-            throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
+            throw new MessageException(`Can't delete ItemImage because the item has already been posted!`);
         }
-        return this.itemImageService.destroy(data.params[0]);
+
+        return data;
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
@@ -74,11 +94,11 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <itemImageId>                 - Numeric - The ID of the image we want to remove.';
+            + '    <itemImageId>                 - Numeric - The Id of the image we want to remove.';
     }
 
     public description(): string {
-        return 'Remove an item\'s image, identified by its ID.';
+        return 'Remove an item\'s image, identified by its Id.';
     }
 
     public example(): string {
