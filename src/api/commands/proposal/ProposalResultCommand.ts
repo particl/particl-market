@@ -8,18 +8,22 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProposalResultService } from '../../services/ProposalResultService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommandInterface } from './../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import { ProposalResult } from '../../models/ProposalResult';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProposalService } from '../../services/ProposalService';
 
 export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<ProposalResult> {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -37,11 +41,27 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ProposalResult> {
-        if (data.params.length < 1) {
-            throw new MessageException('Expected proposalHash but received no params.');
-        }
         const proposalHash = data.params[0];
-        return await this.proposalResultService.findOneByProposalHash(proposalHash, true);
+        return await this.proposalResultService.findLatestByProposalHash(proposalHash, true);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('proposalHash');
+        }
+
+        if (data.params[0] && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('proposalHash', 'string');
+        }
+
+        // make sure proposal with the hash exists
+        await this.proposalService.findOneByHash(data.params[0])
+            .catch(reason => {
+                this.log.error('Proposal not found. ' + reason);
+                throw new ModelNotFoundException('Proposal');
+            });
+
+        return data;
     }
 
     public help(): string {

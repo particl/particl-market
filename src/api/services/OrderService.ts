@@ -54,7 +54,7 @@ export class OrderService {
     }
 
     /**
-     * search Order using given OrderSearchParams
+     * searchBy Order using given OrderSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<Bid>>}

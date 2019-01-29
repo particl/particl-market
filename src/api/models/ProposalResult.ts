@@ -17,17 +17,7 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
         // 'ProposalOptionResults.ProposalOption.Votes'
     ];
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalResult> {
-        if (withRelated) {
-            return await ProposalResult.where<ProposalResult>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ProposalResult.where<ProposalResult>({ id: value }).fetch();
-        }
-    }
-
-    public static async fetchByProposalHash(hash: string, withRelated: boolean = true): Promise<Collection<ProposalResult>> {
+    public static async fetchAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Collection<ProposalResult>> {
         const proposalResultCollection = ProposalResult.forge<Model<ProposalResult>>()
             .query(qb => {
                 qb.join('proposals', 'proposal_results.proposal_id', 'proposals.id');
@@ -42,6 +32,16 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
             });
         } else {
             return await proposalResultCollection.fetchAll();
+        }
+    }
+
+    public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalResult> {
+        if (withRelated) {
+            return await ProposalResult.where<ProposalResult>({ id: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ProposalResult.where<ProposalResult>({ id: value }).fetch();
         }
     }
 

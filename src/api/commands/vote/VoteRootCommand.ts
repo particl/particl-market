@@ -11,7 +11,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class VoteRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 

@@ -3,6 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -12,13 +14,17 @@ import { ProposalResultRepository } from '../repositories/ProposalResultReposito
 import { ProposalResult } from '../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
+import { ProposalType } from '../enums/ProposalType';
+import { MessageException } from '../exceptions/MessageException';
+import { ItemVote } from '../enums/ItemVote';
+import { CoreRpcService } from './CoreRpcService';
 
 export class ProposalResultService {
 
     public log: LoggerType;
 
     constructor(
-        // @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalResultRepository) public proposalResultRepo: ProposalResultRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -42,15 +48,15 @@ export class ProposalResultService {
         return proposalResult;
     }
 
-    public async findOneByProposalHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
-        const proposalResult = await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
+    public async findLatestByProposalHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+        const proposalResults = await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
         // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
 
-        if (proposalResult === null) {
+        if (proposalResults === null) {
             this.log.warn(`ProposalResult with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
         }
-        return proposalResult.first();
+        return proposalResults.first();
     }
 
     @validate()
@@ -88,6 +94,44 @@ export class ProposalResultService {
 
     public async destroy(id: number): Promise<void> {
         await this.proposalResultRepo.destroy(id);
+    }
+
+    /**
+     * check whether ListingItem should be removed or not based on ProposalResult
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    public async shouldRemoveListingItem(proposalResult: resources.ProposalResult, listingItem: resources.ListingItem): Promise<boolean> {
+
+        // make sure the Proposal is for removing an item
+        if (proposalResult.Proposal.type !== ProposalType.ITEM_VOTE) {
+            throw new MessageException('Invalid Proposal type.');
+        }
+
+        // we dont want to remove ListingItems that have related Bids
+        // const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+        //    .then(value => value.toJSON());
+        if (!_.isEmpty(listingItem.Bids)) {
+            return false;
+        }
+
+        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
+        });
+
+        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+        // at minimum, 10% of total network weight for removal
+        const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        const networkSupply = blockchainInfo.moneysupply * 100000000;
+
+        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 10; // todo: configurable
+        if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
+            this.log.debug('Votes for ListingItem removal exceed 10%');
+            return true;
+        }
+        this.log.debug('ListingItem should NOT be destroyed');
+        return false;
     }
 
 }

@@ -11,6 +11,8 @@ rpctimeout=1000
 addnode=particld1
 addnode=particld2
 staking=0
+#txindex=1
+addressindex=1
 
 debug=smsg
 printtoconsole=1
