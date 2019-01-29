@@ -69,6 +69,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             this.log.error('MISSING PARAM itemImageId');
             throw new MissingParamException('itemImageId');
         }
+
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'number') {
