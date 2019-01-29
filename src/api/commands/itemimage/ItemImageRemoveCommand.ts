@@ -13,6 +13,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -48,12 +51,12 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.length < 1) {
+        if (data.params.length < 1) {
             throw new MissingParamException('itemImageId');
         }
 
         const itemImageId = data.params[1];
-        if(!typeof itemImageId !== 'number'){
+        if (typeof itemImageId !== 'number') {
             throw new InvalidParamException('itemImageId', 'number');
         }
         try {
@@ -62,6 +65,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
             this.log.error('Error: ' + ex);
             throw new NotFoundException(itemImageId);
         }
+        return data;
     }
 
     public usage(): string {

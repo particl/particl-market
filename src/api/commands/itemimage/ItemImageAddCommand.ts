@@ -15,8 +15,11 @@ import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { ImageDataProtocolType } from '../../enums/ImageDataProtocolType';
 import { ImageDataEncodingType } from '../../enums/ImageDataEncodingType';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
@@ -74,45 +77,46 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.length < 1) {
+        if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         }
 
         const listingItemTemplateId = data.params[0];
-        if(!typeof listingItemTemplateId !== 'number'){
+        if (typeof listingItemTemplateId !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         }
         try {
-            const listingItemTemplateModel = await this.listingItemTemplateService.findOne();
+            const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         } catch (ex) {
             this.log.error('Error: ' + ex);
             throw new NotFoundException(listingItemTemplateId);
         }
 
-        if (data.length >= 2) {
+        if (data.params.length >= 2) {
             const dataId = data.params[1];
-            if(!typeof dataId !== 'number'){
+            if (typeof dataId !== 'number') {
                 throw new InvalidParamException('dataId', 'number');
             }
         }
-        if (data.length >= 3) {
+        if (data.params.length >= 3) {
             const protocol = data.params[2];
-            if(!typeof protocol !== 'string' && !ImageDataProtocolType[protocol]){
+            if (typeof protocol !== 'string' && !ImageDataProtocolType[protocol]) {
                 throw new InvalidParamException('protocol', 'enum:ImageDataProtocolType');
             }
         }
-        if (data.length >= 4) {
+        if (data.params.length >= 4) {
             const encoding = data.params[3];
-            if(!typeof encoding !== 'string' && !ImageDataEncodingType[encoding]){
+            if (typeof encoding !== 'string' && !ImageDataEncodingType[encoding]) {
                 throw new InvalidParamException('encoding', 'enum:ImageDataEncodingType');
             }
         }
-        if (data.length >= 5) {
-            const data = data.params[4];
-            if(!typeof data !== 'number'){
+        if (data.params.length >= 5) {
+            const dataArg = data.params[4];
+            if (typeof dataArg !== 'string') {
                 throw new InvalidParamException('data', 'string');
             }
         }
+        return data;
     }
 
     public usage(): string {
