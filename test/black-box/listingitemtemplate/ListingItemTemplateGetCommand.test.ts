@@ -2,12 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ListingItemTemplateGetCommand', () => {
@@ -22,18 +22,8 @@ describe('ListingItemTemplateGetCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
-    const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-        true,   // generateItemInformation
-        true,   // generateItemLocation
-        true,   // generateShippingDestinations
-        false,   // generateItemImages
-        true,   // generatePaymentInformation
-        true,   // generateEscrow
-        true,   // generateItemPrice
-        true,   // generateMessagingInformation
-        false    // generateListingItemObjects
-    ]).toParamsArray();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -42,9 +32,17 @@ describe('ListingItemTemplateGetCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
-    });
-
-    test('Should return one ListingItemTemplate by Id', async () => {
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
@@ -52,13 +50,15 @@ describe('ListingItemTemplateGetCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-        const testData = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
 
-        // fetch using id
-        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplates[0].id]);
+    });
+
+    test('Should return ListingItemTemplate by Id', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
         expect(result.Profile.id).toBe(defaultProfile.id);
         expect(result.Profile.name).toBe(defaultProfile.name);
         expect(result).hasOwnProperty('Profile');
@@ -68,49 +68,52 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result).hasOwnProperty('ListingItemObjects');
         expect(result).hasOwnProperty('ListingItem');
 
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(listingItemTemplate.hash);
 
-        expect(result.ItemInformation.title).toBe(testData.ItemInformation.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.ItemInformation.shortDescription);
-        expect(result.ItemInformation.longDescription).toBe(testData.ItemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.key).toBe(testData.ItemInformation.ItemCategory.key);
-        expect(result.ItemInformation.ItemCategory.name).toBe(testData.ItemInformation.ItemCategory.name);
-        expect(result.ItemInformation.ItemCategory.description).toBe(testData.ItemInformation.ItemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(testData.ItemInformation.ItemLocation.region);
-        expect(result.ItemInformation.ItemLocation.address).toBe(testData.ItemInformation.ItemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerText);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lat);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lng);
+        expect(result.ItemInformation.title).toBe(listingItemTemplate.ItemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(listingItemTemplate.ItemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(listingItemTemplate.ItemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.key).toBe(listingItemTemplate.ItemInformation.ItemCategory.key);
+        expect(result.ItemInformation.ItemCategory.name).toBe(listingItemTemplate.ItemInformation.ItemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(listingItemTemplate.ItemInformation.ItemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(listingItemTemplate.ItemInformation.ItemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(listingItemTemplate.ItemInformation.ItemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle)
+            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();
         expect(result.ItemInformation.ItemImages).toBeDefined();
 
-        expect(result.PaymentInformation.type).toBe(testData.PaymentInformation.type);
-        expect(result.PaymentInformation.Escrow.type).toBe(testData.PaymentInformation.Escrow.type);
-        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.PaymentInformation.Escrow.Ratio.buyer);
-        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.PaymentInformation.Escrow.Ratio.seller);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.PaymentInformation.ItemPrice.currency);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.PaymentInformation.ItemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
+        expect(result.PaymentInformation.type).toBe(listingItemTemplate.PaymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(listingItemTemplate.PaymentInformation.Escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(listingItemTemplate.PaymentInformation.Escrow.Ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(listingItemTemplate.PaymentInformation.Escrow.Ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(listingItemTemplate.PaymentInformation.ItemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(listingItemTemplate.PaymentInformation.ItemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international)
+            .toBe(listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type)
+            .toBe(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address)
+            .toBe(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
-        expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);
+        expect(result.MessagingInformation.protocol).toBe(listingItemTemplate.MessagingInformation.protocol);
+        expect(result.MessagingInformation.publicKey).toBe(listingItemTemplate.MessagingInformation.publicKey);
     });
 
     test('Should return base64 of image if return image data is true', async () => {
-        const listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplate[];
-        const testData = listingItemTemplates[0];
 
-        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplates[0].id, true]);
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplate.id, true]);
         res.expectJson();
         res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+
+        log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // todo: check that the data is actually an image
+        expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
+
     });
 });
