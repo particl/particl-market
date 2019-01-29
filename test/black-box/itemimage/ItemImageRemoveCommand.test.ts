@@ -3,18 +3,21 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItemTemplate } from 'resources';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ItemImageRemoveCommand', () => {
 
@@ -26,134 +29,112 @@ describe('ItemImageRemoveCommand', () => {
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageRemoveCommand = Commands.ITEMIMAGE_REMOVE.commandName;
 
-    const keys = [
-        'id', 'hash', 'updatedAt', 'createdAt'
-    ];
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        hash: '',
-        itemInformation: {
-            title: 'item title1',
-            shortDescription: 'item short desc1',
-            longDescription: 'item long desc1',
-                itemCategory: {
-                    key: 'cat_high_luxyry_items'
-                }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE
-        }
-    } as ListingItemTemplateCreateRequest;
-
-    let createdTemplateId;
-    let createdItemInfoId;
-    let createdItemImageId;
-    let createdItemImageIdNew;
-    let listingItemId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // generate ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
             true,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
         ]).toParamsArray();
 
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
-
-        // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
-
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const result: any = addListingItemTempRes;
-        createdTemplateId = result.id;
-        createdItemInfoId = result.ItemInformation.id;
-
-        // generate listingitem
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM, // what to generate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
-            true,                       // return model
-            generateListingItemParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
-
-        listingItemId = listingItems[0]['id'];
-
-        // add item image
-        const addDataRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName,
-            createdTemplateId,
-            'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcatSmall]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        addDataRes.expectDataRpc(keys);
-        createdItemImageId = addDataRes.getBody()['result'].id;
+            true,                    // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        listingItemTemplate = listingItemTemplates[0];
 
     });
 
-    test('Should fail to remove ItemImage because no args', async () => {
+    test('Should fail to remove ItemImage because missing itemImageId', async () => {
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.success).toBe(false);
-        expect(result.error.error.message).toBe('Requires arg: ItemImageId');
+        expect(result.error.error.message).toBe(new MissingParamException('itemImageId').getMessage());
     });
 
-    test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
-
-        // set listing item id
-        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
-
-        testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
-
-        // set hash
-        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
-
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        let result: any = addListingItemTempRes;
-        const newCreatedTemplateId = result.id;
-
-        // add item image
-        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
-            Commands.ITEMIMAGE_ADD.commandName,
-            newCreatedTemplateId,
-            'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcatSmall]);
-        itemImageRes.expectJson();
-        itemImageRes.expectStatusCode(200);
-        createdItemImageIdNew = itemImageRes.getBody()['result'].id;
-
-        result = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageIdNew]);
+    test('Should fail to remove ItemImage because invalid itemImageId', async () => {
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
+            'INVALIDID'
+        ]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
+        expect(result.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
 
     test('Should remove ItemImage', async () => {
         // remove item image
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
+            listingItemTemplate.ItemInformation.ItemImages[0].id
+        ]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
     test('Should fail to remove ItemImage because itemImage already been removed', async () => {
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
+            listingItemTemplate.ItemInformation.ItemImages[0].id
+        ]);
         result.expectJson();
         result.expectStatusCode(404);
     });
+
+    test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                       // generateItemInformation
+            true,                       // generateItemLocation
+            true,                       // generateShippingDestinations
+            true,                       // generateItemImages
+            true,                       // generatePaymentInformation
+            true,                       // generateEscrow
+            true,                       // generateItemPrice
+            true,                       // generateMessagingInformation
+            false,                      // generateListingItemObjects
+            false,                      // generateObjectDatas
+            listingItemTemplate.hash,   // listingItemTemplateHash
+            defaultProfile.address,     // seller
+            null                        // categoryId
+        ]).toParamsArray();
+
+        // create ListingItem for testing
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM,     // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateListingItemParams       // what kind of data to generate
+        ) as resources.ListingItem[];
+        listingItem = listingItems[0];
+
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
+            listingItem.ItemInformation.ItemImages[0].id
+        ]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.message).toBe('Can\'t delete ItemImage because the ListingItemTemplate has already been posted!');
+    });
+
 
 });
