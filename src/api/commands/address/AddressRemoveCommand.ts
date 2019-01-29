@@ -60,7 +60,7 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Remove and destroy an address via ID.';
+        return 'Remove and destroy a shipping address via addressId.';
     }
 
     public example(): string {

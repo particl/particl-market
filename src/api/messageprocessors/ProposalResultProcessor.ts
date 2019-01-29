@@ -12,6 +12,9 @@ import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalResultService } from '../services/ProposalResultService';
 import { ListingItemService } from '../services/ListingItemService';
+import {catchClause} from 'babel-types';
+import {errorComparator} from 'tslint/lib/verify/lintError';
+import {MessageException} from '../exceptions/MessageException';
 
 export class ProposalResultProcessor implements MessageProcessorInterface {
 
@@ -52,10 +55,16 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
                 for (const proposal of proposals) {
                     const proposalResult: resources.ProposalResult = await this.proposalResultService.findLatestByProposalHash(proposal.hash)
-                        .then(async proposalResultModel => proposalResultModel.toJSON());
+                        .catch(reason => {
+                            this.log.error('ERROR: ', reason);
+                        })
+                        .then(async proposalResultModel => {
+                            if (proposalResultModel) {
+                                return proposalResultModel.toJSON();
+                            }
+                        });
 
-                    // time to recalculate?
-                    if (proposalResult.calculatedAt + this.recalculationInterval < Date.now()) {
+                    if (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now()) {
                         this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
 
                         await this.proposalService.recalculateProposalResult(proposal);
