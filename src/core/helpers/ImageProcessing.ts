@@ -816,7 +816,7 @@ export class ImageProcessing {
         const dataBuffer = Buffer.from(imageRaw, 'base64');
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
-        if (maxWidth > 0 && maxHeight > 0) {
+        if (maxWidth > 0 && maxHeight > 0 && (dataBuffer.width > maxWidth && dataBuffer.height > maxHeight)) {
             imageBuffer.scaleToFit(maxWidth, maxHeight);
             const mimeType = imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg';
             const resizedImage = await imageBuffer.getBuffer(mimeType, (err, buffer) => {
