@@ -103,9 +103,13 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             if (typeof orderItemId !== 'number') {
                 throw new MissingParamException('orderItemId must be number.');
             }
-            const orderItemModel = await this.orderItemService.findOne(orderItemId);
-            if (!orderItemModel) {
-                throw new MessageException(`orderItemModel with orderItemId = <${orderItemId}> not found.`);
+
+            let orderItemModel;
+            try {
+                orderItemModel = await this.orderItemService.findOne(orderItemId);
+            } catch (ex) {
+                this.log.error('Error: ' + ex);
+                throw new NotFoundException(orderItem);
             }
         }
         if (data.params.length >= 2) {

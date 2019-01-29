@@ -62,10 +62,13 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
         }
 
         // Throws NotFoundException if not found
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        /* if (!listingItemTemplateModel) {
+        let listingItemTemplateModel;
+        try {
+            listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        } catch (ex) {
+            this.log.error('Error: ' + ex);
             throw new NotFoundException(listingItemTemplateId);
-        }*/
+        }
         const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
         // template allready has listingitems so for now, it cannot be modified

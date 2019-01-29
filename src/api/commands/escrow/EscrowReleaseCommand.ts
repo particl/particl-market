@@ -83,8 +83,11 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             throw new InvalidParamException('memo', 'string');
         }
 
-        const orderItemModel = await this.orderItemService.findOne(orderItemId);
-        if (!orderItemModel) {
+        let orderItemModel;
+        try {
+            orderItemModel = await this.orderItemService.findOne(orderItemId);
+        } catch (ex) {
+            this.log.error('Error: ' + ex);
             throw new NotFoundException(orderItemId);
         }
         const orderItem = orderItemModel.toJSON();

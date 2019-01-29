@@ -64,10 +64,14 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         if (data.params.length >= 1) {
             const orderItemId = data.params[0];
             if (typeof orderItemId !== 'number' || orderItemId < 0) {
-                throw new InvalidParamException('orderItemId must be number and >= 0.', 'number');
+                throw new InvalidParamException('orderItemId', 'number');
             }
-            const orderItemModel = await this.orderItemService.findOne(orderItemId);
-            if (!orderItemModel) {
+
+            let orderItemModel;
+            try {
+                orderItemModel = await this.orderItemService.findOne(orderItemId);
+            } catch (ex) {
+                this.log.error('Error: ' + ex);
                 throw new NotFoundException(orderItemId);
             }
             orderItem = orderItemModel.toJSON();
@@ -86,38 +90,38 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             const listingItem = orderItem.Bid.ListingItem;
             if (_.isEmpty(listingItem)) {
                 this.log.error('ListingItem not found!');
-                throw new MessageException('ListingItem not found!');
+                throw new ModelNotFoundException('listingItem');
             }
 
             const paymentInformation = orderItem.Bid.ListingItem.PaymentInformation;
             if (_.isEmpty(paymentInformation)) {
                 this.log.error('PaymentInformation not found!');
-                throw new MessageException('PaymentInformation not found!');
+                throw new ModelNotFoundException('paymentInformation');
             }
 
             const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
             if (_.isEmpty(escrow)) {
                 this.log.error('Escrow not found!');
-                throw new MessageException('Escrow not found!');
+                throw new ModelNotFoundException('escrow');
             }
 
             const escrowRatio = orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio;
             if (_.isEmpty(escrowRatio)) {
                 this.log.error('EscrowRatio not found!');
-                throw new InvalidParamException('EscrowRatio not found!');
+                throw new ModelNotFoundException('escrowRatio');
             }
         }
         if (data.params.length >= 2) {
             // TODO: Accepted status seems like something that needs validation as it sounds like an enum
             const accepted = data.params[1];
             if (typeof accepted !== 'boolean') {
-                throw new InvalidParamException('accepted must be boolean.', 'boolean');
+                throw new InvalidParamException('accepted', 'boolean');
             }
         }
         if (data.params.length >= 3) {
             const memo = data.params[2];
             if (typeof memo !== 'string') {
-                throw new InvalidParamException('memo must be string.', 'string');
+                throw new InvalidParamException('memo', 'string');
             }
         }
 
