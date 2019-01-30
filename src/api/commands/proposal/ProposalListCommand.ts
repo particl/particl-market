@@ -98,7 +98,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
                 type = ProposalType.PUBLIC_VOTE;
             } else {
-                // anything goes
+                type = ProposalType.PUBLIC_VOTE;
             }
         } else {
             type = ProposalType.PUBLIC_VOTE; // default

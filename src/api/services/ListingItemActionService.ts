@@ -36,6 +36,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
+import {MessageSize} from '../responses/MessageSize';
 
 export class ListingItemActionService {
 
@@ -80,7 +81,7 @@ export class ListingItemActionService {
         // TODO: should validate that the template has the required info
         // TODO: recalculate the template.hash in case the related data has changed
 
-        const listingMessageSizeData = await this.listingItemTemplateService.calculateMarketplaceMessageSize(itemTemplate);
+        const listingMessageSizeData: MessageSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(itemTemplate);
         if (!listingMessageSizeData.fits) {
             itemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(itemTemplate);
             this.log.debug('images resized');
