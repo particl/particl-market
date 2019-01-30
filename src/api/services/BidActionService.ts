@@ -277,9 +277,10 @@ export class BidActionService {
         // Step 1: Check whether an exact match was found.
         if (exactMatchIdx === -1) {
             // No exact match found, so...
-            //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the required amount by no more than 1%.
+            //  ... Step 2: Ignore this step since it literally takes forever to complete
+            //  Sum utxos to find a summed group that matches exactly or is greater than the required amount by no more than 1%.
             // NB!! Only do this if number of utxos <= 12 (which is 4096 combinations to test for - any more and performance drastically suffers)
-            const requiredTestCases = utxoLessThanReqestedAmount.length <= 12 ? 0 : Math.pow(2, utxoLessThanReqestedAmount.length);
+            /* const requiredTestCases = utxoLessThanReqestedAmount.length <= 12 ? 0 : Math.pow(2, utxoLessThanReqestedAmount.length);
             for (let ii = 0; ii < requiredTestCases; ii++) {
                 const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
                 const summed: number = this.correctNumberDecimals(
@@ -298,7 +299,7 @@ export class BidActionService {
                     }
                 }
             }
-
+            */
             // ... Step 3: If no summed values found, attempt to split a large enough output.
             if (utxoIdxs.length === 0 && maxOutputIdx !== -1 && unspentOutputs[maxOutputIdx].amount > adjustedRequiredAmount) {
                 const newAddress = await this.coreRpcService.getNewAddress([], false);
