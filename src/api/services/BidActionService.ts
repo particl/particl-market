@@ -233,7 +233,7 @@ export class BidActionService {
         let selectedOutputsSum = 0;
         let selectedOutputsChangeAmount = 0;
 
-        const utxoLessThanReqestedAmount: number[] = [];
+        // const utxoLessThanReqestedAmount: number[] = [];
         let utxoIdxs: number[] = [];
 
         let exactMatchIdx = -1;
@@ -250,9 +250,9 @@ export class BidActionService {
                     if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {
                         // Found a utxo with amount that is an exact match for the requested amount.
                         exactMatchIdx = outIdx;
-                    } else if (output.amount < adjustedRequiredAmount) {
-                        // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
-                        utxoLessThanReqestedAmount.push(outIdx);
+                    // } else if (output.amount < adjustedRequiredAmount) {
+                    //     // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
+                    //     utxoLessThanReqestedAmount.push(outIdx);
                     }
 
                     // Get the max utxo amount in case an output needs to be split
