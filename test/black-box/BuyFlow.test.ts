@@ -195,10 +195,7 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MP_ITEM_ADD posted from sellers node, ListingItem is created and matched with the existing ListingItemTemplate');
         log.debug('========================================================================================');
 
-        // wait for some time to make sure it's received
-        await testUtilSellerNode.waitFor(10);
-
-        const response: any = await testUtilSellerNode.rpcWaitFor(
+        let response: any = await testUtilSellerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesSellerNode[0].hash],
             8 * 60,
@@ -206,6 +203,15 @@ describe('Happy Buy Flow', () => {
             'hash',
             listingItemTemplatesSellerNode[0].hash
         );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        await testUtilSellerNode.waitFor(5);
+
+        // sometimes result.ListingItemTemplate is undefined, this is propably because we
+        // just received the ListingItem and it hasn't been linked with the ListingItemTemplate yet.
+        // so, we wait some time and fetch it again..
+        response = await testUtilSellerNode.rpc(listingItemCommand, [listingItemGetCommand, listingItemTemplatesSellerNode[0].hash]);
         response.expectJson();
         response.expectStatusCode(200);
 
@@ -219,13 +225,7 @@ describe('Happy Buy Flow', () => {
         log.debug('listingItemTemplatesSellerNode[0].hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
-
-        if (!result.ListingItemTemplate) {
-            log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
-        }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
-        // sometimes result.ListingItemTemplate is null!!!
-        // ...and sometimes missing a price
 
         // store ListingItem for later tests
         listingItemReceivedSellerNode = result;
