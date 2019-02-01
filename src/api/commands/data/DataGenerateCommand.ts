@@ -13,7 +13,10 @@ import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest'
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -53,16 +56,50 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Missing model.');
+            throw new MissingParamException('model');
         }
         if (data.params.length < 2) {
-            throw new MessageException('Missing json.');
+            throw new MissingParamException('amount');
         }
+
+        const model = data.params[0];
+        if (typeof model !== 'string') {
+            throw new InvalidParamException('model', 'string');
+        }
+        switch (model) {
+            case 'listingitemtemplate':
+            case 'listingitem':
+            case 'profile':
+            case 'itemcategory':
+            case 'favoriteitem':
+            case 'iteminformation':
+            case 'bid':
+            case 'paymentinformation':
+            case 'itemimage': {
+                break;
+            }
+            default: {
+                throw new NotImplementedException();
+            }
+        }
+
+        const amount = data.params[1];
+        if (typeof amount !== 'number' || amount < 0) {
+            throw new InvalidParamException('amount', 'number');
+        }
+
+        if (data.params.length > 2) {
+            const withRelated = data.params[2];
+            if (typeof withRelated !== 'boolean') {
+                throw new InvalidParamException('withRelated', 'boolean');
+            }
+        }
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <model> [<amount> [<withRelated>]] ';
+        return this.getName() + ' <model> <amount> [<withRelated>] ';
     }
 
     public help(): string {
@@ -70,12 +107,12 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
-            + '    <amount>                 - [optional] Numeric - The number of objects we want to generate. \n'
+            + '    <amount>                 - Numeric - The number of objects we want to generate. \n'
             + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';
     }
 
     public description(): string {
-        return 'Generates data to the database.';
+        return 'Autogenerates data for the database.';
     }
 
     public example(): string {

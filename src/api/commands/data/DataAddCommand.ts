@@ -13,7 +13,10 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import {TestDataService} from '../../services/TestDataService';
 import {TestDataCreateRequest} from '../../requests/TestDataCreateRequest';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -48,11 +51,38 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Missing model.');
+            throw new MissingParamException('model');
         }
         if (data.params.length < 2) {
-            throw new MessageException('Missing json.');
+            throw new MissingParamException('json');
         }
+
+        const model = data.params[0];
+        if (typeof model !== 'string') {
+            throw new InvalidParamException('model', 'string');
+        }
+        switch (model) {
+            case 'listingitemtemplate':
+            case 'listingitem':
+            case 'profile':
+            case 'itemcategory':
+            case 'favoriteitem':
+            case 'iteminformation':
+            case 'bid':
+            case 'paymentinformation':
+            case 'itemimage': {
+                break;
+            }
+            default: {
+                throw new NotImplementedException();
+            }
+        }
+
+        const json = data.params[1];
+        if (typeof json !== 'string') {
+            throw new InvalidParamException('json', 'string');
+        }
+
         return data;
     }
 
@@ -70,7 +100,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public description(): string {
-        return 'Adds data to the database.';
+        return 'Adds data to the database, specified as json.';
     }
 
     public example(): string {

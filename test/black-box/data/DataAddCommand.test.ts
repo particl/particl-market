@@ -7,6 +7,9 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { NotImplementedException } from '../../../src/api/exceptions/NotImplementedException';
 
 describe('DataAddCommand', () => {
 
@@ -69,4 +72,52 @@ describe('DataAddCommand', () => {
         expect(result.MessageObjects[0].dataId).toBe(testActionMessage.objects[0].dataId);
     });
 
+    test('Should fail to create test data for Profile due to invalid model', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, 'INVALID', JSON.stringify(testProfileData)]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotImplementedException().getMessage());
+    });
+
+    test('Should fail to create test data for Profile due to invalid model', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, 'INVALID', JSON.stringify(testProfileData)], true);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotImplementedException().getMessage());
+    });
+
+    test('Should fail to create test data for Profile due to invalid model', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, 'INVALID', JSON.stringify(testProfileData)], false);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotImplementedException().getMessage());
+    });
+
+    test('Should fail to create test data for Profile due to invalid json', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, 'INVALID']);
+        res.expectJson();
+        res.expectStatusCode(500);
+        expect(res.error.error.message).toBe('Something broke!');
+    });
+
+    test('Should fail to create test data for Profile due to invalid json', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, 'INVALID', true]);
+        res.expectJson();
+        res.expectStatusCode(500);
+        expect(res.error.error.message).toBe('Something broke!');
+    });
+
+    test('Should fail to create test data for Profile due to invalid json', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, 'INVALID', false]);
+        res.expectJson();
+        res.expectStatusCode(500);
+        expect(res.error.error.message).toBe('Something broke!');
+    });
+
+    test('Should fail to create test data for Profile due to invalid withRelated', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, JSON.stringify(testProfileData), 'INVALID']);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe('Could not create the profile!');
+    });
 });
