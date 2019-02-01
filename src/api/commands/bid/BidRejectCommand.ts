@@ -18,6 +18,10 @@ import { BidActionService } from '../../services/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/BidService';
 import { BidRejectReason } from '../../enums/BidRejectReason';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { ImageDataProtocolType } from '../../enums/ImageDataProtocolType';
+import { ImageDataEncodingType } from '../../enums/ImageDataEncodingType';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -63,44 +67,37 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            this.log.error('Missing bidId.');
-            throw new MessageException('Missing bidId.');
+            throw new MissingParamException('bidId');
         }
 
         if (typeof data.params[0] !== 'number') {
-            this.log.error('bidId should be a number.');
             throw new MessageException('bidId should be a number.');
         }
 
         if (data.params.length >= 2) {
             const reason = data.params[1];
             if (typeof reason !== 'string') {
-                this.log.error('reasonEnum should be a string.');
-                throw new MessageException('reasonEnum should be a string.');
+                throw new InvalidParamException('reasonEnum', 'enum');
             } else if (!BidRejectReason[reason]) {
-                this.log.error('reasonEnum should be a string with one of these values {OUT_OF_STOCK}.');
-                throw new MessageException('reasonEnum should be a string with one of these values {OUT_OF_STOCK}.');
+                throw new InvalidParamException('reasonEnum', 'enum');
             }
         }
 
         const bidId = data.params[0];
         let bid: any = await this.bidService.findOne(bidId);
         if (!bid) {
-            this.log.error('Bid with specified bidId not found.');
-            throw new MessageException('Bid with specified bidId not found.');
+            throw new NotFoundException(bidId);
         }
         bid = bid.toJSON();
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
-            this.log.error('ListingItem not found in bid.');
-            throw new MessageException('ListingItem not found in bid.');
+            throw new ModelNotFoundException('ListingItem');
         }
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(bid.ListingItem.ListingItemTemplate)) {
-            this.log.error('Not your ListingItem.');
-            throw new MessageException('Not your ListingItem.');
+            throw new ModelNotFoundException('ListingItemTemplate');
         }
 
         return data;
