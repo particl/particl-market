@@ -71,7 +71,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('bidId should be a number.');
+            throw new InvalidParamException('bidId', 'number');
         }
 
         if (data.params.length >= 2) {
