@@ -84,8 +84,10 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         }
 
         const bidId = data.params[0];
-        let bid: any = await this.bidService.findOne(bidId);
-        if (!bid) {
+        const bid: any;
+        try {
+            bid = await this.bidService.findOne(bidId);
+        } catch (ex) {
             throw new NotFoundException(bidId);
         }
         bid = bid.toJSON();
