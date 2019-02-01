@@ -40,7 +40,7 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { BidRejectReason } from '../enums/BidRejectReason';
-import { NotFoundExceptions } from '../exceptions/NotFoundExceptions';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
 // todo: move
 export interface OutputData {
@@ -745,7 +745,7 @@ export class BidActionService {
                 listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true);
             } catch (ex) {
                 this.log.error('Listing item not found.');
-                throw new NotFoundExceptions(bid.ListingItem.id);
+                throw new NotFoundException(bid.ListingItem.id);
             }
             listingItem = listingItem.toJSON();
 
@@ -763,8 +763,7 @@ export class BidActionService {
             }
 
             // create the bid reject message
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash,
-                [ { id: 'reason', value: reason } ] as IdValuePair[] );
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash, [], reason);
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);

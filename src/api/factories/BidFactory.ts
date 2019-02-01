@@ -33,7 +33,10 @@ export class BidFactory {
      * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
+    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: IdValuePair[], reason?: string): Promise<BidMessage> {
+        if (idValuePairObjects && reason) {
+            idValuePairObjects.push({ id: 'reason', value: reason } as IdValuePair);
+        }
 
         const message = {
             action: bidMessageType,
