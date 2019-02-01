@@ -40,6 +40,7 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { BidRejectReason } from '../enums/BidRejectReason';
+import { NotFoundExceptions } from '../exceptions/NotFoundExceptions';
 
 // todo: move
 export interface OutputData {
@@ -739,10 +740,12 @@ export class BidActionService {
     public async reject(bid: resources.Bid, reason: string): Promise<SmsgSendResponse> {
         if (bid.action === BidMessageType.MPA_BID) {
 
-            let listingItem: any = await this.listingItemService.findOne(bid.ListingItem.id, true);
-            if (!listingItem) {
+            let listingItem: any;
+            try {
+                listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true);
+            } catch (ex) {
                 this.log.error('Listing item not found.');
-                throw new MessageException('Listing item not found.');
+                throw new NotFoundExceptions(bid.ListingItem.id);
             }
             listingItem = listingItem.toJSON();
 
