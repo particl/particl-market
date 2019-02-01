@@ -8,5 +8,6 @@
  */
 
 export enum BidRejectReason {
-    OUT_OF_STOCK = 'OUT_OF_STOCK'
+    OUT_OF_STOCK = 'OUT_OF_STOCK',
+    NO_REASON = 'NO_REASON'
 }
