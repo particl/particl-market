@@ -42,34 +42,6 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         return this.itemImageService.destroy(data.params[0]);
     }
 
-    /**
-     * data.params[]:
-     *  [0]: itemImageId
-     * @param data
-     * @returns {Promise<ItemImage>}
-     */
-    public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // check if we got all the params
-        if (data.params.length < 1) {
-            throw new MissingParamException('itemImageId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('itemImageId', 'number');
-        }
-
-        const itemImageModel = await this.itemImageService.findOne(data.params[0]);
-        const itemImage = itemImageModel.toJSON();
-
-        // check if item already been posted
-        if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
-            throw new MessageException(`Can't delete ItemImage because the item has already been posted!`);
-        }
-
-        return data;
-    }
-
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('itemImageId');
