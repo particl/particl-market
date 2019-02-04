@@ -17,6 +17,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { CreatableModel } from '../../enums/CreatableModel';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -66,21 +67,16 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
         if (typeof model !== 'string') {
             throw new InvalidParamException('model', 'string');
         }
-        switch (model) {
-            case 'listingitemtemplate':
-            case 'listingitem':
-            case 'profile':
-            case 'itemcategory':
-            case 'favoriteitem':
-            case 'iteminformation':
-            case 'bid':
-            case 'paymentinformation':
-            case 'itemimage': {
+
+        let isValidModel = false;
+        for (const validModel in CreatableModel) {
+            if (validModel && model === CreatableModel[validModel]) {
+                isValidModel = true;
                 break;
             }
-            default: {
-                throw new NotImplementedException();
-            }
+        }
+        if (!isValidModel) {
+            throw new NotImplementedException();
         }
 
         const amount = data.params[1];
@@ -104,7 +100,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
+            + '    <model>                  - ENUM{listingitemtemplate|actionmessage|listingitem|profile|itemcategory|proposal \n'
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
             + '    <amount>                 - Numeric - The number of objects we want to generate. \n'
