@@ -8,6 +8,10 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProfileRemoveCommand', () => {
 
@@ -57,16 +61,14 @@ describe('ProfileRemoveCommand', () => {
         const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Entity with identifier ' + createdProfile1.id + ' does not exist');
+        expect(res.error.error.message).toBe(new NotFoundException(createdProfile1.id).getMessage());
     });
 
     test('Should fail to delete Profile using name because it doesnt exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Entity with identifier ' + createdProfile2.name + ' does not exist');
+        expect(res.error.error.message).toBe(new NotFoundException(createdProfile2.name).getMessage());
     });
 
 });

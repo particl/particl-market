@@ -12,6 +12,9 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -44,8 +47,17 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('profileId|profileName', 'number|string');
+        }
+
         if (data.params.length === 0) {
             data.params[0] = 'DEFAULT';
+        }
+
+        if (data.params.length < 1) {
+            // This should never happen because above gives a default value.
+            throw new MissingParamException('profileId|profileName');
         }
         return data;
     }

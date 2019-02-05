@@ -7,6 +7,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProfileUpdateCommand', () => {
 
@@ -40,4 +44,18 @@ describe('ProfileUpdateCommand', () => {
         expect(result.address).toBe(generatedProfile.address); // we are not allowing the address to be updated
     });
 
+    test('Should fail to update the Profile due to bad id', async () => {
+        // set up the test data
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        const createdId = -1;
+
+        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST2';
+        const profileAddress = 'UPDATED-DEFAULT-PROFILE-TEST-ADDRESS2';
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
+
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(createdId).getMessage());
+    });
 });

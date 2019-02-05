@@ -12,6 +12,9 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -38,6 +41,29 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
         return this.profileService.update(data.params[0], {
             name: data.params[1]
         });
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 2) {
+            throw new MissingParamException('newProfileName');
+        } else if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        }
+
+        const profileId = data.params[0];
+        if (typeof profileId !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        }
+
+        const newProfileName = data.params[1];
+        if (typeof newProfileName !== 'string') {
+            throw new InvalidParamException('newProfileName', 'string');
+        }
+
+        // Will throw exception if not found
+        const profile = await this.profileService.findOne(profileId);
+
+        return data;
     }
 
     public usage(): string {

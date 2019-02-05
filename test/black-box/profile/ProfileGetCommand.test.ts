@@ -7,6 +7,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProfileGetCommand', () => {
 
@@ -60,17 +64,19 @@ describe('ProfileGetCommand', () => {
     });
 
     test('Should fail to return Profile with invalid name', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 'invalid_profile_name']);
+        const badProfileName = 'invalid_profile_name';
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, badProfileName]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier invalid_profile_name does not exist`);
+        expect(res.error.error.message).toBe(new NotFoundException(badProfileName).getMessage());
    });
 
     test('Should fail to return Profile with invalid id', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 123123]);
+        const badProfileId = 123123;
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, badProfileId]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier 123123 does not exist`);
+        expect(res.error.error.message).toBe(new NotFoundException(badProfileId).getMessage());
     });
 
 });

@@ -7,6 +7,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProfileListCommand', () => {
 

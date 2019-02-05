@@ -7,6 +7,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProfileAddCommand', () => {
 
@@ -56,7 +60,6 @@ describe('ProfileAddCommand', () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(`Profile already exist for the given name = ${profileName}`);
     });
 
@@ -64,7 +67,6 @@ describe('ProfileAddCommand', () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing name.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileName').getMessage());
     });
 });
