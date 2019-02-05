@@ -133,9 +133,11 @@ export class ProposalActionService {
         // processProposal will create or update the Proposal
         return await this.processProposal(proposalMessage, smsgMessage)
             .then(value => {
+                this.log.debug('==> PROCESSED PROPOSAL: ', value.hash);
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
+                this.log.debug('==> PROPOSAL PROCESSING FAILED: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
@@ -199,11 +201,11 @@ export class ProposalActionService {
                 // proposal doesnt exist yet, so we need to create it.
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest)
                     .then(value => value.toJSON());
-                // this.log.debug('processProposal(), createdProposal:', JSON.stringify(createdProposal, null, 2));
 
                 if (ProposalType.ITEM_VOTE === createdProposal.type) {
                     // in case of ITEM_VOTE, we also need to create the FlaggedItem
-                    await this.createFlaggedItemForProposal(createdProposal);
+                    const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
+                    this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
                 }
 
                 // create the first ProposalResult
@@ -212,14 +214,19 @@ export class ProposalActionService {
             });
 
         let proposal: resources.Proposal = proposalModel.toJSON();
+
+        this.log.debug('processProposal(), proposalRequest.postedAt: ', proposalRequest.postedAt);
+        this.log.debug('processProposal(), Number.MAX_SAFE_INTEGER: ', Number.MAX_SAFE_INTEGER);
         if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER/*|| (proposalRequest.postedAt < proposal.postedAt)*/) {
             // means processProposal was called from processProposalReceivedEvent() and we should update the Proposal data
             const updatedProposalModel = await this.proposalService.update(proposal.id, proposalRequest);
             proposal = updatedProposalModel.toJSON();
+            this.log.debug('processProposal(), proposal updated');
         } else {
             // called from send(), we already created the Proposal so nothing needs to be done
         }
 
+        this.log.debug('processProposal(), proposal:', JSON.stringify(proposal, null, 2));
         return proposal;
     }
 

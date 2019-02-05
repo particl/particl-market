@@ -170,7 +170,7 @@ describe('Happy Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Should post Vote1 from node1', async () => {
+    test('Should post Votes from node1', async () => {
 
         expect(sent).toBeTruthy();
         sent = false;
@@ -200,7 +200,7 @@ describe('Happy Vote Flow', () => {
 
     });
 
-    test('Should have created Vote1 on node1', async () => {
+    test('Should have created Votes on node1', async () => {
 
         expect(sent).toBeTruthy();
         expect(vote1AddressCount).toBeGreaterThan(0);
@@ -230,7 +230,6 @@ describe('Happy Vote Flow', () => {
         expect(result.receivedAt).toBeGreaterThan(testStartTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testStartTimeStamp);
         expect(result.weight).toBeGreaterThan(0);
-        expect(result.voter).toBe(profileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[0].optionId);
     }, 600000); // timeout to 600s
 
@@ -290,7 +289,7 @@ describe('Happy Vote Flow', () => {
         expect(result.ProposalOptionResults[0].weight).toBe(vote1Node1.weight);
     }, 600000); // timeout to 600s
 
-    test('Post Vote1 again from node1', async () => {
+    test('Should post Vote1 again from node1', async () => {
 
         expect(sent).toBeTruthy();
 
