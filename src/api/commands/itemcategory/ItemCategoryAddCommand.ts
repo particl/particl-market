@@ -14,6 +14,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -40,17 +43,44 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        if (data.params[2]) {
-            const parentItemCategory = data.params[2];
-            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
-            return await this.itemCategoryService.create({
-                name: data.params[0],
-                description: data.params[1],
-                parent_item_category_id: parentItemCategoryId
-            } as ItemCategoryCreateRequest);
+        const categoryName = data.params[0];
+        const description = data.params[1];
+        const parentItemCategory = data.params[2];
+
+        let parentItemCategoryId;
+        if (typeof parentItemCategory === 'number') {
+            parentItemCategoryId = parentItemCategory;
         } else {
-            throw new MessageException(`Parent category can't be null or undefined!`);
+            parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
         }
+
+        return await this.itemCategoryService.create({
+            name: categoryName,
+            description,
+            parent_item_category_id: parentItemCategoryId
+        } as ItemCategoryCreateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryName');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('description');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
+        }
+
+        const parentItemCategory = data.params[2];
+        if (typeof parentItemCategory === 'string') {
+            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
+            if (!parentItemCategoryId) {
+                throw new NotFoundException('parentItemCategory');
+            }
+        } else if (typeof parentItemCategory !== 'number') {
+            throw new InvalidParamException('parentItemCategory|parentItemCategoryId', 'string|number');
+        }
+
+        return data;
     }
 
     public usage(): string {

@@ -12,6 +12,9 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -41,6 +44,25 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         } else {
             return await this.itemCategoryService.findOneByKey(data.params[0]);
         }
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryId|categoryKey');
+        }
+
+        const categoryId = data.params[0];
+        if (typeof categoryId === 'number') {
+            // Throws NotFoundException
+            const category = await this.itemCategoryService.findOne(categoryId);
+        } else if (typeof categoryId === 'string') {
+            // Throws NotFoundException
+            const category = await this.itemCategoryService.findOneByKey(categoryId);
+        } else {
+            throw new InvalidParamException('categoryId', 'number|string');
+        }
+
+        return data;
     }
 
     public usage(): string {

@@ -16,6 +16,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import * as resources from 'resources';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
@@ -60,26 +63,42 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         } as ItemCategoryUpdateRequest);
     }
 
-    /**
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
-     *
-     * @param {RpcRequest} data
-     * @returns {Promise<void>}
-     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 4) {
-            throw new MessageException('Missing parameters.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('categoryName');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('description|parentItemCategoryKey');
         }
 
         const categoryId = data.params[0];
+        if (typeof categoryId !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        }
+
+        const categoryName = data.params[1];
+        if (typeof categoryName !== 'string') {
+            throw new InvalidParamException('categoryName', 'string');
+        }
+
+        const description = data.params[2];
+        if (typeof description !== 'string') {
+            throw new InvalidParamException('description', 'string');
+        }
+
+        if (data.params.length >= 4) {
+            const parentItemCategoryId = data.params[3];
+            if (typeof parentItemCategoryId !== 'number') {
+                throw new InvalidParamException('parentItemCategoryId', 'number');
+            }
+        }
+
+        // Throws NotFoundException
         const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
         const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
-
-        // if category has a key, its a default category and cant be updated
         if (itemCategory.key != null) {
+            // Non-default categories don't have category keys currently
             throw new MessageException(`Default category can't be updated or deleted.`);
         }
 

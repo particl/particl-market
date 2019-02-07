@@ -13,7 +13,9 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategorySearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
@@ -36,12 +38,20 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemCategory>> {
+        return await this.itemCategoryService.findByName(data.params[0]);
+    }
 
-        if (!data.params[0]) {
-            throw new MessageException('SearchString can not be null');
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('searchString');
         }
 
-        return await this.itemCategoryService.findByName(data.params[0]);
+        const parentItemCategory = data.params[1];
+        if (typeof parentItemCategory !== 'string') {
+            throw new InvalidParamException('searchString', 'string');
+        }
+
+        return data;
     }
 
     public usage(): string {

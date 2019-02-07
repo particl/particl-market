@@ -35,13 +35,17 @@ export class ItemCategoryService {
 
     public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
+        if (itemCategory === null) {
+            this.log.warn(`findOneByKey: ItemCategory with the key=${key} was not found!`);
+            throw new NotFoundException(key);
+        }
         return itemCategory;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOne(id, withRelated);
         if (itemCategory === null) {
-            this.log.warn(`ItemCategory with the id=${id} was not found!`);
+            this.log.warn(`findOne: ItemCategory with the id=${id} was not found!`);
             throw new NotFoundException(id);
         }
         return itemCategory;

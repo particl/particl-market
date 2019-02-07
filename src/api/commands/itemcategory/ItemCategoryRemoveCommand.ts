@@ -2,24 +2,25 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {Logger as LoggerType} from '../../../core/Logger';
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Core, Targets, Types} from '../../../constants';
-import {ItemCategoryService} from '../../services/ItemCategoryService';
-import {ListingItemService} from '../../services/ListingItemService';
-import {ListingItemTemplateService} from '../../services/ListingItemTemplateService';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {MessageException} from '../../exceptions/MessageException';
-import {ListingItemTemplateSearchParams} from '../../requests/ListingItemTemplateSearchParams';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {ListingItemSearchParams} from '../../requests/ListingItemSearchParams';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {SearchOrderField} from '../../enums/SearchOrderField';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { inject, named } from 'inversify';
+import { request, validate } from '../../../core/api/Validate';
+import { Core, Targets, Types } from '../../../constants';
+import { ItemCategoryService } from '../../services/ItemCategoryService';
+import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { SearchOrderField } from '../../enums/SearchOrderField';
+import { MessageException } from '../../exceptions/MessageException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -45,7 +46,6 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-
         const categoryId = data.params[0];
         return await this.itemCategoryService.destroy(categoryId);
     }
@@ -58,8 +58,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<void>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (!data.params[0]) {
+        if (data.params.length < 1) {
             throw new MissingParamException('categoryId');
         }
         const categoryId = data.params[0];
