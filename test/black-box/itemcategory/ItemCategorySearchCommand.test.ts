@@ -6,6 +6,10 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ItemCategorySearchCommand', () => {
 
@@ -56,8 +60,7 @@ describe('ItemCategorySearchCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categorySearchCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('SearchString can not be null');
+        expect(res.error.error.message).toBe(new MissingParamException('searchString').getMessage());
     });
 
     test('Should find get any ItemCategories when the searchBy string doesnt match', async () => {

@@ -46,8 +46,8 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
             throw new MissingParamException('searchString');
         }
 
-        const parentItemCategory = data.params[1];
-        if (typeof parentItemCategory !== 'string') {
+        const searchString = data.params[0];
+        if (typeof searchString !== 'string') {
             throw new InvalidParamException('searchString', 'string');
         }
 

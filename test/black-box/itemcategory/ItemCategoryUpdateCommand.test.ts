@@ -6,8 +6,11 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException'
 
 describe('ItemCategoryUpdateCommand', () => {
 
@@ -93,7 +96,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(result.ParentItemCategory.name).toBe(childCategory2.name);
     });
 
-    test('Should not update ItemCategory, because missing params', async () => {
+    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
             defaultCategory.id,
             'newname',
@@ -101,8 +104,7 @@ describe('ItemCategoryUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 
     test('Should not update ItemCategory, because its a default ItemCategory', async () => {
@@ -114,7 +116,6 @@ describe('ItemCategoryUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 

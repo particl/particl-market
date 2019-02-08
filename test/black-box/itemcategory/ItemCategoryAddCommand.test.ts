@@ -5,7 +5,12 @@
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+
 
 describe('ItemCategoryAddCommand', () => {
 
@@ -66,7 +71,7 @@ describe('ItemCategoryAddCommand', () => {
         expect(result.ParentItemCategory.key).toBe(parentCategory.key);
     });
 
-    test('Should fail to create the ItemCategory without passing category', async () => {
+    test('Should fail to create the ItemCategory because missing parent category', async () => {
         const categoryData = {
             name: 'Sample Category 3',
             description: 'Sample Category Description 3'
@@ -77,6 +82,6 @@ describe('ItemCategoryAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Parent category can't be null or undefined!`);
+        expect(res.error.error.message).toBe(new MissingParamException('parentItemCategoryId|parentItemCategoryKey').getMessage());
     });
 });
