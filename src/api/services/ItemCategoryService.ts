@@ -174,13 +174,14 @@ export class ItemCategoryService {
      * @returns {Promise<number>}
      */
     public async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
-        let parentItemCategoryId;
         if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
+            return parentItemCategory;
         } else { // get category id by key
-            parentItemCategory = await this.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
+            const cat = await this.findOneByKey(parentItemCategory);
+            if (!cat) {
+                throw new NotFoundException(parentItemCategory);
+            }
+            return cat.id;
         }
-        return parentItemCategoryId;
     }
 }

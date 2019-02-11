@@ -71,6 +71,26 @@ describe('ItemCategoryAddCommand', () => {
         expect(result.ParentItemCategory.key).toBe(parentCategory.key);
     });
 
+    test('Should fail to create the ItemCategory because missing category name', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryName').getMessage());
+    });
+
+    test('Should fail to create the ItemCategory because missing description', async () => {
+        const categoryData = {
+            name: 'Sample Category 3',
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('description').getMessage());
+    });
+
     test('Should fail to create the ItemCategory because missing parent category', async () => {
         const categoryData = {
             name: 'Sample Category 3',
@@ -83,5 +103,124 @@ describe('ItemCategoryAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('parentItemCategoryId|parentItemCategoryKey').getMessage());
+    });
+
+    test('Should fail to create the ItemCategory because invalid category name', async () => {
+        //  test default category data
+        const categoryData = {
+            name: null,
+            description: 'Sample Category Description 3',
+            id: parentCategory.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryName', 'string').getMessage());
+    });
+
+    /*test('Should fail to create the ItemCategory because invalid category name', async () => {
+        //  test default category data
+        const categoryData = {
+            name: -1,
+            description: 'Sample Category Description 3',
+            id: parentCategory.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryName', 'string').getMessage());
+    });*/
+
+    test('Should fail to create the ItemCategory because invalid description', async () => {
+        //  test default category data
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: null,
+            id: parentCategory.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('description', 'string').getMessage());
+    });
+
+    /*test('Should fail to create the ItemCategory because invalid description', async () => {
+        //  test default category data
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: -1,
+            id: parentCategory.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('description', 'string').getMessage());
+    });*/
+
+    test('Should fail to create the ItemCategory because invalid parent category key', async () => {
+        //  test default category data
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: 'Sample Category Description 1',
+            id: 'INVALID_DOESNT_EXIST'
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(categoryData.id).getMessage());
+    });
+
+    test('Should fail to create the ItemCategory because invalid parent category key', async () => {
+        //  test default category data
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: 'Sample Category Description 1',
+            id: -1
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(categoryData.id).getMessage());
+    });
+
+    test('Should fail to create the ItemCategory because invalid parent category key', async () => {
+        //  test default category data
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: 'Sample Category Description 1'
+            id: null
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            categoryData.name,
+            categoryData.description,
+            categoryData.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('parentItemCategoryId|parentItemCategoryKey', 'string|number').getMessage());
     });
 });

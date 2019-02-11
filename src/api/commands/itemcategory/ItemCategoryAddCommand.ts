@@ -70,14 +70,25 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
         }
 
+        const categoryName = data.params[0];
+        if (typeof categoryName !== 'string') {
+            throw new InvalidParamException('categoryName', 'string');
+        }
+
+        const description = data.params[1];
+        if (typeof description !== 'string') {
+            throw new InvalidParamException('description', 'string');
+        }
+
         const parentItemCategory = data.params[2];
         if (typeof parentItemCategory === 'string') {
+            // Throws NotFoundException
             const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
-            if (!parentItemCategoryId) {
-                throw new NotFoundException('parentItemCategory');
-            }
-        } else if (typeof parentItemCategory !== 'number') {
-            throw new InvalidParamException('parentItemCategory|parentItemCategoryId', 'string|number');
+        } else if (typeof parentItemCategory === 'number') {
+            // Throws NotFoundException
+            const category = await this.itemCategoryService.findOne(parentItemCategory);
+        } else {
+            throw new InvalidParamException('parentItemCategoryId|parentItemCategoryKey', 'string|number');
         }
 
         return data;
