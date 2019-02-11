@@ -204,7 +204,7 @@ describe('ItemCategoryAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new NotFoundException(categoryData.id).getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('parentItemCategoryId|parentItemCategoryKey', 'string|number').getMessage());
     });
 
     test('Should fail to create the ItemCategory because invalid parent category key', async () => {

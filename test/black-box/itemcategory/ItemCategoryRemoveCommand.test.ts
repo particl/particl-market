@@ -62,16 +62,32 @@ describe('ItemCategoryRemoveCommand', () => {
         // TODO: categories should be related to market
     });
 
+    test('Should not delete category because invalid categoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, -1]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId').getMessage());
+    });
+
+    test('Should not delete category because invalid categoryId', async () => {
+        const invalidCategoryId = 'INVALID_CATEGORY_DOESNT_EXIST';
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, invalidCategoryId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId').getMessage());
+    });
+
     test('Should delete the ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should not delete the default/root ItemCategory', async () => {
+    test('Should not delete category because it\'s the default/root category', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, rootCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId').getMessage());
     });
 
     test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
@@ -142,6 +158,7 @@ describe('ItemCategoryRemoveCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException(`Category associated with ListingItemTemplate can't be deleted. id= ${createdCategory.id}`).getMessage());
     });
 
 });

@@ -84,7 +84,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         if (typeof parentItemCategory === 'string') {
             // Throws NotFoundException
             const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
-        } else if (typeof parentItemCategory === 'number') {
+        } else if (typeof parentItemCategory === 'number' && parentItemCategory >= 0) {
             // Throws NotFoundException
             const category = await this.itemCategoryService.findOne(parentItemCategory);
         } else {

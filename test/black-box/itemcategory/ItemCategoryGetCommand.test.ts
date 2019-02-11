@@ -39,4 +39,27 @@ describe('ItemCategoryGetCommand', () => {
         expect(result.parentItemCategoryId).toBe(null);
     });
 
+    test('Should fail to find category by key', async () => {
+        const fakeCategoryKey = 'THIS_CATEGORY_DOESNT_EXIST';
+        const res = await testUtil.rpc(categoryCommand, [categoryGetCommand, fakeCategoryKey]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(fakeCategoryKey).getMessage());
+    });
+
+    test('Should fail to find category by key', async () => {
+        const fakeCategoryKey = 1234567890987654321; // Too large to rationally exist
+        const res = await testUtil.rpc(categoryCommand, [categoryGetCommand, fakeCategoryKey]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(fakeCategoryKey).getMessage());
+    });
+
+    test('Should fail to find category because invalid key', async () => {
+        const fakeCategoryKey = -1; // Too large to rationally exist
+        const res = await testUtil.rpc(categoryCommand, [categoryGetCommand, fakeCategoryKey]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'string|number').getMessage());
+    });
 });

@@ -63,6 +63,14 @@ describe('ItemCategorySearchCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('searchString').getMessage());
     });
 
+    test('Should fail to searchBy iItemCategories because theres no searchBy string', async () => {
+        //  find categories
+        const res = await testUtil.rpc(categoryCommand, [categorySearchCommand, null]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('searchString', 'string').getMessage());
+    });
+
     test('Should find get any ItemCategories when the searchBy string doesnt match', async () => {
         //  find categories
         const res = await testUtil.rpc(categoryCommand, [categorySearchCommand, 'NOTFOUNDCATEGORY']);

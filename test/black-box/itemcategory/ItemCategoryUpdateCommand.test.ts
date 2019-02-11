@@ -96,7 +96,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(result.ParentItemCategory.name).toBe(childCategory2.name);
     });
 
-    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
+    test('Should fail to update ItemCategory, because its a default ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
             defaultCategory.id,
             'newname',
@@ -107,7 +107,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 
-    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
+    test('Should fail to update ItemCategory, because its a default ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
             defaultCategory.id,
             'newname',
@@ -119,4 +119,129 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 
+    test('Should fail to update ItemCategory, because missing description', async () => {
+        const tmpUpdateData = {
+            categoryId: defaultCategory.id,
+            categoryName: 'NEW_CATEGORY_NAME',
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('description').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because missing categoryName', async () => {
+        const tmpUpdateData = {
+            categoryId: defaultCategory.id,
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryName').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because missing categoryId', async () => {
+        const tmpUpdateData = {
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because invalid categoryId', async () => {
+        const tmpUpdateData = {
+            categoryId: null,
+            categoryName: 'NEW_CATEGORY_NAME',
+            description: 'NEW_DESCRIPTION',
+            parentItemCategoryKey: childCategory2.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName,
+            tmpUpdateData.description,
+            tmpUpdateData.parentItemCategoryKey
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because invalid categoryId', async () => {
+        const tmpUpdateData = {
+            categoryId: 'INVALID_CATEGORY_ID',
+            categoryName: 'NEW_CATEGORY_NAME',
+            description: 'NEW_DESCRIPTION',
+            parentItemCategoryKey: childCategory2.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName,
+            tmpUpdateData.description,
+            tmpUpdateData.parentItemCategoryKey
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because invalid categoryId', async () => {
+        const tmpUpdateData = {
+            categoryId: -1,
+            categoryName: 'NEW_CATEGORY_NAME',
+            description: 'NEW_DESCRIPTION',
+            parentItemCategoryKey: childCategory2.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName,
+            tmpUpdateData.description,
+            tmpUpdateData.parentItemCategoryKey
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because invalid categoryName', async () => {
+        const tmpUpdateData = {
+            categoryId: defaultCategory.id,
+            categoryName: null,
+            description: 'NEW_DESCRIPTION',
+            parentItemCategoryKey: childCategory2.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName,
+            tmpUpdateData.description,
+            tmpUpdateData.parentItemCategoryKey
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryName', 'string').getMessage());
+    });
+
+    test('Should fail to update ItemCategory, because invalid description', async () => {
+        const tmpUpdateData = {
+            categoryId: defaultCategory.id,
+            categoryName: 'NEW_CATEGORY_NAME',
+            description: null,
+            parentItemCategoryKey: childCategory2.id
+        };
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            tmpUpdateData.categoryId,
+            tmpUpdateData.categoryName,
+            tmpUpdateData.description,
+            tmpUpdateData.parentItemCategoryKey
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('description', 'string').getMessage());
+    });
 });

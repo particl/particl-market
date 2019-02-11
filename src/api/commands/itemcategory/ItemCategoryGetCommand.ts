@@ -52,16 +52,16 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         }
 
         const categoryId = data.params[0];
-        if (typeof categoryId === 'number') {
+        if (typeof categoryId === 'number' && categoryId >= 0) {
             // Throws NotFoundException
             const category = await this.itemCategoryService.findOne(categoryId);
         } else if (typeof categoryId === 'string') {
             const category = await this.itemCategoryService.findOneByKey(categoryId);
             if (!category) {
-                throw new NotFoundException('categoryId');
+                throw new NotFoundException(categoryId);
             }
         } else {
-            throw new InvalidParamException('categoryId', 'number|string');
+            throw new InvalidParamException('categoryId', 'string|number');
         }
 
         return data;

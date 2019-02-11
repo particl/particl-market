@@ -69,11 +69,11 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         } else if (data.params.length < 2) {
             throw new MissingParamException('categoryName');
         } else if (data.params.length < 3) {
-            throw new MissingParamException('description|parentItemCategoryKey');
+            throw new MissingParamException('description');
         }
 
         const categoryId = data.params[0];
-        if (typeof categoryId !== 'number') {
+        if (typeof categoryId !== 'number' || categoryId <= 0) {
             throw new InvalidParamException('categoryId', 'number');
         }
 
@@ -89,7 +89,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
 
         if (data.params.length >= 4) {
             const parentItemCategoryId = data.params[3];
-            if (typeof parentItemCategoryId !== 'number') {
+            if (typeof parentItemCategoryId !== 'number' || parentItemCategoryId <= 0) {
                 throw new InvalidParamException('parentItemCategoryId', 'number');
             }
         }
