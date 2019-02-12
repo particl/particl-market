@@ -83,6 +83,14 @@ export class CoreRpcService {
             });
     }
 
+    public async hasWallet(): Promise<boolean> {
+        return await this.getWalletInfo()
+            .then(response => (response && response.hdmasterkeyid))
+            .catch(error => {
+                return false;
+            });
+    }
+
     /**
      * returns the particld version:
      * 16000400: 0.16.0.4,
@@ -99,6 +107,10 @@ export class CoreRpcService {
 
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
+    }
+
+    public async getWalletInfo(): Promise<any> {
+        return await this.call('getwalletinfo');
     }
 
     /**
