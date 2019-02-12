@@ -9,6 +9,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
 describe('ItemInformationGetCommand', () => {
 
@@ -53,12 +54,11 @@ describe('ItemInformationGetCommand', () => {
 
     test('Should fail to get a ListingItemInformation because of a non-existent listingItemTemplateId', async () => {
         // get listingItemInformation by listingItemTemplateId
-        const fakeId = 1000000000;
+        const fakeId = 1234567890987654321; // Too long ot be real
         const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, fakeId]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Entity with identifier ${fakeId} does not exist`);
+        expect(res.error.error.message).toBe(new NotFoundException(fakeId).getMessage());
     });
 
     test('Should get a ListingItemInformation using listingItemTemplateId', async () => {

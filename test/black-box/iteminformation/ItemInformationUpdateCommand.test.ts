@@ -13,6 +13,7 @@ import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
 describe('ItemInformationUpdateCommand', () => {
 
@@ -226,6 +227,38 @@ describe('ItemInformationUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should fail to update ItemInformation because non-existent id', async () => {
+        // update item information
+        const fakeId = 12345678909987654321; // Too large to be real
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [
+            itemInfoUpdateSubCommand,
+            fakeId,
+            testDataListingItemTemplate.title,
+            testDataListingItemTemplate.shortDescription,
+            testDataListingItemTemplate.longDescription,
+            testDataListingItemTemplate.itemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(fakeId).getMessage());
+    });
+
+    test('Should fail to update ItemInformation because non-existent categoryId', async () => {
+        // update item information
+        const fakeId = 12345678909987654321; // Too large to be real
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [
+            itemInfoUpdateSubCommand,
+            createdListingItemTemplateId,
+            testDataListingItemTemplate.title,
+            testDataListingItemTemplate.shortDescription,
+            testDataListingItemTemplate.longDescription,
+            fakeId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new NotFoundException(fakeId).getMessage());
     });
 
     test('Should update ItemInformation', async () => {
