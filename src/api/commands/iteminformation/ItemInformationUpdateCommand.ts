@@ -13,9 +13,12 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -43,27 +46,28 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        return this.updateWithCheckListingTemplate({
-            listing_item_template_id: data.params[0],
-            title: data.params[1],
-            shortDescription: data.params[2],
-            longDescription: data.params[3],
-            itemCategory: {
-                id: data.params[4]
-            }
-        } as ItemInformationUpdateRequest);
-    }
+        const listingItemTemplateId =  data.params[0];
+        const title = data.params[1];
+        const shortDescription = data.params[2];
+        const longDescription = data.params[3];
+        const categoryId = data.params[4];
 
-    // TODO: WTF FIX
-    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
-        const listingItemTemplateId = body.listing_item_template_id;
         const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
         if (_.isEmpty(itemInformation)) {
-            this.log.warn(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
-            throw new MessageException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
+            throw new ModelNotFoundException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
         }
-        return this.itemInformationService.update(itemInformation.id, body);
+
+        const requestBody = {
+            listing_item_template_id: listingItemTemplateId,
+            title,
+            shortDescription,
+            longDescription,
+            itemCategory: {
+                id: categoryId
+            }
+        } as ItemInformationUpdateRequest;
+        return this.itemInformationService.update(itemInformation.id, requestBody);
     }
 
     /**
@@ -75,16 +79,49 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      * @returns {Promise<void>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 5) {
-            this.log.error('Not enough args.');
-            throw new MessageException('Not enough args.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('ListingItemTemplate ID must be numeric.');
-            throw new MessageException('ListingItemTemplate ID must be numeric.');
-        } else if (typeof data.params[4] !== 'number') {
-            this.log.error('Category ID must be numeric.');
-            throw new MessageException('Category ID must be numeric.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
         }
+        if (data.params.length < 2) {
+            throw new MissingParamException('title');
+        }
+        if (data.params.length < 3) {
+            throw new MissingParamException('shortDescription');
+        }
+        if (data.params.length < 4) {
+            throw new MissingParamException('longDescription');
+        }
+        if (data.params.length < 5) {
+            throw new MissingParamException('categoryId');
+        }
+
+        const listingItemTemplateId =  data.params[0];
+        if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId <= 0) {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+
+        const title = data.params[1];
+        if (typeof title !== 'string') {
+            throw new InvalidParamException('title', 'string');
+        }
+
+        const shortDescription = data.params[2];
+        if (typeof shortDescription !== 'string') {
+            throw new InvalidParamException('shortDescription', 'string');
+        }
+
+        const longDescription = data.params[3];
+        if (typeof longDescription !== 'string') {
+            throw new InvalidParamException('longDescription', 'string');
+        }
+
+        const categoryId = data.params[4];
+        if (typeof categoryId !== 'number' || categoryId <= 0) {
+            throw new InvalidParamException('categoryId', 'number');
+        }
+
+        // Throws NotFoundException
+        const itemTemplate = this.itemInformationService.findByItemTemplateId(listingItemTemplateId);
         return data;
     }
 

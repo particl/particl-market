@@ -13,6 +13,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -48,12 +51,16 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            this.log.error('ListingItemTemplate ID missing.');
-            throw new MessageException('ListingItemTemplate ID missing.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('ListingItemTemplate ID must be numeric.');
-            throw new MessageException('ListingItemTemplate ID must be numeric.');
+            throw new MissingParamException('listingItemTemplateId');
         }
+
+        const listingItemTemplateId = data.params[0];
+        if (typeof listingItemTemplateId !== 'number' || listingItemTemplateId <= 0) {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+
+        // Throws NotFoundException
+        const itemTemplate = this.itemInformationService.findByItemTemplateId(listingItemTemplateId);
         return data;
     }
 

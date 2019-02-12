@@ -9,6 +9,10 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ItemInformationUpdateCommand', () => {
 
@@ -80,8 +84,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Category ID must be numeric.');
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
     test('Should fail because we want to create an ItemInformation without title.', async () => {
@@ -94,9 +97,8 @@ describe('ItemInformationUpdateCommand', () => {
             testDataListingItemTemplate.itemCategory.id
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Request body is not valid');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('title', 'string').getMessage());
     });
 
     test('Should fail because we want to create an ItemInformation without shortDescription.', async () => {
@@ -109,9 +111,8 @@ describe('ItemInformationUpdateCommand', () => {
             testDataListingItemTemplate.itemCategory.id
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Request body is not valid');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('shortDescription', 'string').getMessage());
     });
 
     test('Should fail because we want to create an ItemInformation without longDescription.', async () => {
@@ -119,14 +120,13 @@ describe('ItemInformationUpdateCommand', () => {
             itemInfoUpdateSubCommand,
             createdListingItemTemplateId,
             testDataListingItemTemplate.title,
-            testDataListingItemTemplate.longDescription,
+            testDataListingItemTemplate.shortDescription,
             null,
             testDataListingItemTemplate.itemCategory.id
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Request body is not valid');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new InvalidParamException('longDescription', 'string').getMessage());
     });
 
     test('Should fail because missing categoryID arg.', async () => {
@@ -135,12 +135,25 @@ describe('ItemInformationUpdateCommand', () => {
             createdListingItemTemplateId,
             testDataListingItemTemplate.title,
             testDataListingItemTemplate.shortDescription,
-            testDataListingItemTemplate.longDescription
+            testDataListingItemTemplate.longDescription,
+            null
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Not enough args.');
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should fail because missing categoryID arg.', async () => {
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [
+            itemInfoUpdateSubCommand,
+            createdListingItemTemplateId,
+            testDataListingItemTemplate.title,
+            testDataListingItemTemplate.shortDescription,
+            testDataListingItemTemplate.longDescription,
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
     });
 
     test('Should fail because missing categoryID, & longDescription args.', async () => {
@@ -152,8 +165,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Not enough args.');
+        expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
 
     test('Should fail because missing categoryID, longDescription, & shortDescription args.', async () => {
@@ -164,8 +176,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Not enough args.');
+        expect(res.error.error.message).toBe(new MissingParamException('shortDescription').getMessage());
     });
 
     test('Should fail because missing categoryID, longDescription, shortDescription, & title args.', async () => {
@@ -175,8 +186,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Not enough args.');
+        expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
     });
 
     test('Should fail because missing  categoryID, longDescription, shortDescription, title, & listingItemTemplateID args.', async () => {
@@ -185,8 +195,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Not enough args.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
     test('Should fail because ListingItemTemplate ID is non-numeric.', async () => {
@@ -201,8 +210,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('ListingItemTemplate ID must be numeric.');
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Should fail because category ID is non-numeric.', async () => {
@@ -217,8 +225,7 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Category ID must be numeric.');
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
     test('Should update ItemInformation', async () => {
