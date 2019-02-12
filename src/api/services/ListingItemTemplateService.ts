@@ -47,8 +47,8 @@ export class ListingItemTemplateService {
     private static OVERHEAD_PER_SMSG = 0;
     private static OVERHEAD_PER_IMAGE = 0;
 
-    private static IMG_BOUNDING_WIDTH = 800;
-    private static IMG_BOUNDING_HEIGHT = 800;
+    private static IMG_BOUNDING_WIDTH = 600;
+    private static IMG_BOUNDING_HEIGHT = 600;
     private static FRACTION_LOWEST_COMPRESSION = 0.8;
 
     public log: LoggerType;
@@ -302,12 +302,6 @@ export class ListingItemTemplateService {
         const itemImages = itemTemplate.ItemInformation.ItemImages;
         const originalImageDatas: resources.ItemImageData[] = [];
 
-        const messageSize = await this.calculateMarketplaceMessageSize(itemTemplate);
-        const imageSpaceAvail = ListingItemTemplateService.MAX_SMSG_SIZE -
-            ListingItemTemplateService.OVERHEAD_PER_SMSG -
-            (ListingItemTemplateService.OVERHEAD_PER_IMAGE * itemImages.length) -
-            messageSize.messageData;
-
         for (const itemImage of itemImages) {
             const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
@@ -321,47 +315,14 @@ export class ListingItemTemplateService {
                 throw new MessageException('Original image data not found.');
             }
 
-            originalImageDatas.push(itemImageDataOriginal);
-
-            if (itemImageDataResized) {
-                // resized one allready exists, so remove it
-                await this.itemImageDataService.destroy(itemImageDataResized.id).catch(err => {
-                    // ignore errors - if the file was not found it doesn't matter since we overwrite it anyway
-                });
+            if (!itemImageDataResized) {
+                // Only need to process if the resized image does not exist
+                originalImageDatas.push(itemImageDataOriginal);
             }
         }
-
-        const qualityFactorStep = (1.0 - ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION) / 4.0; // max of 4 attempts to improve quality
-        let qualityFactor = ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION;
-
-        // Determine the highest percentage that we can compress the images to so that they still fit within limits
-        for ( ; qualityFactor <= 1.0; qualityFactor += qualityFactorStep) {
-            let compressedSizeTotal = 0;
-            for (const originalImageData of originalImageDatas) {
-                // Yes, we load the file each time. The alternative is reading and storing the data in memory.
-                //  Which could be used to cause problems with large enough files. So trading execution (I/O) speed for safety
-                const compressedImage = await this.getResizedImage(originalImageData.imageHash, qualityFactor * 100);
-                compressedSizeTotal += compressedImage.length;
-                if (compressedSizeTotal > imageSpaceAvail) {
-                    break;
-                }
-            }
-            if (compressedSizeTotal > imageSpaceAvail) {
-                break;
-            }
-        }
-
-        // If still at lowest quality, then leave quality factor as is. Otherwise, reduce to previous (good) quality setting
-        const actualQualityFactor = qualityFactor === ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION ?
-            ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION : (qualityFactor >= 1 ? 1 : qualityFactor - qualityFactorStep);
 
         for (const originalImageData of originalImageDatas) {
-            let compressedImage;
-            if (actualQualityFactor !== 1) {
-                compressedImage = await this.getResizedImage(originalImageData.imageHash, actualQualityFactor * 100);
-            } else {
-                compressedImage = await this.itemImageDataService.loadImageFile(originalImageData.imageHash, ImageVersions.ORIGINAL.propName);
-            }
+            const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
             // save the resized image
             const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
                 originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
