@@ -15,6 +15,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import * as _ from 'lodash';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -27,7 +28,8 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);
@@ -122,6 +124,10 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
 
         // Throws NotFoundException
         const itemTemplate = this.itemInformationService.findByItemTemplateId(listingItemTemplateId);
+
+        // Throws NotFoundException
+        const category = this.itemCategoryService.findOneByKey(data.params[0]);
+
         return data;
     }
 
