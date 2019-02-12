@@ -29,7 +29,7 @@ export class ItemInformationRootCommand extends BaseCommand implements RpcComman
     }
 
     public usage(): string {
-        return this.getName() + ' (get|add|update)  -  ' + this.description();
+        return this.getName() + ' (get|update)  -  ' + this.description();
     }
 
     public help(): string {
