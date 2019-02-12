@@ -29,7 +29,8 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * command description
+     * Return a Proposal by its hash
+     *
      * [0] proposalHash
      *
      * @param data, RpcRequest
