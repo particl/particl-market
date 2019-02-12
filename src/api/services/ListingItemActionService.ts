@@ -72,7 +72,7 @@ export class ListingItemActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
@@ -114,7 +114,7 @@ export class ListingItemActionService {
             item: listingItemMessage
         } as MarketplaceMessage;
 
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention, estimateFee);
     }
 
     /**
