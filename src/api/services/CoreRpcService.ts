@@ -14,6 +14,8 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Output } from './BidActionService';
 
+import { Rpc } from 'omp-lib';
+
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
@@ -58,7 +60,7 @@ export interface UnspentOutput   {
 }
 
 
-export class CoreRpcService {
+export class CoreRpcService extends Rpc {
 
     public log: LoggerType;
 
@@ -72,6 +74,7 @@ export class CoreRpcService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
     ) {
+        super('', 0, '', '');
         this.log = new Logger(__filename);
     }
 
@@ -292,6 +295,43 @@ export class CoreRpcService {
             params.push(outputs);
         }
         return await this.call('signrawtransactionwithwallet', params);
+    }
+
+    /**
+     * Create a signature for a raw transaction for a particular prevout & address (serialized, hex-encoded)
+     *
+     * @param {string} hex
+     * @param {Output} prevout
+     * @param {string} address
+     * @returns {Promise<string>} hex encoded signature
+     */
+    public async createSignatureWithWallet(hex: string, prevout: Output, address: string): Promise<string> {
+        return await this.call('createsignaturewithwallet', [hex, prevout, address]);
+    }
+
+    /**
+     * Imports an address into the wallets
+     *
+     * @param {string} address the address to import
+     * @param {string} label the label to assign the address
+     * @param {boolean} rescan should the wallet rescan the blockchain for the transactions to this address
+     * @param {boolean} p2sh should the address be a p2sh address
+     * @returns {Promise<void>} returns nothing
+     */
+    public async importAddress(address: string, label: string, rescan: boolean, p2sh: boolean): Promise<void> {
+        await this.call('importaddress', [address, label, rescan, p2sh]);
+    }
+
+    /**
+     * Send a certain amount to an address.
+     *
+     * @param {string} address the address to send coins to
+     * @param {number} amount the amount of coins to transfer (NOT in satoshis!)
+     * @param {string} comment the comment to attach to the wallet transaction
+     * @returns {Promise<string>} returns the transaction id
+     */
+    public async sendToAddress(address: string, amount: number, comment: string): Promise<string> {
+        return await this.call('sendtoaddress', [address, amount, comment]);
     }
 
     /**
