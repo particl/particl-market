@@ -29,6 +29,10 @@ export class CommandEnumType extends Enum<Command> {
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
 
+    public COMMENT_POST: Command        = new Command('commentpost', 'post', false);
+    public COMMENT_ROOT: Command        = new Command('comment', 'comment', true,
+        [this.COMMENT_POST], EnvironmentType.ALL);
+
     public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
     public ITEM_GET: Command            = new Command('itemget', 'get', false);
     public ITEM_POST_UPDATE: Command    = new Command('itempostupdate', 'update', false);
