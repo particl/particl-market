@@ -20,7 +20,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('comment_type').notNullable();
 
-            table.timestamp('created_at').notNullable();
+            table.timestamp('posted_at').notNullable();
             table.timestamp('updated_at').notNullable().defaultTo(db.fn.now());
             table.timestamp('received_at').notNullable().defaultTo(db.fn.now());
         })

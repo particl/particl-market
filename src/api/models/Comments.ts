@@ -46,8 +46,8 @@ export class Comment extends Bookshelf.Model<Comment> {
     public get CommentType(): number { return this.get('commentType'); }
     public set CommentType(value: number) { this.set('commentType', value); }
 
-    public get CreatedAt(): Date { return this.get('createdAt'); }
-    public set CreatedAt(value: Date) { this.set('createdAt', value); }
+    public get PostedAt(): Date { return this.get('postedAt'); }
+    public set PostedAt(value: Date) { this.set('postedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
