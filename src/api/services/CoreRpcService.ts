@@ -85,7 +85,7 @@ export class CoreRpcService {
 
     public async hasWallet(): Promise<boolean> {
         return await this.getWalletInfo()
-            .then(response => (response && response.hdmasterkeyid))
+            .then(response => (response && response.hdseedid))
             .catch(error => {
                 return false;
             });
