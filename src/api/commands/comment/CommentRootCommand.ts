@@ -2,16 +2,14 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { CommentCommentRootService } from '../../services/CommentCommentRootService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { CommentRoot } from '../../models/CommentRoot';
-import { RpcCommandInterface } from './RpcCommandInterface';
-import { Commands } from './CommandEnumType';
-import { BaseCommand } from './BaseCommand';
-import { RpcCommandFactory } from '../factories/RpcCommandFactory';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
-export class CommentRootCommand extends BaseCommand implements RpcCommandInterface<CommentRoot> {
+export class CommentRootCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
     public log: LoggerType;
 

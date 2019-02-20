@@ -1,5 +1,12 @@
-// import { Knex } from '../../config/Database';
+
+import * as Bookshelf from 'bookshelf';
+import { inject, named } from 'inversify';
+import { Types, Core, Targets } from '../../constants';
+import { DatabaseException } from '../exceptions/DatabaseException';
+import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+
+import { Comment } from '../models/Comment';
 
 export class CommentRepository {
 
@@ -20,6 +27,11 @@ export class CommentRepository {
     public async findOne(id: number, withRelated: boolean = true): Promise<Comment> {
         return this.CommentModel.fetchById(id, withRelated);
     }
+
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
+        return this.CommentModel.fetchByHash(hash, withRelated);
+    }
+
 
     public async create(data: any): Promise<Comment> {
         const comment = this.CommentModel.forge<Comment>(data);

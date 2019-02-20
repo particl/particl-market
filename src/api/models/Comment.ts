@@ -1,4 +1,5 @@
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { CommentMessageType } from '../enums/CommentMessageType';
 
 export class Comment extends Bookshelf.Model<Comment> {
@@ -16,6 +17,16 @@ export class Comment extends Bookshelf.Model<Comment> {
             });
         } else {
             return await Comment.where<Comment>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Comment> {
+        if (withRelated) {
+            return await Comment.where<Comment>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Comment.where<Comment>({ hash: value }).fetch();
         }
     }
 

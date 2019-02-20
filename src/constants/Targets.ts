@@ -14,7 +14,7 @@ export const Targets = {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
-        Comments: 'Comments',
+        Comment: 'Comment',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
