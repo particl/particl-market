@@ -30,12 +30,49 @@ export class CommentActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
-        // validate
+        /* 
+         * Validate message size
+         */
+        // Build the message
+        // TODO: Change this to comment stuff not vote stuff
+        const signature = await this.signComment(proposal, proposalOption, senderAddress.address);
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
+            proposalOption.hash, senderAddress.address, signature);
+
+        const msg: MarketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: voteMessage
+        };
+
+        // Get a fee estimate on the message,
+        //  throws error if message too large
+        return this.smsgService.smsgSend(senderAddress.address, marketplace.address, msg, true, daysRetention);
 
         // create
         this.commentService.create(data);
 
         // send
         throw new NotImplementedException();
+    }
+
+    /**
+     * signs the VoteTicket, returns signature
+     *
+     * @param proposal
+     * @param proposalOption
+     * @param address
+     */
+    private async signComment(request: CommentCreateRequest): Promise<string> {
+    	const marketHash = this.marketService.findOne(request.marketId);
+        const commentTicket = {
+        	request.type,
+        	marketHash,
+        	request.address,
+        	request.target,
+        	request.parentHash,
+        	request.message
+        } as CommentTicket;
+
+        return await this.coreRpcService.signMessage(address, commentTicket);
     }
 }
