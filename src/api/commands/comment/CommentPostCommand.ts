@@ -45,6 +45,12 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         const commentRequest = {
+            marketId: data.params[0],
+            profileId: data.params[1],
+            type: data.params[2],
+            target: data.params[3],
+            message: data.params[4],
+            parentHash: data.params[5]
         } as CommentCreateRequest;
 
         this.commentActionService.send(commentRequest);
@@ -54,71 +60,66 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         if (data.params.length < 1) {
             throw new MissingParamException('marketId');
         }
-        const marketId = data.params[2];
+        if (data.params.length < 2) {
+            throw new MissingParamException('profileId');
+        }
+        if (data.params.length < 3) {
+            throw new MissingParamException('type');
+        }
+        if (data.params.length < 4) {
+            throw new MissingParamException('target');
+        }
+        if (data.params.length < 5) {
+            throw new MissingParamException('message');
+        }
+
+        const marketId = data.params[0];
         if (typeof marketId !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
-
-        if (data.params.length < 2) {
-            throw new MissingParamException('parentHash|profileId');
+        const profileId = data.params[1];
+        if (typeof profileId !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
         }
-        const unknownArg = data.params[1];
+        const type = data.params[2];
+        if (typeof type !== 'string' || !CommentMessageType[type]) {
+            throw new InvalidParamException('type', 'CommentMessageType');
+        }
+
+        const target = data.params[3];
+        if (typeof target !== 'string') {
+            throw new InvalidParamException('target', 'string');
+        }
+
+        const message = data.params[4];
+        if (typeof message !== 'string') {
+            throw new InvalidParamException('message', 'string');
+        }
+
         let parentHash;
-        if (typeof unknownArg === 'number') {
-            const profileId = unknownArg;
-            if (data.params.length < 3) {
-                throw new MissingParamException('type');
+        if (data.params.length > 5) {
+            parentHash = data.params[5];
+            if (typeof parentHash !== 'string') {
+                throw new InvalidParamException('parentHash', 'string');
             }
-            if (data.params.length < 4) {
-                throw new MissingParamException('target');
-            }
-            if (data.params.length < 5) {
-                throw new MissingParamException('message');
-            }
-            if (data.params.length > 5) {
-                parentHash = data.params[5];
-                if (typeof parentHash !== 'string') {
-                    throw new InvalidParamException('parentHash', 'string');
-                }
-            }
-
-            const type = data.params[2];
-            if (typeof type !== 'string' || !CommentMessageType[type]) {
-                throw new InvalidParamException('type', 'CommentMessageType');
-            }
-
-            const target = data.params[3];
-            if (typeof target !== 'string') {
-                throw new InvalidParamException('target', 'string');
-            }
-
-            const message = data.params[4];
-            if (typeof message !== 'string') {
-                throw new InvalidParamException('message', 'string');
-            }
-
-            // TODO: Check profile with profileId exists
-            // Throws NotFoundException
-            this.profileService.findOne(profileId);
-
-            // TODO: Check market with marketId exists
-            // Throws NotFoundException
-            this.marketService.findOne(marketId);
-        } else if (typeof unknownArg === 'string') {
-            parentHash = unknownArg;
-        } else {
-            throw new InvalidParamException('marketId');
         }
 
-        // TODO: Check parent comment exists
         // Throws NotFoundException
-        this.commentService.findOneByHash(parentHash);
+        this.profileService.findOne(profileId);
+
+        // Throws NotFoundException
+        this.marketService.findOne(marketId);
+
+        // Throws NotFoundException
+        if (parentHash) {
+            this.commentService.findOneByHash(parentHash);
+        }
 
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' post <marketId> (<parentHash> | <profileId> <type> <target> <message> [<parentHash>])';
+        return this.getName() + ' post <marketId> <profileId> <type> <target> <message> [<parentHash>]';
     }
 
     public description(): string {
