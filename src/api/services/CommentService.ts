@@ -15,6 +15,8 @@ import { CommentRepository } from '../repositories/CommentRepository';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
 import { CommentActionService } from './CommentActionService';
 
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+
 export class CommentService {
 
     public log: LoggerType;

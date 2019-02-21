@@ -12,6 +12,8 @@ import { CommentMessageType } from '../enums/CommentMessageType';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
 import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
 
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+
 export class CommentFactory {
 
     public log: LoggerType;
@@ -84,6 +86,7 @@ export class CommentFactory {
                 ...smsgData
             } as VoteUpdateRequest;
         }*/
+        throw new NotImplementedException();
     }
 
 }

@@ -5,12 +5,16 @@ import { validate, request } from '../../core/api/Validate';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { SmsgService } from './SmsgService';
 
+import { CoreRpcService } from './CoreRpcService';
+import { MarketService } from './MarketService';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+
 import { CommentService } from './CommentService';
 import { CommentFactory } from '../factories/CommentFactory';
 import { CommentMessage } from '../messages/CommentMessage';
 import { CommentMessageType } from '../enums/CommentMessageType';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
-// import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
+import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
 
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 
@@ -30,7 +34,9 @@ export class CommentActionService {
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.CommentFactory) private commentFactory: CommentFactory,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService
     ) {
         this.log = new Logger(__filename);
@@ -80,16 +86,15 @@ export class CommentActionService {
      * @param address
      */
     private async signComment(data: CommentCreateRequest): Promise<string> {
-        const marketHash = this.marketService.findOne(data.marketId);
         const commentTicket = {
             type: data.action,
-            marketHash,
+            marketHash: data.marketHash,
             address: data.sender,
             target: data.target,
             parentHash: data.parentHash,
             message: data.message
         } as CommentTicket;
 
-        return await this.coreRpcService.signMessage(address, commentTicket);
+        return await this.coreRpcService.signMessage(data.sender, commentTicket);
     }
 }
