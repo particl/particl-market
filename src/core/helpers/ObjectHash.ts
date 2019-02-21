@@ -10,6 +10,7 @@ import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
 import { HashableProposal } from './HashableProposal';
 import { HashableProposalOption } from './HashableProposalOption';
+import { HashableComment } from './HashableComment';
 import { Logger as LoggerType } from '../Logger';
 
 export class ObjectHash {
@@ -58,11 +59,16 @@ export class ObjectHash {
                 hashableObject = new HashableProposalOption(objectToHash);
                 break;
             }
+            case HashableObjectType.COMMENT_CREATEREQUEST: {
+                hashableObject = new HashableComment(objectToHash);
+                break;
+            }
             case HashableObjectType.DEFAULT: {
                 hashableObject = objectToHash;
             }
         }
 
+        // TODO: Fix this up
         const hash = crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
 
         // if (process.env.NODE_ENV === 'test') {

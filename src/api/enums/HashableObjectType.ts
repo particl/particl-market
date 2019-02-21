@@ -22,6 +22,8 @@ export enum HashableObjectType {
     PROPOSAL_CREATEREQUEST = 'ProposalCreateRequest',
     PROPOSALOPTION_CREATEREQUEST = 'ProposalOptionCreateRequest',
 
+    COMMENT_CREATEREQUEST = 'CommentCreateRequest',
+
     ITEMIMAGE = 'ItemImage',
     DEFAULT = 'Default'
 

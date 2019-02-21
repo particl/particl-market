@@ -13,15 +13,15 @@ export class CommentCreateRequest extends RequestBody {
     public action: CommentMessageType;
 
     @IsNotEmpty()
-    public hash: string;
-
-    public parentHash: string;
-
-    @IsNotEmpty()
     public sender: string;
 
     @IsNotEmpty()
-    public target: string;
+    public marketHash: string;
+
+    @IsNotEmpty()
+    public target: string; // listingItem hash
+
+    public parentHash: string;
 
     public message: string;
 
@@ -33,5 +33,7 @@ export class CommentCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public updatedAt: number;
+
+    public hash: string;
 }
 // tslint:enable:variable-name
