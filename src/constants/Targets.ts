@@ -362,7 +362,8 @@ export const Targets = {
         ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         SmsgMessageFactory: 'SmsgMessageFactory',
-        VoteFactory: 'VoteFactory'
+        VoteFactory: 'VoteFactory',
+        CommentFactory: 'CommentFactory'
     },
     MessageProcessor:     {
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',

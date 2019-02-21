@@ -2,12 +2,26 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
-import { CommentService } from './CommentService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { SmsgService } from './SmsgService';
 
+import { CommentService } from './CommentService';
+import { CommentFactory } from '../factories/CommentFactory';
+import { CommentMessage } from '../messages/CommentMessage';
+import { CommentMessageType } from '../enums/CommentMessageType';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
+// import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
 
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+
+export interface CommentTicket {
+    type: string;
+    marketHash: string;
+    address: string;
+    target: string;
+    parentHash: string;
+    message: string;
+}
 
 export class CommentActionService {
 
@@ -15,7 +29,9 @@ export class CommentActionService {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService
+        @inject(Types.Factory) @named(Targets.Factory.CommentFactory) private commentFactory: CommentFactory,
+        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService
     ) {
         this.log = new Logger(__filename);
     }
@@ -30,23 +46,24 @@ export class CommentActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
-        /* 
+        /*
          * Validate message size
          */
         // Build the message
         // TODO: Change this to comment stuff not vote stuff
-        const signature = await this.signComment(proposal, proposalOption, senderAddress.address);
-        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
-            proposalOption.hash, senderAddress.address, signature);
+        const signature = await this.signComment(data);
+        const commentMessage = await this.commentFactory.getMessage(data.action, data.sender, data.marketHash,
+                                data.target, data.parentHash, data.message, signature);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
-            mpaction: voteMessage
+            mpaction: commentMessage
         };
 
         // Get a fee estimate on the message,
         //  throws error if message too large
-        return this.smsgService.smsgSend(senderAddress.address, marketplace.address, msg, true, daysRetention);
+        const daysRetention = 2; // 2 days from now // Math.ceil((listingItem.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        const tmp = this.smsgService.smsgSend(data.sender, data.marketHash, msg, true, daysRetention);
 
         // create
         this.commentService.create(data);
@@ -62,15 +79,15 @@ export class CommentActionService {
      * @param proposalOption
      * @param address
      */
-    private async signComment(request: CommentCreateRequest): Promise<string> {
-    	const marketHash = this.marketService.findOne(request.marketId);
+    private async signComment(data: CommentCreateRequest): Promise<string> {
+        const marketHash = this.marketService.findOne(data.marketId);
         const commentTicket = {
-        	request.type,
-        	marketHash,
-        	request.address,
-        	request.target,
-        	request.parentHash,
-        	request.message
+            type: data.action,
+            marketHash,
+            address: data.sender,
+            target: data.target,
+            parentHash: data.parentHash,
+            message: data.message
         } as CommentTicket;
 
         return await this.coreRpcService.signMessage(address, commentTicket);

@@ -44,16 +44,30 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+        const marketId = data.params[0];
+        let market = await this.marketService.findOne(marketId);
+        market = market.toJSON();
+        const marketHash = market.Address;
+
+        const profileId = data.params[1];
+        let senderProfile = await this.profileService.findOne(profileId);
+        senderProfile = senderProfile.toJSON();
+        const profileAddress = senderProfile.Address;
+
+        const type = data.params[2];
+        const target = data.params[3];
+        const parentHash = data.params[5];
+        const message = data.params[4];
         const commentRequest = {
-            marketId: data.params[0],
-            profileId: data.params[1],
-            type: data.params[2],
-            target: data.params[3],
-            message: data.params[4],
-            parentHash: data.params[5]
+            action: type,
+            sender: profileAddress,
+            marketHash,
+            target,
+            parentHash,
+            message
         } as CommentCreateRequest;
 
-        this.commentActionService.send(commentRequest);
+        return await this.commentActionService.send(commentRequest);
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {

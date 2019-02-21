@@ -4,6 +4,8 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
 
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
@@ -12,8 +14,6 @@ import { Comment } from '../models/Comment';
 import { CommentRepository } from '../repositories/CommentRepository';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
 import { CommentActionService } from './CommentActionService';
-
-
 
 export class CommentService {
 
@@ -53,7 +53,11 @@ export class CommentService {
     @validate()
     public async create(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<Comment> {
         const body = JSON.parse(JSON.stringify(data));
+        body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
+
         const comment = await this.commentRepo.create(body);
+
+        // TODO: Filter out html from message
 
         // TODO: validation
 
