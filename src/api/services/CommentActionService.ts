@@ -56,7 +56,6 @@ export class CommentActionService {
          * Validate message size
          */
         // Build the message
-        // TODO: Change this to comment stuff not vote stuff
         const signature = await this.signComment(data);
         const commentMessage = await this.commentFactory.getMessage(data.action, data.sender, data.marketHash,
                                 data.target, data.parentHash, data.message, signature);

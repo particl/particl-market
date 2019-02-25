@@ -22,6 +22,9 @@ import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
 import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
 import { BidSendCommand } from '../commands/bid/BidSendCommand';
 
+import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
+import { CommentPostCommand } from '../commands/comment/CommentPostCommand';
+
 import { Command } from '../commands/Command';
 
 import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
@@ -169,6 +172,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
+
+        @inject(Types.Command) @named(Targets.Command.comment.CommentRootCommand) private commentRootCommand: CommentRootCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentPostCommand) private commentPostCommand: CommentPostCommand,
 
         @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
 
@@ -318,6 +324,9 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+
+        this.commands.push(commentRootCommand);
+        this.commands.push(commentPostCommand);
 
         this.commands.push(adminCommand);
 

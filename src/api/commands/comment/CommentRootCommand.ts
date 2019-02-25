@@ -33,7 +33,7 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' (post|search)';
     }
 
     public description(): string {

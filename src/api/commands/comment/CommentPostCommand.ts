@@ -5,8 +5,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { BaseCommand } from '../BaseCommand';
+import { Command } from '../Command';
+
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
