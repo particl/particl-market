@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -67,7 +67,7 @@ export class ItemCategoryFactory {
             // root case
             return rootCategory;
         } else {
-            // search the children for a match
+            // searchBy the children for a match
             const childCategories = rootCategory.ChildItemCategories;
             const found = _.find(childCategories, (childCategory) => {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);

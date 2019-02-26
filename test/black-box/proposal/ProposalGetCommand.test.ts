@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -33,10 +33,12 @@ describe('ProposalGetCommand', () => {
 
         // Generate a proposal
         const generateProposalsParams = new GenerateProposalParams([
-            false, // generateListingItemTemplate = true;
-            false, // generateListingItem = true;
-            null, // listingItemHash: string;
-            false // generatePastProposal = false;
+            false,                  // generateListingItemTemplate = true;
+            false,                  // generateListingItem = true;
+            null,                   // listingItemHash: string;
+            false,                  // generatePastProposal = false;
+            0,                      // voteCount
+            defaultProfile.address  // submitter
         ]).toParamsArray();
 
         // create Proposal for testing

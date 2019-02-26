@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -17,13 +17,12 @@ import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
-import { CoreRpcService } from './CoreRpcService';
+import { CoreRpcService, UnspentOutput } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
-import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
@@ -45,6 +44,13 @@ export interface OutputData {
     outputs: Output[];
     outputsSum: number;
     outputsChangeAmount: number;
+}
+
+export interface Output {
+    txid?: string;
+    vout?: number;
+    amount?: number;
+    data?: string;
 }
 
 // todo: move
@@ -227,7 +233,7 @@ export class BidActionService {
         let selectedOutputsSum = 0;
         let selectedOutputsChangeAmount = 0;
 
-        const utxoLessThanReqestedAmount: number[] = [];
+        // const utxoLessThanReqestedAmount: number[] = [];
         let utxoIdxs: number[] = [];
 
         let exactMatchIdx = -1;
@@ -235,18 +241,18 @@ export class BidActionService {
         const defaultselectedOutputsIdxs: number[] = [];
 
         // get all unspent transaction outputs
-        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
 
         // Loop over all outputs once to obtain various fitlering information
-        unspentOutputs.filter(
+        unspentOutputs = unspentOutputs.filter(
             (output: any, outIdx: number) => {
                 if (output.spendable && output.solvable && output.safe ) {
                     if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {
                         // Found a utxo with amount that is an exact match for the requested amount.
                         exactMatchIdx = outIdx;
-                    } else if (output.amount < adjustedRequiredAmount) {
-                        // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
-                        utxoLessThanReqestedAmount.push(outIdx);
+                    // } else if (output.amount < adjustedRequiredAmount) {
+                    //     // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
+                    //     utxoLessThanReqestedAmount.push(outIdx);
                     }
 
                     // Get the max utxo amount in case an output needs to be split
@@ -271,10 +277,15 @@ export class BidActionService {
         // Step 1: Check whether an exact match was found.
         if (exactMatchIdx === -1) {
             // No exact match found, so...
-            //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the requried amount by no more than 1%.
-            for (let ii = 0; ii < Math.pow(2, utxoLessThanReqestedAmount.length); ii++) {
+            //  ... Step 2: Ignore this step since it literally takes forever to complete
+            //  Sum utxos to find a summed group that matches exactly or is greater than the required amount by no more than 1%.
+            // NB!! Only do this if number of utxos <= 12 (which is 4096 combinations to test for - any more and performance drastically suffers)
+            /* const requiredTestCases = utxoLessThanReqestedAmount.length <= 12 ? 0 : Math.pow(2, utxoLessThanReqestedAmount.length);
+            for (let ii = 0; ii < requiredTestCases; ii++) {
                 const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
-                const summed: number = this.correctNumberDecimals( potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0) );
+                const summed: number = this.correctNumberDecimals(
+                    potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0)
+                );
 
                 if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
                     // Sum of utxos is within a 1 percent upper margin of the requested amount.
@@ -288,7 +299,7 @@ export class BidActionService {
                     }
                 }
             }
-
+            */
             // ... Step 3: If no summed values found, attempt to split a large enough output.
             if (utxoIdxs.length === 0 && maxOutputIdx !== -1 && unspentOutputs[maxOutputIdx].amount > adjustedRequiredAmount) {
                 const newAddress = await this.coreRpcService.getNewAddress([], false);

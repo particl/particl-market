@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -29,7 +29,7 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
     }
 
     public usage(): string {
-        return this.getName() + ' (search|accept|cancel|reject|send)  -  ' + this.description();
+        return this.getName() + ' (searchBy|accept|cancel|reject|send)  -  ' + this.description();
     }
 
     public help(): string {

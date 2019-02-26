@@ -1,15 +1,16 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf as Database } from '../../config/Database';
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
+import * as _ from 'lodash';
+import * as Faker from 'faker';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import * as _ from 'lodash';
-import * as Faker from 'faker';
 import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { ShippingCountries } from '../../core/helpers/ShippingCountries';
@@ -22,11 +23,6 @@ import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
 import { ListingItem } from '../models/ListingItem';
-import { Profile } from '../models/Profile';
-import { ItemCategory } from '../models/ItemCategory';
-import { FavoriteItem } from '../models/FavoriteItem';
-import { PaymentInformation } from '../models/PaymentInformation';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -44,9 +40,6 @@ import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { ItemInformation } from '../models/ItemInformation';
-import { Bid } from '../models/Bid';
-import { ItemImage } from '../models/ItemImage';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -73,11 +66,9 @@ import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAd
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import * as resources from 'resources';
 import { OrderService } from './OrderService';
 import { OrderFactory } from '../factories/OrderFactory';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
@@ -95,10 +86,10 @@ import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest
 import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
-import { Proposal } from '../models/Proposal';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
-import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
-import {IsNotEmpty} from 'class-validator';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
 
 export class TestDataService {
 
@@ -144,15 +135,29 @@ export class TestDataService {
      */
     public async clean(seed: boolean = true): Promise<void> {
 
-        await this.cleanDb();
+        await this.cleanDb()
+            .catch( reason => {
+                this.log.debug('failed cleaning the db: ' + reason);
+            });
+
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories();
-            await this.defaultProfileService.seedDefaultProfile();
-            await this.defaultMarketService.seedDefaultMarket();
-            this.log.info('cleanup & default seeds done.');
-            return;
+            await this.defaultItemCategoryService.seedDefaultCategories()
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+            await this.defaultProfileService.seedDefaultProfile()
+                .catch( reason => {
+                    this.log.debug('failed seeding default profile: ' + reason);
+                });
+            await this.defaultMarketService.seedDefaultMarket()
+                .catch( reason => {
+                    this.log.debug('failed seeding default market: ' + reason);
+                });
         }
+
+        this.log.info('cleanup & default seeds done.');
+        return;
     }
 
     /**
@@ -309,8 +314,9 @@ export class TestDataService {
             'smsg_messages'
         ];
 
+        this.log.debug('cleaning ' + tablesToClean.length + ' tables...');
+
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -363,6 +369,7 @@ export class TestDataService {
                     receivedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
 
+                // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
                 const listingItem = listingItemModel.toJSON();
@@ -610,17 +617,19 @@ export class TestDataService {
 
         this.log.debug('generateProposals, generateParams: ', generateParams);
 
-        /*
-        TODO: add template and item generation
+        // TODO: add template and item generation
 
+        /*
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
 
         let listingItemTemplate: resources.ListingItemTemplate;
         let listingItem: resources.ListingItem;
-
+        */
         // generate template
         if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+            /*
             const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
             listingItemTemplate = listingItemTemplates[0];
 
@@ -630,11 +639,13 @@ export class TestDataService {
 
             // set the hash for listing item generation
             listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
+            */
         }
 
         // generate item
         if (generateParams.generateListingItem) {
-
+            throw new NotImplementedException();
+            /*
             // set the seller for listing item generation
             listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
 
@@ -649,23 +660,25 @@ export class TestDataService {
 
             // set the hash for bid generation
             generateParams.listingItemHash = listingItem.hash;
+            */
         }
         // TODO: proposalHash is not set to listingitem
-         */
 
         const items: resources.Proposal[] = [];
+
         for (let i = amount; i > 0; i--) {
             const proposalCreateRequest = await this.generateProposalData(generateParams);
             let proposalModel = await this.proposalService.create(proposalCreateRequest);
             let proposal: resources.Proposal = proposalModel.toJSON();
 
+            this.log.debug('generating ' + generateParams.voteCount + ' votes...');
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
             }
 
             // create and update ProposalResult
-            let proposalResult = await this.proposalService.createProposalResult(proposal);
-            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+            let proposalResult = await this.proposalService.createEmptyProposalResult(proposal);
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal, true);
             // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
             proposalModel = await this.proposalService.findOne(proposal.id);
@@ -686,6 +699,7 @@ export class TestDataService {
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
+                signature: 'signature' + Faker.finance.bitcoinAddress(),
                 voter,
                 weight: 1,
                 postedAt: new Date().getTime(),
@@ -745,13 +759,17 @@ export class TestDataService {
             expiredAt: timeEnd
         } as ProposalCreateRequest;
 
+        proposalCreateRequest.hash = ObjectHash.getHash(proposalCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
         const options: ProposalOptionCreateRequest[] = [];
         options.push({
+            proposalHash: proposalCreateRequest.hash,
             optionId: 0,
             description: ItemVote.KEEP.toString()
         } as ProposalOptionCreateRequest);
 
         options.push({
+            proposalHash: proposalCreateRequest.hash,
             optionId: 1,
             description: ItemVote.REMOVE.toString()
         } as ProposalOptionCreateRequest);
@@ -928,9 +946,11 @@ export class TestDataService {
     private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
+            const fakeHash = Faker.random.uuid();
             const item = {
-                hash: Faker.random.uuid(),
-                data: [{
+                hash: fakeHash,
+                datas: [{
+                    itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
                     imageVersion: 'ORIGINAL',
@@ -950,7 +970,7 @@ export class TestDataService {
             : [];
 
         const itemImages = generateParams.generateItemImages
-            ? this.generateItemImagesData(_.random(1, 5))
+            ? this.generateItemImagesData(_.random(1, 2))
             : [];
 
         const itemLocation = generateParams.generateItemLocation

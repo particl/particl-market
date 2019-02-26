@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -19,7 +19,8 @@ import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
-import {Environment} from './helpers/Environment';
+import { Environment } from './helpers/Environment';
+import {MessageException} from '../api/exceptions/MessageException';
 
 
 export interface Configurable {
@@ -40,6 +41,7 @@ export class App {
 
     constructor(envConfig?: EnvConfig) {
 
+        console.log('App() constructor, envconfig(): ', JSON.stringify(envConfig));
         // if envConfig isn't given, use ProductionEnvConfig
         this.envConfig = !envConfig ? new ProductionEnvConfig() : envConfig;
         this.bootstrapApp = new Bootstrap(this.envConfig);
@@ -94,8 +96,14 @@ export class App {
         // Perform database migrations
         // TODO: migrate fails when db is created from the desktop and when run from the marketplace project and vice versa
         if (Environment.isTruthy(process.env.MIGRATE)) {
-            const result = await databaseMigrate.migrate();
-            this.log.error('migration result: ', JSON.stringify(result, null, 2));
+            const result = await databaseMigrate.migrate()
+                .catch(reason => {
+                    this.log.error('migration error: ', JSON.stringify(reason, null, 2));
+                    throw new MessageException(reason);
+                })
+                .then(value => {
+                    this.log.info('migration result: ', JSON.stringify(value, null, 2));
+                });
         } else {
             this.log.debug('Skipping database migration.');
         }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,16 +9,16 @@ import { DefaultItemCategoryService } from '../services/DefaultItemCategoryServi
 import { DefaultProfileService } from '../services/DefaultProfileService';
 import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
-import { MessageProcessor} from '../messageprocessors/MessageProcessor';
+import { MessageProcessor } from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
-import { Environment } from '../../core/helpers/Environment';
 import { ListingItemActionService } from '../services/ListingItemActionService';
 import { BidActionService } from '../services/BidActionService';
 import { EscrowActionService } from '../services/EscrowActionService';
 import { ProposalActionService } from '../services/ProposalActionService';
 import { VoteActionService } from '../services/VoteActionService';
+import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -33,11 +33,12 @@ export class ServerStartedListener implements interfaces.Listener {
     private timeout: any;
     private interval = 1000;
 
-// tslint:disable:max-line-length
+    // tslint:disable:max-line-length
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: SmsgMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -54,7 +55,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
         this.log = new Logger(__filename);
     }
-// tslint:enable:max-line-length
+    // tslint:enable:max-line-length
 
     /**
      *
@@ -91,24 +92,31 @@ export class ServerStartedListener implements interfaces.Listener {
             if (this.previousState !== isConnected) {
                 this.log.info('connection with particld established.');
 
-                // seed the default market
-                await this.defaultMarketService.seedDefaultMarket();
+                const hasWallet = await this.coreRpcService.hasWallet();
 
-                // seed the default categories
-                await this.defaultItemCategoryService.seedDefaultCategories();
+                if (hasWallet) {
+                    this.log.info('wallet is ready.');
 
-                // seed the default Profile
-                await this.defaultProfileService.seedDefaultProfile();
+                    // seed the default market
+                    await this.defaultMarketService.seedDefaultMarket();
 
-                // start expiredListingItemProcessor
-                this.expiredListingItemProcessor.scheduleProcess();
+                    // seed the default categories
+                    await this.defaultItemCategoryService.seedDefaultCategories();
 
-                // start message polling, unless we're running tests
-                if (!Environment.isTest()) {
+                    // seed the default Profile
+                    await this.defaultProfileService.seedDefaultProfile();
+
+                    // start expiredListingItemProcessor
+                    this.expiredListingItemProcessor.scheduleProcess();
+                    this.proposalResultProcessor.scheduleProcess();
+
+                    // start message polling, unless we're running tests
                     this.smsgMessageProcessor.schedulePoll();
                     this.messageProcessor.schedulePoll();
+                    this.interval = 10000;
+                } else {
+                    this.log.error('wallet not initialized yet, retrying in ' + this.interval + 'ms.');
                 }
-                this.interval = 10000;
             }
 
             // this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');

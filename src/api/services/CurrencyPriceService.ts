@@ -1,7 +1,9 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as Request from 'request';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -13,10 +15,8 @@ import { CurrencyPrice } from '../models/CurrencyPrice';
 import { CurrencyPriceCreateRequest } from '../requests/CurrencyPriceCreateRequest';
 import { CurrencyPriceUpdateRequest } from '../requests/CurrencyPriceUpdateRequest';
 import { CurrencyPriceParams } from '../requests/CurrencyPriceParams';
-import * as Request from 'request';
 import { MessageException } from '../exceptions/MessageException';
 import { SupportedCurrencies } from '../enums/SupportedCurrencies';
-import * as resources from 'resources';
 
 export class CurrencyPriceService {
 
@@ -44,7 +44,7 @@ export class CurrencyPriceService {
     }
 
     /**
-     * search CurrencyPrice using given CurrencyPriceParams
+     * searchBy CurrencyPrice using given CurrencyPriceParams
      *
      * @param options
      * @returns {Promise<CurrencyPrice>}

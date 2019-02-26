@@ -1,13 +1,16 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as Faker from 'faker';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import * as Faker from 'faker';
-import * as resources from 'resources';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
@@ -30,6 +33,7 @@ describe('ProposalPostCommand', () => {
     options.push('optionA1');
     options.push('optionB2');
 
+    let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -38,33 +42,33 @@ describe('ProposalPostCommand', () => {
 
     });
 
-    test('Should fail to post a Proposal because it has too few args (0)', async () => {
+    test('Should fail to post a Proposal because missing profileId', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (1)', async () => {
+    test('Should fail to post a Proposal because missing proposalTitle', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('proposalTitle').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (2)', async () => {
+    test('Should fail to post a Proposal because missing proposalDescription', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id,
             title
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('proposalDescription').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (3)', async () => {
+    test('Should fail to post a Proposal because missing daysRetention', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id,
             title,
@@ -72,10 +76,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('daysRetention').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (4)', async () => {
+    test('Should fail to post a Proposal because missing estimateFee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id,
             title,
@@ -84,10 +88,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('estimateFee').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (5)', async () => {
+    test('Should fail to post a Proposal because missing option1Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id,
             title,
@@ -97,10 +101,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('option1Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has too few args (6)', async () => {
+    test('Should fail to post a Proposal because missing option2Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
             defaultProfile.id,
             title,
@@ -111,10 +115,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Expected more params.');
+        expect(res.error.error.message).toBe(new MissingParamException('option2Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has an invalid (string) arg (profileId)', async () => {
+    test('Should fail to post a Proposal because invalid type of profileId', async () => {
 
         const invalidProfileId = 'invalid profile id';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -128,10 +132,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('profileId needs to be a number.');
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has an invalid (non-existent) arg (profileId)', async () => {
+    test('Should fail to post a Proposal because Profile not found', async () => {
 
         const invalidProfileId = 9999999999999999;
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -145,10 +149,10 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Profile not found.');
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should fail to post a Proposal because it has an invalid arg (daysRetention)', async () => {
+    test('Should fail to post a Proposal because invalid type of daysRetention', async () => {
 
         const invalidDaysRetention = 'Invalid daysRetention';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -162,7 +166,7 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('daysRetention needs to be a number.');
+        expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
     });
 
     test('Should estimate Proposal posting fee', async () => {
@@ -200,9 +204,16 @@ describe('ProposalPostCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+
     });
 
     test('Should receive the posted Proposal', async () => {
+
+        expect(sent).toEqual(true);
 
         const res = await testUtil.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],

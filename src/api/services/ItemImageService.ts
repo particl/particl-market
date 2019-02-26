@@ -1,9 +1,11 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as fs from 'fs';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -15,17 +17,14 @@ import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { ItemImageDataService } from './ItemImageDataService';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
-import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
-import { HashableObjectType } from '../../api/enums/HashableObjectType';
-import * as fs from 'fs';
+import { HashableObjectType } from '../enums/HashableObjectType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { ItemImageDataRepository } from '../repositories/ItemImageDataRepository';
+
 
 export class ItemImageService {
 
@@ -34,6 +33,7 @@ export class ItemImageService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ItemImageDataRepository) public itemImageDataRepo: ItemImageDataRepository,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -55,24 +55,17 @@ export class ItemImageService {
 
     /**
      * create(), but get data from a local file instead.
+     * used to create the ORIGINAL image version from the uploaded file
      *
      * @param imageFile
-     * @param {ListingItemTemplate} listingItemTemplate
+     * @param itemInformationId
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async createFromFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
-        // TODO: how am i supposed to know what imageFile contains? add type to it
+    public async createFromFile(imageFile: any, itemInformationId: number): Promise<ItemImage> {
+        // TODO: ADD TYPE TO imageFile!!
 
-        // Read the file data in
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
-        // this.log.error('dataStr = ' + dataStr);
-
-        // find listing item template
-        // this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
-        // find related itemInformation
-
-        const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
 
         const itemImageDataCreateRequest = {
             protocol: ImageDataProtocolType.LOCAL,
@@ -82,71 +75,79 @@ export class ItemImageService {
             imageVersion: ImageVersions.ORIGINAL.propName,
             originalMime: imageFile.mimetype,
             originalName: imageFile.originalname
-        };
+        } as ItemImageDataCreateRequest;
 
         const itemImageCreateRequest = {
-            item_information_id: itemInformation.id,
-            data: [itemImageDataCreateRequest]
+            item_information_id: itemInformationId,
+            datas: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
 
         return await this.create(itemImageCreateRequest);
     }
 
+    /**
+     * creates multiple different version of given image
+     *
+     * @param data
+     */
     @validate()
     public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
-        const startTime = new Date().getTime();
 
+        const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('create image, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
-        // extract and remove related models from request
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
-        delete body.data;
-
-        const protocols = Object.keys(ImageDataProtocolType)
-            .map(key => (ImageDataProtocolType[key]));
-        // this.log.debug('protocols: ', protocols);
-
+        // get the existing ItemImageDatas
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.datas;
+        // get the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
-        // this.log.debug('itemImageDataOriginal: ', itemImageDataOriginal);
 
-        // use the original image version to create a hash for the ItemImage
-        body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        // remove ItemImageDatas from the body
+        delete body.datas;
 
-        // if the request body was valid we will create the itemImage
-        const itemImage = await this.itemImageRepo.create(body);
+        if (itemImageDataOriginal) { // the original should always exist, its used to create the other versions
 
+            // use the original image version to create a hash for the ItemImage
+            body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
-        if (itemImageDataOriginal) {
+            // get all protocols
+            const protocols = Object.keys(ImageDataProtocolType).map(key => (ImageDataProtocolType[key]));
 
             if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new MessageException('Invalid image protocol.');
             }
 
-            // then create the imageDatas from the given original data
-            if (!_.isEmpty(itemImageDataOriginal.data)) {
-                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-                const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
-
-                // save all image datas
-                for (const imageData of imageDatas) {
-                    await this.itemImageDataService.create(imageData);
-                }
-
-                // finally find and return the created itemImage
-                const newItemImage = await this.findOne(itemImage.Id);
-                // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
-
-                this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
-                return newItemImage;
-            } else {
-                this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
-                return itemImage;
+            if (_.isEmpty(itemImageDataOriginal.data)) {
+                throw new MessageException('Image data not found.');
             }
+
+            // create the ItemImage
+            const itemImage = await this.itemImageRepo.create(body);
+
+            // then create the other imageDatas from the given original data,
+            // original is automatically added as one of the versions
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(
+                itemImage.Id, itemImage.Hash, itemImageDataOriginal, toVersions);
+
+            // save all ItemImageDatas
+            for (const imageData of imageDatas) {
+                // const fileName = await this.itemImageDataService.saveImageFile(imageData.data, body.hash, imageData.imageVersion);
+                // imageData.data = fileName;
+
+                await this.itemImageDataService.create(imageData);
+            }
+
+            // finally find and return the created itemImage
+            const newItemImage = await this.findOne(itemImage.Id);
+            // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
+
+            this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return newItemImage;
         } else {
             throw new MessageException('Original image data not found.');
         }
@@ -155,63 +156,81 @@ export class ItemImageService {
     @validate()
     public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
+        const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
-        // extract and remove related models from request
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
-        delete body.data;
-
-        // find the existing one without related
-        const itemImage = await this.findOne(id, false);
-
-        const protocols = Object.keys(ImageDataProtocolType)
-            .map(key => (ImageDataProtocolType[key]));
-
+        // grab the existing imagedatas
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.datas;
+        // get the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
-        // use the original image version to create a hash for the ItemImage
-        body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        delete body.datas;
+
+        const itemImage = await this.findOne(id, false);
 
         if (itemImageDataOriginal) {
+
+            // use the original image version to create a hash for the ItemImage
+            body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+
+            // get all protocols
+            const protocols = Object.keys(ImageDataProtocolType).map(key => (ImageDataProtocolType[key]));
 
             if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new MessageException('Invalid image protocol.');
             }
 
+            if (_.isEmpty(itemImageDataOriginal.data)) {
+                throw new MessageException('Image data not found.');
+            }
+
             // set new values
             itemImage.Hash = body.hash;
+            itemImage.Featured = body.featured;
 
             // update itemImage record
-            const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
+            const updatedItemImageModel = await this.itemImageRepo.update(id, itemImage.toJSON());
+            const updatedItemImage: resources.ItemImage = updatedItemImageModel.toJSON();
 
-            // this.log.debug('updatedItemImage', JSON.stringify(updatedItemImage, null, 2));
-            // find and remove old related ItemImageDatas
-            const oldImageDatas = updatedItemImage.related('ItemImageDatas').toJSON();
-            for (const imageData of oldImageDatas) {
+            // find and remove old related ItemImageDatas and files
+            for (const imageData of updatedItemImage.ItemImageDatas) {
                 await this.itemImageDataService.destroy(imageData.id);
             }
 
-            // then create new imageDatas from the given original data
-            if (!_.isEmpty(itemImageDataOriginal)) {
-                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-                const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
+            // then recreate the other imageDatas from the given original data
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(
+                itemImage.Id, itemImage.Hash, itemImageDataOriginal, toVersions);
 
-                // create new image datas
-                for (const imageData of imageDatas) {
-                    const createdImageData = await this.itemImageDataService.create(imageData);
-                    this.log.debug('createdImageData: ', createdImageData.id);
-                }
+            // save all ItemImageDatas
+            for (const imageData of imageDatas) {
+                // const fileName = await this.itemImageDataService.saveImageFile(imageData.data, body.hash, imageData.imageVersion);
+                // imageData.data = fileName;
+
+                this.log.debug('imageData: ', JSON.stringify(imageData, null, 2));
+                await this.itemImageDataService.create(imageData);
             }
 
-            // finally find and return the updated itemImage
-            const newItemImage = await this.findOne(id);
+            // finally find and return the created itemImage
+            const newItemImage = await this.findOne(itemImage.Id);
+            // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
+
+            this.log.debug('itemImageService.update: ' + (new Date().getTime() - startTime) + 'ms');
             return newItemImage;
+
         } else {
             throw new MessageException('Original image data not found.');
         }
+    }
+
+    public async updateFeatured(imageId: number, featured: boolean): Promise<ItemImage> {
+        const data = {
+            featured
+        } as ItemImageUpdateRequest;
+        return await this.itemImageRepo.update(imageId, data);
     }
 
     public async destroy(id: number): Promise<void> {

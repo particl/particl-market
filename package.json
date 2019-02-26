@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.0.48",
+  "version": "0.0.51",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "build": "npm run banner build && npm run lint && npm run clean:dist && npm run transpile && npm run copy:assets && npm run license:add && npm run license:update",
     "start": "node dist/app.js",
     "pretest": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish './test/unit/**/*.ts'",
-    "test": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --testPathPattern=unit",
+    "test": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=4000 \"./node_modules/.bin/jest\" --testPathPattern=unit",
     "test:pretty": "npm run test -- --verbose",
     "test:coverage": "npm run test -- --coverage",
     "pretest:black-box": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish './test/black-box/**/*.ts'",
@@ -97,7 +97,6 @@
     "lokijs": "^1.5.3",
     "morgan": "^1.7.0",
     "multer": "^1.3.0",
-    "omp-lib": "^0.0.3",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",

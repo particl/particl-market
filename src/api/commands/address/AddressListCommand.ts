@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -74,7 +74,7 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'List all addresses belonging to a profile.';
+        return 'List all shipping addresses belonging to a profile, specified by profileId.';
     }
 
     public example(): string {

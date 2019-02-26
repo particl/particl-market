@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -68,16 +68,16 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to search orders for. \n'
+            + '    <itemhash>               - String - The hash of the item we want to searchBy orders for. \n'
             + '                                A value of * specifies that any item hash is acceptable. \n'
             + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n'
-            + '                                The status of the orders we want to search for \n'
+            + '                                The status of the orders we want to searchBy for \n'
             + '                                A value of * specifies that any order status is acceptable. \n'
-            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to search for. \n'
+            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to searchBy for. \n'
             + '                                A value of * specifies that any buyer address is acceptable. \n'
-            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to search for. \n'
+            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to searchBy for. \n'
             + '                                A value of * specifies that any seller address is acceptable. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. ';
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. ';
     }
 
     public description(): string {

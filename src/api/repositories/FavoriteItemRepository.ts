@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -31,7 +31,7 @@ export class FavoriteItemRepository {
     }
 
     /**
-     * search favorite item by profile id and item id
+     * searchBy favorite item by profile id and item id
      *
      * @param {number} profileId
      * @param {number} itemId

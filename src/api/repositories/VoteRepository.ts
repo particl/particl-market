@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -26,8 +26,20 @@ export class VoteRepository {
         return list as Bookshelf.Collection<Vote>;
     }
 
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.VoteModel.fetchByProposalHash(hash, withRelated);
+    }
+
+    public async findAllByVotersAndProposalHash(voters: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.VoteModel.fetchByVotersAndProposalHash(voters, hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {
         return this.VoteModel.fetchById(id, withRelated);
+    }
+
+    public async findOneBySignature(signature: string, withRelated: boolean = true): Promise<Vote> {
+        return this.VoteModel.fetchBySignature(signature, withRelated);
     }
 
     public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {

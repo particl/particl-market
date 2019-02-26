@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -107,7 +107,8 @@ describe('ListingItemSearchCommand', () => {
         createdListingItem = listingItems[0];
     });
 
-    test('Should fail to search ListingItems if type is invalid', async () => {
+    test('Should fail to searchBy ListingItems if type is invalid', async () => {
+        // wtf, why pass defaultListingItemSearchParams?
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.type = 'INVALID';
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -118,7 +119,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
     });
 
-    test('Should fail to search ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
+    test('Should fail to searchBy ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'INVALID';
@@ -130,7 +131,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL. you could pass * as all too');
     });
 
-    test('Should search OWN ListingItems when profileid = OWN', async () => {
+    test('Should searchBy OWN ListingItems when profileid = OWN', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'OWN';
@@ -144,7 +145,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
     });
 
-    test('Should search ALL ListingItems when profileid = ALL', async () => {
+    test('Should searchBy ALL ListingItems when profileid = ALL', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'ALL';
 
@@ -158,7 +159,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should search ALL ListingItems when profileId is empty, since default is ALL', async () => {
+    test('Should searchBy ALL ListingItems when profileId is empty, since default is ALL', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -171,7 +172,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should search ALL ListingItems when profileId = *', async () => {
+    test('Should searchBy ALL ListingItems when profileId = *', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
@@ -186,7 +187,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should search only first ListingItem using pagination and setting pageLimit to 1', async () => {
+    test('Should searchBy only first ListingItem using pagination and setting pageLimit to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
@@ -202,7 +203,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
+    test('Should searchBy the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
@@ -233,7 +234,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should search ListingItems by category.key', async () => {
+    test('Should searchBy ListingItems by category.key', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.category = createdListingItem.ItemInformation.ItemCategory.key;
@@ -252,7 +253,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].ItemInformation.ItemCategory.key).toBe(params.category);
     });
 
-    test('Should search ListingItems by category.id', async () => {
+    test('Should searchBy ListingItems by category.id', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.category = createdListingItem.ItemInformation.ItemCategory.id;
@@ -275,7 +276,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search ListingItems by searchString', async () => {
+    test('Should searchBy ListingItems by searchString', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
 
@@ -367,7 +368,7 @@ describe('ListingItemSearchCommand', () => {
     });
 
 
-    test('Should search ListingItems by country (ItemLocation)', async () => {
+    test('Should searchBy ListingItems by country (ItemLocation)', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.country = createdListingItem.ItemInformation.ItemLocation.region;
@@ -386,7 +387,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search ListingItem by ShippingDestination', async () => {
+    test('Should searchBy ListingItem by ShippingDestination', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
 
@@ -414,7 +415,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(params.shippingDestination);
     });
 
-    test('Should search ListingItem by ShippingDestination, min-maxPrice and searchString', async () => {
+    test('Should searchBy ListingItem by ShippingDestination, min-maxPrice and searchString', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
@@ -454,7 +455,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should find all ListingItems when using no search criteria', async () => {
+    test('Should find all ListingItems when using no searchBy criteria', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
@@ -466,7 +467,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(2);
     });
 
-    test('Should search for flagged listing items', async () => {
+    test('Should searchBy for flagged listing items', async () => {
         // flag item
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             createdListingItem.hash,

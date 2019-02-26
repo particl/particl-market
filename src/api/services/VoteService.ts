@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,6 +12,7 @@ import { VoteRepository } from '../repositories/VoteRepository';
 import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { CoreRpcService } from './CoreRpcService';
 
 export class VoteService {
 
@@ -19,6 +20,7 @@ export class VoteService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.VoteRepository) public voteRepo: VoteRepository,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -26,6 +28,14 @@ export class VoteService {
 
     public async findAll(): Promise<Bookshelf.Collection<Vote>> {
         return this.voteRepo.findAll();
+    }
+
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.voteRepo.findAllByProposalHash(hash, withRelated);
+    }
+
+    public async findAllByVotersAndProposalHash(voters: string[], proposalHash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return await this.voteRepo.findAllByVotersAndProposalHash(voters, proposalHash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Vote> {
@@ -37,11 +47,20 @@ export class VoteService {
         return vote;
     }
 
+    public async findOneBySignature(signature: string, withRelated: boolean = true): Promise<Vote> {
+        const vote = await this.voteRepo.findOneBySignature(signature, withRelated);
+        if (vote === null) {
+            this.log.warn(`Vote with the signature=${signature} was not found!`);
+            throw new NotFoundException(signature);
+        }
+        return vote;
+    }
+
     public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         const vote = await this.voteRepo.findOneByVoterAndProposalId(voter, proposalId, withRelated);
         if (!vote) {
             this.log.warn(`Vote with the voter=${voter} and proposalId=${proposalId} was not found!`);
-            throw new NotFoundException(proposalId);
+            throw new NotFoundException(voter + ' and ' + proposalId);
         }
         return vote;
     }
@@ -66,6 +85,7 @@ export class VoteService {
         const vote = await this.findOne(id, false);
 
         // set new values
+        vote.set('signature', body.signature);
         vote.set('voter', body.voter);
         vote.set('weight', body.weight);
 

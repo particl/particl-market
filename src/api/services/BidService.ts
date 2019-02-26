@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -59,7 +59,6 @@ export class BidService {
     }
 
     public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        // TODO: this does not seem to be implemented, see repo/model
         const params = {
             listingItemHash: hash
         } as BidSearchParams;
@@ -67,7 +66,7 @@ export class BidService {
     }
 
     /**
-     * search Bid using given BidSearchParams
+     * searchBy Bid using given BidSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<Bid>>}

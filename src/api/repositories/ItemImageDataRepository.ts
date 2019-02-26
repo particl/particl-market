@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -24,6 +24,10 @@ export class ItemImageDataRepository {
     public async findAll(): Promise<Bookshelf.Collection<ItemImageData>> {
         const list = await this.ItemImageDataModel.fetchAll();
         return list as Bookshelf.Collection<ItemImageData>;
+    }
+
+    public async findAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
+        return await this.ItemImageDataModel.fetchAllOriginalsByImageHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {

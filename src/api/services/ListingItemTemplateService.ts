@@ -1,27 +1,23 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-
 import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
-import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -34,19 +30,39 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { HashableListingItem } from '../../core/helpers/HashableListingItem';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { MessageSize } from '../responses/MessageSize';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ImageFactory } from '../factories/ImageFactory';
+import { ItemImageDataService } from './ItemImageDataService';
+import { ItemImageService } from './ItemImageService';
+import {ItemImage} from '../models/ItemImage';
 
 export class ListingItemTemplateService {
+
+    public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+    private static OVERHEAD_PER_SMSG = 0;
+    private static OVERHEAD_PER_IMAGE = 0;
+
+    private static IMG_BOUNDING_WIDTH = 600;
+    private static IMG_BOUNDING_HEIGHT = 600;
+    private static FRACTION_LOWEST_COMPRESSION = 0.8;
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -81,7 +97,7 @@ export class ListingItemTemplateService {
     }
 
     /**
-     * search ListingItemTemplates using given ListingItemTemplateSearchParams
+     * searchBy ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
@@ -120,7 +136,7 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
-            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(result.toJSON(), null, 2));
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
@@ -273,6 +289,122 @@ export class ListingItemTemplateService {
         }
     }
 
+    /**
+     * creates resized versions of the template images, so that all of them fit in one smsgmessage
+     *
+     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @returns {Promise<"resources".ListingItemTemplate>}
+     */
+    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+        const startTime = new Date().getTime();
+
+        // ItemInformation has ItemImages, which is an array.
+        const itemImages = itemTemplate.ItemInformation.ItemImages;
+        const originalImageDatas: resources.ItemImageData[] = [];
+
+        for (const itemImage of itemImages) {
+            const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+            });
+            const itemImageDataResized: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+                return imageData.imageVersion === ImageVersions.RESIZED.propName;
+            });
+
+            if (!itemImageDataOriginal) {
+                // there's something wrong with the ItemImage if original image doesnt have data
+                throw new MessageException('Original image data not found.');
+            }
+
+            if (!itemImageDataResized) {
+                // Only need to process if the resized image does not exist
+                originalImageDatas.push(itemImageDataOriginal);
+            }
+        }
+
+        for (const originalImageData of originalImageDatas) {
+            const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
+            // save the resized image
+            const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
+                originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
+                originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
+            await this.itemImageDataService.create(imageDataCreateRequest);
+        }
+
+        const updatedTemplateModel = await this.findOne(itemTemplate.id);
+        const updatedTemplate = updatedTemplateModel.toJSON();
+        // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
+
+        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
+
+        return updatedTemplate;
+    }
+
+    /**
+     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
+     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
+     *
+     * @param listingItemTemplate
+     */
+    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
+
+        // convert the template to message
+        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage
+        } as MarketplaceMessage;
+
+        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
+
+        let imageDataSize = 0;
+        for (const image of listingItemMessage.information.images) {
+            imageDataSize = imageDataSize + image.data[0].data.length;
+            this.log.debug('imageDataSize: ', image.data[0].data.length);
+        }
+        const messageDataSize = JSON.stringify(marketPlaceMessage).length - imageDataSize;
+        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
+        const fits = spaceLeft > 0;
+
+        const messageSize: MessageSize = {
+            messageData: messageDataSize,
+            imageData: imageDataSize,
+            spaceLeft,
+            fits
+        };
+
+        return messageSize;
+    }
+
+    /**
+     * sets the featured image for the ListingItemTemlate
+     *
+     * @param listingItemTemplate
+     * @param imageId
+     *
+     */
+    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
+        if (!_.isEmpty(itemImages)) {
+            // find image and set it to featured
+            const found = itemImages.find((img) => img.id === imageId && !img.featured);
+            if (found) {
+                await this.itemImageService.updateFeatured(found.id, true);
+            }
+
+            // check if other images are set to featured, unset as featured
+            const notFound = itemImages.filter((img) => img.id !== imageId && img.featured);
+            if (notFound.length) {
+                notFound.forEach( async (img) => await this.itemImageService.updateFeatured(img.id, false));
+            }
+
+            this.log.info('Successfully set featured image');
+            return await this.itemImageService.findOne(imageId);
+        } else {
+            this.log.error('ListingItemTemplate has no ItemImages.');
+            throw new MessageException('ListingItemTemplate has no Images.');
+        }
+    }
+
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
@@ -286,5 +418,31 @@ export class ListingItemTemplateService {
             return itemObject['order'];
         });
         return highestOrder ? highestOrder['order'] : 0;
+    }
+
+    /**
+     *  Reads ORIGINAL version of an image from file (throws exception if file cannot be read), resizes and reduces quality,
+     *  returning the modified image value.
+     *
+     * @param {string} imageHash
+     * @param {boolean} qualityFactor
+     * @returns {Promise<string>}
+     */
+    private async getResizedImage(imageHash: string, qualityFactor: number): Promise<string> {
+        if (qualityFactor <= 0) {
+            return '';
+        }
+        const originalItemImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+
+        let compressedImage = await ImageProcessing.resizeImageToFit(
+            originalItemImage,
+            ListingItemTemplateService.IMG_BOUNDING_WIDTH,
+            ListingItemTemplateService.IMG_BOUNDING_HEIGHT
+        );
+        compressedImage = await ImageProcessing.downgradeQuality(
+            compressedImage,
+            qualityFactor
+        );
+        return compressedImage;
     }
 }

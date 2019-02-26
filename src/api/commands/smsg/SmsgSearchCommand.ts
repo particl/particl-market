@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -60,9 +60,9 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
-            + '                                view of search listing item results. \n'
+            + '                                view of searchBy listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. \n'
             + '    <type>                   - [optional] ENUM{ASC,DESC} - MessageType. \n'
             + '    <status>                 - [optional] ENUM{ASC,DESC} - SmsgMessageStatus. \n'
             + '    <msgid>                  - [optional] ENUM{ASC,DESC} - The message msgid. \n';

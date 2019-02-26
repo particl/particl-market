@@ -3,6 +3,7 @@
 *.log
 *.log*
 
+
 # Node files #
 node_modules/
 npm-debug.log
@@ -38,6 +39,8 @@ coverage/
 test/testdata/test.json
 test/reports/*
 
+data/wallet1.dat
+data/wallet2.dat
 data/database/*
 data/uploads/*
 data/tests/*
@@ -56,4 +59,6 @@ data/gui2_node_modules/*
 
 codeship*.yml
 .scannerwork
+
+kontena.ovpn
 

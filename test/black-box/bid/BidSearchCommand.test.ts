@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -72,8 +72,8 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should fail to search for Bids because invalid ListingItem.hash', async () => {
-        // search bid by item hash
+    test('Should fail to searchBy for Bids because invalid ListingItem.hash', async () => {
+        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             'INVALID HASH'
@@ -83,8 +83,8 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
-    test('Should fail to search for Bids because invalid paging params', async () => {
-        // search bid by item hash
+    test('Should fail to searchBy for Bids because invalid paging params', async () => {
+        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid page']);
         res.expectJson();
         res.expectStatusCode(404);
@@ -110,7 +110,7 @@ describe('BidSearchCommand', () => {
 
         // log.debug('bids: ', JSON.stringify(bids, null, 2));
 
-        // search bid by item hash
+        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -121,7 +121,7 @@ describe('BidSearchCommand', () => {
 
     });
 
-    test('Should generate a second Bid and return two Bids when search by ListingItem.hash', async () => {
+    test('Should generate a second Bid and return two Bids when searchBy by ListingItem.hash', async () => {
         // create second bid
         const bidGenerateParams = new GenerateBidParams([
             false,                       // generateListingItemTemplate
@@ -163,7 +163,7 @@ describe('BidSearchCommand', () => {
     });
 
     // TODO: add test where bids are searched using bid.OrderItems status
-    test('Should search Bids by ListingItem.hash and Bid.status and find one', async () => {
+    test('Should searchBy Bids by ListingItem.hash and Bid.status and find one', async () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
@@ -177,7 +177,7 @@ describe('BidSearchCommand', () => {
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
-    test('Should search Bids by ListingItem.hash, Bid.status and Bid.bidder and find one', async () => {
+    test('Should searchBy Bids by ListingItem.hash, Bid.status and Bid.bidder and find one', async () => {
         const bidSearchCommandParams = [
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
@@ -197,8 +197,8 @@ describe('BidSearchCommand', () => {
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
-    test('Should fail to search Bids because invalid BidMessageType enum', async () => {
-        // search bid by item hash
+    test('Should fail to searchBy Bids because invalid BidMessageType enum', async () => {
+        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
@@ -209,8 +209,8 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Invalid status.');
     });
 
-    test('Should return empty search result because Bid with status MPA_REJECT does not exist', async () => {
-        // search bid by item hash
+    test('Should return empty searchBy result because Bid with status MPA_REJECT does not exist', async () => {
+        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,

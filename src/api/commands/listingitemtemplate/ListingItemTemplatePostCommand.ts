@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -39,6 +39,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
+     *  [3]: estimateFee
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -49,6 +50,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const listingItemTemplateId: number = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const marketId = data.params[2] || undefined;
+        const estimateFee: boolean = typeof data.params[3] === 'boolean' ? data.params[3] : false;
 
         const postRequest = {
             listingItemTemplateId,
@@ -56,7 +58,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             marketId
         } as ListingItemTemplatePostRequest;
 
-        const response = await this.listingItemActionService.post(postRequest);
+        const response = await this.listingItemActionService.post(postRequest, estimateFee);
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
         return response;
@@ -67,6 +69,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
+     *  [3]: estimateFee
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -93,7 +96,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new MessageException('listingItemTemplateId should be a number.');
         } else {
             // make sure template with the id exists
-            await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
+            const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
+            const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate.toJSON());
+            if (!templateMessageDataSize.fits) {
+                throw new MessageException('Template details exceed message size limitations');
+            }
         }
 
         if (daysRetention && typeof daysRetention !== 'number') {
@@ -116,9 +123,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Number - The ID of the listing item template that we want to post. \n'
-            + '    <daysRetention>               - [optional] Number - Days the listing will be retained by network.\n'
-            + '    <marketId>                    - [optional] Number - Market id. ';
+            + '    <listingTemplateId>           - number - The ID of the listing item template that we want to post. \n'
+            + '    <daysRetention>               - number - Days the listing will be retained by network.\n'
+            + '    <marketId>                    - number - Market id. '
+            + '    <estimateFee>                 - [optional] boolean, Just estimate the Fee, dont post the Proposal. \n';
     }
 
     public description(): string {
@@ -126,6 +134,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     public example(): string {
-        return 'template ' + this.getName() + ' 1 1';
+        return 'template ' + this.getName() + ' 1 1 false';
     }
 }

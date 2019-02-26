@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,17 +16,20 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     // @IsNotEmpty()
     public dataId: string | null;
 
-    @IsEnum(ImageDataProtocolType)
+    @IsNotEmpty()
     public protocol: ImageDataProtocolType;
 
     @IsNotEmpty()
     public imageVersion: string;
 
+    @IsNotEmpty()
+    public imageHash: string;
+
     // @IsNotEmpty()
     public encoding: string | null;
 
     // @IsNotEmpty()
-    public data: string | null;
+    public data: string;
 
     // @IsNotEmpty()
     public originalMime: string | null;

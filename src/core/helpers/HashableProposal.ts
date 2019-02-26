@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,21 +11,17 @@ import { ProposalCreateRequest } from '../../api/requests/ProposalCreateRequest'
 export class HashableProposal {
 
     public submitter: string;
-    public blockStart: number;
-    public blockEnd: number;
     public type: string;
     public title: string;
     public description: string;
-    public options: string;
     public item: string;
+    public options: string;
 
     constructor(hashThis: ProposalCreateRequest) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {
             this.submitter = input.submitter;
-            this.blockStart = input.blockStart;
-            this.blockEnd = input.blockEnd;
             this.type = input.type;
             this.title = input.title;
             this.description = input.description;

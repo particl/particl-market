@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,7 +12,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 export class ProposalMessage extends MessageBody implements ProposalMessageInterface {
 
     @IsNotEmpty()
-    @IsEnum(BidMessageType)
+    @IsEnum(ProposalMessageType)
     public action: ProposalMessageType;
     public submitter: string;
     public title: string;

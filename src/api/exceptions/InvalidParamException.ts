@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -15,7 +15,8 @@ import { Exception } from '../../core/api/Exception';
 
 
 export class InvalidParamException extends Exception {
-    constructor(param: string) {
-        super(404, `Invalid ${param}.`);
+    constructor(invalidParam: string, validType?: string) {
+        super(404, 'Invalid ' + invalidParam + (validType ? ', should be of type: ' + validType : '.'));
     }
 }
+

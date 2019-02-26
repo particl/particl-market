@@ -1,8 +1,9 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
@@ -12,7 +13,6 @@ import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
-import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
@@ -21,7 +21,7 @@ import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
-import {SmsgMessageStatus} from '../../../src/api/enums/SmsgMessageStatus';
+import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 
 
 describe('ListingItemMessage', () => {

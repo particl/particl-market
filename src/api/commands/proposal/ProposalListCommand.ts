@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -52,7 +52,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             order: data.params[3]
         } as ProposalSearchParams;
 
-        return await this.proposalService.searchBy(searchParams, true);
+        return await this.proposalService.search(searchParams, true);
     }
 
     /**
@@ -98,7 +98,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
                 type = ProposalType.PUBLIC_VOTE;
             } else {
-                // anything goes
+                type = ProposalType.PUBLIC_VOTE;
             }
         } else {
             type = ProposalType.PUBLIC_VOTE; // default

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -38,8 +38,13 @@ export class RpcController {
     @httpPost('/')
     public async handleRPC( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
-        let rpcRequest = this.createRequest(body.method, body.params, body.id);
-        this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
+        let rpcRequest: RpcRequest = this.createRequest(body.method, body.params, body.id);
+
+        if (rpcRequest.method === Commands.ITEMIMAGE_ROOT.commandName && rpcRequest.params[0] === Commands.ITEMIMAGE_ADD.commandName) {
+            this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params[0] + '...');
+        } else {
+            this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
+        }
 
         // get the commandType for the method name
         const commandType = _.find(Commands.rootCommands, command => command.commandName === body.method);

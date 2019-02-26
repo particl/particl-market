@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -22,7 +22,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     public log: LoggerType;
 
     private timeout: any;
-    private interval = 5000;
+    private interval = 5000; // todo: configurable
 
     // tslint:disable:max-line-length
     constructor(
@@ -44,30 +44,34 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      */
     public async process(messages: IncomingSmsgMessage[]): Promise<void> {
 
-        for (const message of messages) {
+        const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
+        this.log.debug('INCOMING messages.length: ', messages.length);
 
+        // create the createrequests
+        for (const message of messages) {
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
+            smsgMessageCreateRequests.push(smsgMessageCreateRequest);
+        }
 
-            // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-            await this.smsgMessageService.create(smsgMessageCreateRequest)
-                .then(async smsgMessageModel => {
+        this.log.info('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
 
-                    const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
-                    this.log.debug('INCOMING SMSGMESSAGE: '
-                        + smsgMessage.from + ' => ' + smsgMessage.to
-                        + ' : ' + smsgMessage.type
-                        + ' : ' + smsgMessage.status
-                        + ' : ' + smsgMessage.msgid);
+        // store all in db
+        await this.smsgMessageService.createAll(smsgMessageCreateRequests)
+            .catch(reason => {
+                this.log.error('ERROR: ', reason);
+            });
 
-                    // after message is stored, remove it
-                    await this.smsgService.smsg(message.msgid, true, true);
-                })
+        // after messages are stored, remove them
+        for (const message of messages) {
+            await this.smsgService.smsg(message.msgid, true, true)
+                .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
                 });
         }
+
     }
 
     public stop(): void {
@@ -93,10 +97,11 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        await this.pollMessages()
+        await this.smsgService.smsgInbox('unread')
             .then( async messages => {
                 if (messages.result !== '0') {
                     const smsgMessages: IncomingSmsgMessage[] = messages.messages;
+                    this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 }
                 return;
@@ -105,15 +110,5 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
                 this.log.error('poll(), error: ' + reason);
                 return;
             });
-    }
-
-    /**
-     * TODO: should not fetch all unreads at the same time
-     *
-     * @returns {Promise<any>}
-     */
-    private async pollMessages(): Promise<any> {
-        const response = await this.smsgService.smsgInbox('unread');
-        return response;
     }
 }

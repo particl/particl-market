@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,6 +11,7 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import {Environment} from '../../core/helpers/Environment';
 import * as resources from 'resources';
 import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
+import {MessageException} from '../exceptions/MessageException';
 
 export class SmsgService {
 
@@ -99,6 +100,10 @@ export class SmsgService {
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
+        if (response.error) {
+            this.log.error('ERROR: ', JSON.stringify(response, null, 2));
+            throw new MessageException('Failed to send message.');
+        }
         return response;
     }
 
@@ -164,7 +169,7 @@ export class SmsgService {
         const response = await this.coreRpcService.call('smsg', [msgId, {
                 delete: remove,
                 setread: setRead,
-                encoding: 'ascii'
+                encoding: 'text'
             }
         ]);
         // this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));

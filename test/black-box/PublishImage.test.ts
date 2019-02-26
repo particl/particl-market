@@ -1,15 +1,15 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
+import * as resources from 'resources';
 import { api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 describe('/publish-image', () => {
@@ -19,13 +19,14 @@ describe('/publish-image', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
-
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    const httpOptions = {
+        host: 'http://' + process.env.RPCHOSTNAME,
+        port: 3100
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -58,54 +59,51 @@ describe('/publish-image', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
-        const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: LARGE', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: LARGE', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.LARGE.propName;
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: MEDIUM', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: MEDIUM', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.MEDIUM.propName;
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: THUMBNAIL', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: THUMBNAIL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.THUMBNAIL.propName;
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: ORIGINAL', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: ORIGINAL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.ORIGINAL.propName;
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent because invalid itemImageId', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because of invalid itemImageId', async () => {
         const itemImageId = 0;
         const imageVersion = ImageVersions.LARGE.propName;
 
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Entity with identifier ' + itemImageId + ' does not exist');
     });
 
-    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent invalid imageVersion', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because of invalid imageVersion', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = 'INVALID_IMAGE:VERSION';
-        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(404);
-        // TODO: why is the error object different here than in the previous test, FIX
-        expect(res.error.error).toBe('Image Not found');
+        expect(res.error.error.message).toBe('Image not found!');
     });
 
     test('POST  /item-images/template/:listingItemTemplateId        Should POST new ItemImage', async () => {
@@ -113,6 +111,8 @@ describe('/publish-image', () => {
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
+            host: httpOptions.host,
+            port: httpOptions.port,
             headers: {
                 'Authorization': auth,
                 'Content-Type': 'multipart/form-data'
@@ -150,6 +150,8 @@ describe('/publish-image', () => {
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
+            host: httpOptions.host,
+            port: httpOptions.port,
             headers: {
                 'Authorization': auth,
                 'Content-Type': 'multipart/form-data'

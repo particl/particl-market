@@ -1,8 +1,9 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -10,7 +11,6 @@ import { validate, request } from '../../core/api/Validate';
 import { ListingItem } from '../models/ListingItem';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
-import { ItemInformationService } from './ItemInformationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
@@ -19,7 +19,6 @@ import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import * as resources from 'resources';
 import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
@@ -27,9 +26,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { CoreRpcService } from './CoreRpcService';
-import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalService } from './ProposalService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
@@ -39,20 +36,13 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import {MessageSize} from '../responses/MessageSize';
 
 export class ListingItemActionService {
-    private static FRACTION_TO_COMPRESS_BY = 0.6;
-    private static FRACTION_TO_RESIZE_IMAGE_BY = 0.6;
-    private static MAX_SMSG_SIZE = 400000; // TODO: Give these more accurate values
-    private static OVERHEAD_PER_SMSG = 0;
-    private static OVERHEAD_PER_IMAGE = 0;
-    private static MAX_RESIZES = 20;
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -82,17 +72,14 @@ export class ListingItemActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
-        let itemTemplate = itemTemplateModel.toJSON();
+        const itemTemplate = itemTemplateModel.toJSON();
 
         // TODO: should validate that the template has the required info
         // TODO: recalculate the template.hash in case the related data has changed
-
-        itemTemplate = await this.resizeTemplateImages(itemTemplate);
-        this.log.debug('images resized');
 
         // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
@@ -121,7 +108,7 @@ export class ListingItemActionService {
             item: listingItemMessage
         } as MarketplaceMessage;
 
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention, estimateFee);
     }
 
     /**
@@ -229,7 +216,7 @@ export class ListingItemActionService {
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
      */
-    private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
+    /*private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
         const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
             return proposalOptionResult.ProposalOption.optionId === 0;
         });
@@ -241,80 +228,17 @@ export class ListingItemActionService {
         // at minimum, a total of 10 votes
         // at minimum, 30% of votes saying remove
 
+        // TODO: This needs to call the same code we use for removigng votes!!!!!!
         if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
             && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
             return false;
         } else {
             return true;
         }
-    }
-
-    /**
-     *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @returns {Promise<"resources".ListingItemTemplate>}
-     */
-    private async resizeTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
-
-        const itemImages = itemTemplate.ItemInformation.ItemImages;
-        // ItemInformation has ItemImages, which is an array.
-        // Each element in ItemImages has an array ItemImageDatas.
-        const sizePerImage = (ListingItemActionService.MAX_SMSG_SIZE - ListingItemActionService.OVERHEAD_PER_SMSG)
-            / itemImages.length - ListingItemActionService.OVERHEAD_PER_IMAGE;
-        for (const tmpIndexOfImages in itemImages) {
-            if (tmpIndexOfImages) {
-                let resizedImage;
-                let indexOfData;
-                {
-                    let foundOriginal = false;
-                    const itemImage = itemImages[tmpIndexOfImages];
-                    for (const tmpIndexOfData in itemImage.ItemImageDatas) {
-                        if (tmpIndexOfData
-                            && itemImage.ItemImageDatas[tmpIndexOfData].imageVersion === ImageVersions.ORIGINAL.propName) {
-                            resizedImage = itemImage.ItemImageDatas[tmpIndexOfData].ItemImageDataContent.data;
-                            foundOriginal = true;
-                            indexOfData = tmpIndexOfData;
-                            // this.log.error('Found original. Continuing...');
-                            break;
-                        }
-                    }
-                    if (!foundOriginal) {
-                        // this.log.error('Couldn\'t find original. Skipping...');
-                        continue;
-                    }
-                }
-                let compressedImage = resizedImage;
-                for (let numResizings = 0; ;) {
-                    if (compressedImage.length <= sizePerImage) {
-                        break;
-                    }
-                    const compressedImage2 = await ImageProcessing.downgradeQuality(compressedImage, ListingItemActionService.FRACTION_TO_COMPRESS_BY);
-                    if (compressedImage.length !== compressedImage2.length) {
-                        /* We have not yet reached the limit of compression. */
-                        compressedImage = compressedImage2;
-                        continue;
-                    } else {
-                        ++numResizings;
-                        if (numResizings >= ListingItemActionService.MAX_RESIZES) {
-                            /* A generous number of resizes has happened but we haven't found a solution yet. Exit incase this is an infinite loop. */
-                            throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
-                                + ' Image size = ${compressedImage.length}.');
-                        }
-                        /* we've reached the limit of compression. We need to resize the image for further size losses. */
-                        resizedImage = await ImageProcessing.resizeImageToFraction(resizedImage, ListingItemActionService.FRACTION_TO_RESIZE_IMAGE_BY);
-                        compressedImage = resizedImage;
-                        break;
-                    }
-                }
-                itemTemplate.ItemInformation.ItemImages[tmpIndexOfImages].ItemImageDatas[indexOfData].ItemImageDataContent.data = compressedImage;
-            }
-        }
-
-        return itemTemplate;
-    }
+    }*/
 
     private configureEventListeners(): void {
-        this.log.info('Configuring EventListeners ');
+        this.log.info('Configuring EventListeners');
 
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
             this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,8 +9,8 @@ import { MessageBody } from '../../core/api/MessageBody';
 
 export class BidMessage extends MessageBody implements ActionMessageInterface {
 
-    // @IsNotEmpty()
-    // @IsEnum(BidMessageType)
+    @IsNotEmpty()
+    @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     @IsNotEmpty()

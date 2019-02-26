@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -20,8 +20,8 @@ export class ListingItemSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder;
     public category: string | number;
-    @ValidateIf(o => o.type)
-    @IsEnum(ListingItemSearchType)
+    // @ValidateIf(o => o.type)
+    // @IsEnum(ListingItemSearchType)
     public type: ListingItemSearchType;
     public profileId: string | number;
     public minPrice: number | null;
@@ -43,8 +43,8 @@ export class ListingItemSearchParams extends RequestBody {
      *  [3]: category, number|string, if string, try to find using key, can be null
      *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
      *  [5]: profileId, (NUMBER | OWN | ALL | *)
-     *  [6]: minPrice, number to search item basePrice between 2 range
-     *  [7]: maxPrice, number to search item basePrice between 2 range
+     *  [6]: minPrice, number to searchBy item basePrice between 2 range
+     *  [7]: maxPrice, number to searchBy item basePrice between 2 range
      *  [8]: country, string, can be null
      *  [9]: shippingDestination, string, can be null
      *  [10]: searchString, string, can be null

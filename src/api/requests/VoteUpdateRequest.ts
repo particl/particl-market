@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,22 +7,16 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
 export class VoteUpdateRequest extends RequestBody {
-    // @IsNotEmpty()
-    public proposal_option_id: number;
 
-    @IsNotEmpty()
+    public proposal_option_id: number;
+    public signature: string;
     public voter: string;
 
     @IsNotEmpty()
     public weight: number;
 
-    @IsNotEmpty()
     public postedAt: number;
-
-    @IsNotEmpty()
     public receivedAt: number;
-
-    @IsNotEmpty()
     public expiredAt: number;
 
 }

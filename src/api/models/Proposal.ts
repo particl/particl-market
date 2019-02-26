@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -36,21 +36,21 @@ export class Proposal extends Bookshelf.Model<Proposal> {
             .query(qb => {
 
                 if (options.type) {
-                    // search all
+                    // searchBy all
                     qb.where('proposals.type', '=', options.type.toString());
 
                 }
 
                 if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
-                    // search all ending after options.timeStart
+                    // searchBy all ending after options.timeStart
                     qb.where('proposals.expired_at', '>', options.timeStart - 1);
 
                 } else if (typeof options.timeStart === 'string' && typeof options.timeEnd === 'number') {
-                    // search all ending before options.timeEnd
+                    // searchBy all ending before options.timeEnd
                     qb.where('proposals.expired_at', '<', options.timeEnd + 1);
 
                 } else if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'number') {
-                    // search all ending after options.timeStart, starting before options.timeEnd
+                    // searchBy all ending after options.timeStart, starting before options.timeEnd
                     qb.where('proposals.time_start', '<', options.timeEnd + 1);
                     qb.andWhere('proposals.expired_at', '>', options.timeStart - 1);
                 }

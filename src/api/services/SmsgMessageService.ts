@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,7 +13,7 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import * as resources from 'resources';
 
 export class SmsgMessageService {
@@ -67,6 +67,10 @@ export class SmsgMessageService {
         // finally find and return the created smsgMessage
         const newSmsgMessage = await this.findOne(smsgMessage.id);
         return newSmsgMessage;
+    }
+
+    public async createAll(datas: SmsgMessageCreateRequest[]): Promise<number> {
+        return await this.smsgMessageRepo.createAll(datas);
     }
 
     @validate()

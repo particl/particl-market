@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -6,8 +6,8 @@ import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
-import { NotFoundException } from '../exceptions/NotFoundException';
 import { Environment, EnvironmentType } from '../../core/helpers/Environment';
+import { MessageException } from '../exceptions/MessageException';
 
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
@@ -82,6 +82,9 @@ import { ListingItemTemplateRemoveCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
 import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplate/ListingItemTemplateSearchCommand';
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
+import { ListingItemTemplateSizeCommand } from '../commands/listingitemtemplate/ListingItemTemplateSizeCommand';
+import { ListingItemTemplateCompressCommand } from '../commands/listingitemtemplate/ListingItemTemplateCompressCommand';
+import { ListingItemTemplateFeatureImageCommand } from '../commands/listingitemtemplate/ListingItemTemplateFeatureImageCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
@@ -219,6 +222,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSizeCommand) private listingItemTemplateSizeCommand: ListingItemTemplateSizeCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCompressCommand) private listingItemTemplateCompressCommand: ListingItemTemplateCompressCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateFeatureImageCommand) private listingItemTemplateFeatureImageCommand: ListingItemTemplateFeatureImageCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
@@ -345,6 +351,7 @@ export class RpcCommandFactory {
         this.commands.push(itemImageListCommand);
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageRemoveCommand);
+        this.commands.push(listingItemTemplateFeatureImageCommand);
 
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
@@ -365,6 +372,8 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateRemoveCommand);
         this.commands.push(listingItemTemplateGetCommand);
         this.commands.push(listingItemTemplateSearchCommand);
+        this.commands.push(listingItemTemplateSizeCommand);
+        this.commands.push(listingItemTemplateCompressCommand);
         this.commands.push(listingItemTemplateRootCommand);
 
         this.commands.push(marketAddCommand);
@@ -466,7 +475,7 @@ export class RpcCommandFactory {
                 }
             }
         }
-        throw new NotFoundException('Couldn\'t find command <' + commandType.toString() + '>\n');
+        throw new MessageException('Couldn\'t find command <' + commandType.toString() + '>\n');
     }
 }
 // tslint:enable:array-type

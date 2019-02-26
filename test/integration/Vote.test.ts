@@ -1,8 +1,10 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +17,6 @@ import { VoteService } from '../../src/api/services/VoteService';
 import { VoteCreateRequest } from '../../src/api/requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../src/api/requests/VoteUpdateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import * as resources from 'resources';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
@@ -103,7 +104,7 @@ describe('Vote', () => {
         } as TestDataGenerateRequest);
         createdProposal = proposals[0];
 
-        log.debug('createdProposal:', JSON.stringify(createdProposal, null, 2));
+        // log.debug('createdProposal:', JSON.stringify(createdProposal, null, 2));
 
     });
 
@@ -136,6 +137,7 @@ describe('Vote', () => {
     test('Should create a new Vote', async () => {
         const testData = {
             proposal_option_id: createdProposal.ProposalOptions[0].id,
+            signature: 'signature' + Faker.finance.bitcoinAddress(),
             voter: defaultProfile.address,
             weight: 1,
             postedAt: new Date().getTime(),

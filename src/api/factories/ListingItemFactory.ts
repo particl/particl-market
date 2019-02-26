@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -28,6 +28,8 @@ import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjec
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
+import {MessageException} from '../exceptions/MessageException';
+import {ItemImageDataService} from '../services/ItemImageDataService';
 
 export class ListingItemFactory {
 
@@ -37,7 +39,8 @@ export class ListingItemFactory {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService
     ) {
         this.log = new Logger(__filename);
     }
@@ -288,16 +291,16 @@ export class ListingItemFactory {
 
         const imageCreateRequests: ItemImageCreateRequest[] = [];
         for (const image of images) {
-            const data = await this.getModelImageData(image.data);
+            const datas = await this.getModelImageDatas(image.data);
             imageCreateRequests.push({
                 hash: image.hash,
-                data
+                datas
             } as ItemImageCreateRequest);
         }
         return imageCreateRequests;
     }
 
-    private async getModelImageData(imageDatas: any[]): Promise<ItemImageDataCreateRequest[]> {
+    private async getModelImageDatas(imageDatas: any[]): Promise<ItemImageDataCreateRequest[]> {
 
         const imageDataCreateRequests: ItemImageDataCreateRequest[] = [];
         for (const imageData of imageDatas) {
@@ -380,7 +383,8 @@ export class ListingItemFactory {
             const imageData = await this.getMessageInformationImageData(image.ItemImageDatas);
             imagesArray.push({
                 hash: image.hash,
-                data: imageData
+                data: imageData,
+                featured: image.featured
             });
         }
         return imagesArray;
@@ -388,17 +392,32 @@ export class ListingItemFactory {
 
     private async getMessageInformationImageData(itemImageDatas: resources.ItemImageData[]): Promise<object[]> {
         const imageDataArray: object[] = [];
-        for (const imageData of itemImageDatas) {
-            // we only want the original
-            if (imageData.imageVersion === ImageVersions.ORIGINAL.propName) {
-                imageDataArray.push({
-                    protocol: imageData.protocol,
-                    encoding: imageData.encoding,
-                    data: imageData.ItemImageDataContent.data,
-                    id: imageData.dataId
-                });
+
+        let selectedImageData = _.find(itemImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        if (!selectedImageData) {
+            // if theres no resized version, then ORIGINAL can be used
+            selectedImageData = _.find(itemImageDatas, (imageData) => {
+                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+            });
+
+            if (!selectedImageData) {
+                // there's something wrong with the ItemImage if original image doesnt have data
+                throw new MessageException('Original image data not found.');
             }
         }
+
+        // load the actual image data
+        const data = await this.itemImageDataService.loadImageFile(selectedImageData.imageHash, selectedImageData.imageVersion);
+        imageDataArray.push({
+            protocol: selectedImageData.protocol,
+            encoding: selectedImageData.encoding,
+            data,
+            id: selectedImageData.dataId
+        });
+
         return imageDataArray;
     }
 

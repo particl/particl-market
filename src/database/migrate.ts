@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,6 +16,7 @@ export const migrate = (): Promise<any> => {
     console.log('migrate, datadir: ', DataDir.getDataDirPath());
     console.log('migrate, database: ', DataDir.getDatabasePath());
     console.log('migrate, uploads: ', DataDir.getUploadsPath());
+    console.log('migrate, images: ', DataDir.getImagesPath());
 
     const db = Knex();
 

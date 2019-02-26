@@ -1,19 +1,20 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 // tslint:disable:max-line-length
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ItemVote } from '../../src/api/enums/ItemVote';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';
 // tslint:enable:max-line-length
 
 describe('Happy ListingItem Vote Flow', () => {
@@ -63,6 +64,9 @@ describe('Happy ListingItem Vote Flow', () => {
     let testTimeStamp = new Date().getTime();
 
     const DAYS_RETENTION = 2;
+    let sent = false;
+    let vote1AddressCount;
+    let vote2AddressCount;
 
     beforeAll(async () => {
 
@@ -134,15 +138,15 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemTemplateNode1.hash).toBeDefined();
 
         // we should be also able to get the same template
-        const templateGetRes: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand, listingItemTemplateNode1.id]);
-        templateGetRes.expectJson();
-        templateGetRes.expectStatusCode(200);
-        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
+        const response: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand, listingItemTemplateNode1.id]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = response.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
     });
 
-    test('Post ListingItemTemplate to the default marketplace', async () => {
+    test('Should post ListingItemTemplate to the default marketplace', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_ITEM_ADD');
@@ -150,18 +154,22 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilNode1.waitFor(5);
 
-        const res: any = await testUtilNode1.rpc(templateCommand, [
+        const response: any = await testUtilNode1.rpc(templateCommand, [
             templatePostCommand,
             listingItemTemplateNode1.id,
             DAYS_RETENTION,
             marketNode1.id
         ]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
         // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
-        expect(result.result).toBe('Sent.');
+        const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toEqual('Sent.');
 
         log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
         log.debug('result.msgid: ' + result.msgid);
@@ -175,7 +183,9 @@ describe('Happy ListingItem Vote Flow', () => {
 
     });
 
-    test('Receive ListingItem on node1', async () => {
+    test('Should have created ListingItem on node1', async () => {
+
+        expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_ITEM_ADD');
@@ -206,7 +216,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Receive ListingItem on node2', async () => {
+    test('Should have received ListingItem on node2', async () => {
 
         expect(listingItemNode1).toBeDefined();
 
@@ -216,7 +226,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilNode2.waitFor(5);
 
-        const itemGetRes: any = await testUtilNode2.rpcWaitFor(
+        const response: any = await testUtilNode2.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplateNode1.hash],
             8 * 60,
@@ -224,10 +234,10 @@ describe('Happy ListingItem Vote Flow', () => {
             'hash',
             listingItemTemplateNode1.hash
         );
-        itemGetRes.expectJson();
-        itemGetRes.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.ListingItem = itemGetRes.getBody()['result'];
+        const result: resources.ListingItem = response.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
         // store ListingItem for later tests
@@ -237,7 +247,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Report ListingItem from node2', async () => {
+    test('Should report ListingItem from node2', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -258,13 +268,49 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
-
         log.debug('==> Node2 sent MP_PROPOSAL_ADD.');
     });
 
-    test('Receive Proposal to remove ListingItem on node1', async () => {
+    test('Should have created Proposal on node2', async () => {
 
+        expect(sent).toBeTruthy();
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+
+        log.debug('========================================================================================');
+        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('========================================================================================');
+
+        await testUtilNode2.waitFor(5);
+
+        const response = await testUtilNode2.rpcWaitFor(proposalCommand,
+            [proposalListCommand, '*', '*', 'ITEM_VOTE'],
+            30 * 60,            // maxSeconds
+            200,            // waitForStatusCode
+            '[0].item',  // property name
+            listingItemTemplateNode1.hash,  // value
+            '='
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const result: resources.Proposal = response.getBody()['result'][0];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.title).toBe(listingItemNode2.hash);
+
+        // store Proposal for later tests
+        proposalNode2 = result;
+
+    }, 600000); // timeout to 600s
+
+    test('Should have received Proposal on node1', async () => {
+
+        expect(sent).toBeTruthy();
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
 
@@ -275,27 +321,20 @@ describe('Happy ListingItem Vote Flow', () => {
         await testUtilNode1.waitFor(5);
 
         let res = await testUtilNode1.rpcWaitFor(proposalCommand,
-            [proposalListCommand, '*', '*', ProposalType.ITEM_VOTE, SearchOrder.ASC],
-            30 * 60,            // maxSeconds
-            200,            // waitForStatusCode
-            '[0].title', // property name
-            listingItemNode1.hash           // value
+            [proposalGetCommand, proposalNode2.hash],
+            30 * 60,        // maxSeconds
+            200,       // waitForStatusCode
+            'hash', // property name
+            proposalNode2.hash         // value
         );
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Proposal = res.getBody()['result'][0];
+        const result: resources.Proposal = res.getBody()['result'];
         log.debug('proposal:', JSON.stringify(result, null, 2));
 
         expect(result.title).toBe(listingItemNode1.hash);
         expect(result.description).toBe('reason for reporting');
-
-        // Proposal should have a ProposalResult which has one Vote for removing the ListingItem
-        expect(result.ProposalResults.length).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults.length).toBe(2);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].weight).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].voters).toBe(1);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
         res = await testUtilNode1.rpc(listingItemCommand, [listingItemGetCommand, listingItemNode1.hash]);
@@ -313,7 +352,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Receive Proposal to remove ListingItem on node2', async () => {
+    test('Should have received Proposal on node2', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -343,14 +382,14 @@ describe('Happy ListingItem Vote Flow', () => {
 
         log.debug('proposal:', JSON.stringify(result, null, 2));
 
-        // Proposal should have a ProposalResult which has one Vote for removing the ListingItem
-        // we have one ProposalResult: it gets created before we receive the Proposal (since this node was the one calling item flag),
-        //      and we ignore the received one as it already exists
-        expect(result.ProposalResults.length).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults.length).toBe(2);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].weight).toBe(1);
-        expect(result.ProposalResults[0].ProposalOptionResults[1].voters).toBe(1);
+        // Proposal should have a minimum of two ProposalResults
+        expect(result.ProposalResults.length).toBeGreaterThanOrEqual(2);
+        expect(result.ProposalResults[1].ProposalOptionResults.length).toBe(2);
+        expect(result.ProposalResults[1].ProposalOptionResults[0].weight).toBe(0);
+        expect(result.ProposalResults[1].ProposalOptionResults[0].voters).toBe(0);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].ProposalOption.description).toBe(ItemVote.REMOVE);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].weight).toBeGreaterThan(0);
+        expect(result.ProposalResults[1].ProposalOptionResults[1].voters).toBeGreaterThan(0);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
         res = await testUtilNode2.rpc(listingItemCommand, [listingItemGetCommand, listingItemNode2.hash]);
@@ -368,7 +407,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Post Vote1 from node1 (voter1)', async () => {
+    test('Should post Vote from node1', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -376,24 +415,33 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.REMOVE)');
+        log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.KEEP)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpc(voteCommand, [
             votePostCommand,
             voterProfileNode1.id,
             proposalNode1.hash,
-            proposalNode1.ProposalOptions[1].optionId
+            proposalNode1.ProposalOptions[0].optionId
         ]);
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
-        expect(result.result).toEqual('Sent.');
+        vote1AddressCount = result.msgids.length;
+        expect(vote1AddressCount).toBeGreaterThan(0);
 
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toEqual('Sent.');
     });
 
-    test('Receive Vote1 on node1', async () => {
+    test('Should have created Votes on node1', async () => {
+
+        expect(sent).toBeTruthy();
+        expect(vote1AddressCount).toBeGreaterThan(0);
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -412,7 +460,7 @@ describe('Happy ListingItem Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOption.optionId',
-            proposalNode1.ProposalOptions[1].optionId
+            proposalNode1.ProposalOptions[0].optionId
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -421,15 +469,16 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.postedAt).toBeGreaterThan(testTimeStamp);
         expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
-        expect(result.weight).toBe(1);
-        expect(result.voter).toBe(voterProfileNode1.address);
-        expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
+        expect(result.weight).toBeGreaterThan(0);
+        expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[0].optionId);
 
         voteNode1 = result;
 
     });
 
-    test('ProposalResults are recalculated on node1', async () => {
+    test('Should have created ProposalResults after receiving Vote1 on node1', async () => {
+
+        expect(sent).toBeTruthy();
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -440,25 +489,31 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('========================================================================================');
         log.debug('Node1 ProposalResults recalculated');
         log.debug('========================================================================================');
+        log.debug('vote1AddressCount: ', vote1AddressCount);
 
-        await testUtilNode1.waitFor(3);
+        const response: any = await testUtilNode1.rpcWaitFor(
+            proposalCommand,
+            [proposalResultCommand, proposalNode1.hash],
+            8 * 60,
+            200,
+            'ProposalOptionResults[0].voters',
+            vote1AddressCount,
+            '='
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const res: any = await testUtilNode1.rpc(proposalCommand, [proposalResultCommand, proposalNode1.hash]);
-        res.expectStatusCode(200);
-        const proposalResult = res.getBody()['result'];
-        log.debug('NODE1 proposalResult:', JSON.stringify(proposalResult, null, 2));
-
-        const result: any = res.getBody()['result'];
-        expect(result.ProposalOptionResults[0].voters).toBe(0);
-        expect(result.ProposalOptionResults[0].weight).toBe(0);
-        expect(result.ProposalOptionResults[1].voters).toBe(2);
-        expect(result.ProposalOptionResults[1].weight).toBe(2);
+        const result: resources.ProposalResult = response.getBody()['result'];
+        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
+        expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
 
         proposalResultNode1 = result;
 
     });
 
-    test('Receive Vote1 on node2', async () => {
+    test('Should have created ProposalResults after receiving Vote1 on node2', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -476,20 +531,21 @@ describe('Happy ListingItem Vote Flow', () => {
             [proposalResultCommand, proposalNode2.hash],
             8 * 60,
             200,
-            'ProposalOptionResults[1].voters',
-            2
+            'ProposalOptionResults[0].voters',
+            vote1AddressCount,
+            '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
-        expect(result.ProposalOptionResults[0].voters).toBe(0);
-        expect(result.ProposalOptionResults[0].weight).toBe(0);
-        expect(result.ProposalOptionResults[1].voters).toBe(2);
-        expect(result.ProposalOptionResults[1].weight).toBe(2);
+        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
+        expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
     });
 
-    test('Post Vote2 from node2 (voter2)', async () => {
+    test('Should post Vote2 from node2 (voter2)', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -512,13 +568,20 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        vote2AddressCount = result.msgids.length;
+        expect(vote2AddressCount).toBeGreaterThan(0);
+
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
 
         // update testTimeStamp
         testTimeStamp = new Date().getTime();
     });
 
-    test('Receive Vote2 on node2', async () => {
+    test('Should have updated Vote2 on node2', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -548,14 +611,13 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.postedAt).toBeGreaterThan(testTimeStamp);
         expect(result.receivedAt).toBeGreaterThan(testTimeStamp);
         expect(result.expiredAt).toBeGreaterThan(testTimeStamp);
-        expect(result.weight).toBe(1);
-        expect(result.voter).toBe(voterProfileNode2.address);
+        expect(result.weight).toBeGreaterThan(0);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
 
         voteNode2 = result;
     });
 
-    test('Receive Vote2 on node1', async () => {
+    test('Should receive Vote2 on node1', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -575,7 +637,9 @@ describe('Happy ListingItem Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[1].voters',
-            3
+            vote2AddressCount,
+            '='
+
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -583,16 +647,14 @@ describe('Happy ListingItem Vote Flow', () => {
         const result: any = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(0);
-        expect(result.ProposalOptionResults[0].weight).toBe(0);
-        expect(result.ProposalOptionResults[1].voters).toBe(3);
-        expect(result.ProposalOptionResults[1].weight).toBe(3);
+        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
+        expect(result.ProposalOptionResults[1].voters).toBe(vote2AddressCount);
+        expect(result.ProposalOptionResults[1].weight).toBe(voteNode2.weight);
     });
 
-    // right now we have 2 votes for optionId=0 on both nodes
-    // default profiles on both nodes have voted
 
-    test('Post Vote2 again from node2 changing the vote optionId', async () => {
+    test('Should post Vote2 again from node2 changing the vote optionId', async () => {
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -615,11 +677,17 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: SmsgSendResponse = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
     });
 
     test('Receive Vote2 on node2 again', async () => {
+
+        expect(sent).toBeTruthy();
 
         expect(listingItemNode1).toBeDefined();
         expect(listingItemNode2).toBeDefined();
@@ -642,16 +710,17 @@ describe('Happy ListingItem Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[0].voters',
-            1
+            vote1AddressCount + vote2AddressCount,
+            '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
-        expect(result.ProposalOptionResults[0].voters).toBe(1);
-        expect(result.ProposalOptionResults[0].weight).toBe(1);
-        expect(result.ProposalOptionResults[1].voters).toBe(2);
-        expect(result.ProposalOptionResults[1].weight).toBe(2);
+        expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount + vote2AddressCount);
+        expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight + voteNode2.weight);
+        expect(result.ProposalOptionResults[1].voters).toBe(0);
+        expect(result.ProposalOptionResults[1].weight).toBe(0);
     });
 
 });

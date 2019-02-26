@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -30,7 +30,7 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' (list|get|add|update|remove|search)  -  ' + this.description();
+        return this.getName() + ' (list|get|add|update|remove|searchBy)  -  ' + this.description();
     }
 
     public help(): string {

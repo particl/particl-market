@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -180,7 +180,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Create an address and associate it with a profile.';
+        return 'Create a shipping address and associate it with a profile.';
     }
 
     public example(): string {

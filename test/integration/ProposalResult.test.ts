@@ -1,8 +1,9 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +16,6 @@ import { ProposalResultService } from '../../src/api/services/ProposalResultServ
 import { ProposalResultCreateRequest } from '../../src/api/requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../../src/api/requests/ProposalResultUpdateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import * as resources from 'resources';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -127,7 +127,7 @@ describe('ProposalResult', () => {
         );
     });
 
-    test('Should create a new ProposalResult', async () => {
+    test('Should create a new ProposalResult without ProposalOptions', async () => {
 
         testData.proposal_id = createdProposal.id;
 
@@ -144,7 +144,9 @@ describe('ProposalResult', () => {
         const proposalResultCollection = await proposalResultService.findAll();
         const proposalResult = proposalResultCollection.toJSON();
         // log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-        expect(proposalResult.length).toBe(2);
+
+        // testDataService.generate creates first 1 empty result, then 1 when recalculating result
+        expect(proposalResult.length).toBe(3);
     });
 
     test('Should list all ProposalResults by proposalHash', async () => {
@@ -152,7 +154,7 @@ describe('ProposalResult', () => {
         const proposalResult = proposalResultCollection.toJSON();
 
         log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-        expect(proposalResult.length).toBe(2);
+        expect(proposalResult.length).toBe(3);
         createdProposalResult = proposalResult[0];
 
         const result = proposalResult[0];
@@ -162,8 +164,8 @@ describe('ProposalResult', () => {
 
     });
 
-    test('Should return one ProposalResult by proposalHash', async () => {
-        const proposalResultModel: ProposalResult = await proposalResultService.findOneByProposalHash(createdProposal.hash);
+    test('Should return latest ProposalResult by proposalHash', async () => {
+        const proposalResultModel: ProposalResult = await proposalResultService.findLatestByProposalHash(createdProposal.hash);
         const result = proposalResultModel.toJSON();
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(createdProposal.id);

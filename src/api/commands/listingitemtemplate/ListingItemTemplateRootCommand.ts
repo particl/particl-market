@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -30,7 +30,7 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
     }
 
     public usage(): string {
-        return this.getName() + ' (search|get|add|remove|post)  -  ' + this.description();
+        return this.getName() + ' (searchBy|get|add|remove|post)  -  ' + this.description();
     }
 
     public help(): string {
@@ -38,6 +38,6 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
     }
 
     public description(): string {
-        return 'Commands for managing listingitem template.';
+        return 'Commands for managing ListingItemTemplates.';
     }
 }

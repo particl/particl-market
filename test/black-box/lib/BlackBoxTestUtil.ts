@@ -1,18 +1,19 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../../src/app';
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as _ from 'lodash';
-import * as resources from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
 export class BlackBoxTestUtil {
 
@@ -99,15 +100,16 @@ export class BlackBoxTestUtil {
                 const addCommandParams = [
                     Commands.ADDRESS_ADD.commandName,
                     defaultProfile.id,
-                    addressCreateRequestSHIPPING_OWN.firstName,
-                    addressCreateRequestSHIPPING_OWN.lastName,
-                    addressCreateRequestSHIPPING_OWN.title,
-                    addressCreateRequestSHIPPING_OWN.addressLine1,
-                    addressCreateRequestSHIPPING_OWN.addressLine2,
-                    addressCreateRequestSHIPPING_OWN.city,
-                    addressCreateRequestSHIPPING_OWN.state,
-                    addressCreateRequestSHIPPING_OWN.country,
-                    addressCreateRequestSHIPPING_OWN.zipCode
+                    Faker.name.firstName(),
+                    Faker.name.lastName(),
+                    Faker.company.companyName(),
+                    Faker.address.streetAddress(),
+                    Faker.address.secondaryAddress(),
+                    Faker.address.city(),
+                    Faker.address.state(),
+                    Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                    Faker.address.zipCode(),
+                    AddressType.SHIPPING_OWN
                 ];
 
                 // create address for default profile
@@ -191,16 +193,21 @@ export class BlackBoxTestUtil {
      * @param {number} waitForStatusCode
      * @param {string} waitForObjectProperty
      * @param waitForObjectPropertyValue
+     * @param waitForCondition '=', '<', '>', default: '='
      * @returns {Promise<any>}
      */
     public async rpcWaitFor(method: string, params: any[] = [], maxSeconds: number = 10, waitForStatusCode: number = 200,
-                            waitForObjectProperty?: string, waitForObjectPropertyValue?: any ): Promise<any> {
+                            waitForObjectProperty?: string, waitForObjectPropertyValue?: any, waitForCondition?: string): Promise<any> {
+
+        // this.log.debug('waitForCondition: ' + waitForCondition);
+        waitForCondition = waitForCondition !== undefined ? waitForCondition : '='; // use '=' as default if not set
 
         this.log.debug('==[ rpcWaitFor ]=============================================================================');
         this.log.debug('command: ' + method + ' ' + params.toString());
         this.log.debug('waiting for StatusCode: ' + waitForStatusCode);
         this.log.debug('waiting for ObjectProperty: ' + waitForObjectProperty);
         this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));
+        this.log.debug('waiting for condition: ObjectProperty ' + waitForCondition + ' ObjectPropertyValue');
         this.log.debug('=============================================================================================');
 
         let errorCount = 0;
@@ -231,24 +238,41 @@ export class BlackBoxTestUtil {
                         // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
                         // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
                         // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+                        // this.log.debug('waitForCondition: ' + waitForCondition);
+                        // this.log.debug('waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
 
-                        if (objectPropertyValue === waitForObjectPropertyValue) {
+                        let waitForResult = false;
+                        if (objectPropertyValue != null && waitForCondition === '=') {
+                            waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                        } else if (objectPropertyValue != null  && waitForCondition === '<') {
+                            waitForResult = (objectPropertyValue < waitForObjectPropertyValue);
+                        } else if (objectPropertyValue != null  && waitForCondition === '>') {
+                            waitForResult = (objectPropertyValue > waitForObjectPropertyValue);
+                        } else if (objectPropertyValue != null  && waitForCondition === '<=') {
+                            waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);
+                        } else if (objectPropertyValue != null  && waitForCondition === '>=') {
+                            waitForResult = (objectPropertyValue >= waitForObjectPropertyValue);
+                        }
+                        // this.log.debug('waitForResult: ' + waitForResult);
+
+                        if (waitForResult) {
                             this.log.debug('SUCCESS! statusCode === ' + waitForStatusCode
-                                + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                                + ' && ' + waitForObjectProperty + ' ' + waitForCondition + ' ' + waitForObjectPropertyValue);
                             return response;
                         } else {
 
                             errorCount++;
 
                             if (errorCount < 5 || errorCount % 15 === 0) {
-                                this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
+                                this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !' + waitForCondition
+                                    + ' ' + waitForObjectPropertyValue);
                             }
                             if (errorCount === 5) {
                                 this.log.error('... posting every 15th from now on...');
                             }
 
                             // do not throw here for now.
-                            // for example bid search will not throw an exception like findOne so the statusCode === 200,
+                            // for example bid searchBy will not throw an exception like findOne so the statusCode === 200,
                             // but we need to keep on querying until correct value is returned.
                             // todo: it should be configurable how this works
                             // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);

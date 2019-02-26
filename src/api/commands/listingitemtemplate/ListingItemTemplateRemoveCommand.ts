@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -59,7 +59,7 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     }
 
     public description(): string {
-        return 'Destroy a listing item template specified by the ID of the listing item template and it will destroy all its relations as well.';
+        return 'Destroy a ListingItemTemplate specified by the Id.';
     }
 
     public example(): string {

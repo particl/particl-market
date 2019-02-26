@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -22,6 +22,16 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
             });
         } else {
             return await ProposalOption.where<ProposalOption>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ProposalOption> {
+        if (withRelated) {
+            return await ProposalOption.where<ProposalOption>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ProposalOption.where<ProposalOption>({ hash: value }).fetch();
         }
     }
 

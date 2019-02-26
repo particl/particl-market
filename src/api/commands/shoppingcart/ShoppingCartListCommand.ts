@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Particl Market developers
+// Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -77,8 +77,8 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to search for. \n'
-            + '    <profileName>            - The name of the profile associated with the shopping cart we want to search for. ';
+            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to searchBy for. \n'
+            + '    <profileName>            - The name of the profile associated with the shopping cart we want to searchBy for. ';
     }
 
     public description(): string {
