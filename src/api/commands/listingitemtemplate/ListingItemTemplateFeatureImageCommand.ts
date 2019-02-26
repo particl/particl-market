@@ -18,7 +18,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemImage } from '../../models/ItemImage';
 
-export class ListingItemTemplateFeaturedImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
 

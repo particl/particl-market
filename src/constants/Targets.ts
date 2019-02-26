@@ -264,7 +264,7 @@ export const Targets = {
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeaturedImageCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
