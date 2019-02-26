@@ -18,7 +18,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemImage } from '../../models/ItemImage';
 
-export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
+export class ListingItemTemplateFeaturedImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
 
@@ -63,10 +63,8 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
         // check if we got all the params
         if (data.params.length < 1) {
-            this.log.error('MISSING PARAM listingItemTemplateId');
             throw new MissingParamException('listingItemTemplateId');
         } else if (data.params.length < 2) {
-            this.log.error('MISSING PARAM itemImageId');
             throw new MissingParamException('itemImageId');
         }
 
@@ -82,7 +80,6 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
         // check if item already been posted
         if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
-            this.log.error('IMAGE IS ALREADY POSTED');
             throw new MessageException(`Can't set featured flag on ItemImage because the ListingItemTemplate has already been posted!`);
         }
 

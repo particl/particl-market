@@ -15,7 +15,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
 
-describe('ListingItemTemplateFeatureImageCommand', () => {
+describe('ListingItemTemplateFeaturedImageCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 

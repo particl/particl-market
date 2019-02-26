@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsNotEmpty, IsEnum } from 'class-validator';
+import {IsNotEmpty, IsEnum, IsPositive} from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { Currency } from '../enums/Currency';
 
@@ -17,8 +17,11 @@ export class ItemPriceCreateRequest extends RequestBody {
     public currency: Currency;
 
     @IsNotEmpty()
+    @IsPositive()
     public basePrice: number;
 
+    @IsNotEmpty()
+    @IsPositive()
     public shippingPrice;
 
     public cryptocurrencyAddress;

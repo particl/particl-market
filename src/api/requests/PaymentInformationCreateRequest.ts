@@ -5,6 +5,8 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { PaymentType } from '../../api/enums/PaymentType';
+import {EscrowCreateRequest} from './EscrowCreateRequest';
+import {ItemPriceCreateRequest} from './ItemPriceCreateRequest';
 
 // tslint:disable:variable-name
 export class PaymentInformationCreateRequest extends RequestBody {
@@ -16,8 +18,8 @@ export class PaymentInformationCreateRequest extends RequestBody {
     @IsNotEmpty()
     public type: PaymentType;
 
-    public escrow;
-    public itemPrice;
+    public escrow: EscrowCreateRequest;
+    public itemPrice: ItemPriceCreateRequest;
 
 }
 // tslint:enable:variable-name

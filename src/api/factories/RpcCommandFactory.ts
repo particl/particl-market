@@ -84,7 +84,7 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { ListingItemTemplateSizeCommand } from '../commands/listingitemtemplate/ListingItemTemplateSizeCommand';
 import { ListingItemTemplateCompressCommand } from '../commands/listingitemtemplate/ListingItemTemplateCompressCommand';
-import { ListingItemTemplateFeatureImageCommand } from '../commands/listingitemtemplate/ListingItemTemplateFeatureImageCommand';
+import { ListingItemTemplateFeaturedImageCommand } from '../commands/listingitemtemplate/ListingItemTemplateFeaturedImageCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
@@ -224,7 +224,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSizeCommand) private listingItemTemplateSizeCommand: ListingItemTemplateSizeCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCompressCommand) private listingItemTemplateCompressCommand: ListingItemTemplateCompressCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateFeatureImageCommand) private listingItemTemplateFeatureImageCommand: ListingItemTemplateFeatureImageCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateFeatureImageCommand) private listingItemTemplateFeatureImageCommand: ListingItemTemplateFeaturedImageCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
