@@ -20,8 +20,6 @@ export class ItemPriceCreateRequest extends RequestBody {
     @IsPositive()
     public basePrice: number;
 
-    @IsNotEmpty()
-    @IsPositive()
     public shippingPrice;
 
     public cryptocurrencyAddress;

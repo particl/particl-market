@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -19,8 +20,7 @@ import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAd
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../requests/ShippingPriceUpdateRequest';
-import {MessageException} from '../exceptions/MessageException';
-import {InvalidParamException} from '../exceptions/InvalidParamException';
+import { InvalidParamException } from '../exceptions/InvalidParamException';
 
 export class ItemPriceService {
 
@@ -53,7 +53,6 @@ export class ItemPriceService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        this.validate(body);
         const shippingPrice = body.shippingPrice || {};
         const cryptocurrencyAddress = body.cryptocurrencyAddress || {};
 
@@ -71,22 +70,22 @@ export class ItemPriceService {
         }
 
         // create the itemPrice
-        const itemPrice = await this.itemPriceRepo.create(body);
+        const itemPrice: resources.ItemPrice = await this.itemPriceRepo.create(body)
+            .then(value => value.toJSON());
 
         // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
-            shippingPrice.item_price_id = itemPrice.Id;
+            shippingPrice.item_price_id = itemPrice.id;
             await this.shippingpriceService.create(shippingPrice as ShippingPriceCreateRequest);
         }
         // finally find and return the created itemPrice
-        return await this.findOne(itemPrice.Id);
+        return await this.findOne(itemPrice.id);
     }
 
     @validate()
     public async update(id: number, @request(ItemPriceUpdateRequest) data: ItemPriceUpdateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.validate(body);
 
         // find the existing one without related
         const itemPrice = await this.findOne(id, false);
@@ -127,27 +126,6 @@ export class ItemPriceService {
         // finally find and return the updated item price
         const newItemPrice = await this.findOne(id);
         return newItemPrice;
-    }
-
-    public validate(data: ItemPriceCreateRequest | ItemPriceUpdateRequest): boolean {
-        if (!data.basePrice || data.basePrice < 0) {
-            throw new InvalidParamException('basePrice');
-        }
-        if (data.shippingPrice && data.shippingPrice < 0) {
-            throw new InvalidParamException('shippingPrice');
-        }
-
-        if (data.shippingPrice) {
-            if (!data.shippingPrice.domestic || !data.shippingPrice.international) {
-                throw new InvalidParamException('shippingPrice');
-            } else {
-                if (data.shippingPrice.domestic < 0 || data.shippingPrice.international < 0 ) {
-                    throw new InvalidParamException('shippingPrice');
-                }
-            }
-        }
-
-        return true;
     }
 
     public async destroy(id: number): Promise<void> {

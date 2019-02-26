@@ -138,6 +138,7 @@ export class ListingItemTemplateService {
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
             // this.log.debug('itemInformation, result:', JSON.stringify(result.toJSON(), null, 2));
         }
+
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
