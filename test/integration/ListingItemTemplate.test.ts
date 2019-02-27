@@ -451,7 +451,7 @@ describe('ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
 
-        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
+        log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate1 = listingItemTemplateModel.toJSON();
