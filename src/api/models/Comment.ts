@@ -1,6 +1,5 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import { CommentMessageType } from '../enums/CommentMessageType';
 
 export class Comment extends Bookshelf.Model<Comment> {
 

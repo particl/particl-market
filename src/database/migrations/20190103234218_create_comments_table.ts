@@ -30,6 +30,6 @@ exports.up = (db: Knex): Promise<any> => {
 
 exports.down = (db: Knex): Promise<any> => {
     return Promise.all([
-        // TODO add your migration scripts here
+        db.schema.dropTable('comments')
     ]);
 };

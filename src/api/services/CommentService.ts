@@ -55,6 +55,7 @@ export class CommentService {
         const body = JSON.parse(JSON.stringify(data));
         body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
         body.receivedAt = new Date().getTime();
+        body.updatedAt = new Date().getTime();
 
         body.commentType = body.action;
         delete body.action;
