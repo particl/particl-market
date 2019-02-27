@@ -5,35 +5,20 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { CommentMessageType } from '../enums/CommentMessageType';
+import { CommentType } from '../enums/CommentType';
 
 // tslint:disable:variable-name
 export class CommentUpdateRequest extends RequestBody {
-    @IsEnum(CommentMessageType)
-    @IsNotEmpty()
-    public action: CommentMessageType;
 
-    @IsNotEmpty()
+    // public hash: string; // updated in service
     public sender: string;
-
-    @IsNotEmpty()
-    public marketHash: string;
-
-    @IsNotEmpty()
-    public target: string; // listingItem hash
-
-    public parentHash: string;
-
+    public receiver: string;
+    public target: string;
     public message: string;
-
-    @IsNotEmpty()
+    public type: CommentType;
     public postedAt: number;
-
-    @IsNotEmpty()
     public receivedAt: number;
+    public expiredAt: number;
 
-    @IsNotEmpty()
-    public updatedAt: number;
-
-    public hash: string;
 }
 // tslint:enable:variable-name
