@@ -9,11 +9,8 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
-import { Comment } from '../../src/api/models/Comment';
 import { CommentService } from '../../src/api/services/CommentService';
 import { CommentCreateRequest } from '../../src/api/requests/CommentCreateRequest';
 import { CommentUpdateRequest } from '../../src/api/requests/CommentUpdateRequest';
