@@ -13,6 +13,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from 'resources';
+import {MessageException} from '../../exceptions/MessageException';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -28,7 +30,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
+     *  [0]: listingItemTemplateId
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -41,6 +43,22 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         return this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        }
+
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <listingTemplateId> ';
     }
@@ -51,7 +69,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     }
 
     public description(): string {
-        return 'Compress the ListingItemTemplate iamges so that they will fit in a single SmsgMessage.';
+        return 'Compress the ListingItemTemplate images so that they will fit in a single SmsgMessage.';
     }
 
     public example(): string {

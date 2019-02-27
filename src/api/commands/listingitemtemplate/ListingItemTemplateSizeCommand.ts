@@ -13,6 +13,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -28,7 +29,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
+     *  [0]: listingItemTemplateId
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -39,6 +40,22 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
         return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        }
+
+        return data;
     }
 
     public usage(): string {

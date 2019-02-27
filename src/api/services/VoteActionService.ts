@@ -123,8 +123,6 @@ export class VoteActionService {
     public async send(proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                       senderAddress: AddressInfo, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        this.log.debug('send(), senderAddressInfo: ', senderAddress);
-
         if (senderAddress.balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress.address);
             const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
@@ -308,7 +306,7 @@ export class VoteActionService {
                     .then(value => {
                         return value.toJSON();
                     });
-                this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
+                // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
             }
 
             if (vote) {
@@ -351,7 +349,7 @@ export class VoteActionService {
     private async getProfileAddressInfos(profile: resources.Profile, addresses: string[] = []): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
         const outputs: any = await this.coreRpcService.listUnspent(1, 9999999, addresses);
-        this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
+        // this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
 
         for (const output of outputs) {
             if (output.spendable && output.solvable && output.safe && output.amount > 0) {

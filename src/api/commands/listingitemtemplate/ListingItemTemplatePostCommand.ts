@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,6 +18,7 @@ import { ListingItemActionService } from '../../services/ListingItemActionServic
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/MarketService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -96,8 +98,31 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new MessageException('listingItemTemplateId should be a number.');
         } else {
             // make sure template with the id exists
-            const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
-            const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate.toJSON());
+            const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+                .then(value => value.toJSON());   // throws if not found
+
+            const itemPrice: resources.ItemPrice = listingItemTemplate.PaymentInformation.ItemPrice;
+
+            // validate price
+            if (_.isEmpty(itemPrice.basePrice)
+                || listingItemTemplate.PaymentInformation.ItemPrice.basePrice < 0) {
+                throw new MessageException('Invalid ItemPrice');
+            }
+            if (!itemPrice.basePrice || itemPrice.basePrice < 0) {
+                throw new InvalidParamException('basePrice');
+            }
+            if (itemPrice.ShippingPrice) {
+                if (!itemPrice.ShippingPrice.domestic || !itemPrice.ShippingPrice.international) {
+                    throw new InvalidParamException('shippingPrice');
+                } else {
+                    if (itemPrice.ShippingPrice.domestic < 0 || itemPrice.ShippingPrice.international < 0 ) {
+                        throw new InvalidParamException('shippingPrice');
+                    }
+                }
+            }
+
+            // check size limit
+            const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
             if (!templateMessageDataSize.fits) {
                 throw new MessageException('Template details exceed message size limitations');
             }
