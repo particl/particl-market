@@ -193,6 +193,7 @@ export const Targets = {
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
         comment: {
+            CommentGetCommand: 'CommentGetCommand',
             CommentPostCommand: 'CommentPostCommand',
             CommentRootCommand: 'CommentRootCommand'
         },
@@ -353,6 +354,7 @@ export const Targets = {
     Factory:     {
         ActionMessageFactory: 'ActionMessageFactory',
         BidFactory: 'BidFactory',
+        CommentFactory: 'CommentFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
@@ -362,8 +364,7 @@ export const Targets = {
         ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         SmsgMessageFactory: 'SmsgMessageFactory',
-        VoteFactory: 'VoteFactory',
-        CommentFactory: 'CommentFactory'
+        VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',

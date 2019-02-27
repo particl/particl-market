@@ -5,9 +5,8 @@ import { CommentMessageType } from '../enums/CommentMessageType';
 export class Comment extends Bookshelf.Model<Comment> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'ommentRelated',
-        // 'CommentRelated.Related'
+        'ParentComment',
+        'ChildComments'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Comment> {
@@ -30,7 +29,7 @@ export class Comment extends Bookshelf.Model<Comment> {
         }
     }
 
-    public get tableName(): string { return 'item_comments'; }
+    public get tableName(): string { return 'comments'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
@@ -39,23 +38,26 @@ export class Comment extends Bookshelf.Model<Comment> {
     public get ParentCommentId(): number { return this.get('parentCommentId'); }
     public set ParentCommentId(value: number) { this.set('parentCommentId', value); }
 
-    public get Hash(): number { return this.get('hash'); }
-    public set Hash(value: number) { this.set('hash', value); }
+    public get Hash(): string { return this.get('hash'); }
+    public set Hash(value: string) { this.set('hash', value); }
 
-    public get ParentHash(): number { return this.get('parentHash'); }
-    public set ParentHash(value: number) { this.set('parentHash', value); }
+    public get ParentHash(): string { return this.get('parentHash'); }
+    public set ParentHash(value: string) { this.set('parentHash', value); }
 
-    public get Sender(): number { return this.get('sender'); }
-    public set Sender(value: number) { this.set('sender', value); }
+    public get Sender(): string { return this.get('sender'); }
+    public set Sender(value: string) { this.set('sender', value); }
 
-    public get Target(): number { return this.get('target'); }
-    public set Target(value: number) { this.set('target', value); }
+    public get MarketHash(): string { return this.get('marketHash'); }
+    public set MarketHash(value: string) { this.set('marketHash', value); }
 
-    public get Message(): number { return this.get('message'); }
-    public set Message(value: number) { this.set('message', value); }
+    public get Target(): string { return this.get('target'); }
+    public set Target(value: string) { this.set('target', value); }
 
-    public get CommentType(): number { return this.get('commentType'); }
-    public set CommentType(value: number) { this.set('commentType', value); }
+    public get Message(): string { return this.get('message'); }
+    public set Message(value: string) { this.set('message', value); }
+
+    public get CommentType(): string { return this.get('commentType'); }
+    public set CommentType(value: string) { this.set('commentType', value); }
 
     public get PostedAt(): Date { return this.get('postedAt'); }
     public set PostedAt(value: Date) { this.set('postedAt', value); }

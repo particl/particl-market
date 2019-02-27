@@ -25,15 +25,12 @@ export class CommentCreateRequest extends RequestBody {
 
     public message: string;
 
-    @IsNotEmpty()
+    public hash: string;
+
     public postedAt: number;
 
-    @IsNotEmpty()
     public receivedAt: number;
 
-    @IsNotEmpty()
     public updatedAt: number;
-
-    public hash: string;
 }
 // tslint:enable:variable-name

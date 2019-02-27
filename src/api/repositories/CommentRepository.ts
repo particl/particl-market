@@ -39,7 +39,7 @@ export class CommentRepository {
             const commentCreated = await comment.save();
             return this.CommentModel.fetchById(commentCreated.id);
         } catch (error) {
-            this.log.error('Could not creat the comment!', error);
+            this.log.error('Could not create the comment! ' + JSON.stringify(error, null, 2));
             throw new DatabaseException('Could not create the comment!', error);
         }
     }

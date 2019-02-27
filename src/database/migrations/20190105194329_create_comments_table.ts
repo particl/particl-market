@@ -14,6 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('parent_hash').nullable();
 
             table.string('sender').notNullable();
+            table.string('market_hash').notNullable();
             table.string('target').notNullable();
 
             table.string('message').nullable();

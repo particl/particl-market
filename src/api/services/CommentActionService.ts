@@ -51,6 +51,7 @@ export class CommentActionService {
      * @param {any[]} additionalParams
      * @returns {Promise<SmsgSendResponse>}
      */
+    @validate()
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
         /*
          * Validate message size
@@ -69,6 +70,9 @@ export class CommentActionService {
         //  throws error if message too large
         const daysRetention = 2; // 2 days from now // Math.ceil((listingItem.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
         const tmp = this.smsgService.smsgSend(data.sender, data.marketHash, msg, true, daysRetention);
+
+        // Set postedAt
+        data.postedAt = new Date().getTime();
 
         // create
         this.commentService.create(data);

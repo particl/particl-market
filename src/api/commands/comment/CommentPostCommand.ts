@@ -47,13 +47,11 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         const marketId = data.params[0];
-        let market = await this.marketService.findOne(marketId);
-        market = market.toJSON();
+        const market = await this.marketService.findOne(marketId);
         const marketHash = market.Address;
 
         const profileId = data.params[1];
-        let senderProfile = await this.profileService.findOne(profileId);
-        senderProfile = senderProfile.toJSON();
+        const senderProfile = await this.profileService.findOne(profileId);
         const profileAddress = senderProfile.Address;
 
         const type = data.params[2];
@@ -143,6 +141,6 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public example(): string {
-        return this.getName() + ' post example';
+        return this.getName() + ' comment post 1 1 MP_COMMENT_ADD pjT82w4qurXyr6wXur3aUwwUmWjafEKpLk \'testMessage\'';
     }
 }

@@ -54,6 +54,12 @@ export class CommentService {
     public async create(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<Comment> {
         const body = JSON.parse(JSON.stringify(data));
         body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
+        body.receivedAt = new Date().getTime();
+
+        body.commentType = body.action;
+        delete body.action;
+
+        this.log.error('CommentCreateRequest = ' +  JSON.stringify(body, null, 2));
 
         const comment = await this.commentRepo.create(body);
 
