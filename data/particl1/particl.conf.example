@@ -8,6 +8,7 @@ rpccookiefile=.cookie
 rpcport=51935
 rpccorsdomain=http://localhost:4300
 rpcallowip=0.0.0.0/0
+rpcbind=0.0.0.0
 rpcworkqueue=500
 rpcthreads=128
 rpctimeout=1000

@@ -205,7 +205,7 @@ export class ProposalActionService {
                 if (ProposalType.ITEM_VOTE === createdProposal.type) {
                     // in case of ITEM_VOTE, we also need to create the FlaggedItem
                     const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                    this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                    // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
                 }
 
                 // create the first ProposalResult
@@ -215,18 +215,18 @@ export class ProposalActionService {
 
         let proposal: resources.Proposal = proposalModel.toJSON();
 
-        this.log.debug('processProposal(), proposalRequest.postedAt: ', proposalRequest.postedAt);
-        this.log.debug('processProposal(), Number.MAX_SAFE_INTEGER: ', Number.MAX_SAFE_INTEGER);
+        // this.log.debug('processProposal(), proposalRequest.postedAt: ', proposalRequest.postedAt);
+        // this.log.debug('processProposal(), Number.MAX_SAFE_INTEGER: ', Number.MAX_SAFE_INTEGER);
         if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER/*|| (proposalRequest.postedAt < proposal.postedAt)*/) {
             // means processProposal was called from processProposalReceivedEvent() and we should update the Proposal data
             const updatedProposalModel = await this.proposalService.update(proposal.id, proposalRequest);
             proposal = updatedProposalModel.toJSON();
-            this.log.debug('processProposal(), proposal updated');
+            // this.log.debug('processProposal(), proposal updated');
         } else {
             // called from send(), we already created the Proposal so nothing needs to be done
         }
 
-        this.log.debug('processProposal(), proposal:', JSON.stringify(proposal, null, 2));
+        // this.log.debug('processProposal(), proposal:', JSON.stringify(proposal, null, 2));
         return proposal;
     }
 

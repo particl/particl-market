@@ -50,6 +50,7 @@ describe('MessageProcessor', () => {
     let defaultProfile: resources.Profile;
 
     let listingItemTemplates: resources.ListingItemTemplate[];
+    let smsgMessages: resources.SmsgMessage[] = [];
 
     // tslint:disable:max-line-length
     beforeAll(async () => {
@@ -68,11 +69,11 @@ describe('MessageProcessor', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        defaultMarket = await marketService.getDefault()
+            .then(value => value.toJSON());
 
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault()
+            .then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length
@@ -105,12 +106,7 @@ describe('MessageProcessor', () => {
             text: JSON.stringify(marketplaceMessage)
         } as IncomingSmsgMessage;
 
-        // we have the message, so remove the template
-        // await listingItemTemplateService.destroy(listingItemTemplates[0].id);
-
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemSmsg);
-
-        // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         return await smsgMessageService.create(smsgMessageCreateRequest)
             .then(async smsgMessageModel => {
 
@@ -124,7 +120,7 @@ describe('MessageProcessor', () => {
             });
     };
 
-    test('Should generate 100 ListingItemTemplates', async () => {
+    test('Should generate 10 ListingItemTemplates', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -142,82 +138,38 @@ describe('MessageProcessor', () => {
             defaultMarket.id     // marketId
         ]).toParamsArray();
 
-        // generate 100 templates without an item
+        // generate 10 ListingItemTemplates without a ListingItem
         listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
-            amount: 100,
+            amount: 10,
             withRelated: true,
             generateParams: generateListingItemTemplateParams
         } as TestDataGenerateRequest);
 
-        expect(listingItemTemplates.length).toBe(100);
+        expect(listingItemTemplates.length).toBe(10);
         log.debug('generated ' + listingItemTemplates.length + ' listingItemTemplates');
 
     }, 1200000); // timeout to 1200s
 
-    test('Should process 100 SmsgMessages and set status PROCESSING', async () => {
+    test('Should process 10 SmsgMessages and set status PROCESSED', async () => {
 
-        let smsgMessages: resources.SmsgMessage[] = [];
-
-        let i = 1;
-        for (const listingItemTemplate of listingItemTemplates) {
-            smsgMessages.push(await createSmsgMessage(listingItemTemplate, i));
-            i++;
-        }
-        expect(smsgMessages.length).toBe(100);
-
-        log.debug('CREATED ' + listingItemTemplates.length + ' SMSGMESSAGES ');
-
-        // smsgMessages need to be 20++ seconds old to be found using polling
-        await testUtil.waitFor(20);
-
-        // call poll for each of the smsgmessages, skip emitEvent
-        for (const smsgMessage of smsgMessages) {
-            await messageProcessor.poll(false);
-        }
-
-        let smsgMessageCollection = await smsgMessageService.findAll();
-        smsgMessages = smsgMessageCollection.toJSON();
-        expect(smsgMessages.length).toBe(100);
-
-        // expect all smsgmessages to have status PROCESSING
-        for (const smsgMessage of smsgMessages) {
-            // log.debug('smsgMessage.status: ' + smsgMessage.status + ' === ' + SmsgMessageStatus.PROCESSING);
-            expect(smsgMessage.status).toBe(SmsgMessageStatus.PROCESSING);
-        }
-
-        // remove all smsgMessages
-        for (const smsgMessage of smsgMessages) {
-            await smsgMessageService.destroy(smsgMessage.id);
-        }
-        smsgMessageCollection = await smsgMessageService.findAll();
-        smsgMessages = smsgMessageCollection.toJSON();
         expect(smsgMessages.length).toBe(0);
 
-    }, 600000); // timeout to 600s
-
-    test('Should process 100 SmsgMessages and set status PROCESSED', async () => {
-
-        let smsgMessages: resources.SmsgMessage[] = [];
-
         let i = 1;
         for (const listingItemTemplate of listingItemTemplates) {
             smsgMessages.push(await createSmsgMessage(listingItemTemplate, i));
             i++;
         }
-        expect(smsgMessages.length).toBe(100);
+        expect(smsgMessages.length).toBe(10);
 
         log.debug('CREATED ' + listingItemTemplates.length + ' SMSGMESSAGES ');
 
         // smsgMessages need to be 20++ seconds old to be found using polling
-        await testUtil.waitFor(20);
+        await testUtil.waitFor(21);
 
-        // start polling
-        // messageProcessor.schedulePoll();
-
-        let smsgMessageCollection = await smsgMessageService.findAll();
-        smsgMessages = smsgMessageCollection.toJSON();
-        expect(smsgMessages.length).toBe(100);
+        smsgMessages = await smsgMessageService.findAll()
+            .then(value => value.toJSON());
+        expect(smsgMessages.length).toBe(10);
 
         const newSearchParams = {
             order: SearchOrder.DESC,
@@ -259,25 +211,25 @@ describe('MessageProcessor', () => {
             age: 1000 * 20
         } as SmsgMessageSearchParams;
 
-        // call poll for 100 times
+        // call poll for 10 times
         for (const smsgMessage of smsgMessages) {
             await messageProcessor.poll(true);
             await testUtil.waitFor(1);
         }
 
         let processedCount = 0;
-        while (processedCount !== 100) {
-            const newMessagesModel = await smsgMessageService.searchBy(newSearchParams);
-            const newMessages = newMessagesModel.toJSON();
+        while (processedCount !== 10) {
+            const newMessages: resources.SmsgMessage[] = await smsgMessageService.searchBy(newSearchParams)
+                .then(value => value.toJSON());
 
-            const processingMessagesModel = await smsgMessageService.searchBy(processingSearchParams);
-            const processingMessages = processingMessagesModel.toJSON();
+            const processingMessages: resources.SmsgMessage[] = await smsgMessageService.searchBy(processingSearchParams)
+                .then(value => value.toJSON());
 
-            const processedMessagesModel = await smsgMessageService.searchBy(processedSearchParams);
-            const processedMessages = processedMessagesModel.toJSON();
+            const processedMessages: resources.SmsgMessage[] = await smsgMessageService.searchBy(processedSearchParams)
+                .then(value => value.toJSON());
 
-            const failedMessagesModel = await smsgMessageService.searchBy(failedSearchParams);
-            const failedMessages = failedMessagesModel.toJSON();
+            const failedMessages: resources.SmsgMessage[] = await smsgMessageService.searchBy(failedSearchParams)
+                .then(value => value.toJSON());
 
             log.debug('new: ' + newMessages.length + ', processing: ' + processingMessages.length + ', failed: '
                 + failedMessages.length + ', PROCESSED: ' + processedMessages.length);
@@ -293,15 +245,15 @@ describe('MessageProcessor', () => {
 
         await testUtil.waitFor(1);
 
-        smsgMessageCollection = await smsgMessageService.findAll();
-        smsgMessages = smsgMessageCollection.toJSON();
-        expect(smsgMessages.length).toBe(100);
+        smsgMessages = await smsgMessageService.findAll()
+            .then(value => value.toJSON());
+        expect(smsgMessages.length).toBe(10);
 
         // expect all smsgmessages to have status PROCESSED
         for (const smsgMessage of smsgMessages) {
             expect(smsgMessage.status).toBe(SmsgMessageStatus.PROCESSED);
         }
 
-    }, 600000); // timeout to 600s
+    }, 1200000); // timeout to 1200s
 
 });
