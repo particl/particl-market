@@ -59,7 +59,8 @@ export class ObjectHash {
                 hashableObject = new HashableProposalOption(objectToHash);
                 break;
             }
-            case HashableObjectType.COMMENT_CREATEREQUEST: {
+            case HashableObjectType.COMMENT_CREATEREQUEST:
+            case HashableObjectType.COMMENT: {
                 hashableObject = new HashableComment(objectToHash);
                 break;
             }

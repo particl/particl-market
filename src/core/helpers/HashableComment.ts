@@ -6,27 +6,29 @@
  * core.api.HashableComment
  *
  */
+import * as resources from 'resources';
 import { CommentCreateRequest } from '../../api/requests/CommentCreateRequest';
+
+type AllowedHashableTypes = resources.Comment | CommentCreateRequest;
 
 export class HashableComment {
 
-    public action: string;
     public sender: string;
-    public marketHash: string;
+    public receiver: string;
     public target: string;
-    public parentHash: string;
     public message: string;
+    public type: string;
+    // we might need to add some timestamp here
 
-    constructor(hashThis: CommentCreateRequest) {
+    constructor(hashThis: AllowedHashableTypes) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {
-            this.action = input.action;
             this.sender = input.sender;
-            this.marketHash = input.marketHash;
+            this.receiver = input.receiver;
             this.target = input.target;
-            this.parentHash = input.parentHash;
             this.message = input.message;
+            this.type = input.type;
         }
     }
 }
