@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -19,6 +20,7 @@ import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAd
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../requests/ShippingPriceUpdateRequest';
+import { InvalidParamException } from '../exceptions/InvalidParamException';
 
 export class ItemPriceService {
 
@@ -50,6 +52,7 @@ export class ItemPriceService {
     public async create( @request(ItemPriceCreateRequest) data: ItemPriceCreateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
+
         const shippingPrice = body.shippingPrice || {};
         const cryptocurrencyAddress = body.cryptocurrencyAddress || {};
 
@@ -67,15 +70,16 @@ export class ItemPriceService {
         }
 
         // create the itemPrice
-        const itemPrice = await this.itemPriceRepo.create(body);
+        const itemPrice: resources.ItemPrice = await this.itemPriceRepo.create(body)
+            .then(value => value.toJSON());
 
         // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
-            shippingPrice.item_price_id = itemPrice.Id;
+            shippingPrice.item_price_id = itemPrice.id;
             await this.shippingpriceService.create(shippingPrice as ShippingPriceCreateRequest);
         }
         // finally find and return the created itemPrice
-        return await this.findOne(itemPrice.Id);
+        return await this.findOne(itemPrice.id);
     }
 
     @validate()
