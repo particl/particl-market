@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 import * as WebRequest from 'web-request';
-import { inject, named } from 'inversify';
+import {inject, decorate, named, injectable} from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
@@ -15,6 +15,7 @@ import { CoreCookieService } from './CoreCookieService';
 import { Output } from './BidActionService';
 
 import { Rpc } from 'omp-lib';
+import { RpcUnspentOutput } from 'omp-lib/dist/abstract/rpc';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -42,24 +43,9 @@ export interface BlockchainInfo {
 }
 
 export interface UnspentOutput   {
-    txid: string;                   // (string) the transaction id
-    vout: number;                   // (numeric) the vout value
-    address: string;                // (string) the particl address
-    coldstaking_address: string;    // (string) the particl address this output must stake on
-    label: string;                  // (string) The associated label, or "" for the default label
-    scriptPubKey: string;           // (string) the script key
-    amount: number;                 // (numeric) the transaction output amount in PART
-    confirmations: number;          // (numeric) The number of confirmations
-    redeemScript: string;           // (string) The redeemScript if scriptPubKey is P2SH
-    spendable: boolean;             // (bool) Whether we have the private keys to spend this output
-    solvable: boolean;              // (bool) Whether we know how to spend this output, ignoring the lack of keys
-    safe: boolean;                  // (bool) Whether this output is considered safe to spend. Unconfirmed transactions
-                                    // from outside keys and unconfirmed replacement transactions are considered unsafe
-                                    // and are not eligible for spending by fundrawtransaction and sendtoaddress.
-    stakeable: boolean;             // (bool) Whether we have the private keys to stake this output
 }
 
-
+decorate(injectable(), Rpc);
 export class CoreRpcService extends Rpc {
 
     public log: LoggerType;
@@ -74,7 +60,7 @@ export class CoreRpcService extends Rpc {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
     ) {
-        super('', 0, '', '');
+        super();
         this.log = new Logger(__filename);
     }
 
@@ -458,7 +444,7 @@ export class CoreRpcService extends Rpc {
      * @returns {Promise<any>}
      */
     public async listUnspent(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
-                             queryOptions: any = {}): Promise<any> {
+                             queryOptions: any = {}): Promise<RpcUnspentOutput[]> {
 
         const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
         if (!_.isEmpty(queryOptions)) {

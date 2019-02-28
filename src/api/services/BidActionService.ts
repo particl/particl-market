@@ -17,7 +17,8 @@ import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
-import { CoreRpcService, UnspentOutput } from './CoreRpcService';
+import { CoreRpcService } from './CoreRpcService';
+import { RpcUnspentOutput } from 'omp-lib/dist/abstract/rpc';
 import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
@@ -241,7 +242,7 @@ export class BidActionService {
         const defaultselectedOutputsIdxs: number[] = [];
 
         // get all unspent transaction outputs
-        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        let unspentOutputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
 
         // Loop over all outputs once to obtain various fitlering information
         unspentOutputs = unspentOutputs.filter(
