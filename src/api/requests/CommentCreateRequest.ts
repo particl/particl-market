@@ -29,7 +29,7 @@ export class CommentCreateRequest extends RequestBody {
 
     public postedAt: number;
 
-    public receivedAt: number;
+    public createdAt: number;
 
     public updatedAt: number;
 }

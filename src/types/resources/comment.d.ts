@@ -12,7 +12,7 @@ declare module 'resources' {
         commentType: string;
         postedAt: Date;
         updatedAt: Date;
-        receivedAt: Date;
+        createdAt: Date;
     }
 
 }

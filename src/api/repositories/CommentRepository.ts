@@ -35,12 +35,14 @@ export class CommentRepository {
 
     public async create(data: any): Promise<Comment> {
         const comment = this.CommentModel.forge<Comment>(data);
+        this.log.error('forged = ' + JSON.stringify(comment, null, 2));
         try {
             const commentCreated = await comment.save();
             return this.CommentModel.fetchById(commentCreated.id);
         } catch (error) {
             this.log.error('Could not create the comment! ' + JSON.stringify(error, null, 2));
-            throw new DatabaseException('Could not create the comment!', error);
+            throw error;
+            // throw new DatabaseException('Could not create the comment!', error);
         }
     }
 

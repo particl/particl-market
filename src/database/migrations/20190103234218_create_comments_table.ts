@@ -23,7 +23,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.timestamp('posted_at').notNullable();
             table.timestamp('updated_at').notNullable().defaultTo(db.fn.now());
-            table.timestamp('received_at').notNullable().defaultTo(db.fn.now());
+            table.timestamp('created_at').notNullable().defaultTo(db.fn.now());
         })
     ]);
 };

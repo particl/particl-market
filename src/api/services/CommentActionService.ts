@@ -69,7 +69,7 @@ export class CommentActionService {
         // Get a fee estimate on the message,
         //  throws error if message too large
         const daysRetention = 2; // 2 days from now // Math.ceil((listingItem.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
-        const tmp = this.smsgService.smsgSend(data.sender, data.marketHash, msg, true, daysRetention);
+        const tmp = await this.smsgService.smsgSend(data.sender, data.marketHash, msg, true, daysRetention);
 
         // Set postedAt
         data.postedAt = new Date().getTime();

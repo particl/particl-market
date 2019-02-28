@@ -54,7 +54,7 @@ export class CommentService {
     public async create(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<Comment> {
         const body = JSON.parse(JSON.stringify(data));
         body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
-        body.receivedAt = new Date().getTime();
+        body.createdAt = new Date().getTime();
         body.updatedAt = new Date().getTime();
 
         body.commentType = body.action;
