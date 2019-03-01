@@ -4,16 +4,10 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';

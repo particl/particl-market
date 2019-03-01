@@ -13,21 +13,18 @@ import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/EscrowService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemPrice } from '../../src/api/models/ItemPrice';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
-
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

@@ -4,9 +4,9 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { PaymentType } from '../../api/enums/PaymentType';
-import {EscrowCreateRequest} from './EscrowCreateRequest';
-import {ItemPriceCreateRequest} from './ItemPriceCreateRequest';
+import { EscrowCreateRequest } from './EscrowCreateRequest';
+import { ItemPriceCreateRequest } from './ItemPriceCreateRequest';
+import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class PaymentInformationCreateRequest extends RequestBody {

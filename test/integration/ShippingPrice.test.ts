@@ -21,8 +21,8 @@ import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/ShippingPriceUpdateRequest';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { Currency } from '../../src/api/enums/Currency';
+import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ShippingPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

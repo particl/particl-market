@@ -3,13 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-
-import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Currency } from '../../../src/api/enums/Currency';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ListingItemTemplateAddCommand', () => {
 

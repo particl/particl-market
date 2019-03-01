@@ -3,16 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import { ListingItem } from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem } from 'resources';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ItemLocationUpdateCommand', () => {
 
