@@ -2,14 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { inject, named } from 'inversify';
 import * as _ from 'lodash';
+import * as resources from 'resources';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
-import * as resources from 'resources';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
@@ -26,10 +26,9 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
-import {MessageException} from '../exceptions/MessageException';
-import {ItemImageDataService} from '../services/ItemImageDataService';
+import { MessageException } from '../exceptions/MessageException';
+import { ItemImageDataService } from '../services/ItemImageDataService';
 
 export class ListingItemFactory {
 

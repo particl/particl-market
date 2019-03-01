@@ -60,7 +60,6 @@ import { GenerateProfileParams } from '../requests/params/GenerateProfileParams'
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/params/GenerateProposalParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { BidMessageType } from '../enums/BidMessageType';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
@@ -90,6 +89,7 @@ import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinatio
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class TestDataService {
 
@@ -489,7 +489,7 @@ export class TestDataService {
         address.profile_id = defaultProfile.Id;
 
         const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress();
-        const action = generateParams.action ? generateParams.action : BidMessageType.MPA_BID;
+        const action = generateParams.action ? generateParams.action : MPAction.MPA_BID;
 
         // TODO: generate biddatas
         const bidDatas = [
@@ -550,7 +550,7 @@ export class TestDataService {
             const bidGenerateParams = new GenerateBidParams();
             bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
             bidGenerateParams.generateListingItem = generateParams.generateListingItem;
-            bidGenerateParams.action = BidMessageType.MPA_ACCEPT;
+            bidGenerateParams.action = MPAction.MPA_ACCEPT;
             bidGenerateParams.listingItemSeller = generateParams.listingItemSeller;
 
             const bids = await this.generateBids(1, true, bidGenerateParams);

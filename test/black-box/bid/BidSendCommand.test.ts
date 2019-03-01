@@ -3,18 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import * as resources from 'resources';
-import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('BidSendCommand', () => {
 
@@ -221,7 +221,7 @@ describe('BidSendCommand', () => {
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItem1.hash,
-            BidMessageType.MPA_BID,
+            MPAction.MPA_BID,
             '*',
             defaultProfile.address
         ];
@@ -233,7 +233,7 @@ describe('BidSendCommand', () => {
         const result: any = res.getBody()['result'];
         // log.debug('bid searchBy result:', JSON.stringify(result, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItem1.hash);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(MPAction.MPA_BID);
         expect(result[0].bidder).toBe(defaultProfile.address);
     });
 

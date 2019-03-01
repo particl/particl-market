@@ -27,7 +27,7 @@ import { SmsgMessageFactory } from '../../../src/api/factories/SmsgMessageFactor
 import { MessageProcessor } from '../../../src/api/messageprocessors/MessageProcessor';
 import { SmsgMessageSearchParams } from '../../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { ListingItemMessageType } from '../../../src/api/enums/ListingItemMessageType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 
 describe('MessageProcessor', () => {
@@ -174,7 +174,7 @@ describe('MessageProcessor', () => {
         const newSearchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
-            types: [ListingItemMessageType.MP_ITEM_ADD],
+            types: [MPAction.MPA_LISTING_ADD],
             status: SmsgMessageStatus.NEW,
             page: 0,
             pageLimit: 101,
@@ -184,7 +184,7 @@ describe('MessageProcessor', () => {
         const processingSearchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
-            types: [ListingItemMessageType.MP_ITEM_ADD],
+            types: [MPAction.MPA_LISTING_ADD],
             status: SmsgMessageStatus.PROCESSING,
             page: 0,
             pageLimit: 101,
@@ -194,7 +194,7 @@ describe('MessageProcessor', () => {
         const processedSearchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
-            types: [ListingItemMessageType.MP_ITEM_ADD],
+            types: [MPAction.MPA_LISTING_ADD],
             status: SmsgMessageStatus.PROCESSED,
             page: 0,
             pageLimit: 101,
@@ -204,7 +204,7 @@ describe('MessageProcessor', () => {
         const failedSearchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
-            types: [ListingItemMessageType.MP_ITEM_ADD],
+            types: [MPAction.MPA_LISTING_ADD],
             status: SmsgMessageStatus.PROCESSING_FAILED,
             page: 0,
             pageLimit: 101,

@@ -42,9 +42,6 @@ export interface BlockchainInfo {
     // todo: add pruning and softfork related data when needed
 }
 
-export interface UnspentOutput   {
-}
-
 decorate(injectable(), Rpc);
 export class CoreRpcService extends Rpc {
 

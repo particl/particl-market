@@ -5,11 +5,10 @@
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { ProposalType } from '../enums/ProposalType';
-import { ProposalMessageInterface } from './ProposalMessageInterface';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { BidMessageType } from '../enums/BidMessageType';
+import { ActionMessageInterface } from './ActionMessageInterface';
 
-export class ProposalMessage extends MessageBody implements ProposalMessageInterface {
+export class ProposalMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(ProposalMessageType)

@@ -15,7 +15,6 @@ import { ListingItemService } from '../../../src/api/services/ListingItemService
 import { BidService } from '../../../src/api/services/BidService';
 import { ProfileService } from '../../../src/api/services/ProfileService';
 import { AddressService } from '../../../src/api/services/AddressService';
-import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
@@ -210,7 +209,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         );
 
         // create MPA_BID type of MarketplaceMessage
-        const bidMessage: BidMessage = await bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
+        const bidMessage: BidMessage = await bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
         expect(bidMessage.item).toBe(listingItem.hash);
 
         const marketplaceMessage: MarketplaceMessage = {

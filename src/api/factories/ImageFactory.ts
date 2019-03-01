@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -11,7 +12,6 @@ import { ImageVersion } from '../../core/helpers/ImageVersion';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
-import * as _ from 'lodash';
 
 export class ImageFactory {
 

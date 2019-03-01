@@ -12,7 +12,6 @@
 export const Events = {
     ListingItemReceivedEvent: 'ListingItemReceivedEvent',
     LockEscrowReceivedEvent: 'LockEscrowReceivedEvent',
-    RequestRefundEscrowReceivedEvent: 'RequestRefundEscrowReceivedEvent',
     RefundEscrowReceivedEvent: 'RefundEscrowReceivedEvent',
     ReleaseEscrowReceivedEvent: 'ReleaseEscrowReceivedEvent',
     BidReceivedEvent: 'BidReceivedEvent',

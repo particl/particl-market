@@ -3,16 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Happy Buy Flow', () => {
 
@@ -28,8 +27,6 @@ describe('Happy Buy Flow', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
-    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
     const bidCommand = Commands.BID_ROOT.commandName;
@@ -312,7 +309,7 @@ describe('Happy Buy Flow', () => {
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
-            BidMessageType.MPA_BID,
+            MPAction.MPA_BID,
             '*',
             buyerProfile.address
         ]);
@@ -321,7 +318,7 @@ describe('Happy Buy Flow', () => {
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -355,21 +352,21 @@ describe('Happy Buy Flow', () => {
                 bidSearchCommand,
                 PAGE, PAGE_LIMIT, ORDERING,
                 listingItemReceivedBuyerNode.hash,
-                BidMessageType.MPA_BID,
+                MPAction.MPA_BID,
                 '*',
                 buyerProfile.address
             ],
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_BID.toString()
+            MPAction.MPA_BID.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(MPAction.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -439,21 +436,21 @@ describe('Happy Buy Flow', () => {
                 bidSearchCommand,
                 PAGE, PAGE_LIMIT, ORDERING,
                 bidOnSellerNode.ListingItem.hash,
-                BidMessageType.MPA_ACCEPT,
+                MPAction.MPA_ACCEPT,
                 '*',
                 buyerProfile.address
             ],
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_ACCEPT.toString()
+            MPAction.MPA_ACCEPT.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnSellerNode.ListingItem.hash);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -510,7 +507,7 @@ describe('Happy Buy Flow', () => {
         expect(orderOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT');
+        log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, MPAction.MPA_ACCEPT');
         log.debug('========================================================================================');
 
         await testUtilBuyerNode.waitFor(5);
@@ -524,21 +521,21 @@ describe('Happy Buy Flow', () => {
                 bidSearchCommand,
                 PAGE, PAGE_LIMIT, ORDERING,
                 bidOnBuyerNode.ListingItem.hash,
-                BidMessageType.MPA_ACCEPT,
+                MPAction.MPA_ACCEPT,
                 '*',
                 buyerProfile.address
             ],
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_ACCEPT.toString()
+            MPAction.MPA_ACCEPT.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
@@ -616,7 +613,7 @@ describe('Happy Buy Flow', () => {
 
         const result: any = response.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnBuyerNode.ListingItem.hash);
         expect(result[0].OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
 

@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -21,10 +22,9 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
-import * as resources from 'resources';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('OrderItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -113,7 +113,7 @@ describe('OrderItem', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             createdListingItem.hash,    // listingItemhash
-            BidMessageType.MPA_ACCEPT,  // action
+            MPAction.MPA_ACCEPT,  // action
             buyerProfile.address,       // bidder
             sellerProfile.address       // listingItemSeller
         ]).toParamsArray();

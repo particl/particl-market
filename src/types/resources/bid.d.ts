@@ -2,14 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { BidMessageType } from '../../api/enums/BidMessageType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 declare module 'resources' {
 
     interface Bid {
         id: number;
         bidder: string;
-        action: BidMessageType;
+        action: MPAction;
         createdAt: Date;
         updatedAt: Date;
         BidDatas: BidData[];

@@ -15,7 +15,6 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
@@ -24,7 +23,6 @@ import { ActionMessage } from '../../src/api/models/ActionMessage';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import { Profile } from '../../src/api/models/Profile';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
@@ -32,6 +30,7 @@ import * as resources from 'resources';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -355,7 +354,7 @@ describe('TestDataService', () => {
             true,
             true,
             true,
-            ListingItemMessageType.MP_ITEM_ADD,
+            MPAction.MPA_LISTING_ADD,
             'nonce',
             true,
             listingItems[0].id,
@@ -377,7 +376,7 @@ describe('TestDataService', () => {
         expect(actionMessages).toHaveLength(1);
         expect(actionMessages[0].listingItemId).toBe(listingItems[0].id);
         expect(actionMessages[0].nonce).toBe('nonce');
-        expect(actionMessages[0].action).toBe(ListingItemMessageType.MP_ITEM_ADD);
+        expect(actionMessages[0].action).toBe(MPAction.MPA_LISTING_ADD);
         expect(actionMessages[0].MessageInfo.address).toBe(defaultProfile.address);
         expect(actionMessages[0].MessageInfo.memo).toBe('dadadafgagag');
         expect(actionMessages[0].MessageInfo.actionMessageId).toBe(actionMessages[0].id);
@@ -456,7 +455,7 @@ describe('TestDataService', () => {
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             null,                       // listingItemhash
-            BidMessageType.MPA_BID,     // action
+            MPAction.MPA_BID,     // action
             defaultProfile.address      // bidder
         ]);
 
@@ -492,7 +491,7 @@ describe('TestDataService', () => {
             false,                          // generateListingItemTemplate
             false,                          // generateListingItem
             listingItems[0].hash,           // listingItemHash
-            BidMessageType.MPA_BID,         // action
+            MPAction.MPA_BID,         // action
             defaultProfile.address          // bidder
             // defaultProfile.address       // listingitem seller
         ]);

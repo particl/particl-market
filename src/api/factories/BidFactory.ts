@@ -3,18 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { BidMessage } from '../messages/BidMessage';
-import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
-import * as resources from 'resources';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { IdValuePair } from '../services/BidActionService';
 import { BidDataValue } from '../enums/BidDataValue';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidFactory {
 
@@ -28,15 +28,15 @@ export class BidFactory {
 
     /**
      *
-     * @param {BidMessageType} bidMessageType
+     * @param {MPAction} action
      * @param {string} itemHash
      * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
+    public async getMessage(action: MPAction, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
 
         const message = {
-            action: bidMessageType,
+            action,
             item: itemHash,
             objects: idValuePairObjects
         } as BidMessage;
@@ -93,7 +93,7 @@ export class BidFactory {
             // this.log.debug('bidDatas:', JSON.stringify(bidDatas, null, 2));
 
             let address;
-            if (bidMessage.action === BidMessageType.MPA_BID) {
+            if (bidMessage.action === MPAction.MPA_BID) {
                 const firstName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, bidDatas);
                 const lastName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_LAST_NAME, bidDatas);
                 const addressLine1 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, bidDatas);
@@ -120,7 +120,7 @@ export class BidFactory {
             return bidCreateRequest;
 
         } else {
-            throw new MessageException('Invalid BidMessageType.');
+            throw new MessageException('Invalid MPAction.');
         }
     }
 
@@ -134,20 +134,20 @@ export class BidFactory {
     private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
         if (latestBid) {
             switch (latestBid.action) {
-                case BidMessageType.MPA_BID.toString():
+                case MPAction.MPA_BID.toString():
                     // if the latest bid was allready bidded on, then the message needs to be something else
-                    return bidMessage.action !== BidMessageType.MPA_BID.toString();
-                case BidMessageType.MPA_ACCEPT.toString():
+                    return bidMessage.action !== MPAction.MPA_BID.toString();
+                case MPAction.MPA_ACCEPT.toString():
                     // latest bid was allready accepted, any bid is invalid
                     return false;
-                case BidMessageType.MPA_CANCEL.toString():
+                case MPAction.MPA_CANCEL.toString():
                     // latest bid was cancelled, so we allow only new bids
-                    return bidMessage.action === BidMessageType.MPA_BID.toString();
-                case BidMessageType.MPA_REJECT.toString():
+                    return bidMessage.action === MPAction.MPA_BID.toString();
+                case MPAction.MPA_REJECT.toString():
                     // latest bid was rejected, so we allow only new bids
-                    return bidMessage.action === BidMessageType.MPA_BID.toString();
+                    return bidMessage.action === MPAction.MPA_BID.toString();
             }
-        } else if (bidMessage.action === BidMessageType.MPA_BID.toString()) {
+        } else if (bidMessage.action === MPAction.MPA_BID.toString()) {
             // if no existing bid and message is MPA_BID -> true
             return true;
         }

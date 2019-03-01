@@ -17,7 +17,8 @@ export class SmsgMessageSearchParams extends RequestBody {
     @IsEnum(SmsgMessageStatus)
     public status: SmsgMessageStatus;
 
-    public types: any[]; // EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+    // TODO: is there a reason, why is this any[]? FIX
+    public types: any[]; // MPAction | ProposalMessageType | VoteMessageType | string;
 
     public page = 0;
     public pageLimit = 10;

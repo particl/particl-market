@@ -4,15 +4,15 @@
 
 // tslint:disable:max-line-length
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
-import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 // tslint:enable:max-line-length
 
 describe('OrderItemStatus', () => {
@@ -199,7 +199,7 @@ describe('OrderItemStatus', () => {
 
     });
 
-    test('Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID', async () => {
+    test('Bid should have been created on buyer node after posting the MPA_BID, MPAction.MPA_BID', async () => {
 
         expect(listingItemReceivedBuyerNode).toBeDefined();
 
@@ -210,7 +210,7 @@ describe('OrderItemStatus', () => {
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
-            BidMessageType.MPA_BID,
+            MPAction.MPA_BID,
             '*',
             buyerProfile.address
         ];
@@ -221,14 +221,14 @@ describe('OrderItemStatus', () => {
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_BID.toString()
+            MPAction.MPA_BID.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -262,7 +262,7 @@ describe('OrderItemStatus', () => {
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
-        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
+        expect(myOrderItems[0].bidType).toBe(MPAction.MPA_BID);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
@@ -271,7 +271,7 @@ describe('OrderItemStatus', () => {
     });
 
 
-    test('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID', async () => {
+    test('SELLER RECEIVES MPA_BID posted from buyers node, MPAction.MPA_BID', async () => {
 
         // wait for some time to make sure the Bid has been created
         await testUtilSellerNode.waitFor(5);
@@ -280,7 +280,7 @@ describe('OrderItemStatus', () => {
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
-            BidMessageType.MPA_BID,
+            MPAction.MPA_BID,
             '*',
             buyerProfile.address
         ];
@@ -291,14 +291,14 @@ describe('OrderItemStatus', () => {
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_BID.toString()
+            MPAction.MPA_BID.toString()
         );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
 
         const result: resources.Bid = bidSearchRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(MPAction.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -334,7 +334,7 @@ describe('OrderItemStatus', () => {
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
-        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
+        expect(myOrderItems[0].bidType).toBe(MPAction.MPA_BID);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
@@ -395,7 +395,7 @@ describe('OrderItemStatus', () => {
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
-        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
+        expect(myOrderItems[0].bidType).toBe(MPAction.MPA_ACCEPT);
         expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
@@ -458,7 +458,7 @@ describe('OrderItemStatus', () => {
     }, 600000); // timeout to 600s
 
 
-    test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
+    test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, MPAction.MPA_ACCEPT', async () => {
 
         expect(orderOnSellerNode).toBeDefined();
 
@@ -471,7 +471,7 @@ describe('OrderItemStatus', () => {
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             bidOnBuyerNode.ListingItem.hash,
-            BidMessageType.MPA_ACCEPT,
+            MPAction.MPA_ACCEPT,
             '*',
             buyerProfile.address
         ];
@@ -482,14 +482,14 @@ describe('OrderItemStatus', () => {
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_ACCEPT.toString()
+            MPAction.MPA_ACCEPT.toString()
         );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
 
         const result: resources.Bid = bidSearchRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
@@ -505,7 +505,7 @@ describe('OrderItemStatus', () => {
 
     test('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW', async () => {
 
-        expect(bidOnBuyerNode.action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(bidOnBuyerNode.action).toBe(MPAction.MPA_ACCEPT);
 
         // wait for some time to make sure the Order has been created
         await testUtilBuyerNode.waitFor(5);
@@ -556,7 +556,7 @@ describe('OrderItemStatus', () => {
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
-        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
+        expect(myOrderItems[0].bidType).toBe(MPAction.MPA_ACCEPT);
         expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);

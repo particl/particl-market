@@ -20,8 +20,6 @@ import { OrderService } from './OrderService';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { EscrowFactory } from '../factories/EscrowFactory';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowRequest } from '../requests/EscrowRequest';
 import { OrderStatus } from '../enums/OrderStatus';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
@@ -35,7 +33,8 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
-import {Output} from './BidActionService';
+import { Output } from './BidActionService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowActionService {
 
@@ -443,7 +442,7 @@ export class EscrowActionService {
         this.log.debug('createRawTx(), rawtx:', rawtx);
         this.log.debug('createRawTx(), pubkeys:', pubkeys);
 
-        if (!bid || bid.action !== BidMessageType.MPA_ACCEPT
+        if (!bid || bid.action !== MPAction.MPA_ACCEPT
             || !orderItem || !orderItem.OrderItemObjects || orderItem.OrderItemObjects.length === 0
             || !rawtx || !pubkeys) {
 
@@ -455,7 +454,7 @@ export class EscrowActionService {
 
         switch (request.action) {
 
-            case EscrowMessageType.MPA_LOCK:
+            case MPAction.MPA_LOCK:
 
                 if (isMyListingItem) {
                     throw new MessageException('Seller can\'t lock an Escrow.');
@@ -486,7 +485,7 @@ export class EscrowActionService {
                 this.log.debug('createRawTx(), response:', JSON.stringify(response, null, 2));
                 return response;
 
-            case EscrowMessageType.MPA_RELEASE:
+            case MPAction.MPA_RELEASE:
 
                 if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
@@ -710,17 +709,6 @@ export class EscrowActionService {
                 })
                 .catch(async reason => {
                     this.log.error('ERROR: EscrowReleaseMessage processing failed.', reason);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
-                });
-        });
-        this.eventEmitter.on(Events.RequestRefundEscrowReceivedEvent, async (event) => {
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processRequestRefundEscrowReceivedEvent(event)
-                .then(async status => {
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
-                })
-                .catch(async reason => {
-                    this.log.error('ERROR: EscrowRequestRefundMessage processing failed.', reason);
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });

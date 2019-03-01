@@ -3,13 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { SmsgMessageStatus } from '../../api/enums/SmsgMessageStatus';
-import {EscrowMessageType} from '../../api/enums/EscrowMessageType';
-import {BidMessageType} from '../../api/enums/BidMessageType';
-import {VoteMessageType} from '../../api/enums/VoteMessageType';
-import {ListingItemMessageType} from '../../api/enums/ListingItemMessageType';
-import {ProposalMessageType} from '../../api/enums/ProposalMessageType';
+import { VoteMessageType } from '../../api/enums/VoteMessageType';
+import { ProposalMessageType } from '../../api/enums/ProposalMessageType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
+type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
 
 declare module 'resources' {
 

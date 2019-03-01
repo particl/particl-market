@@ -2,23 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import * as resources from 'resources';
+import { Core, Types } from '../../constants';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MessageException } from '../exceptions/MessageException';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { BidMessageType } from '../enums/BidMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-type AllowedMessageTypes = EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType | string;
 
 export class SmsgMessageFactory {
 
@@ -114,9 +111,7 @@ export class SmsgMessageFactory {
 
         if (marketplaceMessage.item) {
             // in case of ListingItemMessage
-            // todo: later we need to add support for other ListingItemMessageTypes
-            // todo: actually the structure of ListingItemMessage should be the same as others
-            return ListingItemMessageType.MP_ITEM_ADD;
+            return MPAction.MPA_LISTING_ADD;
         } else if (marketplaceMessage.mpaction) {
             // in case of ActionMessage
             return marketplaceMessage.mpaction.action;

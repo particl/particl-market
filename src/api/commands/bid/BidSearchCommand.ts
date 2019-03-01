@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as _ from 'lodash';
 import { BidService } from '../../services/BidService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
@@ -18,8 +18,8 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidMessageType } from '../../enums/BidMessageType';
 import { OrderStatus} from '../../enums/OrderStatus';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -163,16 +163,16 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             + ' MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
 
-    private getStatus(status: string): BidMessageType | OrderStatus | undefined {
+    private getStatus(status: string): MPAction | OrderStatus | undefined {
         switch (status) {
             case 'MPA_BID':
-                return BidMessageType.MPA_BID;
+                return MPAction.MPA_BID;
             case 'MPA_ACCEPT':
-                return BidMessageType.MPA_ACCEPT;
+                return MPAction.MPA_ACCEPT;
             case 'MPA_REJECT':
-                return BidMessageType.MPA_REJECT;
+                return MPAction.MPA_REJECT;
             case 'MPA_CANCEL':
-                return BidMessageType.MPA_CANCEL;
+                return MPAction.MPA_CANCEL;
             case 'AWAITING_ESCROW':
                 return OrderStatus.AWAITING_ESCROW;
             case 'ESCROW_LOCKED':

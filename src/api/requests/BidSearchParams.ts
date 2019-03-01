@@ -2,11 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderStatus } from '../enums/OrderStatus';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class BidSearchParams extends RequestBody {
@@ -17,7 +16,7 @@ export class BidSearchParams extends RequestBody {
     public ordering: SearchOrder;
 
     // order status filtering
-    public status: BidMessageType | OrderStatus;
+    public status: MPAction | OrderStatus;
 
     // searchBy by string
     public searchString: string;

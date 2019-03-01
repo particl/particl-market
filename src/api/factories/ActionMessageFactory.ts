@@ -3,27 +3,24 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { BidMessageType } from '../enums/BidMessageType';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
-import * as resources from 'resources';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { ActionMessageItemInterface } from '../messages/ActionMessageItemInterface';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
 import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
-import { VoteMessageInterface } from '../messages/VoteMessageInterface';
 import { VoteMessageType } from '../enums/VoteMessageType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 export class ActionMessageFactory {
 
@@ -35,14 +32,14 @@ export class ActionMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getModel(message: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface,
+    public async getModel(message: ActionMessageItemInterface | ActionMessageInterface,
                           listingItemId: number, smsgMessage: resources.SmsgMessage): Promise<ActionMessageCreateRequest> {
 
         let actionMessageCreateRequest: ActionMessageCreateRequest;
         const data = this.getModelMessageData(smsgMessage);
 
         switch (message.action) {
-            case ListingItemMessageType.MP_ITEM_ADD:
+            case MPAction.MPA_LISTING_ADD:
                 const listingItemMessage = message as ListingItemAddMessage;
                 const listingItemobjects = this.getModelMessageObjects(listingItemMessage);
                 actionMessageCreateRequest = {
@@ -53,10 +50,10 @@ export class ActionMessageFactory {
                 } as ActionMessageCreateRequest;
                 break;
 
-            case BidMessageType.MPA_BID:
-            case BidMessageType.MPA_ACCEPT:
-            case BidMessageType.MPA_REJECT:
-            case BidMessageType.MPA_CANCEL:
+            case MPAction.MPA_BID:
+            case MPAction.MPA_ACCEPT:
+            case MPAction.MPA_REJECT:
+            case MPAction.MPA_CANCEL:
                 const bidMessage = message as BidMessage;
                 const objects = this.getModelMessageObjects(bidMessage);
                 actionMessageCreateRequest = {
@@ -67,10 +64,9 @@ export class ActionMessageFactory {
                 } as ActionMessageCreateRequest;
                 break;
 
-            case EscrowMessageType.MPA_LOCK:
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-            case EscrowMessageType.MPA_REFUND:
-            case EscrowMessageType.MPA_RELEASE:
+            case MPAction.MPA_LOCK:
+            case MPAction.MPA_REFUND:
+            case MPAction.MPA_RELEASE:
                 const escrowMessage = message as EscrowMessage;
 
                 // MPA-RELEASE& MPA-REFUND & MPA-REQUEST-REFUND can have memo in a weird place

@@ -3,15 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './ActionMessageInterface';
+import { ActionMessageItemInterface } from './ActionMessageItemInterface';
 import { MessageBody } from '../../core/api/MessageBody';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-export class ListingItemAddMessage extends MessageBody implements ActionMessageInterface {
+export class ListingItemAddMessage extends MessageBody implements ActionMessageItemInterface {
 
     @IsNotEmpty()
-    @IsEnum(ListingItemMessageType)
-    public action: ListingItemMessageType;
+    @IsEnum(MPAction)
+    public action: MPAction;
 
     @IsNotEmpty()
     public item: string;

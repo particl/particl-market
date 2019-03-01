@@ -4,15 +4,14 @@
 
 import * from 'jest';
 import { ActionMessageFactory } from '../../../../src/api/factories/ActionMessageFactory';
-import { EscrowMessageType } from '../../../../src/api/enums/EscrowMessageType';
-import { BidMessageType } from '../../../../src/api/enums/BidMessageType';
-import { SmsgMessage } from '../../../../src/api/messages/SmsgMessage';
 import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
-import { ActionMessageInterface } from '../../../../src/api/messages/ActionMessageInterface';
+import { ActionMessageItemInterface } from '../../../../src/api/messages/ActionMessageItemInterface';
 import { ActionMessageCreateRequest } from '../../../../src/api/requests/ActionMessageCreateRequest';
 import { EscrowType } from '../../../../src/api/enums/EscrowType';
 import { LogMock } from '../../lib/LogMock';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgMessage } from '../../../../src/api/models/SmsgMessage';
 
 describe('EscrowFactory', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -23,26 +22,12 @@ describe('EscrowFactory', () => {
     });
 
     test('Test ActionMessageFactory.getModel()', async () => {
-        // TODO: Currently BidMessageType's and EscrowMessageType's have no real difference amongst themselves,
-        //     but later we might want to check each individual type
-        /*
-            Ergonomic Frozen Shoes
-            Gorgeous Fresh Bike
-            Incredible Steel Chair
-            Incredible Concrete Towels
-            Generic Soft Car
-            Awesome Cotton Keyboard
-            Handmade Concrete Shirt
-            Awesome Steel Gloves
-            Ergonomic Wooden Chair
-            Sleek Steel Towels
-            Incredible Metal Tuna
-        */
+
         const testData: any[] = [
-            { // Standard BidMessageType.MPA_BID
+            { // Standard MPAction.MPA_BID
                 listingItemId: 0,
                 message: {
-                    action: BidMessageType.MPA_BID,
+                    action: MPAction.MPA_BID,
                     item: 'Ergonomic Frozen Shoes',
                     objects: []
                 } as BidMessage,
@@ -59,7 +44,7 @@ describe('EscrowFactory', () => {
             { // Standard EscrowMessageType.MPA_LOCK
                 listingItemId: 0,
                 message: {
-                    action: EscrowMessageType.MPA_LOCK,
+                    action: MPAction.MPA_LOCK,
                     item: 'Gorgeous Fresh Bike',
                     escrow: {
                         type: EscrowType.MAD,
@@ -88,7 +73,7 @@ describe('EscrowFactory', () => {
             { // Standard EscrowMessageType.MPA_REFUND with no info
                 listingItemId: 0,
                 message: {
-                    action: EscrowMessageType.MPA_REFUND,
+                    action: MPAction.MPA_REFUND,
                     item: 'Incredible Steel Chair',
                     escrow: {
                         type: EscrowType.MAD,
@@ -118,7 +103,7 @@ describe('EscrowFactory', () => {
         for ( const i in testData ) {
             if ( i ) {
                 const listingItemId: number = testData[i].listingItemId;
-                const messageRaw: ActionMessageInterface = testData[i].message;
+                const messageRaw: ActionMessageItemInterface = testData[i].message;
                 const smsgMessage: SmsgMessage = testData[i].smsgMessage;
 
 
@@ -142,10 +127,10 @@ describe('EscrowFactory', () => {
                 expect(returnedModel.data).toMatchObject(smsgMessageData);
 
                 switch (testData[i].message.action) {
-                    case BidMessageType.MPA_BID:
-                    case BidMessageType.MPA_ACCEPT:
-                    case BidMessageType.MPA_REJECT:
-                    case BidMessageType.MPA_CANCEL:
+                    case MPAction.MPA_BID:
+                    case MPAction.MPA_ACCEPT:
+                    case MPAction.MPA_REJECT:
+                    case MPAction.MPA_CANCEL:
                     {
                         const message = messageRaw as BidMessage;
                         const smsgMessageObjects = actionMessageFactory.getModelMessageObjects(message);
@@ -167,10 +152,9 @@ describe('EscrowFactory', () => {
                         expect(true).toBe(true);
                         break;
                     }
-                    case EscrowMessageType.MPA_LOCK:
-                    case EscrowMessageType.MPA_REQUEST_REFUND:
-                    case EscrowMessageType.MPA_REFUND:
-                    case EscrowMessageType.MPA_RELEASE:
+                    case MPAction.MPA_LOCK:
+                    case MPAction.MPA_REFUND:
+                    case MPAction.MPA_RELEASE:
                     {
                         const message = messageRaw as EscrowMessage;
 
@@ -198,7 +182,7 @@ describe('EscrowFactory', () => {
 
     test('Negative test ActionMessageFactory.getModel()', async () => {
         const testData: any[] = [
-            { // Standard BidMessageType.MPA_BID, missing message
+            { // Standard MPAction.MPA_BID, missing message
                 listingItemId: 0,
                 smsgMessage: {
                     msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
@@ -210,15 +194,15 @@ describe('EscrowFactory', () => {
                     text: 'A.g1'
                 } as SmsgMessage
             },
-            { // Standard BidMessageType.MPA_BID, missing smsgMessage
+            { // Standard MPAction.MPA_BID, missing smsgMessage
                 listingItemId: 0,
                 message: {
-                    action: BidMessageType.MPA_BID,
+                    action: MPAction.MPA_BID,
                     item: 'Ergonomic Frozen Shoes',
                     objects: []
                 } as BidMessage
             },
-            { // Standard EscrowMessageType.MPA_LOCK, missing message
+            { // Standard MPAction.MPA_LOCK, missing message
                 listingItemId: 0,
                 smsgMessage: {
                     msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
@@ -230,10 +214,10 @@ describe('EscrowFactory', () => {
                     text: 'B.g1'
                 } as SmsgMessage
             },
-            { // Standard EscrowMessageType.MPA_LOCK, missing smsgMessage
+            { // Standard MPAction.MPA_LOCK, missing smsgMessage
                 listingItemId: 0,
                 message: {
-                    action: EscrowMessageType.MPA_LOCK,
+                    action: MPAction.MPA_LOCK,
                     item: 'Gorgeous Fresh Bike',
                     escrow: {
                         type: EscrowType.MAD,
@@ -257,7 +241,7 @@ describe('EscrowFactory', () => {
         for ( const i in testData ) {
             if ( i ) {
                 const listingItemId: number = testData[i].listingItemId;
-                const messageRaw: ActionMessageInterface = testData[i].message;
+                const messageRaw: ActionMessageItemInterface = testData[i].message;
                 const smsgMessage: SmsgMessage = testData[i].smsgMessage;
 
                 let returnedModel: ActionMessageCreateRequest;

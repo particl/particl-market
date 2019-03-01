@@ -15,7 +15,7 @@ export class OrderSearchParams extends RequestBody {
 
     // TODO: add validation back
     // @ValidateIf(o => o.action)
-    // @IsEnum(BidMessageType)
+    // @IsEnum(OrderStatus)
     public status: OrderStatus;
 
     public buyerAddress: string;

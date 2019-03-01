@@ -4,9 +4,9 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { BidMessageType } from '../enums/BidMessageType';
-import {BidDataCreateRequest} from './BidDataCreateRequest';
-import {AddressCreateRequest} from './AddressCreateRequest';
+import { BidDataCreateRequest } from './BidDataCreateRequest';
+import { AddressCreateRequest } from './AddressCreateRequest';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class BidCreateRequest extends RequestBody {
@@ -14,9 +14,9 @@ export class BidCreateRequest extends RequestBody {
     @IsNotEmpty()
     public listing_item_id: number;
 
-    @IsEnum(BidMessageType)
+    @IsEnum(MPAction)
     @IsNotEmpty()
-    public action: BidMessageType;
+    public action: MPAction;
 
     @IsNotEmpty()
     public address: AddressCreateRequest;

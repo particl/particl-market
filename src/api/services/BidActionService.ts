@@ -5,9 +5,9 @@
 import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-import * as resources from 'resources';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { EventEmitter } from 'events';
@@ -23,7 +23,6 @@ import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessageType } from '../enums/BidMessageType';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
@@ -39,6 +38,7 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 // todo: move
 export interface OutputData {
@@ -106,7 +106,7 @@ export class BidActionService {
         // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID message
-        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
+        const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -370,7 +370,7 @@ export class BidActionService {
     public async accept(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         // previous bids action needs to be MPA_BID
-        if (bid.action === BidMessageType.MPA_BID) {
+        if (bid.action === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -382,7 +382,7 @@ export class BidActionService {
             const bidDatas: IdValuePair[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
             // create the bid accept message using the generated bidDatas
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
+            const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_ACCEPT, listingItem.hash, bidDatas);
             // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
@@ -690,7 +690,7 @@ export class BidActionService {
      */
     public async cancel(bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        if (bid.action === BidMessageType.MPA_BID) {
+        if (bid.action === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -698,13 +698,13 @@ export class BidActionService {
                 });
 
             // create the bid cancel message
-            const bidMessage: BidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
+            const bidMessage: BidMessage = await this.bidFactory.getMessage(MPAction.MPA_CANCEL, listingItem.hash);
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
-                action: BidMessageType.MPA_CANCEL,
+                action: MPAction.MPA_CANCEL,
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
@@ -745,7 +745,7 @@ export class BidActionService {
      */
     public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        if (bid.action === BidMessageType.MPA_BID) {
+        if (bid.action === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -761,13 +761,13 @@ export class BidActionService {
             const sellerProfile = sellerProfileModel.toJSON();
 
             // create the bid reject message
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash);
+            const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_REJECT, listingItem.hash);
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
-                action: BidMessageType.MPA_REJECT,
+                action: MPAction.MPA_REJECT,
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
@@ -884,7 +884,7 @@ export class BidActionService {
 
                     // find the Bid
                     const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
-                        return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
+                        return o.action === MPAction.MPA_BID && o.bidder === bidder;
                     });
 
                     // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
@@ -961,7 +961,7 @@ export class BidActionService {
                 // Get latest bid from listingItemId and bidder so we can get bidId.
                 const params: BidSearchParams = new BidSearchParams({
                     listingItemId: listingItem.id,
-                    action: BidMessageType.MPA_BID,
+                    action: MPAction.MPA_BID,
                     bidders: [ bidder ],
                     ordering: SearchOrder.DESC
                 });
@@ -979,7 +979,7 @@ export class BidActionService {
                 const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
-                    action: BidMessageType.MPA_CANCEL,
+                    action: MPAction.MPA_CANCEL,
                     bidder: tmpBidCreateRequest.bidder,
                     bidDatas: tmpBidCreateRequest.bidDatas
                 } as BidUpdateRequest;
@@ -1022,7 +1022,7 @@ export class BidActionService {
                 // Get latest bid from listingItemId and bidder so we can get bidId.
                 const params: BidSearchParams = new BidSearchParams({
                     listingItemId: listingItem.id,
-                    action: BidMessageType.MPA_BID,
+                    action: MPAction.MPA_BID,
                     bidders: [ bidder ],
                     ordering: SearchOrder.DESC
                 });
@@ -1039,7 +1039,7 @@ export class BidActionService {
                 const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
-                    action: BidMessageType.MPA_REJECT,
+                    action: MPAction.MPA_REJECT,
                     bidder: tmpBidCreateRequest.bidder,
                     bidDatas: tmpBidCreateRequest.bidDatas
                 } as BidUpdateRequest;

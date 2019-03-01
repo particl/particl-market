@@ -2,16 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { inject, named } from 'inversify';
-import * as crypto from 'crypto-js';
 import * as _ from 'lodash';
+import * as resources from 'resources';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
-import { MessageException } from '../exceptions/MessageException';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import * as resources from 'resources';
-import {NotFoundException} from '../exceptions/NotFoundException';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class ItemCategoryFactory {
 

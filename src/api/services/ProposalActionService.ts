@@ -79,10 +79,10 @@ export class ProposalActionService {
             itemHash
         );
 
-        const msg: MarketplaceMessage = {
+        const msg = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: proposalMessage
-        };
+        } as MarketplaceMessage;
 
         // if were here to estimate the fee, then do it now.
         const paidMessage = proposalMessage.type === ProposalType.PUBLIC_VOTE;

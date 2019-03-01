@@ -16,15 +16,13 @@ import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
 import * as resources from 'resources';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../src/api/factories/SmsgMessageFactory';
-import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage';
 import { ProposalMessageType } from '../../src/api/enums/ProposalMessageType';
 import { VoteMessageType } from '../../src/api/enums/VoteMessageType';
-import { EscrowMessageType } from '../../src/api/enums/EscrowMessageType';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -99,7 +97,7 @@ describe('SmsgMessage', () => {
 
     const expectCreateRequestFromSmsgMessage = (
         result: SmsgMessageCreateRequest,
-        type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string,
+        type: MPAction | ProposalMessageType | VoteMessageType | string,
         status: SmsgMessageStatus,
         smsgMessage: IncomingSmsgMessage) => {
 
@@ -120,7 +118,7 @@ describe('SmsgMessage', () => {
 
     const expectSmsgMessageFromCreateRequest = (
         result: resources.SmsgMessage,
-        type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string,
+        type: MPAction | ProposalMessageType | VoteMessageType | string,
         status: SmsgMessageStatus,
         createRequest: SmsgMessageCreateRequest) => {
 
@@ -148,12 +146,12 @@ describe('SmsgMessage', () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemMessage);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, ListingItemMessageType.MP_ITEM_ADD, SmsgMessageStatus.NEW, listingItemMessage);
+        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, listingItemMessage);
 
         const smsgMessageModel = await smsgMessageService.create(smsgMessageCreateRequest);
         const result: resources.SmsgMessage = smsgMessageModel.toJSON();
         log.debug('result: ', JSON.stringify(result, null, 2));
-        expectSmsgMessageFromCreateRequest(result, ListingItemMessageType.MP_ITEM_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
+        expectSmsgMessageFromCreateRequest(result, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
     test('Should create a new SmsgMessage from proposalMessage', async () => {
@@ -256,7 +254,7 @@ describe('SmsgMessage', () => {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [ListingItemMessageType.MP_ITEM_ADD],
+            types: [MPAction.MPA_LISTING_ADD],
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -271,7 +269,7 @@ describe('SmsgMessage', () => {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD],
+            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD],
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -286,7 +284,7 @@ describe('SmsgMessage', () => {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -319,8 +317,8 @@ describe('SmsgMessage', () => {
 
         expect(smsgMessages.length).toBe(3);
 
-        const message = _.find(smsgMessages, { type: ListingItemMessageType.MP_ITEM_ADD });
-        expect(message.type).toBe(ListingItemMessageType.MP_ITEM_ADD);
+        const message = _.find(smsgMessages, { type: MPAction.MPA_LISTING_ADD });
+        expect(message.type).toBe(MPAction.MPA_LISTING_ADD);
 
         const updatedData = message;
         updatedData.status = SmsgMessageStatus.PROCESSING;
@@ -348,7 +346,7 @@ describe('SmsgMessage', () => {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 

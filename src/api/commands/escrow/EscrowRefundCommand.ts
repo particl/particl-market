@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -11,14 +12,12 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowActionService } from '../../services/EscrowActionService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
-import { EscrowMessageType } from '../../enums/EscrowMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
 import { OrderStatus } from '../../enums/OrderStatus';
-import { BidMessageType} from '../../enums/BidMessageType';
 import { OrderItemService } from '../../services/OrderItemService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -54,7 +53,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         }
 
         const bid = orderItem.Bid;
-        if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
+        if (!bid || bid.action !== MPAction.MPA_ACCEPT) {
             this.log.error('No valid information to finalize escrow');
             throw new MessageException('No valid information to finalize escrow');
         }
@@ -87,7 +86,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             orderItem,
             accepted: data.params[1],
             memo: data.params[2],
-            action: EscrowMessageType.MPA_REFUND
+            action: MPAction.MPA_REFUND
         } as EscrowRequest);
     }
 

@@ -3,23 +3,20 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { BidMessage } from '../messages/BidMessage';
-import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import * as resources from 'resources';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import { IsEnum, IsNotEmpty } from 'class-validator';
 import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import { AddressType } from '../enums/AddressType';
 import { OrderStatus } from '../enums/OrderStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class OrderFactory {
 
@@ -40,7 +37,7 @@ export class OrderFactory {
     public async getModelFromBid(bid: resources.Bid): Promise<OrderCreateRequest> {
 
         // only bids with action MPA_ACCEPT can be converted to Order
-        if (bid.action === BidMessageType.MPA_ACCEPT) {
+        if (bid.action === MPAction.MPA_ACCEPT) {
 
             const address: AddressCreateRequest = this.getShippingAddress(bid);
             const orderItems: OrderItemCreateRequest[] = this.getOrderItems(bid);
@@ -59,7 +56,7 @@ export class OrderFactory {
             return orderCreateRequest;
 
         } else {
-            throw new MessageException('Cannot create Order from this BidMessageType.');
+            throw new MessageException('Cannot create Order from this MPAction.');
         }
     }
 

@@ -4,10 +4,10 @@
 
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
-import { VoteMessageInterface } from './VoteMessageInterface';
 import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ActionMessageInterface } from './ActionMessageInterface';
 
-export class VoteMessage extends MessageBody implements VoteMessageInterface {
+export class VoteMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(VoteMessageType)

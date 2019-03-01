@@ -4,14 +4,12 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { BidMessageType } from '../enums/BidMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-type AllowedMessageTypes = EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType | string;
 
 // tslint:disable:variable-name
 export class SmsgMessageCreateRequest extends RequestBody {

@@ -6,27 +6,22 @@ import * as _ from 'lodash';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-
 import { EventEmitter } from '../../core/api/events';
-
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessageType } from '../enums/BidMessageType';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
 import { SmsgMessageService } from '../services/SmsgMessageService';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
-import {SmsgMessage} from '../models/SmsgMessage';
-import {MessageException} from '../exceptions/MessageException';
+import { MessageException } from '../exceptions/MessageException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
+type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -37,9 +32,18 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private DEFAULT_INTERVAL = 5 * 1000;
 
-    private LISTINGITEM_MESSAGES = [ListingItemMessageType.MP_ITEM_ADD];
-    private BID_MESSAGES = [BidMessageType.MPA_BID, BidMessageType.MPA_ACCEPT, BidMessageType.MPA_REJECT, BidMessageType.MPA_CANCEL];
-    private ESCROW_MESSAGES = [EscrowMessageType.MPA_LOCK, EscrowMessageType.MPA_RELEASE, EscrowMessageType.MPA_REQUEST_REFUND, EscrowMessageType.MPA_REFUND];
+    private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
+    private BID_MESSAGES = [
+        MPAction.MPA_BID,
+        MPAction.MPA_ACCEPT,
+        MPAction.MPA_REJECT,
+        MPAction.MPA_CANCEL
+    ];
+    private ESCROW_MESSAGES = [
+        MPAction.MPA_LOCK,
+        MPAction.MPA_RELEASE,
+        MPAction.MPA_REFUND
+    ];
     private PROPOSAL_MESSAGES = [ProposalMessageType.MP_PROPOSAL_ADD];
     private VOTE_MESSAGES = [VoteMessageType.MP_VOTE];
 
@@ -244,7 +248,8 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {number} amount
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    private async getSmsgMessages(types: any[], // ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType,
+    // TODO: why types: any[]?
+    private async getSmsgMessages(types: any[], // MPAction | ProposalMessageType | VoteMessageType,
                                   status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 
         const searchParams = {
@@ -271,29 +276,26 @@ export class MessageProcessor implements MessageProcessorInterface {
         Promise<string | null> {
 
         switch (messageType) {
-            case BidMessageType.MPA_BID:
+            case MPAction.MPA_BID:
                 return Events.BidReceivedEvent;
-            case BidMessageType.MPA_ACCEPT:
+            case MPAction.MPA_ACCEPT:
                 return Events.AcceptBidReceivedEvent;
-            case BidMessageType.MPA_REJECT:
+            case MPAction.MPA_REJECT:
                 return Events.RejectBidReceivedEvent;
-            case BidMessageType.MPA_CANCEL:
+            case MPAction.MPA_CANCEL:
                 return Events.CancelBidReceivedEvent;
-            case EscrowMessageType.MPA_LOCK:
+            case MPAction.MPA_LOCK:
                 return Events.LockEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-                return Events.RequestRefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REFUND:
+            case MPAction.MPA_REFUND:
                 return Events.RefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_RELEASE:
+            case MPAction.MPA_RELEASE:
                 return Events.ReleaseEscrowReceivedEvent;
             case ProposalMessageType.MP_PROPOSAL_ADD:
                 return Events.ProposalReceivedEvent;
             case VoteMessageType.MP_VOTE:
                 return Events.VoteReceivedEvent;
-            case ListingItemMessageType.MP_ITEM_ADD:
+            case MPAction.MPA_LISTING_ADD:
                 return Events.ListingItemReceivedEvent;
-            case ListingItemMessageType.UNKNOWN:
             default:
                 return null;
         }

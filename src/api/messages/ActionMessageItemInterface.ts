@@ -5,9 +5,12 @@
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ActionMessageInterface } from './ActionMessageInterface';
 
 type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
 
-export interface ActionMessageInterface {
+export interface ActionMessageItemInterface extends ActionMessageInterface {
     action: AllowedMessageTypes;
+    item: string;
+    objects?: any;
 }

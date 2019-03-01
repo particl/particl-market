@@ -2,14 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import * as resources from 'resources';
 import { EscrowRequest } from '../requests/EscrowRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowFactory {
 
@@ -37,13 +37,13 @@ export class EscrowFactory {
         // this.checkEscrowActionValidity(request.action, escrow);
 
         switch (request.action) {
-            case EscrowMessageType.MPA_LOCK:
+            case MPAction.MPA_LOCK:
                 return await this.getLockMessage(request, rawtx);
 
-            case EscrowMessageType.MPA_RELEASE:
+            case MPAction.MPA_RELEASE:
                 return await this.getReleaseMessage(request, rawtx);
 
-            case EscrowMessageType.MPA_REFUND:
+            case MPAction.MPA_REFUND:
                 return await this.getRefundMessage(request, rawtx);
 
             default:
@@ -124,22 +124,5 @@ export class EscrowFactory {
                 rawtx
             }
         } as EscrowMessage;
-    }
-
-    /**
-     * Checks if the escrowAction is allowed for the given escrow
-     *
-     * @param escrowAction
-     * @param escrow
-     * @returns {boolean}
-     */
-    private checkEscrowActionValidity(escrowAction: EscrowMessageType, escrow?: resources.Escrow): boolean {
-        let isValid = true;
-        // TODO: implement
-        if (!isValid) {
-            isValid = false;
-            // throw new MessageException('Action is not valid for the Escrow');
-        }
-        return isValid;
     }
 }

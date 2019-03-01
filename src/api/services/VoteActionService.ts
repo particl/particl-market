@@ -128,10 +128,10 @@ export class VoteActionService {
             const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
                 proposalOption.hash, senderAddress.address, signature);
 
-            const msg: MarketplaceMessage = {
+            const msg = {
                 version: process.env.MARKETPLACE_VERSION,
                 mpaction: voteMessage
-            };
+            } as MarketplaceMessage;
 
             // processVote "processes" the Vote, creating or updating the Vote.
             // called from send() and processVoteReceivedEvent()

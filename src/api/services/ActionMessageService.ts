@@ -21,8 +21,8 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { MarketService } from './MarketService';
 import { ActionMessageFactory } from '../factories/ActionMessageFactory';
 import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import * as resources from 'resources';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ActionMessageService {
 
@@ -151,7 +151,7 @@ export class ActionMessageService {
             // const listingItem = listingItemModel.toJSON();
 
             const listingItemAddMessage = {
-                action: ListingItemMessageType.MP_ITEM_ADD,
+                action: MPAction.MPA_LISTING_ADD,
                 item: listingItem.hash,
                 objects: [{
                     id: 'seller',

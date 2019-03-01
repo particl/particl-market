@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -17,14 +18,13 @@ import { LockedOutputUpdateRequest } from '../../src/api/requests/LockedOutputUp
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import * as resources from 'resources';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('LockedOutput', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -134,7 +134,7 @@ describe('LockedOutput', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             listingItem.hash,           // listingItemhash
-            BidMessageType.MPA_BID,     // action
+            MPAction.MPA_BID,     // action
             defaultProfile.address,     // bidder
             sellerProfile.address       // listingItemSeller
         ]).toParamsArray();

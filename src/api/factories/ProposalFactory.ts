@@ -3,18 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
-import * as resources from 'resources';
-import {ProposalType} from '../enums/ProposalType';
-import {ObjectHash} from '../../core/helpers/ObjectHash';
-import {HashableObjectType} from '../enums/HashableObjectType';
-import {ProposalCreateRequest} from '../requests/ProposalCreateRequest';
-import {ProposalOptionCreateRequest} from '../requests/ProposalOptionCreateRequest';
-import {MessageException} from '../exceptions/MessageException';
+import { ProposalType } from '../enums/ProposalType';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
+import { MessageException } from '../exceptions/MessageException';
 
 export class ProposalFactory {
 

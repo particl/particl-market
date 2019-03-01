@@ -8,11 +8,11 @@ import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
-import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
 import { OrderStatus } from '../enums/OrderStatus';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -51,10 +51,10 @@ export class Bid extends Bookshelf.Model<Bid> {
                 }
 
                 if (options.status
-                    && (options.status === BidMessageType.MPA_ACCEPT
-                        || options.status === BidMessageType.MPA_BID
-                        || options.status === BidMessageType.MPA_CANCEL
-                        || options.status === BidMessageType.MPA_REJECT)) {
+                    && (options.status === MPAction.MPA_ACCEPT
+                        || options.status === MPAction.MPA_BID
+                        || options.status === MPAction.MPA_CANCEL
+                        || options.status === MPAction.MPA_REJECT)) {
                     qb.where('bids.action', '=', options.status);
                 }
 

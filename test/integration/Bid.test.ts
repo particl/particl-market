@@ -3,6 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -13,7 +15,6 @@ import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { BidDataService } from '../../src/api/services/BidDataService';
 import { Bid } from '../../src/api/models/Bid';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -21,8 +22,6 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
-import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderService } from '../../src/api/services/OrderService';
@@ -35,6 +34,7 @@ import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -63,7 +63,7 @@ describe('Bid', () => {
     const testData: BidCreateRequest = bidCreateRequest1;
 
     const testDataUpdated = {
-        action: BidMessageType.MPA_CANCEL,
+        action: MPAction.MPA_CANCEL,
         bidder: 'bidderaddress',
         listing_item_id: null
     } as BidUpdateRequest;
@@ -186,7 +186,7 @@ describe('Bid', () => {
         testData.listing_item_id = createdListingItem2.id;
         testData.bidder = defaultProfile.address;
         testData.address.profile_id = defaultProfile.id;
-        testData.action = BidMessageType.MPA_ACCEPT;
+        testData.action = MPAction.MPA_ACCEPT;
 
         // log.debug('testData:', JSON.stringify(testData, null, 2));
         const bidModel: Bid = await bidService.create(testData);
@@ -239,7 +239,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (MPA_BID)', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem1.id,
-            status: BidMessageType.MPA_BID
+            status: MPAction.MPA_BID
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
@@ -250,7 +250,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (MPA_ACCEPT)', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: BidMessageType.MPA_ACCEPT
+            status: MPAction.MPA_ACCEPT
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
@@ -361,7 +361,7 @@ describe('Bid', () => {
         expect(bid.length).toBe(2);
         const result = bid[0];
         // test the values
-        expect(result.action).toBe(BidMessageType.MPA_BID);
+        expect(result.action).toBe(MPAction.MPA_BID);
         expect(result.bidder).toBe(testData.bidder);
     });
 
@@ -369,14 +369,14 @@ describe('Bid', () => {
         const bidModel: Bid = await bidService.findOne(createdBid1.id, true);
         const result = bidModel.toJSON();
         // test the values
-        expect(result.action).toBe(BidMessageType.MPA_BID);
+        expect(result.action).toBe(MPAction.MPA_BID);
         expect(result.bidder).toBe(testData.bidder);
         expect(result.BidDatas.length).toBe(2);
     });
 
     test('Should throw ValidationException because there is no listing_item_id', async () => {
         await bidService.update(createdBid1.id, {
-            action: BidMessageType.MPA_CANCEL
+            action: MPAction.MPA_CANCEL
         } as BidUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
@@ -384,7 +384,7 @@ describe('Bid', () => {
 
     test('Should update the Bid', async () => {
         testDataUpdated.listing_item_id = createdListingItem1.id;
-        testDataUpdated.action = BidMessageType.MPA_CANCEL;
+        testDataUpdated.action = MPAction.MPA_CANCEL;
         const bidModel: Bid = await bidService.update(createdBid1.id, testDataUpdated as BidUpdateRequest);
         const result = bidModel.toJSON();
         // test the values

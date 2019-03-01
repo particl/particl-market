@@ -3,6 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as orderCreateRequest1 from '../testdata/createrequest/orderCreateRequest1.json';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -18,8 +20,6 @@ import { BidService } from '../../src/api/services/BidService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import * as orderCreateRequest1 from '../testdata/createrequest/orderCreateRequest1.json';
-import * as resources from 'resources';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
@@ -29,8 +29,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
-
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Order', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -137,7 +136,7 @@ describe('Order', () => {
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
             createdListingItem1.hash,           // listingItemhash
-            BidMessageType.MPA_BID,             // action
+            MPAction.MPA_BID,             // action
             defaultProfile.address,             // bidder
             createdSellerProfile.address        // listingItemSeller
         ]).toParamsArray();
