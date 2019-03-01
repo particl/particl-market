@@ -18,13 +18,12 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemPrice } from '../../src/api/models/ItemPrice';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

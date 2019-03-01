@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -16,16 +17,15 @@ import { EscrowService } from '../../src/api/services/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { EscrowRatio } from '../../src/api/models/EscrowRatio';
-import { EscrowType } from '../../src/api/enums/EscrowType';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/EscrowRatioCreateRequest';
 import { EscrowRatioUpdateRequest } from '../../src/api/requests/EscrowRatioUpdateRequest';
 import { MarketService } from '../../src/api/services/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import * as resources from 'resources';
 import { Escrow } from '../../src/api/models/Escrow';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('EscrowRatio', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

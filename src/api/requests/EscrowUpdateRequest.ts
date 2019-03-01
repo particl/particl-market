@@ -4,7 +4,7 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { EscrowType } from '../enums/EscrowType';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class EscrowUpdateRequest extends RequestBody {

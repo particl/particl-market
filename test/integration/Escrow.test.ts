@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,14 +16,13 @@ import { PaymentInformationService } from '../../src/api/services/PaymentInforma
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Escrow } from '../../src/api/models/Escrow';
-import { EscrowType } from '../../src/api/enums/EscrowType';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import * as resources from 'resources';
 import { MarketService } from '../../src/api/services/MarketService';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

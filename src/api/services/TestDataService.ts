@@ -20,7 +20,6 @@ import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
 import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 import { Currency } from '../enums/Currency';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { EscrowType } from '../enums/EscrowType';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
@@ -88,7 +87,7 @@ import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinatio
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { MPAction, PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, MPAction, PaymentType} from 'omp-lib/dist/interfaces/omp-enums';
 
 export class TestDataService {
 

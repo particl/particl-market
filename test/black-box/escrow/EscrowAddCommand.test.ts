@@ -4,12 +4,12 @@
 
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('EscrowAddCommand', () => {
 

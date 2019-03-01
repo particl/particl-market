@@ -8,9 +8,8 @@ import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
 import { ActionMessageItemInterface } from '../../../../src/api/messages/ActionMessageItemInterface';
 import { ActionMessageCreateRequest } from '../../../../src/api/requests/ActionMessageCreateRequest';
-import { EscrowType } from '../../../../src/api/enums/EscrowType';
 import { LogMock } from '../../lib/LogMock';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgMessage } from '../../../../src/api/models/SmsgMessage';
 
 describe('EscrowFactory', () => {
