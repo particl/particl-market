@@ -35,6 +35,7 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { Output } from './BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {BidMessage} from '../messages/BidMessage';
 
 export class EscrowActionService {
 
@@ -352,13 +353,14 @@ export class EscrowActionService {
 
     private async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        const escrowMessage = message.mpaction as EscrowMessage;
+        if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
+
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(message.mpaction.item)
+        return await this.listingItemService.findOneByHash(escrowMessage.item)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 
@@ -377,14 +379,14 @@ export class EscrowActionService {
 
     private async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        const escrowMessage = message.mpaction as EscrowMessage;
+        if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(message.mpaction.item)
+        return await this.listingItemService.findOneByHash(escrowMessage.item)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 

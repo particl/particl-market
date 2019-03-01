@@ -39,6 +39,7 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {ActionMessageItemInterface} from '../messages/ActionMessageItemInterface';
 
 // todo: move
 export interface OutputData {
@@ -798,15 +799,15 @@ export class BidActionService {
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         const message = event.marketplaceMessage;
+        const bidMessage = event.marketplaceMessage.mpaction as BidMessage ;
 
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        if (!bidMessage || !bidMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
-        return await this.listingItemService.findOneByHash(message.mpaction.item)
+        return await this.listingItemService.findOneByHash(bidMessage.item)
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
@@ -860,16 +861,15 @@ export class BidActionService {
      */
     public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
-        const bidder = event.smsgMessage.to; // from seller to buyer
-
-        // find the ListingItem
+        const bidder = event.smsgMessage.from;
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        const bidMessage = event.marketplaceMessage.mpaction as BidMessage ;
+
+        if (!bidMessage || !bidMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
-        return await this.listingItemService.findOneByHash(message.mpaction.item)
+        return await this.listingItemService.findOneByHash(bidMessage.item)
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
@@ -941,15 +941,15 @@ export class BidActionService {
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
-        // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        const bidMessage = event.marketplaceMessage.mpaction as BidMessage ;
+
+        if (!bidMessage || !bidMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
-        return await this.listingItemService.findOneByHash(message.mpaction.item)
+        return await this.listingItemService.findOneByHash(bidMessage.item)
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
