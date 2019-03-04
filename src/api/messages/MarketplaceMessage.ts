@@ -7,11 +7,15 @@ import { ListingItemMessageInterface } from './ListingItemMessageInterface';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { MPA, MPM } from 'omp-lib/dist/interfaces/omp';
 
-export class MarketplaceMessage { // implements MPM {
+export class MarketplaceMessage implements MPM {
     public version: string;
-    // public action: MPA;
 
-    // TODO: these should be removed with new omp-lib
+    // TODO: this should not be optional
+    public action: MPA;
+    // tslint:disable-next-line:variable-name
+    public _rawtx?: string;
+
+    // TODO: these are deprecated and should be removed with new omp-lib
     public mpaction?: ActionMessageItemInterface | ActionMessageInterface;
     public item?: ListingItemMessageInterface;
 

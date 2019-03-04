@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -11,7 +12,6 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
-import * as resources from 'resources';
 import { SmsgMessageService } from '../services/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
@@ -62,7 +62,7 @@ export class MessageProcessor implements MessageProcessorInterface {
      * main messageprocessor, ...
      *
      * @param {module:resources.SmsgMessage[]} smsgMessages
-     * @param {boolean} emitEvent
+     * @param {boolean} emitEvent, used for testing
      * @returns {Promise<void>}
      */
     public async process(smsgMessages: resources.SmsgMessage[], emitEvent: boolean = true): Promise<void> {
@@ -73,51 +73,50 @@ export class MessageProcessor implements MessageProcessorInterface {
 
             // this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
 
-            // TODO: throw instead of returning null
-            const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage);
+            const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage)
+                .then(value => value)
+                .catch(async reason => {
+                    this.log.error('Could not parse the MarketplaceMessage.');
+                    return null;
+                });
             const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
 
             // this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
             // this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
             // this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
-            if (marketplaceMessage !== null && eventType !== null) {
+            if (marketplaceMessage !== null && eventType !== null && emitEvent) {
+                smsgMessage.text = '';
 
-                if (emitEvent) {
-                    smsgMessage.text = '';
+                const marketplaceEvent: MarketplaceEvent = {
+                    smsgMessage,
+                    marketplaceMessage
+                };
 
-                    const marketplaceEvent: MarketplaceEvent = {
-                        smsgMessage,
-                        marketplaceMessage
-                    };
+                this.log.debug('SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
 
-                    this.log.debug('SMSGMESSAGE: '
-                        + smsgMessage.from + ' => ' + smsgMessage.to
-                        + ' : ' + smsgMessage.type
-                        + ' : ' + smsgMessage.status
-                        + ' : ' + smsgMessage.msgid);
+                // this.log.debug('SENDING: ', eventType);
 
-                    // this.log.debug('SENDING: ', eventType);
+                // send event to the eventTypes processor
+                this.eventEmitter.emit(eventType, marketplaceEvent);
 
-                    // send event to the eventTypes processor
-                    this.eventEmitter.emit(eventType, marketplaceEvent);
-
-                    // send event to cli
-                    // todo: send marketplaceEvent
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: eventType,
-                        data: marketplaceMessage
-                    });
-                }
+                // send event to cli
+                // todo: send marketplaceEvent to Cli
+                this.eventEmitter.emit(Events.Cli, {
+                    message: eventType,
+                    data: marketplaceMessage
+                });
 
             } else {
-
-                this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
-                this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
-                this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
-
-                this.log.debug('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
-
+                // parsing failed, log some error data and update the smsgMessage
+                this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+                this.log.error('eventType:', JSON.stringify(eventType, null, 2));
+                this.log.error('emitEvent:', JSON.stringify(emitEvent, null, 2));
+                this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
             }
         }
@@ -131,20 +130,6 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     public schedulePoll(pollingInterval: number = this.DEFAULT_INTERVAL): void {
-
-        // this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
-
-/*
-        this.timeout = setTimeout(
-            async () => {
-                pollingInterval = await this.poll();
-                this.schedulePoll(pollingInterval);
-                this.log.debug('schedulePoll(), done: ', timeout);
-            },
-            pollingInterval
-        );
-*/
-
         this.interval = setInterval(() => {
 
             clearInterval(this.interval);

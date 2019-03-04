@@ -84,14 +84,10 @@ export class SmsgMessageFactory {
             });
     }
 
-    public async getMarketplaceMessage(message: resources.SmsgMessage): Promise<MarketplaceMessage | null> {
-
+    public async getMarketplaceMessage(message: resources.SmsgMessage): Promise<MarketplaceMessage> {
         return await this.parseJSONSafe(message.text)
             .then( marketplaceMessage => {
                 return marketplaceMessage;
-            })
-            .catch(reason => {
-                return null;
             });
     }
 
@@ -109,16 +105,22 @@ export class SmsgMessageFactory {
 
     private getType(marketplaceMessage: MarketplaceMessage): AllowedMessageTypes {
 
-        if (marketplaceMessage.item) {
-            // in case of ListingItemMessage
-            return MPAction.MPA_LISTING_ADD;
-        } else if (marketplaceMessage.mpaction) {
-            // in case of ActionMessage
-            return marketplaceMessage.mpaction.action;
+        if (marketplaceMessage.action && marketplaceMessage.action.type) {
+            // omp-lib
+            return marketplaceMessage.action.type;
         } else {
-            // json object, but not something that we're expecting
-            this.log.warn('Unexpected message, unable to get MessageType: ', JSON.stringify(marketplaceMessage, null, 2));
-            throw new MessageException('Could not get the message type.');
+            // not omp-lib
+            if (marketplaceMessage.item) {
+                // in case of ListingItemMessage
+                return MPAction.MPA_LISTING_ADD;
+            } else if (marketplaceMessage.mpaction) {
+                // in case of ActionMessage
+                return marketplaceMessage.mpaction.action;
+            } else {
+                // json object, but not something that we're expecting
+                this.log.warn('Unexpected message, unable to get MessageType: ', JSON.stringify(marketplaceMessage, null, 2));
+                throw new MessageException('Could not get the message type.');
+            }
         }
     }
 

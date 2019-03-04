@@ -49,6 +49,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         // create the createrequests
         for (const message of messages) {
+            // todo: this is an old problem and should be tested again if we could get rid of this now
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);

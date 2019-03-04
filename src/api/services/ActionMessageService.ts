@@ -24,6 +24,7 @@ import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
 import * as resources from 'resources';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
+// @Deprecated
 export class ActionMessageService {
 
     public log: LoggerType;
