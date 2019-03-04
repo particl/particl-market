@@ -40,6 +40,7 @@ import { ImageFactory } from '../factories/ImageFactory';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
 import {ItemImage} from '../models/ItemImage';
+import {ompVersion} from 'omp-lib/dist/omp';
 
 export class ListingItemTemplateService {
 
@@ -351,7 +352,7 @@ export class ListingItemTemplateService {
         // convert the template to message
         const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate);
         const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
+            version: ompVersion(),
             item: listingItemMessage
         } as MarketplaceMessage;
 

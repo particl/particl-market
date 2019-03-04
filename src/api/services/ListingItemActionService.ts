@@ -36,6 +36,7 @@ import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
 import {validateSync} from 'class-validator';
+import {ompVersion} from 'omp-lib/dist/omp';
 
 export class ListingItemActionService {
 
@@ -103,7 +104,7 @@ export class ListingItemActionService {
         // create and post the itemmessage
         const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
         const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
+            version: ompVersion(),
             item: listingItemMessage
         } as MarketplaceMessage;
 

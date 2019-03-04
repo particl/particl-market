@@ -28,6 +28,7 @@ import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { Proposal } from '../models/Proposal';
+import {ompVersion} from 'omp-lib/dist/omp';
 
 export class ProposalActionService {
 
@@ -80,7 +81,7 @@ export class ProposalActionService {
         );
 
         const msg = {
-            version: process.env.MARKETPLACE_VERSION,
+            version: ompVersion(),
             mpaction: proposalMessage
         } as MarketplaceMessage;
 

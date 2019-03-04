@@ -27,6 +27,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProposalResultService } from './ProposalResultService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import {ompVersion} from 'omp-lib/dist/omp';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -129,7 +130,7 @@ export class VoteActionService {
                 proposalOption.hash, senderAddress.address, signature);
 
             const msg = {
-                version: process.env.MARKETPLACE_VERSION,
+                version: ompVersion(),
                 mpaction: voteMessage
             } as MarketplaceMessage;
 

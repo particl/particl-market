@@ -5476,14 +5476,15 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-omp-lib@^0.1.29:
-  version "0.1.29"
-  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.29.tgz#162a16f64d0db6a42ab645199976a1bc6528b094"
-  integrity sha512-7TX6B/PriBiS9krYfBuUyKSOY8pG5Dgh9UT1nBbEI3y9JXHi+L6NwjuydC0gVipTVEA+1Ok6auvWvKl5XL9QGw==
+omp-lib@^0.1.33:
+  version "0.1.33"
+  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.33.tgz#e01a82dedbae2542d40fb2f226043bfd42a696a0"
+  integrity sha512-+MccTDWuk3C7nBk++aCBCTtpagWym4DRbhkwLimvMjv/YBKBR+xUnsJ/78eT68FarB9J8MUmjk+dp1dOQUTo+w==
   dependencies:
     inversify "^4.13.0"
     js-sha256 "^0.9.0"
     particl-bitcore-lib "https://github.com/kewde/particl-bitcore-lib.git"
+    pjson "^1.0.9"
     reflect-metadata "^0.1.12"
     tslib "^1.9.3"
     web-request "^1.0.7"
@@ -5899,6 +5900,11 @@ pixelmatch@^4.0.0:
   integrity sha1-j0fc7FARtHe2fbA8JDvB8wheiFQ=
   dependencies:
     pngjs "^3.0.0"
+
+pjson@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/pjson/-/pjson-1.0.9.tgz#8a9520ce76a4739f8fee91679dad6b065b1c7938"
+  integrity sha512-4hRJH3YzkUpOlShRzhyxAmThSNnAaIlWZCAb27hd0pVUAXNUAHAO7XZbsPPvsCYwBFEScTmCCL6DGE8NyZ8BdQ==
 
 pkg-dir@^2.0.0:
   version "2.0.0"

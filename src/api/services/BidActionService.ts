@@ -4,8 +4,9 @@
 
 import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
-import { inject, named } from 'inversify';
 import * as resources from 'resources';
+import { inject, named } from 'inversify';
+import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { MessageException } from '../exceptions/MessageException';
@@ -18,7 +19,6 @@ import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
-import { RpcUnspentOutput } from 'omp-lib/dist/abstract/rpc';
 import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
@@ -39,7 +39,7 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {ActionMessageItemInterface} from '../messages/ActionMessageItemInterface';
+import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 
 // todo: move
 export interface OutputData {
@@ -110,7 +110,7 @@ export class BidActionService {
         const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
+            version: ompVersion(),
             mpaction: bidMessage
         } as MarketplaceMessage;
 
@@ -425,7 +425,7 @@ export class BidActionService {
             const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
             const marketPlaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
+                version: ompVersion(),
                 mpaction: bidMessage
             } as MarketplaceMessage;
 
@@ -712,7 +712,7 @@ export class BidActionService {
             await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
+                version: ompVersion(),
                 mpaction: bidMessage
             } as MarketplaceMessage;
 
@@ -775,7 +775,7 @@ export class BidActionService {
             await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
+                version: ompVersion(),
                 mpaction: bidMessage
             } as MarketplaceMessage;
 

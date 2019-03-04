@@ -35,7 +35,7 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { Output } from './BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {BidMessage} from '../messages/BidMessage';
+import { ompVersion } from 'omp-lib/dist/omp';
 
 export class EscrowActionService {
 
@@ -190,7 +190,7 @@ export class EscrowActionService {
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
 
         const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
+            version: ompVersion(),
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
