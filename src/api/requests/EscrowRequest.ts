@@ -2,10 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import * as resources from 'resources';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class EscrowRequest extends RequestBody {
@@ -19,9 +19,8 @@ export class EscrowRequest extends RequestBody {
     @IsNotEmpty()
     public memo: string;
 
-    @IsEnum(EscrowMessageType)
+    @IsEnum(MPAction)
     @IsNotEmpty()
-    public action: EscrowMessageType;
-
+    public action: MPAction;
 }
 // tslint:enable:variable-name

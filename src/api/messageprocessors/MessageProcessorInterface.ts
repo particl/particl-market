@@ -4,13 +4,11 @@
 
 import { ActionMessageItemInterface } from '../messages/ActionMessageItemInterface';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
-import { VoteMessageInterface } from '../messages/VoteMessageInterface';
 import * as resources from 'resources';
 import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
+import {ActionMessageInterface} from '../messages/ActionMessageInterface';
 
-type AllowedMessageTypes = ActionMessageItemInterface | ListingItemMessageInterface | ProposalMessageInterface
-    | VoteMessageInterface | IncomingSmsgMessage[] | resources.SmsgMessage[];
+type AllowedMessageTypes = ActionMessageInterface | ActionMessageItemInterface | ListingItemMessageInterface | IncomingSmsgMessage[] | resources.SmsgMessage[];
 
 export interface MessageProcessorInterface {
     process( message: AllowedMessageTypes, emitEvent: boolean): any;
