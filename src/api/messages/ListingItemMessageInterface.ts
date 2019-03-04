@@ -11,5 +11,4 @@ export interface ListingItemMessageInterface {
     payment: any;
     messaging: any;
     objects?: any;
-    proposalHash?: string;
 }

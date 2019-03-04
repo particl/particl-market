@@ -84,8 +84,6 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (marketplaceMessage !== null && eventType !== null) {
 
                 if (emitEvent) {
-                    // todo: check if this is actually necessary?
-                    marketplaceMessage.market = smsgMessage.to;
                     smsgMessage.text = '';
 
                     const marketplaceEvent: MarketplaceEvent = {

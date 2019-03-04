@@ -22,7 +22,6 @@ import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
@@ -36,7 +35,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import {MessageSize} from '../responses/MessageSize';
+import {validateSync} from 'class-validator';
 
 export class ListingItemActionService {
 
@@ -136,58 +135,55 @@ export class ListingItemActionService {
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const listingItemMessage: ListingItemMessage = marketplaceMessage.item as ListingItemMessage;
 
-        if (marketplaceMessage.market && marketplaceMessage.item) {
+        return await this.marketService.findByAddress(smsgMessage.to)
+            .then(async marketModel => {
+                const market: resources.Market = marketModel.toJSON();
 
-            // get market
-            const marketModel = await this.marketService.findByAddress(marketplaceMessage.market);
-            const market = marketModel.toJSON();
+                // create the new custom categories in case there are some
+                await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
-            // create the new custom categories in case there are some
-            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
+                // find the categories/get the root category with related
+                const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot()
+                    .then(value => value.toJSON());
 
-            // find the categories/get the root category with related
-            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-            const rootCategory = rootCategoryWithRelatedModel.toJSON();
+                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, smsgMessage, market.id, rootCategory);
+                // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, smsgMessage, market.id, rootCategory);
-            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+                let listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
+                    .then(value => value.toJSON());
 
-            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            let listingItem = listingItemModel.toJSON();
-
-            const proposal = await this.proposalService.findOneByItemHash(listingItem.hash)
-                .then(async proposalModel => {
-                    return proposalModel.toJSON();
-                })
-                .catch(reason => {
-                    return null;
-                });
-
-            if (proposal) {
                 // if proposal for the listingitem is found, create flaggeditem
-                const flaggedItem = await this.createFlaggedItemForProposal(proposal);
-                // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
-            }
+                await this.proposalService.findOneByItemHash(listingItem.hash)
+                    .then(async value => {
+                        const proposal: resources.Proposal = value.toJSON();
+                        const flaggedItem = await this.createFlaggedItemForProposal(proposal);
+                        // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                        return proposal;
+                    })
+                    .catch(reason => {
+                        return null;
+                    });
 
-            // todo: there should be no need for these two updates, set the relations up in the createRequest
-            // update the template relation
-            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+                // todo: there should be no need for these two updates, set the relations up in the createRequest
+                // update the template relation
+                await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
 
-            // todo: we could propably get rid of these actionmessages
-            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-            const actionMessage = actionMessageModel.toJSON();
-            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+                // todo: we could propably get rid of these actionmessages
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
+                // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 
-            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-            listingItemModel = await this.listingItemService.findOne(listingItem.id);
-            listingItem = listingItemModel.toJSON();
+                // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+                listingItem = await this.listingItemService.findOne(listingItem.id)
+                    .then(value => value.toJSON());
 
-            this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
-            return SmsgMessageStatus.PROCESSED;
+                this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                return SmsgMessageStatus.PARSING_FAILED;
+            });
 
-        } else {
-            throw new MessageException('Marketplace message missing market.');
-        }
     }
 
     /**

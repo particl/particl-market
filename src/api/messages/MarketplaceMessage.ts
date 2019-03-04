@@ -10,6 +10,5 @@ export class MarketplaceMessage {
     public version: string;
     public mpaction?: ActionMessageItemInterface | ActionMessageInterface;
     public item?: ListingItemMessageInterface;
-    public market?: string;
 
 }
