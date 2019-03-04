@@ -29,11 +29,11 @@ export class CommentFactory {
      * @param {CommentMessageType} commentMessageType
      * @returns {Promise<CommentMessage>}
      */
-    public async getMessage(action: string, sender: string, marketHash: string, target: string,
+    public async getMessage(type: string, sender: string, marketHash: string, target: string,
                             parentHash: string, message: string, signature: string): Promise<CommentMessage> {
 
         const commentMessage = {
-            action,
+            type,
             sender,
             marketHash,
             target,

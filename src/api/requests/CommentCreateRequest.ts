@@ -9,13 +9,12 @@ import { CommentType } from '../enums/CommentType';
 
 // tslint:disable:variable-name
 export class CommentCreateRequest extends RequestBody {
-
-    public parent_comment_id: number;
-
     @IsNotEmpty()
     public market_id: number;
 
-    // public hash: string; // created in service
+    public parent_comment_id: number;
+
+    public hash: string; // created in service
 
     @IsNotEmpty()
     public sender: string;

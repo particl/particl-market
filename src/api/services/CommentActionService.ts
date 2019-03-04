@@ -22,6 +22,10 @@ import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
 
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { MessageException } from '../exceptions/MessageException';
+
 export interface CommentTicket {
     type: string;
     marketHash: string;
@@ -57,13 +61,25 @@ export class CommentActionService {
      */
     @validate()
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
+        this.log.error('1000:');
+        let parentCommentHash;
+        if (data.parent_comment_id) {
+            // Get market parent_comment_hash
+            const parentComment = await this.commentService.findOne(data.parent_comment_id);
+            parentCommentHash = parentComment.Hash;
+        }
+
+        // Get market addr
+        const market = await this.marketService.findOne(data.market_id);
+        const marketAddr = market.Address;
+
         /*
          * Validate message size
          */
         // Build the message
         const signature = await this.signComment(data);
-        const commentMessage = await this.commentFactory.getMessage(data.action, data.sender, data.marketHash,
-                                data.target, data.parentHash, data.message, signature);
+        const commentMessage = await this.commentFactory.getMessage(data.type, data.sender, marketAddr,
+                                data.target, parentCommentHash, data.message, signature);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -73,7 +89,7 @@ export class CommentActionService {
         // Get a fee estimate on the message,
         //  throws error if message too large
         const daysRetention = 2; // 2 days from now // Math.ceil((listingItem.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
-        const tmp = await this.smsgService.smsgSend(data.sender, data.marketHash, msg, true, daysRetention);
+        const tmp = await this.smsgService.smsgSend(data.sender, data.receiver, msg, true, daysRetention);
 
         // Set postedAt
         data.postedAt = new Date().getTime();
@@ -82,7 +98,43 @@ export class CommentActionService {
         this.commentService.create(data);
 
         // send
-        throw new NotImplementedException();
+        return await this.smsgService.smsgSend(data.sender, data.receiver, msg, false, daysRetention);
+    }
+
+    /**
+     * process received Comment
+     * - save ActionMessage
+     * - create Comment
+     *
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.Comment>}
+     */
+    public async processCommentReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+
+        const commentMessage: CommentMessage = event.marketplaceMessage.mpaction as CommentMessage;
+        const comment = event.smsgMessage.from;
+        const message = event.marketplaceMessage;
+
+        // type
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+
+        // TODO: Validate comment signature
+
+        // TODO: Check bid with given details doesn't already exist
+        // {
+        //// TODO: Check comment isn't ours, otherwise ignore
+        //// Comment is ours if it already exists and sender is us
+        //// 	fetchBySendersAndProposalHash (senders with an s)
+        //// {
+        //// }
+        //// TODO: Update
+        // }
+        // else {
+        //// TODO: Create
+        // }
+        return SmsgMessageStatus.PROCESSED;
     }
 
     /**
@@ -93,15 +145,42 @@ export class CommentActionService {
      * @param address
      */
     private async signComment(data: CommentCreateRequest): Promise<string> {
+        // Get market marketHash
+        const market = await this.marketService.findOne(data.market_id);
+        const marketHash = market.Address;
+
+        // Get market parent_comment_hash
+        const parentComment = await this.commentService.findOne(data.parent_comment_id);
+        const parentCommentHash = parentComment.Hash;
+
         const commentTicket = {
-            type: data.action,
-            marketHash: data.marketHash,
+            type: data.type,
+            marketHash,
             address: data.sender,
             target: data.target,
-            parentHash: data.parentHash,
+            parentHash: parentCommentHash,
             message: data.message
         } as CommentTicket;
 
         return await this.coreRpcService.signMessage(data.sender, commentTicket);
     }
+
+    /**
+     * verifies CommentTicket, returns boolean
+     *
+     * @param voteMessage
+     * @param address
+     */
+    private async verifyComment(commentMessage: CommentMessage): Promise<boolean> {
+        const commentTicket = {
+            type: commentMessage.type,
+            marketHash: commentMessage.marketHash,
+            address: commentMessage.sender,
+            target: commentMessage.target,
+            parentHash: commentMessage.parentHash,
+            message: commentMessage.message
+        } as CommentTicket;
+        return await this.coreRpcService.verifyMessage(commentMessage.sender, commentMessage.signature, commentTicket);
+    }
+
 }

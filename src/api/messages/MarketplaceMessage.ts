@@ -9,7 +9,7 @@ import {VoteMessageInterface} from './VoteMessageInterface';
 
 export class MarketplaceMessage {
     public version: string;
-    public mpaction?: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface;
+    public mpaction?: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface | CommentMessageInterface;
     public item?: ListingItemMessageInterface;
     public market?: string;
     // todo: market is defined here, but it is not required on the message as the market address will be taken

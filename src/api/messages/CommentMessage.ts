@@ -2,16 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { VoteMessageType } from '../enums/VoteMessageType';
+import { CommentMessageType } from '../enums/CommentMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
-import { VoteMessageInterface } from './VoteMessageInterface';
+import { CommentMessageInterface } from './CommentMessageInterface';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 
-export class CommentMessage extends MessageBody implements VoteMessageInterface {
+export class CommentMessage extends MessageBody implements CommentMessageInterface {
 
     @IsNotEmpty()
-    @IsEnum(VoteMessageType)
-    public action: VoteMessageType;
+    @IsEnum(CommentMessageType)
+    public type: CommentMessageType;
 
     @IsNotEmpty()
     public sender: string;

@@ -52,7 +52,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         const marketId = data.params[0];
         const market = await this.marketService.findOne(marketId);
-        const marketHash = market.Address;
+        const marketAddr = market.Address;
 
         const profileId = data.params[1];
         const senderProfile = await this.profileService.findOne(profileId);
@@ -60,15 +60,16 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
 
         const type = data.params[2];
         const target = data.params[3];
-        const parentHash = data.params[5];
+        const parentCommentId = data.params[5];
         const message = data.params[4];
         const commentRequest = {
-            action: type,
+            type,
             sender: profileAddress,
-            marketHash,
+            market_id: marketId,
             target,
-            parentHash,
-            message
+            parent_comment_id: parentCommentId,
+            message,
+            receiver: marketAddr
         } as CommentCreateRequest;
 
         return await this.commentActionService.send(commentRequest);
@@ -114,11 +115,11 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new InvalidParamException('message', 'string');
         }
 
-        let parentHash;
+        let parentCommentId;
         if (data.params.length > 5) {
-            parentHash = data.params[5];
-            if (typeof parentHash !== 'string') {
-                throw new InvalidParamException('parentHash', 'string');
+            parentCommentId = data.params[5];
+            if (typeof parentCommentId !== 'number') {
+                throw new InvalidParamException('parentCommentId', 'number');
             }
         }
 
@@ -129,15 +130,15 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         this.marketService.findOne(marketId);
 
         // Throws NotFoundException
-        if (parentHash) {
-            this.commentService.findOneByHash(parentHash);
+        if (parentCommentId) {
+            this.commentService.findOne(parentCommentId);
         }
 
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' post <marketId> <profileId> <type> <target> <message> [<parentHash>]';
+        return this.getName() + ' post <marketId> <profileId> <type> <target> <message> [<parentCommentId>]';
     }
 
     public description(): string {
