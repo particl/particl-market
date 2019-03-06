@@ -205,7 +205,6 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async recalculateProposalResult(proposal: resources.Proposal, test: boolean = false): Promise<resources.ProposalResult> {
-        this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
 
         // create new empty ProposalResult
         let proposalResult: resources.ProposalResult = await this.createEmptyProposalResult(proposal);
@@ -269,7 +268,7 @@ export class ProposalService {
         proposalResult = await this.proposalResultService.findOne(proposalResult.id)
             .then(value => value.toJSON());
 
-        this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        // this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
         // this.log.debug('recalculateProposalResult(), proposal: ' + proposalResult.id);
         for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
             this.log.debug('recalculateProposalResult(), proposal: ' + proposalOptionResult.ProposalOption.description + ': ' + proposalOptionResult.weight);

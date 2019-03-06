@@ -8,7 +8,6 @@ import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
-import {FavoriteItem} from './FavoriteItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
@@ -38,7 +37,6 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                 if (options.type) {
                     // searchBy all
                     qb.where('proposals.type', '=', options.type.toString());
-
                 }
 
                 if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
@@ -52,8 +50,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                 } else if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'number') {
                     // searchBy all ending after options.timeStart, starting before options.timeEnd
                     qb.where('proposals.time_start', '<', options.timeEnd + 1);
-                    qb.andWhere('proposals.expired_at', '>', options.timeStart - 1);
+                    qb.where('proposals.expired_at', '>', options.timeStart - 1);
                 }
+                // qb.debug(true);
 
             })
             .orderBy('time_start', options.order);

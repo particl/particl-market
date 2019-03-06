@@ -19,6 +19,8 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalType } from '../../enums/ProposalType';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 
@@ -52,6 +54,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             order: data.params[3]
         } as ProposalSearchParams;
 
+        this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
         return await this.proposalService.search(searchParams, true);
     }
 
@@ -62,37 +65,41 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * list 100 200 -> return all which are active and closed between 100 200
      *
      * data.params[]:
-     * [0] startBlock | *, optional
-     * [1] endBlock | *, optional
-     * [2] order, optional
-     * [3] type, optional
+     * [0] timeStart | *, optional
+     * [1] timeEnd | *, optional
+     * [2] type, optional
+     * [3] order, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        let timeStart: number | string = '*';
+        let timeEnd: number | string = '*';
+        let type: ProposalType = ProposalType.PUBLIC_VOTE;
         let order: SearchOrder = SearchOrder.ASC;
-        let type: ProposalType;
-        let startBlock: number | string = '*';
-        let endBlock: number | string = '*';
 
-        if (!_.isEmpty(data.params)) {
-            startBlock = data.params.shift();
-            if (typeof startBlock === 'string' && startBlock !== '*') {
-                throw new MessageException('startBlock must be a number or *.');
+        if (!_.isEmpty(data.params[0])) {
+            timeStart = data.params[0];
+            if (typeof timeStart === 'string' && timeStart !== '*') {
+                throw new InvalidParamException('timeStart', 'number or \'*\'');
             }
+        } else {
+            timeStart = '*';
         }
 
-        if (!_.isEmpty(data.params)) {
-            endBlock = data.params.shift();
-            if (typeof endBlock === 'string' && endBlock !== '*') {
-                throw new MessageException('endBlock must be a number or *.');
+        if (!_.isEmpty(data.params[1])) {
+            timeEnd = data.params[1];
+            if (typeof timeEnd === 'string' && timeEnd !== '*') {
+                throw new InvalidParamException('timeEnd', 'number or \'*\'');
             }
+        } else {
+            timeEnd = '*';
         }
 
-        if (!_.isEmpty(data.params)) {
-            type = data.params.shift();
+        if (!_.isEmpty(data.params[2])) {
+            type = data.params[2];
             if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
                 type = ProposalType.ITEM_VOTE;
             } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
@@ -104,8 +111,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             type = ProposalType.PUBLIC_VOTE; // default
         }
 
-        if (!_.isEmpty(data.params)) {
-            order = data.params.shift();
+        if (!_.isEmpty(data.params[3])) {
+            order = data.params[3];
             if (order.toUpperCase() === SearchOrder.DESC.toString()) {
                 order = SearchOrder.DESC;
             } else {
@@ -116,15 +123,15 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         }
 
         data.params = [];
-        data.params[0] = startBlock;
-        data.params[1] = endBlock;
+        data.params[0] = timeStart;
+        data.params[1] = timeEnd;
         data.params[2] = type;
         data.params[3] = order;
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' <timeStart> <endTime> <type> <order> ';
+        return this.getName() + ' <startTime> <endTime> <type> <order> ';
     }
 
     public description(): string {
