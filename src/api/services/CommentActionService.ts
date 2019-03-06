@@ -8,6 +8,7 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { SmsgService } from './SmsgService';
+import { ProfileService } from './ProfileService';
 
 import { CoreRpcService } from './CoreRpcService';
 import { MarketService } from './MarketService';
@@ -25,6 +26,12 @@ import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { MessageException } from '../exceptions/MessageException';
+
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { SearchOrder } from '../enums/SearchOrder';
+import {AddressInfo} from './VoteActionService';
+import {Exception} from '../../core/api/Exception';
 
 export interface CommentTicket {
     type: string;
@@ -45,7 +52,8 @@ export class CommentActionService {
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
     ) {
         this.log = new Logger(__filename);
     }
@@ -61,7 +69,6 @@ export class CommentActionService {
      */
     @validate()
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
-        this.log.error('1000:');
         let parentCommentHash;
         if (data.parent_comment_id) {
             // Get market parent_comment_hash
@@ -93,9 +100,11 @@ export class CommentActionService {
 
         // Set postedAt
         data.postedAt = new Date().getTime();
+        data.expiredAt = new Date().getTime() + daysRetention * 60 * 60 * 24;
+        data.receivedAt = new Date().getTime();
 
         // create
-        this.commentService.create(data);
+        const createdComment = await this.commentService.create(data);
 
         // send
         return await this.smsgService.smsgSend(data.sender, data.receiver, msg, false, daysRetention);
@@ -104,37 +113,76 @@ export class CommentActionService {
     /**
      * process received Comment
      * - save ActionMessage
-     * - create Comment
+     * - create Comments
      *
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Comment>}
      */
     public async processCommentReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+        // TODO: Wire this up so its actually called
 
         const commentMessage: CommentMessage = event.marketplaceMessage.mpaction as CommentMessage;
-        const comment = event.smsgMessage.from;
+        const commentReceiver = event.smsgMessage.from;
         const message = event.marketplaceMessage;
 
-        // type
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
+        // Validate comment signature
+        const verified = this.verifyComment(commentMessage);
+        if (!verified) {
+            throw new MessageException('Received signature failed validation.');
         }
 
-        // TODO: Validate comment signature
+        // Check comment with given details doesn't already exist
+        const commentHash = ObjectHash.getHash(commentMessage, HashableObjectType.COMMENT_CREATEREQUEST);
 
-        // TODO: Check bid with given details doesn't already exist
-        // {
-        //// TODO: Check comment isn't ours, otherwise ignore
-        //// Comment is ours if it already exists and sender is us
-        //// 	fetchBySendersAndProposalHash (senders with an s)
-        //// {
-        //// }
-        //// TODO: Update
-        // }
-        // else {
-        //// TODO: Create
-        // }
-        return SmsgMessageStatus.PROCESSED;
+        const existingComment = await this.commentService.findOneByHash(commentHash);
+        if (existingComment) {
+            // Comment exists
+            // Check if comment is ours
+            const myAddresses = await this.profileService.findAll();
+            const myAddressesStr = myAddresses.map(profile => {
+                return profile.Address;
+            });
+
+            const existingComment2 = await this.commentService.findAllByCommentorsAndCommentHash(myAddressesStr, commentHash);
+            if (existingComment2) {
+                // Comment is ours
+                this.log.error('Comment is ours');
+                return SmsgMessageStatus.IGNORED;
+            } else {
+                // Comment isn't ours, but we already have it
+                this.log.error('Comment is not ours');
+
+                // Update command
+                const commentBody = {
+                    sender: commentMessage.sender,
+                    receiver: commentReceiver,
+                    target: commentMessage.target,
+                    message: commentMessage.message,
+                    type: commentMessage.type,
+                    postedAt: event.smsgMessage.sent,
+                    receivedAt: event.smsgMessage.received,
+                    expiredAt: new Date().getTime() + event.smsgMessage.daysretention * 60 * 60 * 24
+                } as CommentUpdateRequest;
+                const updatedComment = await this.commentService.update(existingComment.id, commentBody);
+                return SmsgMessageStatus.PROCESSED;
+            }
+        } else {
+            // Comment doesn't exist
+            // Create it
+            const commentBody = {
+                sender: commentMessage.sender,
+                receiver: commentReceiver,
+                target: commentMessage.target,
+                message: commentMessage.message,
+                type: commentMessage.type,
+                postedAt: event.smsgMessage.sent,
+                receivedAt: event.smsgMessage.received,
+                expiredAt: new Date().getTime() + event.smsgMessage.daysretention * 60 * 60 * 24
+            } as CommentCreateRequest;
+            const createdComment = await this.commentService.create(commentBody);
+            return SmsgMessageStatus.PROCESSED;
+        }
+        // throw new MessageException('Something went wrong, this code should not be reachable.');
     }
 
     /**
@@ -150,8 +198,11 @@ export class CommentActionService {
         const marketHash = market.Address;
 
         // Get market parent_comment_hash
-        const parentComment = await this.commentService.findOne(data.parent_comment_id);
-        const parentCommentHash = parentComment.Hash;
+        let parentCommentHash;
+        if (data.parent_comment_id) {
+            const parentComment = await this.commentService.findOne(data.parent_comment_id);
+            parentCommentHash = parentComment.Hash;
+        }
 
         const commentTicket = {
             type: data.type,

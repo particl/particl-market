@@ -41,6 +41,10 @@ export class CommentService {
         return comment;
     }
 
+    public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        return await this.commentRepo.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
+    }
+
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
         const comment = await this.commentRepo.findOneByHash(hash, withRelated);
         if (comment === null) {
@@ -66,10 +70,13 @@ export class CommentService {
     }
 
     @validate()
-    public async update(id: number, @request(CommentUpdateRequest) body: CommentUpdateRequest): Promise<Comment> {
+    public async update(id: number, @request(CommentUpdateRequest) data: CommentUpdateRequest): Promise<Comment> {
 
         // find the existing one without related
         const comment = await this.findOne(id, false);
+
+        const body = JSON.parse(JSON.stringify(data));
+        body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
 
         // set new values
         comment.set('hash', body.hash);

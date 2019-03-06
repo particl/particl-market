@@ -14,7 +14,6 @@ export class CommentUpdateRequest extends RequestBody {
     public sender: string;
     public receiver: string;
     public target: string;
-    public hash: string;
     public message: string;
     public type: CommentType;
     public postedAt: number;

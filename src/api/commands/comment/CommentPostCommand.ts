@@ -25,6 +25,7 @@ import { MarketService } from '../../services/MarketService';
 import { ProfileService } from '../../services/ProfileService';
 import { CommentCreateRequest } from '../../requests/CommentCreateRequest';
 import { CommentMessageType } from '../../enums/CommentMessageType';
+import {CommentType} from '../../enums/CommentType';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
@@ -63,7 +64,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         const parentCommentId = data.params[5];
         const message = data.params[4];
         const commentRequest = {
-            type,
+            type: CommentType[type],
             sender: profileAddress,
             market_id: marketId,
             target,
@@ -101,7 +102,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new InvalidParamException('profileId', 'number');
         }
         const type = data.params[2];
-        if (typeof type !== 'string' || !CommentMessageType[type]) {
+        if (typeof type !== 'string' || !CommentType[type]) {
             throw new InvalidParamException('type', 'CommentMessageType');
         }
 
@@ -146,6 +147,6 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public example(): string {
-        return this.getName() + ' comment post 1 1 MP_COMMENT_ADD pjT82w4qurXyr6wXur3aUwwUmWjafEKpLk \'testMessage\'';
+        return this.getName() + ' comment post 1 1 PRIVATE_CHAT pjT82w4qurXyr6wXur3aUwwUmWjafEKpLk \'testMessage\'';
     }
 }

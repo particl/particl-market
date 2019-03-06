@@ -34,6 +34,10 @@ export class CommentRepository {
         return this.CommentModel.fetchByHash(hash, withRelated);
     }
 
+    public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        return this.CommentModel.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
+    }
+
 
     public async create(data: any): Promise<Comment> {
         const comment = this.CommentModel.forge<Comment>(data);

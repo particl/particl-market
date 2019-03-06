@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { CommentMessageType } from '../enums/CommentMessageType';
+import { CommentType } from '../enums/CommentType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { CommentMessageInterface } from './CommentMessageInterface';
 import { IsEnum, IsNotEmpty } from 'class-validator';
@@ -11,7 +12,7 @@ export class CommentMessage extends MessageBody implements CommentMessageInterfa
 
     @IsNotEmpty()
     @IsEnum(CommentMessageType)
-    public type: CommentMessageType;
+    public action: CommentMessageType;
 
     @IsNotEmpty()
     public sender: string;
@@ -24,6 +25,10 @@ export class CommentMessage extends MessageBody implements CommentMessageInterfa
 
     @IsNotEmpty()
     public parentHash: string;
+
+    @IsNotEmpty()
+    @IsEnum(CommentType)
+    public type: CommentType;
 
     public message: string;
 

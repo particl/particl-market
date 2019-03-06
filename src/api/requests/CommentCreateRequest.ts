@@ -32,12 +32,12 @@ export class CommentCreateRequest extends RequestBody {
     @IsNotEmpty()
     public type: CommentType;
 
-    @IsNotEmpty()
     public postedAt: number;
 
     public createdAt: number;
 
-    @IsNotEmpty()
+    public receivedAt: number;
+
     public expiredAt: number;
 
 }

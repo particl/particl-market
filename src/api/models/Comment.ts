@@ -5,6 +5,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
+import { SearchOrder } from '../enums/SearchOrder';
 
 export class Comment extends Bookshelf.Model<Comment> {
 
@@ -31,6 +32,22 @@ export class Comment extends Bookshelf.Model<Comment> {
             });
         } else {
             return await Comment.where<Comment>({ hash: value }).fetch();
+        }
+    }
+
+    public static async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
+        const commentResultCollection = Comment.forge<Model<Comment>>()
+            .query(qb => {
+                qb.where('comments.hash', '=', hash);
+                qb.whereIn('comments.sender', addresses);
+            })
+            .orderBy('id', SearchOrder.DESC);
+        if (withRelated) {
+            return await commentResultCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await commentResultCollection.fetchAll();
         }
     }
 
