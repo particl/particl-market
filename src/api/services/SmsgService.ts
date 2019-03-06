@@ -49,13 +49,17 @@ export class SmsgService {
      * Decrypt and display all received messages.
      * Warning: clear will delete all messages.
      *
-     * ﻿smsginbox [all|unread|clear]
+     * ﻿smsginbox [all|unread|clear] filter options
      *
-     * @param {string} param
+     * @param {string} mode
+     * @param {string} filter
+     * @param {object} options
      * @returns {Promise<any>}
      */
-    public async smsgInbox(param: string = 'all'): Promise<any> {
-        const response = await this.coreRpcService.call('smsginbox', [param], false);
+    public async smsgInbox(mode: string = 'all',
+                           filter: string = '',
+                           options: object = {}): Promise<any> {
+        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], false);
         // this.log.debug('got response:', response);
         return response;
     }
