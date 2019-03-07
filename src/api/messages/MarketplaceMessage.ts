@@ -2,21 +2,33 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ActionMessageItemInterface } from './ActionMessageItemInterface';
-import { ListingItemMessageInterface } from './ListingItemMessageInterface';
+import { MPM } from 'omp-lib/dist/interfaces/omp';
 import { ActionMessageInterface } from './ActionMessageInterface';
-import { MPA, MPM } from 'omp-lib/dist/interfaces/omp';
 
-export class MarketplaceMessage implements MPM {
+/**
+ * MPMExtension defines how the MPM will be extended
+ * (adds support for ActionMessageInterface which adds support for actions other than just the MPAction)
+ */
+interface MPMExtension {
+    action: ActionMessageInterface;
+}
+
+/**
+ * MPMExtended is the result of overewriting the MPM with MPMExtension
+ */
+interface MPMExtended extends Overwrite<MPM, MPMExtension> {}
+
+/**
+ * MarketplaceMessage is the type of message the marketplace listens to
+ */
+export class MarketplaceMessage implements MPMExtended {
     public version: string;
-
-    // TODO: this should not be optional
-    public action: MPA;
+    public action: ActionMessageInterface;
     // tslint:disable-next-line:variable-name
     public _rawtx?: string;
 
     // TODO: these are deprecated and should be removed with new omp-lib
-    public mpaction?: ActionMessageItemInterface | ActionMessageInterface;
-    public item?: ListingItemMessageInterface;
+    // public mpaction?: ActionMessageItemInterface | ActionMessageInterface;
+    // public item?: ListingItemMessageInterface;
 
 }

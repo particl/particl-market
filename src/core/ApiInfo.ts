@@ -19,7 +19,7 @@ export class ApiInfo {
             app.get(
                 ApiInfo.getRoute(),
                 (req: myExpress.Request, res: myExpress.Response) => {
-                    // const pkg = Environment.getPkg();
+                    const pkg = Environment.getPkg();
                     const links = {
                         links: {}
                     };
@@ -33,9 +33,9 @@ export class ApiInfo {
                     }
                     // todo: get the pkg data somewhere
                     return res.json({
-                        name: 'particl-marketplace', // pkg.name,
-                        version: 'alpha', // pkg.version,
-                        description: '', // pkg.description,
+                        name: pkg.name,
+                        version: pkg.version,
+                        description: pkg.description,
                         ...links
                     });
                 });

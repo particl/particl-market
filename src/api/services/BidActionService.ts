@@ -40,6 +40,7 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
+import {MPA} from 'omp-lib/dist/interfaces/omp';
 
 // todo: move
 export interface OutputData {
@@ -107,10 +108,11 @@ export class BidActionService {
         // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID message
-        const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
+        const bidMessage: BidMessage = await this.bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
 
+        // TODO: fix
         const marketPlaceMessage = {
-            version: ompVersion(),
+            // version: ompVersion(),
             mpaction: bidMessage
         } as MarketplaceMessage;
 

@@ -54,6 +54,7 @@ data/app1_node_modules/*
 data/app2_node_modules/*
 data/gui1_node_modules/*
 data/gui2_node_modules/*
+data/bootstrap*
 
 *.paw
 

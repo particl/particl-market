@@ -9,6 +9,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 
 type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
 
+// Deprecated
 export interface ActionMessageItemInterface extends ActionMessageInterface {
     action: AllowedMessageTypes;
     item: string;

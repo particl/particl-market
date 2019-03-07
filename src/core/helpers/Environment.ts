@@ -8,6 +8,7 @@
  *
  * Helps us to simplify 'process.env'.
  */
+import * as packageInfo from '../../../package.json';
 
 export enum EnvironmentType {
     ALL = 'ALL',
@@ -65,12 +66,8 @@ export class Environment {
         return false;
     }
 
-    public static isTestnet(): boolean {
-        return this.isTruthy(process.env.TESTNET) || this.isAlpha();
-    }
-
-    public static isRegtest(): boolean {
-        return this.isTruthy(process.env.REGTEST);
+    public static getPkg(): any {
+        return packageInfo;
     }
 
     public static isTruthy(bool: string): boolean {
