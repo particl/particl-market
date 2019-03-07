@@ -6,11 +6,7 @@
  * core.api.HashableListingItem
  *
  */
-import * as resources from 'resources';
-import { ListingItemCreateRequest } from '../../api/requests/ListingItemCreateRequest';
-import { ListingItemTemplateCreateRequest } from '../../api/requests/ListingItemTemplateCreateRequest';
-
-type AllowedHashableTypes = resources.ListingItem | resources.ListingItemTemplate | ListingItemCreateRequest | ListingItemTemplateCreateRequest;
+import { HashableTypes } from './HashableTypes';
 
 export class HashableListingItem {
 
@@ -24,7 +20,7 @@ export class HashableListingItem {
     public nullItemTimestamp: Date;
 
     // TODO: refactor
-    constructor(hashThis: AllowedHashableTypes, timestampedHash: boolean = false ) {
+    constructor(hashThis: HashableTypes, timestampedHash: boolean = false ) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {
