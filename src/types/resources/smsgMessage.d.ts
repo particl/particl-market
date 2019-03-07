@@ -3,13 +3,10 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { SmsgMessageStatus } from '../../api/enums/SmsgMessageStatus';
-import { VoteMessageType } from '../../api/enums/VoteMessageType';
-import { ProposalMessageType } from '../../api/enums/ProposalMessageType';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-
-type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
+import { ActionMessageTypes } from '../../api/enums/ActionMessageTypes';
 
 declare module 'resources' {
+
 
     interface SmsgMessage {
         // these fields are in the incoming message
@@ -28,7 +25,7 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: AllowedMessageTypes; // | string;
+        type: ActionMessageTypes; // | string;
         status: SmsgMessageStatus;
 
         createdAt: Date;

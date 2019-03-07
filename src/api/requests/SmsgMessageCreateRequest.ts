@@ -4,18 +4,14 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-
-type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType | string;
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 // tslint:disable:variable-name
 export class SmsgMessageCreateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public type: AllowedMessageTypes;
+    public type: ActionMessageTypes;
 
     @IsNotEmpty()
     public status: SmsgMessageStatus;

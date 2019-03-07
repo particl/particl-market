@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -13,16 +14,15 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { SmsgMessage } from '../../src/api/models/SmsgMessage';
 import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
-import * as resources from 'resources';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../src/api/factories/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage';
-import { ProposalMessageType } from '../../src/api/enums/ProposalMessageType';
-import { VoteMessageType } from '../../src/api/enums/VoteMessageType';
 import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {ActionMessageTypes} from '../../src/api/enums/ActionMessageTypes';
+import {GovernanceAction} from '../../src/api/enums/GovernanceAction';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -97,7 +97,7 @@ describe('SmsgMessage', () => {
 
     const expectCreateRequestFromSmsgMessage = (
         result: SmsgMessageCreateRequest,
-        type: MPAction | ProposalMessageType | VoteMessageType | string,
+        type: ActionMessageTypes,
         status: SmsgMessageStatus,
         smsgMessage: IncomingSmsgMessage) => {
 
@@ -118,7 +118,7 @@ describe('SmsgMessage', () => {
 
     const expectSmsgMessageFromCreateRequest = (
         result: resources.SmsgMessage,
-        type: MPAction | ProposalMessageType | VoteMessageType | string,
+        type: ActionMessageTypes,
         status: SmsgMessageStatus,
         createRequest: SmsgMessageCreateRequest) => {
 
@@ -158,24 +158,24 @@ describe('SmsgMessage', () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(proposalMessage);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, ProposalMessageType.MP_PROPOSAL_ADD, SmsgMessageStatus.NEW, proposalMessage);
+        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MP_PROPOSAL_ADD, SmsgMessageStatus.NEW, proposalMessage);
 
         const smsgMessageModel = await smsgMessageService.create(smsgMessageCreateRequest);
         const result: resources.SmsgMessage = smsgMessageModel.toJSON();
         log.debug('result: ', JSON.stringify(result, null, 2));
-        expectSmsgMessageFromCreateRequest(result, ProposalMessageType.MP_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
+        expectSmsgMessageFromCreateRequest(result, GovernanceAction.MP_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
     test('Should create a new SmsgMessage from voteMessage', async () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(voteMessage);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, VoteMessageType.MP_VOTE, SmsgMessageStatus.NEW, voteMessage);
+        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MP_VOTE, SmsgMessageStatus.NEW, voteMessage);
 
         const smsgMessageModel = await smsgMessageService.create(smsgMessageCreateRequest);
         const result: resources.SmsgMessage = smsgMessageModel.toJSON();
         log.debug('result: ', JSON.stringify(result, null, 2));
-        expectSmsgMessageFromCreateRequest(result, VoteMessageType.MP_VOTE, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
+        expectSmsgMessageFromCreateRequest(result, GovernanceAction.MP_VOTE, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
     test('Should throw ValidationException because we want to create a empty SmsgMessage', async () => {
@@ -269,7 +269,7 @@ describe('SmsgMessage', () => {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD],
+            types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MP_PROPOSAL_ADD],
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -279,12 +279,12 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
+    test('Should searchBy for SmsgMessages: [MPAction.MP_ITEM_ADD, GovernanceAction.MP_PROPOSAL_ADD, GovernanceAction.MP_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MP_PROPOSAL_ADD, GovernanceAction.MP_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -295,7 +295,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages[0].received).toBeGreaterThan(smsgMessages[2].received);
     });
 
-    test('Should searchBy for SmsgMessages: empty [] should find all',async () => {
+    test('Should searchBy for SmsgMessages: empty [] should find all', async () => {
         const types: any[] = [];
         const searchParams = {
             order: SearchOrder.ASC,
@@ -341,12 +341,12 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
+    test('Should searchBy for SmsgMessages: [MPAction.MP_ITEM_ADD, GovernanceAction.MP_PROPOSAL_ADD, GovernanceAction.MP_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
-            types: [MPAction.MPA_LISTING_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MP_PROPOSAL_ADD, GovernanceAction.MP_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 

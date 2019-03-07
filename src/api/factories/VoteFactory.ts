@@ -8,10 +8,10 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
 import { ProposalOptionService } from '../services/ProposalOptionService';
+import { GovernanceAction } from '../enums/GovernanceAction';
 
 export class VoteFactory {
 
@@ -33,7 +33,7 @@ export class VoteFactory {
      * @param signature
      * @returns {Promise<VoteMessage>}
      */
-    public async getMessage(voteMessageType: VoteMessageType, proposalHash: string, proposalOptionHash: string,
+    public async getMessage(voteMessageType: GovernanceAction, proposalHash: string, proposalOptionHash: string,
                             voter: string, signature: string): Promise<VoteMessage> {
 
         const voteMessage = {

@@ -6,7 +6,7 @@ import * from 'jest';
 import { ActionMessageFactory } from '../../../../src/api/factories/ActionMessageFactory';
 import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
-import { ActionMessageItemInterface } from '../../../../src/api/messages/ActionMessageItemInterface';
+import { ActionMessageInterface } from '../../../../src/api/messages/ActionMessageInterface';
 import { ActionMessageCreateRequest } from '../../../../src/api/requests/ActionMessageCreateRequest';
 import { LogMock } from '../../lib/LogMock';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -102,7 +102,7 @@ describe('EscrowFactory', () => {
         for ( const i in testData ) {
             if ( i ) {
                 const listingItemId: number = testData[i].listingItemId;
-                const messageRaw: ActionMessageItemInterface = testData[i].message;
+                const messageRaw: ActionMessageInterface = testData[i].message;
                 const smsgMessage: SmsgMessage = testData[i].smsgMessage;
 
 
@@ -240,7 +240,7 @@ describe('EscrowFactory', () => {
         for ( const i in testData ) {
             if ( i ) {
                 const listingItemId: number = testData[i].listingItemId;
-                const messageRaw: ActionMessageItemInterface = testData[i].message;
+                const messageRaw: ActionMessageInterface = testData[i].message;
                 const smsgMessage: SmsgMessage = testData[i].smsgMessage;
 
                 let returnedModel: ActionMessageCreateRequest;

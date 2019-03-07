@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
-import { ActionMessageItemInterface } from '../messages/ActionMessageItemInterface';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -17,8 +16,6 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
@@ -32,7 +29,7 @@ export class ActionMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getModel(message: ActionMessageItemInterface | ActionMessageInterface,
+    public async getModel(message: ActionMessageInterface,
                           listingItemId: number, smsgMessage: resources.SmsgMessage): Promise<ActionMessageCreateRequest> {
 
         let actionMessageCreateRequest: ActionMessageCreateRequest;

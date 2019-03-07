@@ -12,7 +12,6 @@ import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from './ProposalService';
 import { MessageException } from '../exceptions/MessageException';
@@ -28,7 +27,8 @@ import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { Proposal } from '../models/Proposal';
-import {ompVersion} from 'omp-lib/dist/omp';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { GovernanceAction } from '../enums/GovernanceAction';
 
 export class ProposalActionService {
 
@@ -72,7 +72,7 @@ export class ProposalActionService {
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         const proposalMessage = await this.proposalFactory.getMessage(
-            ProposalMessageType.MP_PROPOSAL_ADD,
+            GovernanceAction.MP_PROPOSAL_ADD,
             proposalTitle,
             proposalDescription,
             options,

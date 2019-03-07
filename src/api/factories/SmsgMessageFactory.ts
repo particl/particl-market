@@ -9,13 +9,9 @@ import { Core, Types } from '../../constants';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MessageException } from '../exceptions/MessageException';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-
-type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType | string;
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class SmsgMessageFactory {
 
@@ -103,25 +99,15 @@ export class SmsgMessageFactory {
         return parsed;
     }
 
-    private getType(marketplaceMessage: MarketplaceMessage): AllowedMessageTypes {
+    private getType(marketplaceMessage: MarketplaceMessage): ActionMessageTypes {
 
         if (marketplaceMessage.action && marketplaceMessage.action.type) {
             // omp-lib
             return marketplaceMessage.action.type;
         } else {
-            // not omp-lib
-            if (marketplaceMessage.item) {
-                // in case of ListingItemMessage
-                return MPAction.MPA_LISTING_ADD;
-            } else if (marketplaceMessage.mpaction) {
-                // in case of ActionMessage
-                return marketplaceMessage.mpaction.action;
-            } else {
-                // json object, but not something that we're expecting
-                this.log.warn('Unexpected message, unable to get MessageType: ', JSON.stringify(marketplaceMessage, null, 2));
-                throw new MessageException('Could not get the message type.');
-            }
+            // json object, but not something that we're expecting
+            this.log.warn('Unexpected message, unable to get MessageType: ', JSON.stringify(marketplaceMessage, null, 2));
+            throw new MessageException('Could not get the message type.');
         }
     }
-
 }

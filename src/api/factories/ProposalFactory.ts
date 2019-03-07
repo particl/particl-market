@@ -8,13 +8,13 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ProposalMessage } from '../messages/ProposalMessage';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalType } from '../enums/ProposalType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { MessageException } from '../exceptions/MessageException';
+import { GovernanceAction } from '../enums/GovernanceAction';
 
 export class ProposalFactory {
 
@@ -34,7 +34,7 @@ export class ProposalFactory {
      * @param {string} itemHash
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
+    public async getMessage(proposalMessageType: GovernanceAction, proposalTitle: string,
                             proposalDescription: string, options: string[],
                             senderProfile: resources.Profile, itemHash?: string): Promise<ProposalMessage> {
 

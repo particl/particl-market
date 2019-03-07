@@ -15,7 +15,6 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { VoteFactory } from '../factories/VoteFactory';
 import { VoteService } from './VoteService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { VoteMessage } from '../messages/VoteMessage';
@@ -27,7 +26,8 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProposalResultService } from './ProposalResultService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
-import {ompVersion} from 'omp-lib/dist/omp';
+import { ompVersion } from 'omp-lib/dist/omp';
+import {GovernanceAction} from '../enums/GovernanceAction';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -126,7 +126,7 @@ export class VoteActionService {
 
         if (senderAddress.balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress.address);
-            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal.hash,
+            const voteMessage = await this.voteFactory.getMessage(GovernanceAction.MP_VOTE, proposal.hash,
                 proposalOption.hash, senderAddress.address, signature);
 
             const msg = {

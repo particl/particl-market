@@ -10,8 +10,6 @@ import { Types, Core, Targets, Events } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { SmsgMessageService } from '../services/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
@@ -20,8 +18,8 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
 import { MessageException } from '../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-
-type AllowedMessageTypes = MPAction | ProposalMessageType | VoteMessageType;
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -33,19 +31,10 @@ export class MessageProcessor implements MessageProcessorInterface {
     private DEFAULT_INTERVAL = 5 * 1000;
 
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
-    private BID_MESSAGES = [
-        MPAction.MPA_BID,
-        MPAction.MPA_ACCEPT,
-        MPAction.MPA_REJECT,
-        MPAction.MPA_CANCEL
-    ];
-    private ESCROW_MESSAGES = [
-        MPAction.MPA_LOCK,
-        MPAction.MPA_RELEASE,
-        MPAction.MPA_REFUND
-    ];
-    private PROPOSAL_MESSAGES = [ProposalMessageType.MP_PROPOSAL_ADD];
-    private VOTE_MESSAGES = [VoteMessageType.MP_VOTE];
+    private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
+    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPAction.MPA_RELEASE, MPAction.MPA_REFUND];
+    private PROPOSAL_MESSAGES = [GovernanceAction.MP_PROPOSAL_ADD];
+    private VOTE_MESSAGES = [GovernanceAction.MP_VOTE];
 
     // tslint:disable:max-line-length
     constructor(
@@ -232,7 +221,7 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
     // TODO: why types: any[]?
-    private async getSmsgMessages(types: any[], // MPAction | ProposalMessageType | VoteMessageType,
+    private async getSmsgMessages(types: ActionMessageTypes[],
                                   status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 
         const searchParams = {
@@ -254,10 +243,8 @@ export class MessageProcessor implements MessageProcessorInterface {
         return messages;
     }
 
-    private async getEventForMessageType(
-        messageType: AllowedMessageTypes):
-        Promise<string | null> {
-
+    // TODO: make this static?
+    private async getEventForMessageType(messageType: ActionMessageTypes): Promise<string | null> {
         switch (messageType) {
             case MPAction.MPA_BID:
                 return Events.BidReceivedEvent;
@@ -273,9 +260,9 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.RefundEscrowReceivedEvent;
             case MPAction.MPA_RELEASE:
                 return Events.ReleaseEscrowReceivedEvent;
-            case ProposalMessageType.MP_PROPOSAL_ADD:
+            case GovernanceAction.MP_PROPOSAL_ADD:
                 return Events.ProposalReceivedEvent;
-            case VoteMessageType.MP_VOTE:
+            case GovernanceAction.MP_VOTE:
                 return Events.VoteReceivedEvent;
             case MPAction.MPA_LISTING_ADD:
                 return Events.ListingItemReceivedEvent;
