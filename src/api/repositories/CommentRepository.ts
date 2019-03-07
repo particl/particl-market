@@ -9,6 +9,7 @@ import { Comment } from '../models/Comment';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import {CommentSearchParams} from '../requests/CommentSearchParams';
 
 export class CommentRepository {
 
@@ -30,14 +31,17 @@ export class CommentRepository {
         return this.CommentModel.fetchById(id, withRelated);
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
-        return this.CommentModel.fetchByHash(hash, withRelated);
+    public async findOneByHash(marketId: number, hash: string, withRelated: boolean = true): Promise<Comment> {
+        return this.CommentModel.fetchByHash(marketId, hash, withRelated);
     }
 
     public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
         return this.CommentModel.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
     }
 
+    public async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        return await this.CommentModel.search(options, withRelated);
+    }
 
     public async create(data: any): Promise<Comment> {
         const comment = this.CommentModel.forge<Comment>(data);

@@ -14,6 +14,8 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CommentService } from '../../services/CommentService';
 import { Comment } from '../../models/Comment';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
@@ -36,17 +38,34 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Comment> {
-        // TODO: this
-        return this.commentService.findOne(data.params[0]);
+        const id = data.params[0];
+        const commentHash = data.params[1];
+        if (!commentHash) {
+            return await this.commentService.findOne(id);
+        } else {
+            return await this.commentService.findOneByHash(id, data.params[0]);
+        }
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // TODO: this
+        if (data.params.length < 1) {
+            throw new MissingParamException('commendId|marketId');
+        }
+        const id = data.params[0];
+        if (typeof id !== 'number') {
+            throw new InvalidParamException('commendId|marketId', 'number');
+        }
+        if (data.params.length < 2) {
+            const commentHash = data.params[1];
+            if (typeof commentHash !== 'string') {
+                throw new InvalidParamException('commentHash', 'string');
+            }
+        }
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' (<commentId> | <marketId> <commentHash>)';
     }
 
     public description(): string {

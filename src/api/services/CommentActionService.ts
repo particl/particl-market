@@ -69,13 +69,6 @@ export class CommentActionService {
      */
     @validate()
     public async send(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<SmsgSendResponse> {
-        let parentCommentHash;
-        if (data.parent_comment_id) {
-            // Get market parent_comment_hash
-            const parentComment = await this.commentService.findOne(data.parent_comment_id);
-            parentCommentHash = parentComment.Hash;
-        }
-
         // Get market addr
         const market = await this.marketService.findOne(data.market_id);
         const marketAddr = market.Address;
@@ -86,7 +79,7 @@ export class CommentActionService {
         // Build the message
         const signature = await this.signComment(data);
         const commentMessage = await this.commentFactory.getMessage(data.type, data.sender, marketAddr,
-                                data.target, parentCommentHash, data.message, signature);
+                                data.target, data.parent_comment_hash, data.message, signature);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -103,8 +96,32 @@ export class CommentActionService {
         data.expiredAt = new Date().getTime() + daysRetention * 60 * 60 * 24;
         data.receivedAt = new Date().getTime();
 
-        // create
-        const createdComment = await this.commentService.create(data);
+        const commentHash = ObjectHash.getHash(data, HashableObjectType.COMMENT_CREATEREQUEST);
+        let existingComment;
+        try {
+            existingComment = await this.commentService.findOneByHash(commentHash);
+        } catch (ex) {
+            this.log.error('Comment with that hash DOESNT exist');
+        }
+        if (existingComment) {
+            // Comment with that hash exists
+            this.log.error(`Comment with hash = ${commentHash} exists`);
+            const existingComment2 = await this.commentService.findAllByCommentorsAndCommentHash([ data.sender ], commentHash);
+            if (existingComment2) {
+                // Comment is ours, just update it
+                this.log.error(`Comment with that hash = ${commentHash} exists and belongs to us.`
+                               + 'Either hash collision or replica. Ignored locally and not broadcast.');
+                const createdComment = await this.commentService.update(existingComment.id, data);
+            } else {
+                this.log.error('Comment with that hash exists but doesnt belong to us. Hash collision?');
+                return {} as SmsgSendResponse;
+            }
+        } else {
+            this.log.error('Comment with that hash DOESNT exist');
+            // Comment doesn't exist in our DB yet
+            // Create
+            const createdComment = await this.commentService.create(data);
+        }
 
         // send
         return await this.smsgService.smsgSend(data.sender, data.receiver, msg, false, daysRetention);

@@ -52,25 +52,34 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         const marketId = data.params[0];
-        const market = await this.marketService.findOne(marketId);
-        const marketAddr = market.Address;
 
         const profileId = data.params[1];
         const senderProfile = await this.profileService.findOne(profileId);
         const profileAddress = senderProfile.Address;
 
-        const type = data.params[2];
-        const target = data.params[3];
-        const parentCommentId = data.params[5];
+        const type = CommentType[data.params[2]];
+        let target = data.params[3];
+        const parentCommentHash = data.params[5];
         const message = data.params[4];
+
+        let receiver;
+        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
+            const market = await this.marketService.findOne(marketId);
+            const marketAddr = market.Address;
+            receiver = marketAddr;
+        } else {
+            receiver = target;
+            target = 'N/A';
+        }
+
         const commentRequest = {
-            type: CommentType[type],
+            type,
             sender: profileAddress,
             market_id: marketId,
             target,
-            parent_comment_id: parentCommentId,
+            parent_comment_hash: parentCommentHash,
             message,
-            receiver: marketAddr
+            receiver
         } as CommentCreateRequest;
 
         return await this.commentActionService.send(commentRequest);
@@ -103,7 +112,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         }
         const type = data.params[2];
         if (typeof type !== 'string' || !CommentType[type]) {
-            throw new InvalidParamException('type', 'CommentMessageType');
+            throw new InvalidParamException('type', 'CommentType');
         }
 
         const target = data.params[3];
@@ -116,30 +125,30 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new InvalidParamException('message', 'string');
         }
 
-        let parentCommentId;
+        let parentCommentHash;
         if (data.params.length > 5) {
-            parentCommentId = data.params[5];
-            if (typeof parentCommentId !== 'number') {
-                throw new InvalidParamException('parentCommentId', 'number');
+            parentCommentHash = data.params[5];
+            if (typeof parentCommentHash !== 'string') {
+                throw new InvalidParamException('parentCommentHash', 'string');
             }
         }
 
         // Throws NotFoundException
-        this.profileService.findOne(profileId);
+        await this.profileService.findOne(profileId);
 
         // Throws NotFoundException
-        this.marketService.findOne(marketId);
+        await this.marketService.findOne(marketId);
 
         // Throws NotFoundException
-        if (parentCommentId) {
-            this.commentService.findOne(parentCommentId);
+        if (parentCommentHash) {
+            await this.commentService.findOneByHash(marketId, parentCommentHash, true);
         }
 
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' post <marketId> <profileId> <type> <target> <message> [<parentCommentId>]';
+        return this.getName() + ' post <marketId> <profileId> <type> (<target>|<receiver>) <message> [<parentCommentHash>]';
     }
 
     public description(): string {

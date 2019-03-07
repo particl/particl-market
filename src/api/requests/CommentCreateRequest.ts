@@ -12,7 +12,7 @@ export class CommentCreateRequest extends RequestBody {
     @IsNotEmpty()
     public market_id: number;
 
-    public parent_comment_id: number;
+    public parent_comment_hash: string;
 
     public hash: string; // created in service
 

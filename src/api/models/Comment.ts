@@ -6,6 +6,12 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
 import { SearchOrder } from '../enums/SearchOrder';
+import {commentsearchParams} from '../requests/commentsearchParams';
+import {CommentMessageType} from '../enums/CommentMessageType';
+import {OrderStatus} from '../enums/OrderStatus';
+import * as _ from './Bid';
+import {CommentSearchParams} from '../requests/CommentSearchParams';
+import {CommentType} from '../enums/CommentType';
 
 export class Comment extends Bookshelf.Model<Comment> {
 
@@ -25,13 +31,13 @@ export class Comment extends Bookshelf.Model<Comment> {
         }
     }
 
-    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Comment> {
+    public static async fetchByHash(marketId: number, hash: string, withRelated: boolean = true): Promise<Comment> {
         if (withRelated) {
-            return await Comment.where<Comment>({ hash: value }).fetch({
+            return await Comment.where<Comment>({ marketId, hash }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Comment.where<Comment>({ hash: value }).fetch();
+            return await Comment.where<Comment>({ marketId, hash }).fetch();
         }
     }
 
@@ -48,6 +54,63 @@ export class Comment extends Bookshelf.Model<Comment> {
             });
         } else {
             return await commentResultCollection.fetchAll();
+        }
+    }
+
+    public static async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Collection<Comment>> {
+
+        options.order = options.order ? options.order : SearchOrder.ASC;
+        if (options.orderField
+            && !(options.orderField === 'id'
+            || options.orderField === 'hash'
+            || options.orderField === 'sender'
+            || options.orderField === 'receiver'
+            || options.orderField === 'target'
+            || options.orderField === 'message'
+            || options.orderField === 'type'
+            || options.orderField === 'postedAt'
+            || options.orderField === 'receivedAt'
+            || options.orderField === 'expiredAt'
+            || options.orderField === 'updatedAt'
+            || options.orderField === 'createdAt'
+            || options.orderField === 'parent_comment_id'
+            || options.orderField === 'market_id')) {
+            options.orderField = 'postedAt';
+        }
+        options.orderField = options.orderField ? options.orderField : SearchOrder.ASC;
+        options.page = options.page ? options.page : 0;
+        options.pageLimit = options.pageLimit ? options.pageLimit : 10;
+
+        const commentCollection = Comment.forge<Model<Comment>>()
+            .query( qb => {
+
+                if (options.commentHash) {
+                    qb.where('comments.hash', '=', options.commentHash);
+                }
+
+                if (options.marketId) {
+                    qb.where('order_items.market_id', '=', options.marketId);
+                }
+
+                if (CommentType[options.type]) {
+                    qb.where('comments.type', '=', options.type);
+                }
+
+                if (options.target) {
+                    qb.where('comments.type', '=', options.target);
+                }
+            })
+            .orderBy(`comments.${options.orderField}`, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
+            });
+        if (withRelated) {
+            return await commentCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await commentCollection.fetchAll();
         }
     }
 

@@ -5,7 +5,7 @@
 import { CommentMessageType } from '../enums/CommentMessageType';
 
 export interface CommentMessageInterface {
-    type: CommentMessageType;
+    action: CommentMessageType;
     item?: string;
     objects?: any;
 }

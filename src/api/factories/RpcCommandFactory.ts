@@ -156,6 +156,7 @@ import { SettingListCommand } from '../commands/setting/SettingListCommand';
 import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
 import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
+import {CommentSearchCommand} from '../commands/comment/CommentSearchCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -177,6 +178,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.comment.CommentRootCommand) private commentRootCommand: CommentRootCommand,
         @inject(Types.Command) @named(Targets.Command.comment.CommentPostCommand) private commentPostCommand: CommentPostCommand,
         @inject(Types.Command) @named(Targets.Command.comment.CommentGetCommand) private commentGetCommand: CommentGetCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentSearchCommand) private commentSearchCommand: CommentSearchCommand,
 
         @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
 
@@ -330,6 +332,7 @@ export class RpcCommandFactory {
         this.commands.push(commentRootCommand);
         this.commands.push(commentPostCommand);
         this.commands.push(commentGetCommand);
+        this.commands.push(commentSearchCommand);
 
         this.commands.push(adminCommand);
 

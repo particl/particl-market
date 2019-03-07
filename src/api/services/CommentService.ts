@@ -16,6 +16,7 @@ import { Comment } from '../models/Comment';
 import { CommentRepository } from '../repositories/CommentRepository';
 import { CommentCreateRequest } from '../requests/CommentCreateRequest';
 import { CommentUpdateRequest } from '../requests/CommentUpdateRequest';
+import {CommentSearchParams} from '../requests/CommentSearchParams';
 
 export class CommentService {
 
@@ -45,13 +46,24 @@ export class CommentService {
         return await this.commentRepo.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
-        const comment = await this.commentRepo.findOneByHash(hash, withRelated);
+    public async findOneByHash(marketId: number, hash: string, withRelated: boolean = true): Promise<Comment> {
+        const comment = await this.commentRepo.findOneByHash(marketId, hash, withRelated);
         if (comment === null) {
-            this.log.warn(`Comment with the hash=${hash} was not found!`);
+            this.log.warn(`Comment with the marketId=${marketId} & hash=${hash} was not found!`);
             throw new NotFoundException(hash);
         }
         return comment;
+    }
+
+    /**
+     * searchBy Comment using given CommentSearchParams
+     *
+     * @param options
+     * @returns {Promise<Bookshelf.Collection<Comment>>}
+     */
+    @validate()
+    public async search(@request(CommentSearchParams) options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        return await this.commentRepo.search(options, withRelated);
     }
 
     @validate()
