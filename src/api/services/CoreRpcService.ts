@@ -585,7 +585,8 @@ export class CoreRpcService {
                     (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
                 )
             );
-        return 'http://' + host + ':' + port;
+        const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
+        return `http://${host}:${port}${wallet}`;
     }
 
 }
