@@ -57,8 +57,10 @@ export class Comment extends Bookshelf.Model<Comment> {
     }
 
     public static async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Collection<Comment>> {
+        if (!options.order) {
+            options.order = SearchOrder.ASC;
+        }
 
-        options.order = options.order ? options.order : SearchOrder.ASC;
         if (!options.orderField
             || !(options.orderField === 'id'
             || options.orderField === 'hash'
@@ -67,17 +69,17 @@ export class Comment extends Bookshelf.Model<Comment> {
             || options.orderField === 'target'
             || options.orderField === 'message'
             || options.orderField === 'type'
-            || options.orderField === 'postedAt'
-            || options.orderField === 'receivedAt'
-            || options.orderField === 'expiredAt'
-            || options.orderField === 'updatedAt'
-            || options.orderField === 'createdAt'
+            || options.orderField === 'posted_at'
+            || options.orderField === 'received_at'
+            || options.orderField === 'expired_at'
+            || options.orderField === 'updated_at'
+            || options.orderField === 'created_at'
             || options.orderField === 'parent_comment_id'
             || options.orderField === 'market_id')) {
-            options.orderField = 'postedAt';
+            options.orderField = 'posted_at';
         }
-        options.page = options.page ? options.page : 0;
-        options.pageLimit = options.pageLimit ? options.pageLimit : 10;
+        options.page = options.page ||  0;
+        options.pageLimit = options.pageLimit || 10;
 
         const commentCollection = Comment.forge<Model<Comment>>()
             .query( qb => {

@@ -63,7 +63,6 @@ export class CommentService {
      */
     @validate()
     public async search(@request(CommentSearchParams) options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
-        this.log.error('2000:');
         return await this.commentRepo.search(options, withRelated);
     }
 

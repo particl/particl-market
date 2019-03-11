@@ -40,7 +40,6 @@ export class CommentRepository {
     }
 
     public async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
-        this.log.error('3000:');
         return await this.CommentModel.search(options, withRelated);
     }
 

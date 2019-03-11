@@ -1,13 +1,13 @@
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { Comment } from '../../models/Comment';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {Comment} from '../../models/Comment';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {RpcCommandFactory} from '../../factories/RpcCommandFactory';
 import {MissingParamException} from '../../exceptions/MissingParamException';
 import {InvalidParamException} from '../../exceptions/InvalidParamException';
 import {CommentType} from '../../enums/CommentType';
@@ -45,7 +45,8 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
         if (typeof data.params[1] === 'number') {
             searchArgs.page = data.params[1];
             searchArgs.pageLimit = data.params[2];
-            searchArgs.order = data.params[3];
+            const order: string = data.params[3];
+            searchArgs.order = SearchOrder[order] || SearchOrder.ASC;
             searchArgs.orderField = data.params[4];
             searchArgs.type = data.params[5];
             searchArgs.target = data.params[6];
@@ -54,7 +55,6 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             searchArgs.order = SearchOrder.ASC;
         }
 
-        this.log.error('1000:');
         try {
             return await this.commentService.search(searchArgs);
         } catch (ex) {
@@ -112,18 +112,18 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
         if (data.params.length >= 5) {
             const orderField = data.params[4];
             if (typeof orderField !== 'string'
-                && !(orderField === 'id'
+                || !(orderField === 'id'
                     || orderField === 'hash'
                     || orderField === 'sender'
                     || orderField === 'receiver'
                     || orderField === 'target'
                     || orderField === 'message'
                     || orderField === 'type'
-                    || orderField === 'postedAt'
-                    || orderField === 'receivedAt'
-                    || orderField === 'expiredAt'
-                    || orderField === 'updatedAt'
-                    || orderField === 'createdAt'
+                    || orderField === 'posted_at'
+                    || orderField === 'received_at'
+                    || orderField === 'expired_at'
+                    || orderField === 'updated_at'
+                    || orderField === 'created_at'
                     || orderField === 'parent_comment_id'
                     || orderField === 'market_id')) {
                 throw new InvalidParamException('orderField', 'string');
