@@ -6,12 +6,11 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
 import { SearchOrder } from '../enums/SearchOrder';
-import {commentsearchParams} from '../requests/commentsearchParams';
-import {CommentMessageType} from '../enums/CommentMessageType';
-import {OrderStatus} from '../enums/OrderStatus';
+import { CommentMessageType } from '../enums/CommentMessageType';
+import { OrderStatus } from '../enums/OrderStatus';
 import * as _ from './Bid';
-import {CommentSearchParams} from '../requests/CommentSearchParams';
-import {CommentType} from '../enums/CommentType';
+import { CommentSearchParams } from '../requests/CommentSearchParams';
+import { CommentType } from '../enums/CommentType';
 
 export class Comment extends Bookshelf.Model<Comment> {
 
@@ -33,11 +32,11 @@ export class Comment extends Bookshelf.Model<Comment> {
 
     public static async fetchByHash(marketId: number, hash: string, withRelated: boolean = true): Promise<Comment> {
         if (withRelated) {
-            return await Comment.where<Comment>({ marketId, hash }).fetch({
+            return await Comment.where<Comment>({ market_id: marketId, hash }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Comment.where<Comment>({ marketId, hash }).fetch();
+            return await Comment.where<Comment>({ market_id: marketId, hash }).fetch();
         }
     }
 
@@ -60,8 +59,8 @@ export class Comment extends Bookshelf.Model<Comment> {
     public static async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Collection<Comment>> {
 
         options.order = options.order ? options.order : SearchOrder.ASC;
-        if (options.orderField
-            && !(options.orderField === 'id'
+        if (!options.orderField
+            || !(options.orderField === 'id'
             || options.orderField === 'hash'
             || options.orderField === 'sender'
             || options.orderField === 'receiver'
@@ -77,19 +76,17 @@ export class Comment extends Bookshelf.Model<Comment> {
             || options.orderField === 'market_id')) {
             options.orderField = 'postedAt';
         }
-        options.orderField = options.orderField ? options.orderField : SearchOrder.ASC;
         options.page = options.page ? options.page : 0;
         options.pageLimit = options.pageLimit ? options.pageLimit : 10;
 
         const commentCollection = Comment.forge<Model<Comment>>()
             .query( qb => {
-
                 if (options.commentHash) {
                     qb.where('comments.hash', '=', options.commentHash);
                 }
 
                 if (options.marketId) {
-                    qb.where('order_items.market_id', '=', options.marketId);
+                    qb.where('comments.market_id', '=', options.marketId);
                 }
 
                 if (CommentType[options.type]) {

@@ -43,23 +43,28 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
         if (!commentHash) {
             return await this.commentService.findOne(id);
         } else {
-            return await this.commentService.findOneByHash(id, data.params[0]);
+            return await this.commentService.findOneByHash(id, commentHash);
         }
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MissingParamException('commendId|marketId');
+            throw new MissingParamException('commentId|marketId');
         }
         const id = data.params[0];
         if (typeof id !== 'number') {
-            throw new InvalidParamException('commendId|marketId', 'number');
+            throw new InvalidParamException('commentId|marketId', 'number');
         }
-        if (data.params.length < 2) {
+        if (data.params.length >= 2) {
             const commentHash = data.params[1];
+            this.log.error('1000:');
             if (typeof commentHash !== 'string') {
+                this.log.error('2000:');
                 throw new InvalidParamException('commentHash', 'string');
             }
+
+            this.log.error('3000:');
+            // TODO: Check market exists
         }
         return data;
     }

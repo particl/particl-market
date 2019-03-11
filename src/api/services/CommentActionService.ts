@@ -99,7 +99,7 @@ export class CommentActionService {
         const commentHash = ObjectHash.getHash(data, HashableObjectType.COMMENT_CREATEREQUEST);
         let existingComment;
         try {
-            existingComment = await this.commentService.findOneByHash(commentHash);
+            existingComment = await this.commentService.findOneByHash(data.market_id, commentHash);
         } catch (ex) {
             this.log.error('Comment with that hash DOESNT exist');
         }
@@ -117,7 +117,6 @@ export class CommentActionService {
                 return {} as SmsgSendResponse;
             }
         } else {
-            this.log.error('Comment with that hash DOESNT exist');
             // Comment doesn't exist in our DB yet
             // Create
             const createdComment = await this.commentService.create(data);
@@ -151,7 +150,10 @@ export class CommentActionService {
         // Check comment with given details doesn't already exist
         const commentHash = ObjectHash.getHash(commentMessage, HashableObjectType.COMMENT_CREATEREQUEST);
 
-        const existingComment = await this.commentService.findOneByHash(commentHash);
+        const market = await this.marketService.findByAddress(commentMessage.marketHash);
+        const marketId = market.id;
+
+        const existingComment = await this.commentService.findOneByHash(marketId, commentHash);
         if (existingComment) {
             // Comment exists
             // Check if comment is ours
@@ -214,19 +216,12 @@ export class CommentActionService {
         const market = await this.marketService.findOne(data.market_id);
         const marketHash = market.Address;
 
-        // Get market parent_comment_hash
-        let parentCommentHash;
-        if (data.parent_comment_id) {
-            const parentComment = await this.commentService.findOne(data.parent_comment_id);
-            parentCommentHash = parentComment.Hash;
-        }
-
         const commentTicket = {
             type: data.type,
             marketHash,
             address: data.sender,
             target: data.target,
-            parentHash: parentCommentHash,
+            parentHash: data.parent_comment_hash,
             message: data.message
         } as CommentTicket;
 
