@@ -12,9 +12,8 @@ import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalResultService } from '../services/ProposalResultService';
 import { ListingItemService } from '../services/ListingItemService';
-import {catchClause} from 'babel-types';
-import {errorComparator} from 'tslint/lib/verify/lintError';
-import {MessageException} from '../exceptions/MessageException';
+
+// TODO: this should be refactored, this is not a MessageProcessor!
 
 export class ProposalResultProcessor implements MessageProcessorInterface {
 
@@ -33,7 +32,6 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
     ) {
         this.log = new Logger(__filename);
     }
-
 
     public async process(): Promise<void> {
 

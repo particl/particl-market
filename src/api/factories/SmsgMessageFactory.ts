@@ -12,6 +12,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class SmsgMessageFactory {
 
@@ -54,7 +55,7 @@ export class SmsgMessageFactory {
                 return createRequest;
             })
             .catch(reason => {
-                const type = 'UNKNOWN';
+                const type = MPAction.UNKNOWN;
                 const status = SmsgMessageStatus.PARSING_FAILED;
 
                 const createRequest = {

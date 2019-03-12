@@ -201,9 +201,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.error('Messageprocessor.poll(), ERROR: ', reason);
                         return true;
                     });
-
                 // this.log.debug('Messageprocessor.poll(), fetchNext: ', fetchNext);
-
             }
         }
 

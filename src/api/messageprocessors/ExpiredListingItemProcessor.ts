@@ -8,6 +8,8 @@ import { Types, Core, Targets, Events } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemService } from '../services/ListingItemService';
 
+// TODO: this should be refactored, this is not a MessageProcessor!
+
 export class ExpiredListingItemProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
