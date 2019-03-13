@@ -15,6 +15,7 @@ import {MessageException} from '../../../src/api/exceptions/MessageException';
 import {NotFoundException} from '../../../src/api/exceptions/NotFoundException';
 import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import {GenerateCommentParams} from '../../../src/api/requests/params/GenerateCommentParams';
 
 describe('VoteGetCommand', () => {
 
@@ -40,6 +41,7 @@ describe('VoteGetCommand', () => {
 
     const commentMessagePrivateChat = 'TEST_PRIVATE_CHAT_#1';
     const commentMessageListingItemQandA = 'TEST_LISTING_ITEM_QANDA_#1';
+
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -69,6 +71,42 @@ describe('VoteGetCommand', () => {
             generateListingItemParams           // what kind of data to generate
         );
         createdListingItemHash = listingItems[0].hash;
+
+        const generateCommentParamsQandA = new GenerateCommentParams([
+            false,
+            false,
+            createdListingItemHash,
+            false,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            defaultProfile.address,
+            defaultProfile.address
+        ]).toParamsArray();
+
+        const commentsQandA = await testUtil.generateData(
+            CreatableModel.COMMENT,     // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateCommentParamsQandA           // what kind of data to generate
+        );
+        createdCommentPrivateChat = commentsQandA[0];
+
+        const generateCommentParamsPrivateChat = new GenerateCommentParams([
+            false,
+            false,
+            null,
+            false,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            defaultProfile.address
+        ]).toParamsArray();
+
+        const commentsPrivateChat = await testUtil.generateData(
+            CreatableModel.COMMENT,     // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateCommentParamsPrivateChat     // what kind of data to generate
+        );
+        createdCommentPrivateChat = commentsPrivateChat[0];
     });
 
     test('Should fail to return a Comment because invalid marketId', async () => {
@@ -127,40 +165,6 @@ describe('VoteGetCommand', () => {
         expect(response.error.error.message).toBe(new NotFoundException(invalidHash).getMessage());
     });
 
-    test('Should create a Comment of type PRIVATE_CHAT', async () => {
-        // post a vote
-        const response: any = await testUtil.rpc(commentCommand, [
-            commentPostCommand,
-            defaultMarket.id,
-            defaultProfile.id,
-            CommentType.PRIVATE_CHAT,
-            defaultProfile.address,
-            commentMessagePrivateChat
-        ]);
-        response.expectJson();
-        response.expectStatusCode(200);
-        const result: any = response.getBody()['result'];
-        expect(result.result).toEqual('Sent.');
-        sent = result.result === 'Sent.';
-
-        expect(sent).toBeTruthy();
-
-        const response2: any = await testUtil.rpc(commentCommand, [
-            commentSearchCommand,
-            defaultMarket.id,
-            0,
-            1,
-            SearchOrder.DESC,
-            'posted_at',
-            CommentType.PRIVATE_CHAT
-            // TODO: test final search arg
-        ]);
-        response2.expectJson();
-        response2.expectStatusCode(200);
-        const result2: any = response2.getBody()['result'];
-        createdCommentPrivateChat = result2[0];
-    });
-
     test('Should return a PRIVATE_CHAT Comment specified by id', async () => {
         // comment get (<commentId> | <commendHash>)
         const response = await testUtil.rpc(
@@ -171,12 +175,13 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.Comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(defaultMarket.id);
-        expect(comment.sender).toBe(defaultProfile.address);
-        expect(comment.receiver).toBe(defaultProfile.address);
-        expect(comment.target).toBe('N/A');
-        expect(comment.message).toBe(commentMessagePrivateChat);
-        expect(comment.type).toBe(CommentType.PRIVATE_CHAT);
+        expect(comment.Market.id).toBe(createdCommentPrivateChat.id);
+        expect(comment.sender).toBe(createdCommentPrivateChat.sender);
+        expect(comment.target).toBe(createdCommentPrivateChat.target);
+        expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
+        expect(comment.message).toBe(createdCommentPrivateChat.message);
+        expect(comment.type).toBe(createdCommentPrivateChat.type);
+        expect(comment.hash).toBe(createdCommentPrivateChat.hash);
     });
 
     test('Should return a PRIVATE_CHAT Comment specified by id', async () => {
@@ -189,49 +194,13 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(defaultMarket.id);
-        expect(comment.sender).toBe(defaultProfile.address);
-        expect(comment.receiver).toBe(defaultProfile.address);
-        expect(comment.target).toBe('N/A');
-        expect(comment.message).toBe(commentMessagePrivateChat);
-        expect(comment.type).toBe(CommentType.PRIVATE_CHAT);
-    });
-
-    test('Should create a Comment of type LISTINGITEM_QUESTION_AND_ANSWERS', async () => {
-        // post a vote
-        const response: any = await testUtil.rpc(commentCommand, [
-            commentPostCommand,
-            defaultMarket.id,
-            defaultProfile.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            createdListingItemHash,
-            commentMessageListingItemQandA
-        ]);
-        response.expectJson();
-        response.expectStatusCode(200);
-        const result: any = response.getBody()['result'];
-        expect(result.result).toEqual('Sent.');
-        sent = result.result === 'Sent.';
-
-        expect(sent).toBeTruthy();
-
-        const response2: any = await testUtil.rpc(commentCommand, [
-            commentSearchCommand,
-            defaultMarket.id,
-            0,
-            1,
-            SearchOrder.DESC,
-            'posted_at',
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
-            // TODO: test final search arg
-        ]);
-        response2.expectJson();
-        response2.expectStatusCode(200);
-        const result2: any = response2.getBody()['result'];
-        createdCommentListingItemQandA = result2[0];
-
-        // wait for some time to make sure vote is received
-        await testUtil.waitFor(5);
+        expect(comment.Market.id).toBe(createdCommentPrivateChat.id);
+        expect(comment.sender).toBe(createdCommentPrivateChat.sender);
+        expect(comment.target).toBe(createdCommentPrivateChat.target);
+        expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
+        expect(comment.message).toBe(createdCommentPrivateChat.message);
+        expect(comment.type).toBe(createdCommentPrivateChat.type);
+        expect(comment.hash).toBe(createdCommentPrivateChat.hash);
     });
 
     test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by id', async () => {
@@ -244,12 +213,13 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.Comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(defaultMarket.id);
-        expect(comment.sender).toBe(defaultProfile.address);
-        expect(comment.target).toBe(createdListingItemHash);
-        expect(comment.receiver).toBe(defaultMarket.address);
-        expect(comment.message).toBe(commentMessageListingItemQandA);
-        expect(comment.type).toBe(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS);
+        expect(comment.Market.id).toBe(createdCommentListingItemQandA.id);
+        expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
+        expect(comment.target).toBe(createdCommentListingItemQandA.target);
+        expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
+        expect(comment.message).toBe(createdCommentListingItemQandA.message);
+        expect(comment.type).toBe(createdCommentListingItemQandA.type);
+        expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
     });
 
     test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by id', async () => {
@@ -262,11 +232,12 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(defaultMarket.id);
-        expect(comment.sender).toBe(defaultProfile.address);
-        expect(comment.target).toBe(createdListingItemHash);
-        expect(comment.receiver).toBe(defaultMarket.address);
-        expect(comment.message).toBe(commentMessageListingItemQandA);
-        expect(comment.type).toBe(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS);
+        expect(comment.Market.id).toBe(createdCommentListingItemQandA.id);
+        expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
+        expect(comment.target).toBe(createdCommentListingItemQandA.target);
+        expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
+        expect(comment.message).toBe(createdCommentListingItemQandA.message);
+        expect(comment.type).toBe(createdCommentListingItemQandA.type);
+        expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
     });
 });

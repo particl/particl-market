@@ -14,7 +14,6 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     // Params. Initialised to default go here
     public generateListingItemTemplate = true;
     public generateListingItem = true;
-    public listingItemHash: string;
     public generatePastComment = false;
     public type = null;
     public sender = null;
@@ -30,11 +29,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
         if (!_.isEmpty(generateParams) ) {
             this.generateListingItemTemplate = generateParams[0] ? true : false;
             this.generateListingItem = generateParams[1] ? true : false;
-            this.listingItemHash = generateParams[2] ? generateParams[2] : null;
-            this.generatePastComment = generateParams[3] ? generateParams[3] : false;
-            this.type = generateParams[4] ? generateParams[4] : null;
-            this.sender = generateParams[5] ? generateParams[5] : null;
-            this.target = generateParams[6] ? generateParams[6] : null;
+            this.generatePastComment = generateParams[2] ? generateParams[2] : false;
+            this.type = generateParams[3] ? generateParams[3] : null;
+            this.sender = generateParams[4] ? generateParams[4] : null;
+            this.target = generateParams[5] ? generateParams[5] : null;
         }
     }
 
@@ -42,7 +40,6 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
         return [
             this.generateListingItemTemplate,
             this.generateListingItem,
-            this.listingItemHash,
             this.generatePastComment,
             this.type,
             this.sender,

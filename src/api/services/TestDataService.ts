@@ -814,7 +814,7 @@ export class TestDataService {
 
         for (let i = amount; i > 0; i--) {
             const commentCreateRequest = await this.generateCommentData(generateParams);
-            const commentlModel = await this.commentService.create(commentCreateRequest);
+            const commentModel = await this.commentService.create(commentCreateRequest);
             const comment: resources.Proposal = commentModel.toJSON();
             items.push(comment);
         }
@@ -823,6 +823,17 @@ export class TestDataService {
     }
 
     private async generateCommentData(generateParams: GenerateCommentParams): Promise<CommentCreateRequest> {
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generatePastComment) {
+            throw new NotImplementedException();
+        }
 
         let sender;
         if (!generateParams.sender) {
@@ -834,13 +845,10 @@ export class TestDataService {
         }
 
         const type = generateParams.type || CommentType.PRIVATE_CHAT;
-        const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
-        const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
-        const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
 
         const currentTime = new Date().getTime();
 
-        // TODO: I'm not sure what this is for
+        // Generate comment in the past
         const timeStart = generateParams.generatePastComment
             ? _.random(1, (currentTime / 2), false)
             : _.random(currentTime + 100, currentTime + 1000, false);
@@ -855,12 +863,11 @@ export class TestDataService {
         // this.log.debug('blockEnd: ', blockEnd);
 
         // TODO: parent comment create?
-        // TODO: generate message
-        // TODO: generate
 
         const commentCreateRequest = {
             sender,
             type,
+            message: Faker.lorem.lines(1),
             postedAt: timeStart,
             receivedAt: timeStart,
             expiredAt: timeEnd
