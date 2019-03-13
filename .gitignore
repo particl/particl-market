@@ -3,6 +3,9 @@
 *.log
 *.log*
 
+# Downloaded images
+data/images/*
+
 
 # Node files #
 node_modules/

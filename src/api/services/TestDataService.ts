@@ -2,94 +2,98 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Bookshelf as Database } from '../../config/Database';
+import {Bookshelf as Database} from '../../config/Database';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import * as _ from 'lodash';
 import * as Faker from 'faker';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageException } from '../exceptions/MessageException';
-import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
-import { ShippingCountries } from '../../core/helpers/ShippingCountries';
-import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { MessagingProtocolType } from '../enums/MessagingProtocolType';
-import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
-import { ListingItemObjectType } from '../enums/ListingItemObjectType';
-import { Currency } from '../enums/Currency';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { PaymentType } from '../enums/PaymentType';
-import { EscrowType } from '../enums/EscrowType';
-import { ListingItem } from '../models/ListingItem';
-import { ListingItemService } from './ListingItemService';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { DefaultItemCategoryService } from './DefaultItemCategoryService';
-import { DefaultProfileService } from './DefaultProfileService';
-import { DefaultMarketService } from './DefaultMarketService';
-import { ProfileService } from './ProfileService';
-import { MarketService } from './MarketService';
-import { ItemCategoryService } from './ItemCategoryService';
-import { FavoriteItemService } from './FavoriteItemService';
-import { ItemInformationService } from './ItemInformationService';
-import { BidService } from './BidService';
-import { ProposalService } from './ProposalService';
-import { PaymentInformationService } from './PaymentInformationService';
-import { ItemImageService } from './ItemImageService';
-import { ActionMessageService } from './ActionMessageService';
-import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
-import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
-import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
-import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
-import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
-import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
-import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
-import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
-import { CreatableModel } from '../enums/CreatableModel';
-import { GenerateActionMessageParams } from '../requests/params/GenerateActionMessageParams';
-import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
-import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
-import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
-import { GenerateBidParams } from '../requests/params/GenerateBidParams';
-import { GenerateProposalParams } from '../requests/params/GenerateProposalParams';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { BidMessageType } from '../enums/BidMessageType';
-import { AddressCreateRequest } from '../requests/AddressCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
-import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
-import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-import { AddressType } from '../enums/AddressType';
-import { CoreRpcService } from './CoreRpcService';
-import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
-import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import { OrderService } from './OrderService';
-import { OrderFactory } from '../factories/OrderFactory';
-import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
-import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
-import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
-import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
-import { ProposalType } from '../enums/ProposalType';
-import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { VoteService } from './VoteService';
-import { VoteActionService } from './VoteActionService';
-import { ProposalResultService } from './ProposalResultService';
-import { ProposalOptionResultService } from './ProposalOptionResultService';
-import { ProposalActionService } from './ProposalActionService';
-import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
-import { BidDataValue } from '../enums/BidDataValue';
-import { SettingCreateRequest } from '../requests/SettingCreateRequest';
-import { ItemVote } from '../enums/ItemVote';
-import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ObjectHash } from '../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../enums/HashableObjectType';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../core/api/Validate';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Core, Targets, Types} from '../../constants';
+import {MessageException} from '../exceptions/MessageException';
+import {TestDataCreateRequest} from '../requests/TestDataCreateRequest';
+import {ShippingCountries} from '../../core/helpers/ShippingCountries';
+import {ShippingAvailability} from '../enums/ShippingAvailability';
+import {MessagingProtocolType} from '../enums/MessagingProtocolType';
+import {CryptocurrencyAddressType} from '../enums/CryptocurrencyAddressType';
+import {ListingItemObjectType} from '../enums/ListingItemObjectType';
+import {Currency} from '../enums/Currency';
+import {ImageDataProtocolType} from '../enums/ImageDataProtocolType';
+import {PaymentType} from '../enums/PaymentType';
+import {EscrowType} from '../enums/EscrowType';
+import {ListingItem} from '../models/ListingItem';
+import {ListingItemService} from './ListingItemService';
+import {ListingItemTemplateService} from './ListingItemTemplateService';
+import {DefaultItemCategoryService} from './DefaultItemCategoryService';
+import {DefaultProfileService} from './DefaultProfileService';
+import {DefaultMarketService} from './DefaultMarketService';
+import {ProfileService} from './ProfileService';
+import {MarketService} from './MarketService';
+import {ItemCategoryService} from './ItemCategoryService';
+import {FavoriteItemService} from './FavoriteItemService';
+import {ItemInformationService} from './ItemInformationService';
+import {BidService} from './BidService';
+import {ProposalService} from './ProposalService';
+import {PaymentInformationService} from './PaymentInformationService';
+import {ItemImageService} from './ItemImageService';
+import {ActionMessageService} from './ActionMessageService';
+import {TestDataGenerateRequest} from '../requests/TestDataGenerateRequest';
+import {ProfileCreateRequest} from '../requests/ProfileCreateRequest';
+import {MessageInfoCreateRequest} from '../requests/MessageInfoCreateRequest';
+import {MessageEscrowCreateRequest} from '../requests/MessageEscrowCreateRequest';
+import {MessageDataCreateRequest} from '../requests/MessageDataCreateRequest';
+import {MessageObjectCreateRequest} from '../requests/MessageObjectCreateRequest';
+import {ListingItemCreateRequest} from '../requests/ListingItemCreateRequest';
+import {ListingItemTemplateCreateRequest} from '../requests/ListingItemTemplateCreateRequest';
+import {ItemCategoryCreateRequest} from '../requests/ItemCategoryCreateRequest';
+import {FavoriteItemCreateRequest} from '../requests/FavoriteItemCreateRequest';
+import {ItemInformationCreateRequest} from '../requests/ItemInformationCreateRequest';
+import {BidCreateRequest} from '../requests/BidCreateRequest';
+import {PaymentInformationCreateRequest} from '../requests/PaymentInformationCreateRequest';
+import {ItemImageCreateRequest} from '../requests/ItemImageCreateRequest';
+import {CreatableModel} from '../enums/CreatableModel';
+import {GenerateActionMessageParams} from '../requests/params/GenerateActionMessageParams';
+import {GenerateListingItemTemplateParams} from '../requests/params/GenerateListingItemTemplateParams';
+import {GenerateListingItemParams} from '../requests/params/GenerateListingItemParams';
+import {GenerateProfileParams} from '../requests/params/GenerateProfileParams';
+import {GenerateBidParams} from '../requests/params/GenerateBidParams';
+import {GenerateProposalParams} from '../requests/params/GenerateProposalParams';
+import {ImageProcessing} from '../../core/helpers/ImageProcessing';
+import {BidMessageType} from '../enums/BidMessageType';
+import {AddressCreateRequest} from '../requests/AddressCreateRequest';
+import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
+import {ActionMessageCreateRequest} from '../requests/ActionMessageCreateRequest';
+import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
+import {AddressType} from '../enums/AddressType';
+import {CoreRpcService} from './CoreRpcService';
+import {GenerateOrderParams} from '../requests/params/GenerateOrderParams';
+import {OrderCreateRequest} from '../requests/OrderCreateRequest';
+import {OrderService} from './OrderService';
+import {OrderFactory} from '../factories/OrderFactory';
+import {ProposalCreateRequest} from '../requests/ProposalCreateRequest';
+import {ProposalOptionCreateRequest} from '../requests/ProposalOptionCreateRequest';
+import {ItemPriceCreateRequest} from '../requests/ItemPriceCreateRequest';
+import {EscrowCreateRequest} from '../requests/EscrowCreateRequest';
+import {ProposalType} from '../enums/ProposalType';
+import {VoteCreateRequest} from '../requests/VoteCreateRequest';
+import {VoteService} from './VoteService';
+import {VoteActionService} from './VoteActionService';
+import {ProposalResultService} from './ProposalResultService';
+import {ProposalOptionResultService} from './ProposalOptionResultService';
+import {ProposalActionService} from './ProposalActionService';
+import {CommentService} from './CommentService';
+import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
+import {BidDataValue} from '../enums/BidDataValue';
+import {SettingCreateRequest} from '../requests/SettingCreateRequest';
+import {ItemVote} from '../enums/ItemVote';
+import {ShippingDestinationCreateRequest} from '../requests/ShippingDestinationCreateRequest';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
+import {ObjectHash} from '../../core/helpers/ObjectHash';
+import {HashableObjectType} from '../enums/HashableObjectType';
+import {GenerateCommentParams} from '../requests/params/GenerateCommentParams';
+import {CommentCreateRequest} from '../requests/CommentCreateRequest';
+import {CommentType} from '../enums/CommentType';
 
 export class TestDataService {
 
@@ -113,6 +117,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ProposalActionService) private proposalActionService: ProposalActionService,
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) private proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
@@ -248,6 +253,10 @@ export class TestDataService {
             case CreatableModel.PROPOSAL: {
                 const generateParams = new GenerateProposalParams(body.generateParams);
                 return await this.generateProposals(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.COMMENT: {
+                const generateParams = new GenerateCommentParams(body.generateParams);
+                return await this.generateComments(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -779,6 +788,89 @@ export class TestDataService {
 
         // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;
+    }
+
+    // -------------------
+    // Comments
+    private async generateComments(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateCommentParams): Promise<resources.Comment[]> {
+
+        this.log.debug('generateComments, generateParams: ', generateParams);
+
+        // TODO: add template and item generation
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+        // TODO: proposalHash is not set to listingitem
+
+        const items: resources.Proposal[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const commentCreateRequest = await this.generateCommentData(generateParams);
+            const commentlModel = await this.commentService.create(commentCreateRequest);
+            const comment: resources.Proposal = commentModel.toJSON();
+            items.push(comment);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateCommentData(generateParams: GenerateCommentParams): Promise<CommentCreateRequest> {
+
+        let sender;
+        if (!generateParams.sender) {
+            const defaultProfile = await this.profileService.getDefault();
+            const profile = defaultProfile.toJSON();
+            sender = profile.address;
+        } else {
+            sender = generateParams.sender;
+        }
+
+        const type = generateParams.type || CommentType.PRIVATE_CHAT;
+        const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
+        const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
+        const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
+
+        const currentTime = new Date().getTime();
+
+        // TODO: I'm not sure what this is for
+        const timeStart = generateParams.generatePastComment
+            ? _.random(1, (currentTime / 2), false)
+            : _.random(currentTime + 100, currentTime + 1000, false);
+
+        const timeEnd = generateParams.generatePastComment
+            ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
+            : _.random(currentTime + 1001, currentTime + 2000, false);
+
+        // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
+        // this.log.debug('currentblock: ', currentblock);
+        // this.log.debug('blockStart: ', blockStart);
+        // this.log.debug('blockEnd: ', blockEnd);
+
+        // TODO: parent comment create?
+        // TODO: generate message
+        // TODO: generate
+
+        const commentCreateRequest = {
+            sender,
+            type,
+            postedAt: timeStart,
+            receivedAt: timeStart,
+            expiredAt: timeEnd
+        } as CommentCreateRequest;
+
+        // TODO: This probably isn't needed as it's calculated by the service
+        // commentCreateRequest.hash = ObjectHash.getHash(commentCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
+        // this.log.debug('commentCreateRequest: ', JSON.stringify(commentCreateRequest, null, 2));
+        return commentCreateRequest;
     }
 
     // -------------------
