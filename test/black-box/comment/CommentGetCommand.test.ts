@@ -75,11 +75,10 @@ describe('VoteGetCommand', () => {
         const generateCommentParamsQandA = new GenerateCommentParams([
             false,
             false,
-            createdListingItemHash,
             false,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            defaultProfile.address,
-            defaultProfile.address
+            defaultProfile.address, // sender
+            createdListingItemHash // target
         ]).toParamsArray();
 
         const commentsQandA = await testUtil.generateData(
@@ -88,16 +87,15 @@ describe('VoteGetCommand', () => {
             true,                // return model
             generateCommentParamsQandA           // what kind of data to generate
         );
-        createdCommentPrivateChat = commentsQandA[0];
+        createdCommentListingItemQandA = commentsQandA[0];
 
         const generateCommentParamsPrivateChat = new GenerateCommentParams([
             false,
             false,
-            null,
             false,
             CommentType.PRIVATE_CHAT,
-            defaultProfile.address,
-            defaultProfile.address
+            defaultProfile.address, // sender
+            defaultProfile.address // target
         ]).toParamsArray();
 
         const commentsPrivateChat = await testUtil.generateData(
@@ -175,7 +173,7 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.Comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(createdCommentPrivateChat.id);
+        expect(comment.Market.id).toBe(createdCommentPrivateChat.marketId);
         expect(comment.sender).toBe(createdCommentPrivateChat.sender);
         expect(comment.target).toBe(createdCommentPrivateChat.target);
         expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
@@ -194,7 +192,7 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(createdCommentPrivateChat.id);
+        expect(comment.Market.id).toBe(createdCommentPrivateChat.marketId);
         expect(comment.sender).toBe(createdCommentPrivateChat.sender);
         expect(comment.target).toBe(createdCommentPrivateChat.target);
         expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
@@ -213,7 +211,7 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.Comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(createdCommentListingItemQandA.id);
+        expect(comment.Market.id).toBe(createdCommentListingItemQandA.marketId);
         expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
         expect(comment.target).toBe(createdCommentListingItemQandA.target);
         expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
@@ -232,7 +230,7 @@ describe('VoteGetCommand', () => {
         response.expectStatusCode(200);
         const comment: resources.comment = response.getBody()['result'];
 
-        expect(comment.Market.id).toBe(createdCommentListingItemQandA.id);
+        expect(comment.Market.id).toBe(createdCommentListingItemQandA.marketId);
         expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
         expect(comment.target).toBe(createdCommentListingItemQandA.target);
         expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);

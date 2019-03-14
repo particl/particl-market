@@ -119,13 +119,15 @@ describe('VoteGetCommand', () => {
         expect(result2.length).toBe(1);
         const comment = result2[0];
 
-        expect(comment.Market.id).toBe(createdCommentListingItemQandA.id);
-        expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
-        expect(comment.target).toBe(createdCommentListingItemQandA.target);
-        expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
-        expect(comment.message).toBe(createdCommentListingItemQandA.message);
-        expect(comment.type).toBe(createdCommentListingItemQandA.type);
-        expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
+        // throw new MessageException('createdCommentPrivateChat = ' + JSON.stringify(createdCommentPrivateChat, null, 2))
+
+        expect(comment.Market.id).toBe(createdCommentPrivateChat.marketId);
+        expect(comment.sender).toBe(createdCommentPrivateChat.sender);
+        expect(comment.target).toBe(createdCommentPrivateChat.target);
+        expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
+        expect(comment.message).toBe(createdCommentPrivateChat.message);
+        expect(comment.type).toBe(createdCommentPrivateChat.type);
+        expect(comment.hash).toBe(createdCommentPrivateChat.hash);
     });
 
     test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS', async () => {
@@ -145,12 +147,12 @@ describe('VoteGetCommand', () => {
         expect(result2.length).toBe(1);
         const comment = result2[0];
 
-        expect(comment.Market.id).toBe(createdCommentPrivateChat.id);
-        expect(comment.sender).toBe(createdCommentPrivateChat.sender);
-        expect(comment.target).toBe(createdCommentPrivateChat.target);
-        expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
-        expect(comment.message).toBe(createdCommentPrivateChat.message);
-        expect(comment.type).toBe(createdCommentPrivateChat.type);
-        expect(comment.hash).toBe(createdCommentPrivateChat.hash);
+        expect(comment.Market.id).toBe(createdCommentListingItemQandA.marketId);
+        expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
+        expect(comment.target).toBe(createdCommentListingItemQandA.target);
+        expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
+        expect(comment.message).toBe(createdCommentListingItemQandA.message);
+        expect(comment.type).toBe(createdCommentListingItemQandA.type);
+        expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
     });
 });
