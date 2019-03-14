@@ -844,6 +844,27 @@ export class TestDataService {
             sender = generateParams.sender;
         }
 
+        let target;
+        if (!generateParams.target) {
+            const defaultProfile = await this.profileService.getDefault();
+            const profile = defaultProfile.toJSON();
+            target = profile.address;
+        } else {
+            target = generateParams.target;
+        }
+
+        let market;
+        let marketId;
+        if (!generateParams.marketId) {
+            const defaultMarket = await this.marketService.getDefault();
+            market = defaultMarket.toJSON();
+            marketId = market.id;
+        } else {
+            marketId = generateParams.marketId;
+            market = await this.marketService.findOne(marketId);
+        }
+        this.log.error('marketId = ' + JSON.stringify(marketId, null, 2));
+
         const type = generateParams.type || CommentType.PRIVATE_CHAT;
 
         const currentTime = new Date().getTime();
@@ -865,6 +886,7 @@ export class TestDataService {
         // TODO: parent comment create?
 
         const commentCreateRequest = {
+            market_id: marketId,
             sender,
             type,
             message: Faker.lorem.lines(1),
@@ -873,10 +895,17 @@ export class TestDataService {
             expiredAt: timeEnd
         } as CommentCreateRequest;
 
+        if (type === CommentType.PRIVATE_CHAT) {
+            commentCreateRequest.target = target;
+            commentCreateRequest.receiver = market.address;
+        } else {
+            commentCreateRequest.target = 'N/A';
+            commentCreateRequest.receiver = target;
+        }
+
         // TODO: This probably isn't needed as it's calculated by the service
         // commentCreateRequest.hash = ObjectHash.getHash(commentCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
-        // this.log.debug('commentCreateRequest: ', JSON.stringify(commentCreateRequest, null, 2));
         return commentCreateRequest;
     }
 

@@ -70,7 +70,7 @@ describe('VoteGetCommand', () => {
             false,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             defaultProfile.address, // sender
-            generateListingItemParams // target
+            createdListingItemHash // target
         ]).toParamsArray();
 
         const commentsQandA = await testUtil.generateData(

@@ -18,6 +18,7 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     public type = null;
     public sender = null;
     public target = null;
+    public marketId = null;
 
 
     /**
@@ -33,6 +34,7 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.type = generateParams[3] ? generateParams[3] : null;
             this.sender = generateParams[4] ? generateParams[4] : null;
             this.target = generateParams[5] ? generateParams[5] : null;
+            this.marketId = generateParams[6] ? generateParams[6] : null;
         }
     }
 
@@ -43,7 +45,8 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.generatePastComment,
             this.type,
             this.sender,
-            this.target
+            this.target,
+            this.marketId
         ];
     }
 }
