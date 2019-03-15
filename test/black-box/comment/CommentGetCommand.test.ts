@@ -107,7 +107,7 @@ describe('VoteGetCommand', () => {
         createdCommentPrivateChat = commentsPrivateChat[0];
     });
 
-    test('Should fail to return a Comment because invalid marketId', async () => {
+    test('Should fail to return a Comment because invalid commentId', async () => {
         const invalidId = -1;
         const response: any = await testUtil.rpc(commentCommand, [
             commentGetCommand,
@@ -118,7 +118,7 @@ describe('VoteGetCommand', () => {
         expect(response.error.error.message).toBe(new NotFoundException(invalidId).getMessage());
     });
 
-    test('Should fail to return a Comment because null marketId', async () => {
+    test('Should fail to return a Comment because null commentId', async () => {
         const invalidId = null;
         const response: any = await testUtil.rpc(commentCommand, [
             commentGetCommand,
@@ -129,7 +129,7 @@ describe('VoteGetCommand', () => {
         expect(response.error.error.message).toBe(new InvalidParamException('commentId|marketId', 'number').getMessage());
     });
 
-    test('Should fail to return a Comment because non-existent marketId', async () => {
+    test('Should fail to return a Comment because non-existent commentId', async () => {
         const nonExistentId = 1;
         const response: any = await testUtil.rpc(commentCommand, [
             commentGetCommand,
@@ -140,7 +140,7 @@ describe('VoteGetCommand', () => {
         expect(response.error.error.message).toBe(new NotFoundException(nonExistentId).getMessage());
     });
 
-    test('Should fail to return a Comment because invalid id', async () => {
+    test('Should fail to return a Comment because invalid commentId', async () => {
         const invalidId = 'THIS_ISNT_OUR_HASH';
         const response: any = await testUtil.rpc(commentCommand, [
             commentGetCommand,
@@ -163,7 +163,43 @@ describe('VoteGetCommand', () => {
         expect(response.error.error.message).toBe(new NotFoundException(invalidHash).getMessage());
     });
 
-    test('Should return a PRIVATE_CHAT Comment specified by id', async () => {
+    test('Should fail to return a Comment because invalid marketId', async () => {
+        const invalidId = 'THIS_ISNT_OUR_ID';
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentGetCommand,
+            invalidId,
+            createdCommentPrivateChat.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('commentId|marketId', 'number').getMessage());
+    });
+
+    test('Should fail to return a Comment because invalid marketId', async () => {
+        const invalidId = -1;
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentGetCommand,
+            invalidId,
+            createdCommentPrivateChat.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidId).getMessage());
+    });
+
+    test('Should fail to return a Comment because non-existent marketId', async () => {
+        const invalidId = 1;
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentGetCommand,
+            invalidId,
+            createdCommentPrivateChat.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidId).getMessage());
+    });
+
+    test('Should return a PRIVATE_CHAT Comment specified by marketId', async () => {
         // comment get (<commentId> | <commendHash>)
         const response = await testUtil.rpc(
             commentCommand,
@@ -182,7 +218,7 @@ describe('VoteGetCommand', () => {
         expect(comment.hash).toBe(createdCommentPrivateChat.hash);
     });
 
-    test('Should return a PRIVATE_CHAT Comment specified by id', async () => {
+    test('Should return a PRIVATE_CHAT Comment specified by marketId and comment hash', async () => {
         // comment get (<commentId> | <commendHash>)
         const response = await testUtil.rpc(
             commentCommand,
@@ -201,7 +237,7 @@ describe('VoteGetCommand', () => {
         expect(comment.hash).toBe(createdCommentPrivateChat.hash);
     });
 
-    test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by id', async () => {
+    test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by commentId', async () => {
         // comment get (<commentId> | <commendHash>)
         const response = await testUtil.rpc(
             commentCommand,
@@ -220,7 +256,7 @@ describe('VoteGetCommand', () => {
         expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
     });
 
-    test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by id', async () => {
+    test('Should return a LISTINGITEM_QUESTION_AND_ANSWERS Comment specified by marketId and comment hash', async () => {
         // comment get (<commentId> | <commendHash>)
         const response = await testUtil.rpc(
             commentCommand,

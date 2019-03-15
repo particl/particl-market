@@ -16,6 +16,7 @@ import { CommentService } from '../../services/CommentService';
 import { Comment } from '../../models/Comment';
 import {MissingParamException} from '../../exceptions/MissingParamException';
 import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MarketService} from '../../services/MarketService';
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
@@ -23,7 +24,8 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService
+        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
     ) {
         super(Commands.COMMENT_GET);
         this.log = new Logger(__filename);
@@ -57,14 +59,12 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
         }
         if (data.params.length >= 2) {
             const commentHash = data.params[1];
-            this.log.error('1000:');
             if (typeof commentHash !== 'string') {
-                this.log.error('2000:');
                 throw new InvalidParamException('commentHash', 'string');
             }
 
-            this.log.error('3000:');
-            // TODO: Check market exists
+            // Check market exists (Throws NotFoundException)
+            await this.marketService.findOne(id);
         }
         return data;
     }
