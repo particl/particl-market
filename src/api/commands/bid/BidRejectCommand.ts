@@ -11,7 +11,6 @@ import * as resources from 'resources';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemService } from '../../services/ListingItemService';
-import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { BidActionService } from '../../services/BidActionService';
@@ -20,8 +19,8 @@ import { BidService } from '../../services/BidService';
 import { BidRejectReason } from '../../enums/BidRejectReason';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import { ImageDataProtocolType } from '../../enums/ImageDataProtocolType';
-import { ImageDataEncodingType } from '../../enums/ImageDataEncodingType';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -54,7 +53,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
                 return value.toJSON();
             });
 
-        return this.bidActionService.reject(bid);
+        return this.bidActionService.reject(bid, reason);
     }
 
     /**
@@ -84,7 +83,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         }
 
         const bidId = data.params[0];
-        const bid: any;
+        let bid: any;
         try {
             bid = await this.bidService.findOne(bidId);
         } catch (ex) {
