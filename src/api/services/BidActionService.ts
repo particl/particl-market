@@ -38,6 +38,7 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
+import {BidRejectReason} from '../enums/BidRejectReason';
 
 // todo: move
 export interface OutputData {
@@ -742,14 +743,16 @@ export class BidActionService {
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async reject(bid: resources.Bid, reason: string): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
 
-            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
-                .then(value => {
-                    return value.toJSON();
-                });
+            let listingItem: any = await this.listingItemService.findOne(bid.ListingItem.id, true);
+            if (!listingItem) {
+                this.log.error('Listing item not found.');
+                throw new MessageException('Listing item not found.');
+            }
+            listingItem = listingItem.toJSON();
 
             // fetch the seller profile
             const sellerProfileModel: Profile = await this.profileService.findOneByAddress(listingItem.seller);
@@ -759,8 +762,14 @@ export class BidActionService {
             }
             const sellerProfile = sellerProfileModel.toJSON();
 
+            if (!BidRejectReason[reason]) {
+                this.log.error('Unknown BidRejectReason = ${reason}.');
+                throw new MessageException(`Unknown BidRejectReason = ${reason}.`);
+            }
+
             // create the bid reject message
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash);
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash,
+                [ { id: 'reason', value: reason } ] as IdValuePair[] );
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
