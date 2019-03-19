@@ -235,6 +235,4 @@ describe('VoteGetCommand', () => {
             expect(result3[i].hash).toBe(createdCommentListingItemQandA[j].hash);
         }
     });
-
-    // TODO: test final search arg
 });
