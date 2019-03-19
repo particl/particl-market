@@ -80,9 +80,9 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
                 if (hashOrPage < 0) {
                     throw new InvalidParamException('page', 'number');
                 }
+                await this.validatePage(data);
             } else if (typeof hashOrPage === 'string') {
                 // It's a commentHash
-                await this.validateHash(data);
             } else {
                 throw new InvalidParamException('commentHash|page', 'string|number');
             }
@@ -95,7 +95,7 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
         return data;
     }
 
-    public async validateHash(data: RpcRequest): Promise<RpcRequest> {
+    public async validatePage(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length >= 3) {
             const pageLimit = data.params[2];
             if (typeof pageLimit !== 'number' || pageLimit <= 0) {
@@ -130,15 +130,15 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             }
         }
 
-        if (data.params.length >= 5) {
-            const type = data.params[4];
+        if (data.params.length >= 6) {
+            const type = data.params[5];
             if (typeof type !== 'string' || !CommentType[type]) {
                 throw new InvalidParamException('type', 'CommentType');
             }
         }
 
-        if (data.params.length >= 6) {
-            const target = data.params[5];
+        if (data.params.length >= 7) {
+            const target = data.params[6];
             if (typeof target !== 'string') {
                 throw new InvalidParamException('target', 'string');
             }

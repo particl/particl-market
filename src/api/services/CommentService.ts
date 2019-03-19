@@ -63,12 +63,12 @@ export class CommentService {
      */
     @validate()
     public async search(@request(CommentSearchParams) options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        this.log.error('options = ' + JSON.stringify(options, null, 2));
         return await this.commentRepo.search(options, withRelated);
     }
 
     @validate()
     public async create(@request(CommentCreateRequest) data: CommentCreateRequest): Promise<Comment> {
-
         const body = JSON.parse(JSON.stringify(data));
         body.hash = ObjectHash.getHash(body, HashableObjectType.COMMENT_CREATEREQUEST);
         body.createdAt = new Date().getTime();

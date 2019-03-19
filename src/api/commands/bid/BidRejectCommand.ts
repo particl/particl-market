@@ -61,10 +61,12 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
+            this.log.error('Missing bidId.');
             throw new MessageException('Missing bidId.');
         }
 
         if (typeof data.params[0] !== 'number') {
+            this.log.error('bidId should be a number.');
             throw new MessageException('bidId should be a number.');
         }
 
@@ -75,13 +77,13 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             });
 
         // make sure ListingItem exists
-        if (_.isEmpty(bid.ListingItem)) {
+        if (!bid.ListingItem) {
             this.log.error('ListingItem not found.');
             throw new MessageException('ListingItem not found.');
         }
 
         // make sure we have a ListingItemTemplate, so we know it's our item
-        if (_.isEmpty(bid.ListingItem.ListingItemTemplate)) {
+        if (!bid.ListingItem.ListingItemTemplate) {
             this.log.error('Not your ListingItem.');
             throw new MessageException('Not your ListingItem.');
         }
@@ -90,12 +92,11 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <bidId> ';
+        return this.getName() + ' <bidId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-        + '    <itemhash>               - String - The hash if the item whose bid we want to reject. '
         + '    <bidId>                  - Numeric - The ID of the bid we want to reject. ';
     }
 

@@ -810,12 +810,12 @@ export class TestDataService {
         }
         // TODO: proposalHash is not set to listingitem
 
-        const items: resources.Proposal[] = [];
+        const items: resources.Comment[] = [];
 
         for (let i = amount; i > 0; i--) {
             const commentCreateRequest = await this.generateCommentData(generateParams);
             const commentModel = await this.commentService.create(commentCreateRequest);
-            const comment: resources.Proposal = commentModel.toJSON();
+            const comment: resources.Comment = commentModel.toJSON();
             items.push(comment);
         }
 
@@ -896,11 +896,11 @@ export class TestDataService {
         } as CommentCreateRequest;
 
         if (type === CommentType.PRIVATE_CHAT) {
-            commentCreateRequest.target = target;
-            commentCreateRequest.receiver = market.address;
-        } else {
             commentCreateRequest.target = 'N/A';
             commentCreateRequest.receiver = target;
+        } else {
+            commentCreateRequest.target = target;
+            commentCreateRequest.receiver = market.address;
         }
 
         // TODO: This probably isn't needed as it's calculated by the service

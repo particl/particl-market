@@ -96,7 +96,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                 }
 
                 if (options.target) {
-                    qb.where('comments.type', '=', options.target);
+                    qb.where('comments.target', '=', options.target);
                 }
             })
             .orderBy(`comments.${options.orderField}`, options.order)
