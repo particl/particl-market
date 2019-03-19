@@ -70,6 +70,300 @@ describe('VoteGetCommand', () => {
         createdListingItemHash = listingItems[0].hash;
     });
 
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid marketId', async () => {
+        const invalidMarketId = -1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            invalidMarketId,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidMarketId).getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid marketId', async () => {
+        const invalidMarketId = 2;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            invalidMarketId,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidMarketId).getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid marketId', async () => {
+        const invalidMarketId = 'INVALID_MARKET_ID';
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            invalidMarketId,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid marketId', async () => {
+        const invalidMarketId = null;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            invalidMarketId,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        // @ts-ignore
+        expect(response.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid profileId', async () => {
+        const invalidProfileId = -1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            invalidProfileId,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidProfileId).getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid profileId', async () => {
+        const invalidProfileId = 2;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            invalidProfileId,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new NotFoundException(invalidProfileId).getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid profileId', async () => {
+        const invalidProfileId = 'INVALID_PROFILE_ID';
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            invalidProfileId,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid profileId', async () => {
+        const invalidProfileId = null;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            invalidProfileId,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        // @ts-ignore
+        expect(response.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid type', async () => {
+        const invalidCommentType = 'INVALID_COMMENT_TYPE';
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            invalidCommentType,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid type', async () => {
+        const invalidCommentType = -1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            invalidCommentType,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid type', async () => {
+        const invalidCommentType = 1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            invalidCommentType,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid type', async () => {
+        const invalidCommentType = null;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            invalidCommentType,
+            defaultProfile.address,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid target', async () => {
+        const invalidTarget = -1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            invalidTarget,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid target', async () => {
+        const invalidTarget = 1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            invalidTarget,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid target', async () => {
+        const invalidTarget = null;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            invalidTarget,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid target', async () => {
+        const invalidTarget = 'INVALID_TARGET';
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            invalidTarget,
+            commentMessagePrivateChat
+        ]);
+        response.expectJson();
+        response.expectStatusCode(500);
+
+        expect(response.error.error.message.error.code).toBe(-8);
+        expect(response.error.error.message.error.message).toBe('Invalid to address.');
+        // expect(response.error.error.message).toBe(new NotFoundException(invalidTarget).getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid message', async () => {
+        const invalidMessage = -1;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            invalidMessage
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('message', 'string').getMessage());
+    });
+
+    test('Should fail to create a Comment of type PRIVATE_CHAT because invalid message', async () => {
+        const invalidMessage = null;
+        // post a vote
+        const response: any = await testUtil.rpc(commentCommand, [
+            commentPostCommand,
+            defaultMarket.id,
+            defaultProfile.id,
+            CommentType.PRIVATE_CHAT,
+            defaultProfile.address,
+            invalidMessage
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new InvalidParamException('message', 'string').getMessage());
+    });
+
     test('Should create a Comment of type PRIVATE_CHAT', async () => {
         // post a vote
         const response: any = await testUtil.rpc(commentCommand, [

@@ -16,6 +16,7 @@ import {NotFoundException} from '../../../src/api/exceptions/NotFoundException';
 import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 import {SearchOrder} from '../../../src/api/enums/SearchOrder';
 import {GenerateCommentParams} from '../../../src/api/requests/params/GenerateCommentParams';
+import {message} from '../../../src/core/api/Validate';
 
 describe('VoteGetCommand', () => {
 
@@ -32,8 +33,15 @@ describe('VoteGetCommand', () => {
 
     let createdListingItemHash;
 
-    let createdCommentPrivateChat: resources.Comment;
-    let createdCommentListingItemQandA: resources.Comment;
+    let createdCommentPrivateChat;
+    let createdCommentListingItemQandA;
+
+    const numPerPage = 10;
+    const numGeneratedComments = 7;
+    const searchResultSize = (numGeneratedComments < numPerPage ? numGeneratedComments : numPerPage);
+
+    let createdCommentPrivateChatTarget;
+    let createdCommentListingItemQandATarget;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -64,95 +72,169 @@ describe('VoteGetCommand', () => {
         );
         createdListingItemHash = listingItems[0].hash;
 
+        createdCommentListingItemQandATarget = createdListingItemHash;
         const generateCommentParamsQandA = new GenerateCommentParams([
             false,
             false,
             false,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             defaultProfile.address, // sender
-            createdListingItemHash // target
+            createdCommentListingItemQandATarget // target
         ]).toParamsArray();
 
-        const commentsQandA = await testUtil.generateData(
+        createdCommentListingItemQandA = await testUtil.generateData(
             CreatableModel.COMMENT,     // what to generate
-            1,                      // how many to generate
+            numGeneratedComments,                     // how many to generate
             true,                // return model
             generateCommentParamsQandA           // what kind of data to generate
-        );
-        createdCommentListingItemQandA = commentsQandA[0];
+        ) as resources.Comment[];
 
+        createdCommentPrivateChatTarget = 'N/A';
         const generateCommentParamsPrivateChat = new GenerateCommentParams([
             false,
             false,
             false,
             CommentType.PRIVATE_CHAT,
             defaultProfile.address, // sender
-            defaultProfile.address // target
+            // createdCommentPrivateChatTarget // target
         ]).toParamsArray();
 
-        const commentsPrivateChat = await testUtil.generateData(
+        createdCommentPrivateChat = await testUtil.generateData(
             CreatableModel.COMMENT,     // what to generate
-            1,                      // how many to generate
+            numGeneratedComments,                      // how many to generate
             true,                // return model
             generateCommentParamsPrivateChat     // what kind of data to generate
-        );
-        createdCommentPrivateChat = commentsPrivateChat[0];
+        ) as resources.Comment[];
     });
 
     // TODO: Negative tests
     // TODO: More thorough testing (especially with orderField)
 
-    test('Should search for a comment of type PRIVATE_CHAT', async () => {
+    test('Should search for a comment of type PRIVATE_CHAT DESC', async () => {
+        createdCommentPrivateChat.sort((a: resources.Comment, b: resources.Comment) => {
+            if (a.message <= b.message) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
         const response2: any = await testUtil.rpc(commentCommand, [
             commentSearchCommand,
-            createdCommentListingItemQandA.marketId,
+            createdCommentPrivateChat[0].marketId,
             0,
-            10,
+            numPerPage,
             SearchOrder.DESC,
-            'posted_at',
-            CommentType.PRIVATE_CHAT
-            // TODO: test final search arg
+            'message',
+            CommentType.PRIVATE_CHAT,
+            createdCommentPrivateChatTarget
         ]);
         response2.expectJson();
         response2.expectStatusCode(200);
         const result2: any = response2.getBody()['result'];
-        expect(result2.length).toBe(1);
-        const comment = result2[0];
+        expect(result2.length).toBe(searchResultSize);
 
-        // throw new MessageException('createdCommentPrivateChat = ' + JSON.stringify(createdCommentPrivateChat, null, 2))
-
-        expect(comment.Market.id).toBe(createdCommentPrivateChat.marketId);
-        expect(comment.sender).toBe(createdCommentPrivateChat.sender);
-        expect(comment.target).toBe(createdCommentPrivateChat.target);
-        expect(comment.receiver).toBe(createdCommentPrivateChat.receiver);
-        expect(comment.message).toBe(createdCommentPrivateChat.message);
-        expect(comment.type).toBe(createdCommentPrivateChat.type);
-        expect(comment.hash).toBe(createdCommentPrivateChat.hash);
+        for (let i = 0; i < searchResultSize; ++i) {
+            expect(result2[i].Market.id).toBe(createdCommentPrivateChat[i].marketId);
+            expect(result2[i].sender).toBe(createdCommentPrivateChat[i].sender);
+            expect(result2[i].target).toBe(createdCommentPrivateChat[i].target);
+            expect(result2[i].receiver).toBe(createdCommentPrivateChat[i].receiver);
+            expect(result2[i].message).toBe(createdCommentPrivateChat[i].message);
+            expect(result2[i].type).toBe(createdCommentPrivateChat[i].type);
+            expect(result2[i].hash).toBe(createdCommentPrivateChat[i].hash);
+        }
     });
 
-    test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS', async () => {
+    test('Should search for a comment of type PRIVATE_CHAT ASC', async () => {
+        const response3: any = await testUtil.rpc(commentCommand, [
+            commentSearchCommand,
+            createdCommentPrivateChat[0].marketId,
+            0,
+            10,
+            SearchOrder.ASC,
+            'message',
+            CommentType.PRIVATE_CHAT,
+            createdCommentPrivateChatTarget
+        ]);
+        response3.expectJson();
+        response3.expectStatusCode(200);
+        const result3: any = response3.getBody()['result'];
+        expect(result3.length).toBe(searchResultSize);
+
+        for (let i = 0; i < searchResultSize; ++i) {
+            const j = createdCommentPrivateChat.length - i - 1;
+            expect(result3[i].Market.id).toBe(createdCommentPrivateChat[j].marketId);
+            expect(result3[i].sender).toBe(createdCommentPrivateChat[j].sender);
+            expect(result3[i].target).toBe(createdCommentPrivateChat[j].target);
+            expect(result3[i].receiver).toBe(createdCommentPrivateChat[j].receiver);
+            expect(result3[i].message).toBe(createdCommentPrivateChat[j].message);
+            expect(result3[i].type).toBe(createdCommentPrivateChat[j].type);
+            expect(result3[i].hash).toBe(createdCommentPrivateChat[j].hash);
+        }
+    });
+
+    test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS DESC', async () => {
+        createdCommentListingItemQandA.sort((a, b) => {
+            if (a.message <= b.message) {
+                return 1;
+            } else {
+                return -1;
+            }
+        });
+
         const response2: any = await testUtil.rpc(commentCommand, [
             commentSearchCommand,
-            createdCommentPrivateChat.marketId,
+            createdCommentListingItemQandA[0].marketId,
             0,
             10,
             SearchOrder.DESC,
-            'posted_at',
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
-            // TODO: test final search arg
+            'message',
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            createdCommentListingItemQandATarget
         ]);
         response2.expectJson();
         response2.expectStatusCode(200);
         const result2: any = response2.getBody()['result'];
-        expect(result2.length).toBe(1);
-        const comment = result2[0];
+        expect(result2.length).toBe(searchResultSize);
 
-        expect(comment.Market.id).toBe(createdCommentListingItemQandA.marketId);
-        expect(comment.sender).toBe(createdCommentListingItemQandA.sender);
-        expect(comment.target).toBe(createdCommentListingItemQandA.target);
-        expect(comment.receiver).toBe(createdCommentListingItemQandA.receiver);
-        expect(comment.message).toBe(createdCommentListingItemQandA.message);
-        expect(comment.type).toBe(createdCommentListingItemQandA.type);
-        expect(comment.hash).toBe(createdCommentListingItemQandA.hash);
+        for (let i = 0; i < searchResultSize; ++i) {
+            expect(result2[i].Market.id).toBe(createdCommentListingItemQandA[i].marketId);
+            expect(result2[i].sender).toBe(createdCommentListingItemQandA[i].sender);
+            expect(result2[i].target).toBe(createdCommentListingItemQandA[i].target);
+            expect(result2[i].receiver).toBe(createdCommentListingItemQandA[i].receiver);
+            expect(result2[i].message).toBe(createdCommentListingItemQandA[i].message);
+            expect(result2[i].type).toBe(createdCommentListingItemQandA[i].type);
+            expect(result2[i].hash).toBe(createdCommentListingItemQandA[i].hash);
+        }
     });
+
+    test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS ASC', async () => {
+        const response3: any = await testUtil.rpc(commentCommand, [
+            commentSearchCommand,
+            createdCommentListingItemQandA[0].marketId,
+            0,
+            10,
+            SearchOrder.ASC,
+            'message',
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            createdCommentListingItemQandATarget
+        ]);
+        response3.expectJson();
+        response3.expectStatusCode(200);
+        const result3: any = response3.getBody()['result'];
+        expect(result3.length).toBe(searchResultSize);
+
+        for (let i = 0; i < searchResultSize; ++i) {
+            const j = createdCommentListingItemQandA.length - i - 1;
+            expect(result3[i].Market.id).toBe(createdCommentListingItemQandA[j].marketId);
+            expect(result3[i].sender).toBe(createdCommentListingItemQandA[j].sender);
+            expect(result3[i].target).toBe(createdCommentListingItemQandA[j].target);
+            expect(result3[i].receiver).toBe(createdCommentListingItemQandA[j].receiver);
+            expect(result3[i].message).toBe(createdCommentListingItemQandA[j].message);
+            expect(result3[i].type).toBe(createdCommentListingItemQandA[j].type);
+            expect(result3[i].hash).toBe(createdCommentListingItemQandA[j].hash);
+        }
+    });
+
+    // TODO: test final search arg
 });
