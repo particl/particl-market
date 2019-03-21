@@ -36,7 +36,6 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import {MessageSize} from '../responses/MessageSize';
 
 export class ListingItemActionService {
 
@@ -137,6 +136,17 @@ export class ListingItemActionService {
         const listingItemMessage: ListingItemMessage = marketplaceMessage.item as ListingItemMessage;
 
         if (marketplaceMessage.market && marketplaceMessage.item) {
+
+            try {
+                const tmpListingItem = await this.listingItemService.findOneByHash(listingItemMessage.hash);
+                // If no error was thrown and a value was returned then we have a listing item with this hash already
+                if (tmpListingItem) {
+                    // Ignore listings with duplicated hashes.
+                    return SmsgMessageStatus.IGNORED;
+                }
+            } catch (ex) {
+                // Do nothing
+            }
 
             // get market
             const marketModel = await this.marketService.findByAddress(marketplaceMessage.market);
