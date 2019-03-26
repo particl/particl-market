@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -259,12 +255,12 @@ export const Targets = {
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
@@ -353,6 +349,8 @@ export const Targets = {
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         ListingItemFactory: 'ListingItemFactory',
+        ListingItemMessageFactory: 'ListingItemMessageFactory',
+        MarketplaceMessageFactory: 'MarketplaceMessageFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
@@ -361,10 +359,10 @@ export const Targets = {
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
-        ProposalResultProcessor: 'ProposalResultProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
+        ProposalResultProcessor: 'ProposalResultProcessor',
         SmsgMessageProcessor: 'SmsgMessageProcessor'
     },
     Middleware:     {

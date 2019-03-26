@@ -11,10 +11,10 @@ declare module 'resources' {
         order: number;
         forceInput: boolean;
         objectId: string;
-        createdAt: Date;
-        updatedAt: Date;
         ListingItemObjectDatas: ListingItemObjectData[];
 
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

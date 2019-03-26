@@ -2,12 +2,11 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
-import { validate, request } from '../../core/api/Validate';
+import { Core, Events, Targets, Types } from '../../constants';
+import { request, validate } from '../../core/api/Validate';
 import { ListingItem } from '../models/ListingItem';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
@@ -35,8 +34,8 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import {validateSync} from 'class-validator';
-import {ompVersion} from 'omp-lib/dist/omp';
+import {ListingItemMessageCreateParams, MarketplaceMessageFactory} from '../factories/MarketplaceMessageFactory';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ListingItemActionService {
 
@@ -58,6 +57,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -69,6 +69,7 @@ export class ListingItemActionService {
      * post a ListingItem based on a given ListingItem as ListingItemMessage
      *
      * @param data
+     * @param estimateFee
      * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
@@ -102,13 +103,17 @@ export class ListingItemActionService {
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create and post the itemmessage
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
-        const marketPlaceMessage = {
+        const marketplaceMessage = this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
+            template: itemTemplate
+        } as ListingItemMessageCreateParams);
+/*
+        const listingItemAddMessage = await this.listingItemFactory.getMessage(itemTemplate);
+        const marketplaceMessage = {
             version: ompVersion(),
-            item: listingItemMessage
+            action: listingItemAddMessage,
         } as MarketplaceMessage;
-
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention, estimateFee);
+*/
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
     }
 
     /**
