@@ -6,7 +6,7 @@ import * from 'jest';
 import { ActionMessageFactory } from '../../../../src/api/factories/ActionMessageFactory';
 import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
-import { ActionMessageInterface } from '../../../../src/api/messages/ActionMessageInterface';
+import { ActionMessageInterface } from '../../../../src/api/messages/actions/ActionMessageInterface';
 import { ActionMessageCreateRequest } from '../../../../src/api/requests/ActionMessageCreateRequest';
 import { LogMock } from '../../lib/LogMock';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -20,7 +20,7 @@ describe('EscrowFactory', () => {
         actionMessageFactory = new ActionMessageFactory(LogMock);
     });
 
-    test('Test ActionMessageFactory.getModel()', async () => {
+    test('Test ActionMessageFactory.get()', async () => {
 
         const testData: any[] = [
             { // Standard MPAction.MPA_BID
@@ -179,7 +179,7 @@ describe('EscrowFactory', () => {
         }
     });
 
-    test('Negative test ActionMessageFactory.getModel()', async () => {
+    test('Negative test ActionMessageFactory.get()', async () => {
         const testData: any[] = [
             { // Standard MPAction.MPA_BID, missing message
                 listingItemId: 0,

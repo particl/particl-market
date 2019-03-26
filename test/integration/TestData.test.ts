@@ -262,7 +262,7 @@ describe('TestDataService', () => {
         expect(result.ItemInformation.longDescription).toBe(listingItemTemplateData.itemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(listingItemTemplateData.itemInformation.itemCategory.name);
         expect(result.ItemInformation.ItemCategory.description).toBe(listingItemTemplateData.itemInformation.itemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(listingItemTemplateData.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.country).toBe(listingItemTemplateData.itemInformation.itemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(listingItemTemplateData.itemInformation.itemLocation.address);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.markerTitle);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.markerText);

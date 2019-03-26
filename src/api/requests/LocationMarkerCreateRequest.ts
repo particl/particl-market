@@ -18,7 +18,6 @@ export class LocationMarkerCreateRequest extends RequestBody {
     public lng: number;
 
     public markerTitle: string;
-
     public markerText: string;
 
 }

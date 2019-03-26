@@ -29,7 +29,7 @@ import { MessagingInformationUpdateRequest } from '../requests/MessagingInformat
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ListingItemFactory } from '../factories/model/ListingItemFactory';
 import { SmsgService } from './SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { EventEmitter } from 'events';
@@ -53,7 +53,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType

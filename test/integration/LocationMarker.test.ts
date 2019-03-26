@@ -81,7 +81,7 @@ describe('LocationMarker', () => {
                         key: 'cat_high_luxyry_items'
                     },
                     itemLocation: {
-                        region: 'Finland',
+                        country: 'Finland',
                         address: 'UPDATED'
                     }
                 }

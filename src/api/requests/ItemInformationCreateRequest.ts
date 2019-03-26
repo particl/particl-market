@@ -8,6 +8,7 @@ import {ItemCategoryCreateRequest} from './ItemCategoryCreateRequest';
 import {ItemLocationCreateRequest} from './ItemLocationCreateRequest';
 import {ShippingDestinationCreateRequest} from './ShippingDestinationCreateRequest';
 import {ItemImageCreateRequest} from './ItemImageCreateRequest';
+import {ItemCategoryUpdateRequest} from './ItemCategoryUpdateRequest';
 
 // tslint:disable:variable-name
 export class ItemInformationCreateRequest extends RequestBody {

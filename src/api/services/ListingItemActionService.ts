@@ -14,7 +14,7 @@ import { ItemCategoryService } from './ItemCategoryService';
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ListingItemFactory } from '../factories/model/ListingItemFactory';
 import { SmsgService } from './SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
@@ -26,7 +26,6 @@ import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalService } from './ProposalService';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
@@ -34,8 +33,9 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import {ListingItemMessageCreateParams, MarketplaceMessageFactory} from '../factories/MarketplaceMessageFactory';
+import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 
 export class ListingItemActionService {
 
@@ -56,8 +56,8 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -76,8 +76,8 @@ export class ListingItemActionService {
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         // fetch the listingItemTemplate
-        const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
-        const itemTemplate = itemTemplateModel.toJSON();
+        const itemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true)
+            .then(value => value.toJSON());
 
         // TODO: should validate that the template has the required info
         // TODO: recalculate the template.hash in case the related data has changed
@@ -98,21 +98,15 @@ export class ListingItemActionService {
 
         // todo: reason for this? to throw an exception unless category exists?!
         // find itemCategory with related
-        const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
-        const itemCategory = itemCategoryModel.toJSON();
+        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true)
+            .then(value => value.toJSON());
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create and post the itemmessage
-        const marketplaceMessage = this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
+        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
             template: itemTemplate
         } as ListingItemMessageCreateParams);
-/*
-        const listingItemAddMessage = await this.listingItemFactory.getMessage(itemTemplate);
-        const marketplaceMessage = {
-            version: ompVersion(),
-            action: listingItemAddMessage,
-        } as MarketplaceMessage;
-*/
+
         return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
     }
 
@@ -139,20 +133,22 @@ export class ListingItemActionService {
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const listingItemMessage: ListingItemMessage = marketplaceMessage.item as ListingItemMessage;
+        const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
+
+        // const listingItemMessage: ListingItemMessage = actionMessage.item as ListingItemMessage;
 
         return await this.marketService.findByAddress(smsgMessage.to)
             .then(async marketModel => {
                 const market: resources.Market = marketModel.toJSON();
 
                 // create the new custom categories in case there are some
-                await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
+                await this.itemCategoryService.createCategoriesFromArray(listingItemAddMessage.item.information.category);
 
                 // find the categories/get the root category with related
                 const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot()
                     .then(value => value.toJSON());
 
-                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, smsgMessage, market.id, rootCategory);
+                const listingItemCreateRequest = await this.listingItemFactory.get(listingItemAddMessage, smsgMessage, market.id, rootCategory);
                 // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 let listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
@@ -212,32 +208,6 @@ export class ListingItemActionService {
         const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
         return flaggedItemModel.toJSON();
     }
-
-    /**
-     *
-     * @param {"resources".ProposalResult} proposalResult
-     * @returns {Promise<boolean>}
-     */
-    /*private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
-        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 0;
-        });
-        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
-            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
-        });
-
-        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-        // at minimum, a total of 10 votes
-        // at minimum, 30% of votes saying remove
-
-        // TODO: This needs to call the same code we use for removigng votes!!!!!!
-        if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
-            && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
-            return false;
-        } else {
-            return true;
-        }
-    }*/
 
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners');

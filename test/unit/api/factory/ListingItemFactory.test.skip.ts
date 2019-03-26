@@ -4,7 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
+import { ListingItemFactory } from '../../../../src/api/factories/model/ListingItemFactory';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
@@ -49,7 +49,7 @@ describe('ListingItemFactory', () => {
         } as resources.SmsgMessage;
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+            await listingItemFactory.get(createdListingItemMessage, smsgMessage, marketId, listingItemCategoryRootWithRelated);
         expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage);
     });
 
@@ -69,7 +69,7 @@ describe('ListingItemFactory', () => {
         };
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessageFromBasic1, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+            await listingItemFactory.get(createdListingItemMessageFromBasic1, smsgMessage, marketId, listingItemCategoryRootWithRelated);
         expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic1);
     });
 
@@ -89,7 +89,7 @@ describe('ListingItemFactory', () => {
         };
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessageFromBasic2, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+            await listingItemFactory.get(createdListingItemMessageFromBasic2, smsgMessage, marketId, listingItemCategoryRootWithRelated);
         expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic2);
     });
 
@@ -109,7 +109,7 @@ describe('ListingItemFactory', () => {
         };
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessageFromBasic3, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+            await listingItemFactory.get(createdListingItemMessageFromBasic3, smsgMessage, marketId, listingItemCategoryRootWithRelated);
         expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic3);
     });
 
@@ -157,7 +157,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.location).not.toHaveProperty('updatedAt');
         expect(message.information.location).not.toHaveProperty('createdAt');
         expect(message.information.location).not.toHaveProperty('LocationMarker');
-        expect(message.information.location.country).toBe(testData.ItemInformation.ItemLocation.region);
+        expect(message.information.location.country).toBe(testData.ItemInformation.ItemLocation.country);
         expect(message.information.location.address).toBe(testData.ItemInformation.ItemLocation.address);
 
         // message.information.location.gps
@@ -349,7 +349,7 @@ describe('ListingItemFactory', () => {
         expect(result.itemInformation.itemCategory.parentItemCategoryId).not.toBeNull();
 
         // ItemInformation.ItemLocation
-        expect(result.itemInformation.itemLocation.region).toBe(message.information.location.country);
+        expect(result.itemInformation.itemLocation.country).toBe(message.information.location.country);
         expect(result.itemInformation.itemLocation.address).toBe(message.information.location.address);
 
         // ItemInformation.ItemLocation.LocationMarker

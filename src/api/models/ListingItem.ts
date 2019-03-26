@@ -176,7 +176,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 // searchBy by item location (country)
                 if (options.country && typeof options.country === 'string') {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
-                    qb.where('item_locations.region', options.country);
+                    qb.where('item_locations.country', options.country);
                     ListingItem.log.debug('...searchBy by location: ', options.country);
                 }
 

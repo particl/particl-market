@@ -12,9 +12,9 @@ export class ItemLocationUpdateRequest extends RequestBody {
     public item_information_id: number;
 
     @IsNotEmpty()
-    public region: string;
-
+    public country: string;
     public address: string;
+    public description: string;
 
     public locationMarker;
 

@@ -11,7 +11,7 @@ import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
-import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
+import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -50,7 +50,7 @@ describe('ListingItemMessage', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
+        listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
         listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
@@ -116,7 +116,7 @@ describe('ListingItemMessage', () => {
         expect(result.ItemInformation.ItemCategory.parentItemCategoryId).not.toBeNull();
 
         // ItemInformation.ItemLocation
-        expect(result.ItemInformation.ItemLocation.region).toBe(message.information.location.country);
+        expect(result.ItemInformation.ItemLocation.country).toBe(message.information.location.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(message.information.location.address);
 
         // ItemInformation.ItemLocation.LocationMarker

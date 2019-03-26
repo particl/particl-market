@@ -15,9 +15,9 @@ import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateReque
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { ActionMessageInterface } from '../messages/actions/ActionMessageInterface';
 
 export class ActionMessageFactory {
 

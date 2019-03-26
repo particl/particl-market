@@ -1,13 +1,12 @@
 import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Targets, Types } from '../../constants';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
 import { ListingItemMessageCreateParams } from './MarketplaceMessageFactory';
-import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
-import { MessageException } from '../exceptions/MessageException';
+import { ShippingAvailability } from '../../enums/ShippingAvailability';
+import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { MessageException } from '../../exceptions/MessageException';
 import {
     EscrowConfig, EscrowRatio,
     Item,
@@ -22,10 +21,10 @@ import {
     PaymentInfoEscrow, PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
 import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { ItemCategoryFactory } from './ItemCategoryFactory';
+import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { ItemImageDataService } from '../services/ItemImageDataService';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ItemImageDataService } from '../../services/ItemImageDataService';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 
@@ -46,7 +45,7 @@ export class ListingItemMessageFactory {
      *
      * todo: supports only MPA_LISTING_ADD for now...
      * @param params
-     * @returns {Promise<ListingItemMessage>}
+     * @returns {Promise<MPA>}
      */
     public async get(params: ListingItemMessageCreateParams): Promise<MPA> {
 
@@ -89,8 +88,8 @@ export class ListingItemMessageFactory {
     private async getMessageItemInfoLocation(itemLocation: resources.ItemLocation): Promise<Location> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
         const informationLocation: any = {};
-        if (itemLocation.region) {
-            informationLocation.country = itemLocation.region;
+        if (itemLocation.country) {
+            informationLocation.country = itemLocation.country;
         }
         if (itemLocation.address) {
             informationLocation.address = itemLocation.address;
@@ -133,7 +132,7 @@ export class ListingItemMessageFactory {
             const imageData = await this.getMessageItemInfoImageData(image.ItemImageDatas);
             contentReferences.push({
                 hash: image.hash,
-                data: imageData,
+                datas: imageData,
                 featured: image.featured
             } as ContentReference);
         }

@@ -20,7 +20,7 @@ import { MessageObjectService } from './MessageObjectService';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { MarketService } from './MarketService';
 import { ActionMessageFactory } from '../factories/ActionMessageFactory';
-import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import * as resources from 'resources';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 

@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MPA } from 'omp-lib/dist/interfaces/omp';
-import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 
 /**
  * MPAExtension defines how the MPA will be extended

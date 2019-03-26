@@ -36,7 +36,7 @@ describe('ItemLocationUpdateCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: 'CN',
+                country: 'CN',
                 address: 'USA'
             }
         },
@@ -90,7 +90,7 @@ describe('ItemLocationUpdateCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        expect(result.region).toBe(testDataUpdated[1]);
+        expect(result.country).toBe(testDataUpdated[1]);
         expect(result.address).toBe(testDataUpdated[2]);
         expect(result.itemInformationId).toBe(createdItemInformationId);
     });
@@ -103,7 +103,7 @@ describe('ItemLocationUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.region).toBe(testDataUpdated2[2]);
+        expect(result.country).toBe(testDataUpdated2[2]);
         expect(result.address).toBe(testDataUpdated2[3]);
         expect(result.itemInformationId).toBe(createdItemInformationId);
         expect(result.LocationMarker.markerTitle).toBe(testDataUpdated2[4]);

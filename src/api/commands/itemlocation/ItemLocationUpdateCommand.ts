@@ -34,7 +34,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     /**
      * data.params[]:
      * [0]: listing_item_template_id
-     * [1]: region (country/countryCode)
+     * [1]: country (country/countryCode)
      * [2]: address, optional
      * [3]: gps marker title, optional
      * [4]: gps marker description, optional
@@ -61,7 +61,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             } else {
                 const updateRequest = {
                     item_information_id: itemInformation.id,
-                    region: countryCode,
+                    country: countryCode,
                     address: data.params[2]
                 } as ItemLocationUpdateRequest;
 
@@ -83,14 +83,14 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
+        return this.getName() + ' <listingItemTemplateId> <country> <address> <gpsMarkerTitle>'
             + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want. \n'
-            + '    <region>                 - String - Region, i.e. country or country code. \n'
+            + '    <country>                 - String - Country, i.e. country or country code. \n'
             + '    <address>                - String - Address. \n'
             + '    <gpsMarkerTitle>         - String - Gps marker title. \n'
             + '    <gpsMarkerDescription>   - String - Gps marker text. \n'

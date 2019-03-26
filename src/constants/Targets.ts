@@ -343,14 +343,18 @@ export const Targets = {
         }
     },
     Factory:     {
+        message: {
+            ListingItemMessageFactory: 'ListingItemMessageFactory',
+            MarketplaceMessageFactory: 'MarketplaceMessageFactory'
+        },
+        model: {
+            ListingItemFactory: 'ListingItemFactory'
+        },
         ActionMessageFactory: 'ActionMessageFactory',
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
-        ListingItemFactory: 'ListingItemFactory',
-        ListingItemMessageFactory: 'ListingItemMessageFactory',
-        MarketplaceMessageFactory: 'MarketplaceMessageFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',

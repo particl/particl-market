@@ -70,7 +70,7 @@ describe('ListingItemGetCommand', () => {
         expect(result.ItemInformation.longDescription).toBe(createdListingItem.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(createdListingItem.ItemInformation.ItemCategory.name);
         expect(result.ItemInformation.ItemCategory.description).toBe(createdListingItem.ItemInformation.ItemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(createdListingItem.ItemInformation.ItemLocation.region);
+        expect(result.ItemInformation.ItemLocation.country).toBe(createdListingItem.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(createdListingItem.ItemInformation.ItemLocation.address);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerTitle);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerText);
@@ -121,7 +121,7 @@ describe('ListingItemGetCommand', () => {
         expect(result.ItemInformation.longDescription).toBe(createdListingItem.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(createdListingItem.ItemInformation.ItemCategory.name);
         expect(result.ItemInformation.ItemCategory.description).toBe(createdListingItem.ItemInformation.ItemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(createdListingItem.ItemInformation.ItemLocation.region);
+        expect(result.ItemInformation.ItemLocation.country).toBe(createdListingItem.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(createdListingItem.ItemInformation.ItemLocation.address);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerTitle);
         expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerText);

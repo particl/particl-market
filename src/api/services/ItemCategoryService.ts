@@ -33,6 +33,7 @@ export class ItemCategoryService {
         return this.itemCategoryRepo.findAll();
     }
 
+    // TODO: findOneXXX should always throw if not found
     public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
         return itemCategory;

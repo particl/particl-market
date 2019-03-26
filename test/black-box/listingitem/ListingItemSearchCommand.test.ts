@@ -371,10 +371,10 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy ListingItems by country (ItemLocation)', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
-        params.country = createdListingItem.ItemInformation.ItemLocation.region;
+        params.country = createdListingItem.ItemInformation.ItemLocation.country;
 
-        const itemCount = createdListingItem.ItemInformation.ItemLocation.region
-        === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.region
+        const itemCount = createdListingItem.ItemInformation.ItemLocation.country
+        === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
             ? 2 : 1;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -383,7 +383,7 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemLocation.region).toBe(params.country);
+        expect(result[0].ItemInformation.ItemLocation.country).toBe(params.country);
 
     });
 

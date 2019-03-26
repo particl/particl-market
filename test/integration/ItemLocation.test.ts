@@ -46,7 +46,7 @@ describe('ItemLocation', () => {
     let itemInformation;
 
     const testData = {
-        region: 'South Africa',
+        country: 'South Africa',
         address: 'asdf, asdf, asdf',
         locationMarker: {
             markerTitle: 'Helsinki',
@@ -58,7 +58,7 @@ describe('ItemLocation', () => {
 
     const testDataUpdated = {
         item_information_id: null,
-        region: 'EU',
+        country: 'EU',
         address: 'zxcv, zxcv, zxcv',
         locationMarker: {
             markerTitle: 'Stockholm',
@@ -137,7 +137,7 @@ describe('ItemLocation', () => {
 
         const result = itemLocationModel.toJSON();
 
-        expect(result.region).toBe(testData.region);
+        expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
         expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
         expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
@@ -159,7 +159,7 @@ describe('ItemLocation', () => {
 
         const result = itemLocation[0];
 
-        expect(result.region).toBe(testData.region);
+        expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
         expect(result.LocationMarker).toBe(undefined); // doesnt fetch related
     });
@@ -167,7 +167,7 @@ describe('ItemLocation', () => {
     test('Should return one ItemLocation', async () => {
         const itemLocationModel: ItemLocation = await itemLocationService.findOne(createdId);
         const result = itemLocationModel.toJSON();
-        expect(result.region).toBe(testData.region);
+        expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
         expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
         expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
@@ -188,7 +188,7 @@ describe('ItemLocation', () => {
 
         const itemLocationModel: ItemLocation = await itemLocationService.update(createdId, testDataUpdated as ItemLocationUpdateRequest);
         const result = itemLocationModel.toJSON();
-        expect(result.region).toBe(testDataUpdated.region);
+        expect(result.country).toBe(testDataUpdated.country);
         expect(result.address).toBe(testDataUpdated.address);
         expect(result.LocationMarker.markerTitle).toBe(testDataUpdated.locationMarker.markerTitle);
         expect(result.LocationMarker.markerText).toBe(testDataUpdated.locationMarker.markerText);

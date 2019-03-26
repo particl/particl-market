@@ -2,18 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import {Core, Targets, Types} from '../../constants';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { GovernanceAction } from '../enums/GovernanceAction';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { ListingItemFactory } from './ListingItemFactory';
 import * as resources from 'resources';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { GovernanceAction } from '../../enums/GovernanceAction';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { ListingItemMessageFactory } from './ListingItemMessageFactory';
 
 export interface ActionMessageCreateParams {
     //
@@ -28,7 +27,7 @@ export class MarketplaceMessageFactory {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -36,14 +35,15 @@ export class MarketplaceMessageFactory {
 
     public async get(type: ActionMessageTypes, parameters: ActionMessageCreateParams): Promise<MarketplaceMessage> {
 
-        let action: ActionMessageInterface;
+        const marketplaceMessage = {
+            version: ompVersion()
+        } as MarketplaceMessage;
 
         switch (type) {
             case MPAction.MPA_LISTING_ADD:
-                const template: resources.ListingItemTemplate = (parameters as ListingItemMessageCreateParams).template;
-                action = await this.listingItemFactory.getMessage(template);
-
+                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemMessageCreateParams);
                 break;
+
             case MPAction.MPA_BID:
             case MPAction.MPA_ACCEPT:
             case MPAction.MPA_CANCEL:
@@ -53,13 +53,9 @@ export class MarketplaceMessageFactory {
             case MPAction.MPA_RELEASE:
             case MPAction.UNKNOWN:
             case GovernanceAction.MP_PROPOSAL_ADD:
-            case GovernanceAction.VOTE:
+            case GovernanceAction.MP_VOTE:
                 throw new NotImplementedException();
         }
-        const marketPlaceMessage = {
-            version: ompVersion(),
-            action,
-        } as MarketplaceMessage;
 
         return marketplaceMessage;
     }

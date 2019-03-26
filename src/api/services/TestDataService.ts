@@ -930,7 +930,7 @@ export class TestDataService {
 
     private generateItemLocationData(): any {
         return {
-            region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+            country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
             address: Faker.address.streetAddress(),
             locationMarker: {
                 markerTitle: Faker.lorem.word(),

@@ -70,7 +70,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
         const itemLocation = {
             item_information_id: listingItemTemplate.ItemInformation.id,
-            region: countryCode,
+            country: countryCode,
             address,
             locationMarker
         } as ItemLocationCreateRequest;
@@ -81,7 +81,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
     /**
      * data.params[]:
      * [0]: listingItemTemplateId
-     * [1]: region (country/countryCode)
+     * [1]: country (country/countryCode)
      * [2]: address, optional
      * [3]: gps marker title, optional
      * [4]: gps marker description, optional
@@ -104,7 +104,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         }
 
         if (typeof data.params[1] !== 'string') {
-            throw new MessageException('Invalid region.');
+            throw new MessageException('Invalid country.');
         } else {
             // If countryCode is country, convert to countryCode.
             // If countryCode is country code, validate, and possibly throw error.
@@ -151,7 +151,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <region> [<address> [<gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
+        return this.getName() + ' <listingItemTemplateId> <country> [<address> [<gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
             + ' <gpsMarkerLongitude>]] ';
     }
 
@@ -159,7 +159,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want \n'
             + '                                to associate with this item location. \n'
-            + '    <region>                 - String - Region, i.e. country or country code. \n'
+            + '    <country>                 - String - Country, i.e. country or country code. \n'
             + '    <address>                - String - Address [TODO, what kind of address?]. \n'
             + '    <gpsMarkerTitle>         - String - Gps marker title. \n'
             + '    <gpsMarkerDescription>   - String - Gps marker text. \n'

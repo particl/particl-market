@@ -4,7 +4,7 @@
 
 import { MessageBody } from '../../core/api/MessageBody';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './ActionMessageInterface';
+import { ActionMessageInterface } from './actions/ActionMessageInterface';
 import { GovernanceAction } from '../enums/GovernanceAction';
 
 export class VoteMessage extends MessageBody implements ActionMessageInterface {

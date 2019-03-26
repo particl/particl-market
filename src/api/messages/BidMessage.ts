@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './ActionMessageInterface';
+import { ActionMessageInterface } from './actions/ActionMessageInterface';
 import { MessageBody } from '../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 

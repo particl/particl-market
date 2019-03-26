@@ -147,7 +147,7 @@
         },
         "ItemLocation": {
             "id": 4,
-            "region": "CAPE VERDE",
+            "country": "CAPE VERDE",
             "address": "92656 Morar Turnpike",
             "itemInformationId": 4,
             "updatedAt": 1520294532477,

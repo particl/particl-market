@@ -31,7 +31,7 @@ describe('ItemLocationRemoveCommand', () => {
             },
             listingItemId: null,
             itemLocation: {
-                region: 'South Africa',
+                country: 'South Africa',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -53,7 +53,7 @@ describe('ItemLocationRemoveCommand', () => {
             },
             listingItemId: null,
             itemLocation: {
-                region: 'Australia',
+                country: 'Australia',
                 address: 'fdsa fdsa fdsa fdsa',
                 locationMarker: {
                     markerTitle: 'Adelaide',

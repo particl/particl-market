@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MPM } from 'omp-lib/dist/interfaces/omp';
-import { ActionMessageInterface } from './ActionMessageInterface';
+import { ActionMessageInterface } from './actions/ActionMessageInterface';
 
 /**
  * MPMExtension defines how the MPM will be extended
@@ -26,9 +26,5 @@ export class MarketplaceMessage implements MPMExtended {
     public action: ActionMessageInterface;
     // tslint:disable-next-line:variable-name
     public _rawtx?: string;
-
-    // TODO: these are deprecated and should be removed with new omp-lib
-    // public mpaction?: ActionMessageItemInterface | ActionMessageInterface;
-    // public item?: ListingItemMessageInterface;
 
 }

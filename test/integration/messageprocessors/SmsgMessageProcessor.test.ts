@@ -10,7 +10,7 @@ import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
-import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
+import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -62,7 +62,7 @@ describe('MessageProcessor', () => {
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.SmsgMessageService);
-        listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
+        listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.SmsgMessageFactory);
         messageProcessor = app.IoC.getNamed<MessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.MessageProcessor);
 

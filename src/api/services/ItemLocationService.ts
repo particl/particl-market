@@ -75,8 +75,9 @@ export class ItemLocationService {
         const itemLocation = await this.findOne(id, false);
 
         // set new values
-        itemLocation.Region = body.region;
+        itemLocation.Country = body.country;
         itemLocation.Address = body.address;
+        itemLocation.Description = body.description;
 
         // update itemLocation record
         const updatedItemLocation = await this.itemLocationRepo.update(id, itemLocation.toJSON());

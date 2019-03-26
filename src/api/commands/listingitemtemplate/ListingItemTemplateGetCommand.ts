@@ -14,7 +14,7 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ListingItemFactory } from '../../factories/ListingItemFactory';
+import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemImageDataService } from '../../services/ItemImageDataService';
@@ -27,7 +27,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory
+        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory
     ) {
         super(Commands.TEMPLATE_GET);
         this.log = new Logger(__filename);

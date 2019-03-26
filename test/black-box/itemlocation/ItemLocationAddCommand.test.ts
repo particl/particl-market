@@ -91,7 +91,7 @@ describe('ItemLocationAddCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.LocationMarker).toBeDefined();
-        expect(result.region).toBe(countryCode);
+        expect(result.country).toBe(countryCode);
         expect(result.address).toBe(address);
         expect(result.LocationMarker.markerTitle).toBe(markerTitle);
         expect(result.LocationMarker.markerText).toBe(markerDesc);

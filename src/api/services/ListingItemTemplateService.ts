@@ -34,13 +34,16 @@ import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { MessageSize } from '../responses/MessageSize';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ListingItemFactory } from '../factories/ListingItemFactory';
+import { ListingItemFactory } from '../factories/model/ListingItemFactory';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
-import {ItemImage} from '../models/ItemImage';
-import {ompVersion} from 'omp-lib/dist/omp';
+import { ItemImage } from '../models/ItemImage';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { ListingItemMessageFactory } from '../factories/message/ListingItemMessageFactory';
+import { MPA_LISTING_ADD } from 'omp-lib/dist/interfaces/omp';
+import { ListingItemMessageCreateParams } from '../factories/message/MarketplaceMessageFactory';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
 export class ListingItemTemplateService {
 
@@ -62,7 +65,8 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -350,31 +354,34 @@ export class ListingItemTemplateService {
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
 
         // convert the template to message
-        const listingItemMessage = await this.listingItemFactory.getMessage(listingItemTemplate);
-        const marketPlaceMessage = {
+        const action = await this.listingItemMessageFactory.get({
+            template: listingItemTemplate
+        } as ListingItemMessageCreateParams) as MPA_LISTING_ADD;
+
+        const marketplaceMessage = {
             version: ompVersion(),
-            item: listingItemMessage
+            action
         } as MarketplaceMessage;
 
         // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         let imageDataSize = 0;
-        for (const image of listingItemMessage.information.images) {
-            imageDataSize = imageDataSize + image.data[0].data.length;
-            this.log.debug('imageDataSize: ', image.data[0].data.length);
+        if (action.item.information.images) {
+            for (const image of action.item.information.images) {
+                imageDataSize = imageDataSize + image.data[0].data.length;
+                this.log.debug('imageDataSize: ', image.data[0].data.length);
+            }
         }
-        const messageDataSize = JSON.stringify(marketPlaceMessage).length - imageDataSize;
+        const messageDataSize = JSON.stringify(marketplaceMessage).length - imageDataSize;
         const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
         const fits = spaceLeft > 0;
 
-        const messageSize: MessageSize = {
+        return {
             messageData: messageDataSize,
             imageData: imageDataSize,
             spaceLeft,
             fits
-        };
-
-        return messageSize;
+        } as MessageSize;
     }
 
     /**
