@@ -104,12 +104,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             const itemPrice: resources.ItemPrice = listingItemTemplate.PaymentInformation.ItemPrice;
 
             // validate price
-            if (_.isEmpty(itemPrice.basePrice)
-                || listingItemTemplate.PaymentInformation.ItemPrice.basePrice < 0) {
+            if ( !(_.isNumber(itemPrice.basePrice) && itemPrice.basePrice >= 0)) {
                 throw new MessageException('Invalid ItemPrice');
-            }
-            if (!itemPrice.basePrice || itemPrice.basePrice < 0) {
-                throw new InvalidParamException('basePrice');
             }
             if (itemPrice.ShippingPrice) {
                 if (!itemPrice.ShippingPrice.domestic || !itemPrice.ShippingPrice.international) {
