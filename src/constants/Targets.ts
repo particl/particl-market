@@ -345,13 +345,14 @@ export const Targets = {
     Factory:     {
         message: {
             ListingItemMessageFactory: 'ListingItemMessageFactory',
-            MarketplaceMessageFactory: 'MarketplaceMessageFactory'
+            MarketplaceMessageFactory: 'MarketplaceMessageFactory',
+            BidMessageFactory: 'BidMessageFactory'
         },
         model: {
-            ListingItemFactory: 'ListingItemFactory'
+            ListingItemFactory: 'ListingItemFactory',
+            BidFactory: 'BidFactory'
         },
         ActionMessageFactory: 'ActionMessageFactory',
-        BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',

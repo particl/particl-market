@@ -164,7 +164,7 @@ export class ListingItemMessageFactory {
             protocol: selectedImageData.protocol,
             encoding: selectedImageData.encoding,
             data,
-            id: selectedImageData.dataId
+            dataId: selectedImageData.dataId
         } as DSN);
 
         return dsns;

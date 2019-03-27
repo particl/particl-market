@@ -26,7 +26,6 @@ import { ListingItemTemplateService } from '../../../src/api/services/ListingIte
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
-import { BidFactory } from '../../../src/api/factories/BidFactory';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
@@ -35,6 +34,8 @@ import { OrderService } from '../../../src/api/services/OrderService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
+import { BidMessageFactory } from '../../../src/api/factories/message/BidMessageFactory';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 
 describe('BidAndEscrowMessageProcessing', () => {
@@ -55,7 +56,7 @@ describe('BidAndEscrowMessageProcessing', () => {
     let orderItemService: OrderItemService;
     let orderService: OrderService;
 
-    let bidFactory: BidFactory;
+    let bidMessageFactory: BidMessageFactory;
     let escrowFactory: EscrowFactory;
 
     let defaultMarket: resources.Market;
@@ -83,7 +84,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         escrowActionService = app.IoC.getNamed<EscrowActionService>(Types.Service, Targets.Service.EscrowActionService);
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
-        bidFactory = app.IoC.getNamed<BidFactory>(Types.Factory, Targets.Factory.BidFactory);
+        bidMessageFactory = app.IoC.getNamed<BidMessageFactory>(Types.Factory, Targets.Factory.message.BidMessageFactory);
         escrowFactory = app.IoC.getNamed<EscrowFactory>(Types.Factory, Targets.Factory.EscrowFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data
@@ -188,7 +189,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         expect(listingItem).toBeDefined();
 
         // create bid.objects for MPA_BID
-        const bidDatas = await bidActionService.generateBidDatasForMPA_BID(
+        const bidDatas = await bidActionService.generateBidDatasForMPA_BID_DEPRECATED(
             listingItem,
             [
                 {id: 'size', value: 'XL'},
@@ -209,7 +210,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         );
 
         // create MPA_BID type of MarketplaceMessage
-        const bidMessage: BidMessage = await bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
+        const bidMessage: BidMessage = await bidMessageFactory.get(MPAction.MPA_BID, listingItem.hash, bidDatas);
         expect(bidMessage.item).toBe(listingItem.hash);
 
         const marketplaceMessage: MarketplaceMessage = {

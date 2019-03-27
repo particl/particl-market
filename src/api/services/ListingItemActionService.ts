@@ -36,6 +36,7 @@ import { FlaggedItemService } from './FlaggedItemService';
 import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
+import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
 
 export class ListingItemActionService {
 
@@ -86,15 +87,12 @@ export class ListingItemActionService {
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 
-        let marketModel;
-        if (!data.marketId) {
-            // fetch the market, will be used later with the broadcast
-            marketModel = await this.marketService.getDefault();
-        } else {
-            marketModel = await this.marketService.findOne(data.marketId);
-        }
+        const marketModel = data.marketId
+            ? await this.marketService.findOne(data.marketId)
+            : await this.marketService.getDefault();
+
         const market: resources.Market = marketModel.toJSON();
-        this.log.debug('market:', market.id);
+        this.log.debug('market.id:', market.id);
 
         // todo: reason for this? to throw an exception unless category exists?!
         // find itemCategory with related
@@ -102,11 +100,15 @@ export class ListingItemActionService {
             .then(value => value.toJSON());
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        // create and post the itemmessage
+        // create the MPA_LISTING_ADD
         const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
             template: itemTemplate
         } as ListingItemMessageCreateParams);
 
+        // validate the MPA_LISTING_ADD
+        ListingItemAddValidator.validate(marketplaceMessage);
+
+        // post the MPA_LISTING_ADD
         return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
     }
 
@@ -135,8 +137,10 @@ export class ListingItemActionService {
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // const listingItemMessage: ListingItemMessage = actionMessage.item as ListingItemMessage;
+        // validate the MPA_LISTING_ADD
+        ListingItemAddValidator.validate(marketplaceMessage);
 
+        // process the message and return SmsgMessageStatus as a result
         return await this.marketService.findByAddress(smsgMessage.to)
             .then(async marketModel => {
                 const market: resources.Market = marketModel.toJSON();

@@ -5,15 +5,15 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { BidMessage } from '../messages/BidMessage';
-import { MessageException } from '../exceptions/MessageException';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { AddressCreateRequest } from '../requests/AddressCreateRequest';
-import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-import { IdValuePair } from '../services/BidActionService';
-import { BidDataValue } from '../enums/BidDataValue';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { BidMessage } from '../../messages/BidMessage';
+import { MessageException } from '../../exceptions/MessageException';
+import { BidCreateRequest } from '../../requests/BidCreateRequest';
+import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
+import { IdValuePair } from '../../services/BidActionService';
+import { BidDataValue } from '../../enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidFactory {

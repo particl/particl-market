@@ -20,6 +20,10 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import * as resources from 'resources';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidDataValue } from '../../enums/BidDataValue';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -86,17 +90,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        // todo: make sure listingitem exists in validate()
-        // todo: make sure profile exists in validate()
+        const listingItemHash = data.params.shift();
+        const profileId = data.params.shift();
+        const addressId = data.params.shift();
 
         // listingitem we are bidding for
-        const listingItemHash = data.params.shift();
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
             .then(value => {
                 return value.toJSON();
-            })
-            .catch(reason => {
-                throw new MessageException('ListingItem not found.');
             });
 
         if (new Date().getTime() > listingItem.expiredAt) {
@@ -105,51 +106,21 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         }
 
         // profile that is doing the bidding
-        const profileId = data.params.shift();
         const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => {
                 return value.toJSON();
             })
             .catch(reason => {
-                throw new MessageException('Profile not found.');
+                throw new ModelNotFoundException('Profile');
             });
 
-        const addressId = data.params.shift();
-        const additionalParams: IdValuePair[] = [];
+        const address: resources.Address = this.getAddress(profile, addressId, data);
 
-        if (typeof addressId === 'number') {
-            const address = _.find(profile.ShippingAddresses, (addr: any) => {
-                return addr.id === addressId;
-            });
-            // if address was found
-            if (address) {
-                // store the shipping address in additionalParams
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: address.firstName ? address.firstName : ''});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: address.lastName ? address.lastName : ''});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: address.addressLine1});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: address.addressLine2 ? address.addressLine2 : ''});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_CITY, value: address.city});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_STATE, value: address.state});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: address.zipCode});
-                additionalParams.push({id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: address.country});
-            } else {
-                this.log.warn(`address with the id=${addressId} was not found!`);
-                throw new NotFoundException(addressId);
-            }
-        } else {
-            // add all first entries of PARAMS_ADDRESS_KEYS and their values if values not PARAMS_ADDRESS_KEYS themselves
-            for (const paramsAddressKey of this.PARAMS_ADDRESS_KEYS) {
-                for (let j = 0; j < data.params.length - 1; ++j) {
-                    if (paramsAddressKey === data.params[j]) {
-                        additionalParams.push({id:  paramsAddressKey, value:
-                        !_.includes(this.PARAMS_ADDRESS_KEYS, data.params[j + 1]) ? data.params[j + 1] : ''});
-                        break;
-                    }
-                }
-            }
-        }
+        // TODO: support for passing custom BidDatas seems to have been removed
+        // TODO: the allowed custom BidDatas for a Bid should be defined in the ListingItem
+        // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        return this.bidActionService.send(listingItem, profile, additionalParams);
+        return this.bidActionService.send(listingItem, profile, address/*, additionalParams */);
     }
 
     /**
@@ -179,29 +150,38 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         // TODO: move the validation here, add separate error messages for missing parameters
-
-        if (data.params.length < 3) {
-            throw new MessageException('Missing parameters.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('hash');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('profileId');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('address or addressId');
         }
 
         if (typeof data.params[0] !== 'string') {
-            throw new MessageException('Invalid hash.');
+            throw new InvalidParamException('hash');
         }
 
         if (typeof data.params[1] !== 'number') {
-            throw new MessageException('Invalid profileId.');
+            throw new InvalidParamException('profileId');
         }
 
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
             // make sure that required keys are there
             for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
                 if (!_.includes(data.params, addressKey.toString()) ) {
-                    throw new MessageException('Missing required param: ' + addressKey);
+                    throw new MissingParamException(addressKey);
                 }
             }
         } else if (typeof data.params[2] !== 'number') {
-            throw new MessageException('Invalid addressId.');
+            throw new InvalidParamException('addressId');
         }
+
+        // make sure listingitem exists
+        await this.listingItemService.findOneByHash(data.params[0])
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
 
         return data;
     }
@@ -226,6 +206,72 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public example(): string {
         return 'bid ' + this.getName() + ' 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
         // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 ';
+    }
+
+    /**
+     * return the ShippingAddress
+     *
+     * @param profile
+     * @param addressId
+     * @param data
+     */
+    private getAddress(profile: resources.Profile, addressId: number | boolean, data: RpcRequest): resources.Address {
+
+        if (typeof addressId === 'number') {
+            const address = _.find(profile.ShippingAddresses, (addr: resources.Address) => {
+                return addr.id === addressId;
+            });
+
+            // if address was found
+            if (address) {
+                return address;
+            } else {
+                throw new NotFoundException(addressId);
+            }
+
+        } else { // no addressId, address should have been given as key value params
+
+            const address = {} as resources.Address;
+
+            // loop through the data.params values and create the resources.Address
+            while (!_.isEmpty(data.params)) {
+                const paramKey = data.params.shift();
+                const paramValue = data.params.shift();
+                if (_.includes(this.PARAMS_ADDRESS_KEYS, paramKey)) {
+                    // key is an address key
+                    switch (paramKey) {
+                        case BidDataValue.SHIPPING_ADDRESS_FIRST_NAME:
+                            address.firstName = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_LAST_NAME:
+                            address.lastName = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1:
+                            address.addressLine1 = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2:
+                            address.addressLine2 = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_CITY:
+                            address.city = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_STATE:
+                            address.state = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_ZIP_CODE:
+                            address.zipCode = paramValue;
+                            break;
+                        case BidDataValue.SHIPPING_ADDRESS_COUNTRY:
+                            address.country = paramValue;
+                            break;
+                        default:
+                            throw new InvalidParamException('addressKey');
+                    }
+                }
+            }
+            return address;
+
+        }
     }
 
 }

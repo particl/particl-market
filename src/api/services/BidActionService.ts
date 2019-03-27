@@ -16,7 +16,8 @@ import { ActionMessageService } from './ActionMessageService';
 import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
-import { BidFactory } from '../factories/BidFactory';
+import { BidFactory } from '../factories/model/BidFactory';
+import { BidMessageCreateParams, BidMessageFactory } from '../factories/message/BidMessageFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
@@ -40,7 +41,9 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import {MPA} from 'omp-lib/dist/interfaces/omp';
+import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
 // todo: move
 export interface OutputData {
@@ -78,7 +81,9 @@ export class BidActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) private bidMessageFactory: BidMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
@@ -92,23 +97,31 @@ export class BidActionService {
      *
      * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Profile} bidderProfile
-     * @param {any[]} additionalParams
+     * @param {module:resources.Address} address, the ShippingAddress
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
-                      additionalParams: IdValuePair[]): Promise<SmsgSendResponse> {
-
+                      address: resources.Address): Promise<SmsgSendResponse> {
+        const bid = await buyer.bid(config, ok);
+        FV_MPA_BID.validate(bid);
         // TODO: change send params to BidSendRequest and @validate them
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
         // generate bidDatas for the message
-        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, additionalParams);
+        const bidDatas = await this.generateBidDatasForMPA_BID_DEPRECATED(listingItem, address);
 
         // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID message
-        const bidMessage: BidMessage = await this.bidFactory.getMessage(MPAction.MPA_BID, listingItem.hash, bidDatas);
+        const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_BID, listingItem.hash, bidDatas);
+
+        // create and post the itemmessage
+        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_BID, {
+            config: {
+                address
+            } as BidConfiguration
+        } as BidMessageCreateParams);
 
         // TODO: fix
         const marketPlaceMessage = {
@@ -144,7 +157,7 @@ export class BidActionService {
      * @param {any[]} additionalParams
      * @returns {Promise<IdValuePair[]>}
      */
-    public async generateBidDatasForMPA_BID(
+    public async generateBidDatasForMPA_BID_DEPRECATED(
         listingItem: resources.ListingItem,
         additionalParams: IdValuePair[]
     ): Promise<IdValuePair[]> {
@@ -385,7 +398,7 @@ export class BidActionService {
             const bidDatas: IdValuePair[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
             // create the bid accept message using the generated bidDatas
-            const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_ACCEPT, listingItem.hash, bidDatas);
+            const bidMessage = await this.bidMessageFactory.get(MPAction.MPA_ACCEPT, listingItem.hash, bidDatas);
             // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
@@ -701,7 +714,7 @@ export class BidActionService {
                 });
 
             // create the bid cancel message
-            const bidMessage: BidMessage = await this.bidFactory.getMessage(MPAction.MPA_CANCEL, listingItem.hash);
+            const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_CANCEL, listingItem.hash);
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
@@ -764,7 +777,7 @@ export class BidActionService {
             const sellerProfile = sellerProfileModel.toJSON();
 
             // create the bid reject message
-            const bidMessage = await this.bidFactory.getMessage(MPAction.MPA_REJECT, listingItem.hash);
+            const bidMessage = await this.bidMessageFactory.get(MPAction.MPA_REJECT, listingItem.hash);
 
             // Update the bid in the database with new action.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);

@@ -274,7 +274,7 @@ export class ListingItemFactory {
             const datas = await this.getModelImageDatas(image.datas);
             imageCreateRequests.push({
                 hash: image.hash,
-                datas,
+                datas
                 // todo: featured
             } as ItemImageCreateRequest);
         }

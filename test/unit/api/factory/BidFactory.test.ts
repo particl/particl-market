@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import { BidFactory } from '../../../../src/api/factories/BidFactory';
+import { BidFactory } from '../../../../src/api/factories/model/BidFactory';
 import { LogMock } from '../../lib/LogMock';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
 import { MessageException } from '../../../../src/api/exceptions/MessageException';
