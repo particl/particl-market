@@ -6,27 +6,18 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { BuyerData, MPA_BID } from 'omp-lib/dist/interfaces/omp';
-import { KVS } from 'omp-lib/dist/interfaces/common';
+import { MPA_ACCEPT, SellerData} from 'omp-lib/dist/interfaces/omp';
 
-export class BidMessage extends MessageBody implements ActionMessageInterface, MPA_BID {
+export class BidAcceptMessage extends MessageBody implements ActionMessageInterface, MPA_ACCEPT {
 
     @IsEnum(MPAction)
     @IsNotEmpty()
-    public type: MPAction.MPA_BID;
+    public type: MPAction.MPA_ACCEPT;
 
     @IsNotEmpty()
-    public generated: number;
+    public bid: string;
 
     @IsNotEmpty()
-    public hash: string;
-
-    @IsNotEmpty()
-    public item: string;
-
-    @IsNotEmpty()
-    public buyer: BuyerData;
-
-    public objects?: KVS[];
+    public seller: SellerData;
 
 }
