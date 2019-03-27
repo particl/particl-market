@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ProposalMessage } from '../messages/ProposalMessage';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
@@ -40,9 +40,9 @@ export class ProposalFactory {
 
         const optionsList: any[] = this.createOptionsList(options);
 
-        let proposalType = ProposalType.PUBLIC_VOTE;
+        let proposalCategory = ProposalCategory.PUBLIC_VOTE;
         if (itemHash) {
-            proposalType = ProposalType.ITEM_VOTE;
+            proposalCategory = ProposalCategory.ITEM_VOTE;
         }
 
         const message: ProposalMessage = {
@@ -51,7 +51,7 @@ export class ProposalFactory {
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
-            type: proposalType,
+            category: proposalCategory,
             item: itemHash
         } as ProposalMessage;
 
@@ -90,7 +90,7 @@ export class ProposalFactory {
         const proposalCreateRequest = {
             submitter: proposalMessage.submitter,
             hash: proposalMessage.hash,
-            type: proposalMessage.type,
+            category: proposalMessage.category,
             title: proposalMessage.title,
             description: proposalMessage.description,
             item: proposalMessage.item,

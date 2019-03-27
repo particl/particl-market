@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ProposalType } from '../../api/enums/ProposalType';
+import { ProposalCategory } from '../../api/enums/ProposalCategory';
 
 declare module 'resources' {
 
@@ -11,7 +11,7 @@ declare module 'resources' {
         submitter: string;
         hash: string;
         item: string;
-        type: ProposalType;
+        category: ProposalCategory;
         title: string;
         description: string;
 

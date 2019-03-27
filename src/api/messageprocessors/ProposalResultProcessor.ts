@@ -9,7 +9,7 @@ import { Core, Targets, Types } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ProposalService } from '../services/ProposalService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { ProposalResultService } from '../services/ProposalResultService';
 import { ListingItemService } from '../services/ListingItemService';
 
@@ -37,7 +37,7 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
-            // type: ProposalType.ITEM_VOTE,
+            // category: ProposalCategory.ITEM_VOTE,
             timeStart: Date.now(),
             timeEnd: '*'
         } as ProposalSearchParams;
@@ -66,9 +66,9 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                         this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
 
                         await this.proposalService.recalculateProposalResult(proposal);
-                        // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
+                        // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                         // we can now check whether the ListingItem should be removed or not
-                        if (proposal.type === ProposalType.ITEM_VOTE) {
+                        if (proposal.category === ProposalCategory.ITEM_VOTE) {
                             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
                                 .then(value => value.toJSON());
                             await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)

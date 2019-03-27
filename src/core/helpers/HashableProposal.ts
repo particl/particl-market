@@ -11,7 +11,7 @@ import { ProposalCreateRequest } from '../../api/requests/ProposalCreateRequest'
 export class HashableProposal {
 
     public submitter: string;
-    public type: string;
+    public category: string;
     public title: string;
     public description: string;
     public item: string;
@@ -22,7 +22,7 @@ export class HashableProposal {
 
         if (input) {
             this.submitter = input.submitter;
-            this.type = input.type;
+            this.category = input.category;
             this.title = input.title;
             this.description = input.description;
             this.item = input.item;

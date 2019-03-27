@@ -20,7 +20,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { VoteMessage } from '../messages/VoteMessage';
 import { ProposalService } from './ProposalService';
 import { ProposalOptionService } from './ProposalOptionService';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
@@ -316,9 +316,9 @@ export class VoteActionService {
                     .then(value => value.toJSON());
                 const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
-                // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
+                // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                 // we can now check whether the ListingItem should be removed or not
-                if (proposal.type === ProposalType.ITEM_VOTE) {
+                if (proposal.category === ProposalCategory.ITEM_VOTE) {
                     const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
                         .then(value => value.toJSON());
                     await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)

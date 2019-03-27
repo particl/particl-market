@@ -6,7 +6,7 @@ import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SearchOrder } from '../enums/SearchOrder';
 import * as _ from 'lodash';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 
 // tslint:disable:variable-name
 export class ProposalSearchParams extends RequestBody {
@@ -14,8 +14,8 @@ export class ProposalSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder = SearchOrder.ASC;
 
-    @IsEnum(ProposalType)
-    public type: ProposalType;
+    @IsEnum(ProposalCategory)
+    public type: ProposalCategory;
 
     public timeStart: number | string;
     public timeEnd: number | string;

@@ -3,15 +3,14 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './actions/ActionMessageInterface';
-import { MessageBody } from '../../core/api/MessageBody';
+import { ActionMessageInterface } from './ActionMessageInterface';
+import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {MPA_BID} from 'omp-lib/dist/interfaces/omp';
 
-export class BidMessage extends MessageBody implements ActionMessageInterface {
+export class BidMessage extends MessageBody implements ActionMessageInterface, MPA_BID {
 
-    @IsNotEmpty()
-    @IsEnum(MPAction)
-    public action: MPAction;
+    public type: MPAction.MPA_BID;
 
     @IsNotEmpty()
     public item: string;

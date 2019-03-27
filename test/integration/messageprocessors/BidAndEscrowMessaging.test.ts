@@ -15,7 +15,7 @@ import { ListingItemService } from '../../../src/api/services/ListingItemService
 import { BidService } from '../../../src/api/services/BidService';
 import { ProfileService } from '../../../src/api/services/ProfileService';
 import { AddressService } from '../../../src/api/services/AddressService';
-import { BidMessage } from '../../../src/api/messages/BidMessage';
+import { BidMessage } from '../../../src/api/messages/actions/BidMessage';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import { BidActionService } from '../../../src/api/services/BidActionService';

@@ -13,7 +13,7 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import { ProposalType } from '../../src/api/enums/ProposalType';
+import { ProposalCategory } from 'ProposalCategory.ts';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../../src/api/requests/ProposalUpdateRequest';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
@@ -36,7 +36,7 @@ describe('Proposal', () => {
     const time = new Date().getTime();
     const testData = {
         submitter: 'partaddress',
-        type: ProposalType.PUBLIC_VOTE,
+        type: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x',
         timeStart: time,
@@ -55,7 +55,7 @@ describe('Proposal', () => {
 
     const testDataUpdated = {
         submitter: 'pqwer',
-        type: ProposalType.PUBLIC_VOTE,
+        type: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y',
         timeStart: time + 200,
@@ -87,7 +87,7 @@ describe('Proposal', () => {
         const proposalModel: Proposal = await proposalService.create(testData);
         const result: resources.Proposal = proposalModel.toJSON();
 
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -105,7 +105,7 @@ describe('Proposal', () => {
         expect(proposals.length).toBe(1);
 
         const result = proposals[0];
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -119,7 +119,7 @@ describe('Proposal', () => {
         const proposalModel: Proposal = await proposalService.findOne(createdId);
         const result = proposalModel.toJSON();
 
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -168,7 +168,7 @@ describe('Proposal', () => {
         const proposalModel: Proposal = await proposalService.create(testData);
         const result = proposalModel.toJSON();
 
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -195,7 +195,7 @@ describe('Proposal', () => {
         const proposalModel: Proposal = await proposalService.create(testData);
         const result = proposalModel.toJSON();
 
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -216,7 +216,7 @@ describe('Proposal', () => {
             timeStart: createdProposal2.postedAt,
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);
@@ -231,7 +231,7 @@ describe('Proposal', () => {
             timeStart,
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);
@@ -245,7 +245,7 @@ describe('Proposal', () => {
             timeStart: '*',
             timeEnd: createdProposal2.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);
@@ -259,7 +259,7 @@ describe('Proposal', () => {
             timeStart: '*',
             timeEnd: createdProposal1.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);
@@ -273,7 +273,7 @@ describe('Proposal', () => {
             timeStart: createdProposal1.startTime,
             timeEnd: createdProposal2.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);
@@ -281,16 +281,16 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(2);
     });
 
-    test('Should create another Proposal with type ITEM_VOTE', async () => {
+    test('Should create another Proposal with category ITEM_VOTE', async () => {
 
-        testData.type = ProposalType.ITEM_VOTE;
+        testData.category = ProposalCategory.ITEM_VOTE;
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
 
         const result = proposalModel.toJSON();
 
-        expect(result.type).toBe(testData.type);
+        expect(result.type).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -303,12 +303,12 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should searchBy Proposals with type ITEM_VOTE', async () => {
+    test('Should searchBy Proposals with category ITEM_VOTE', async () => {
 
         const searchParams = {
             timeStart: '*',
             timeEnd: '*',
-            order: SearchOrder.ASC, type: ProposalType.ITEM_VOTE
+            order: SearchOrder.ASC, type: ProposalCategory.ITEM_VOTE
         } as ProposalSearchParams;
 
         const proposalCollection = await proposalService.search(searchParams, true);

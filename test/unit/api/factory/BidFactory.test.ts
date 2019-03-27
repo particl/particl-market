@@ -5,7 +5,7 @@
 import * from 'jest';
 import { BidFactory } from '../../../../src/api/factories/model/BidFactory';
 import { LogMock } from '../../lib/LogMock';
-import { BidMessage } from '../../../../src/api/messages/BidMessage';
+import { BidMessage } from '../../../../src/api/messages/actions/BidMessage';
 import { MessageException } from '../../../../src/api/exceptions/MessageException';
 import { BidDataValue } from '../../../../src/api/enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';

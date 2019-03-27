@@ -11,7 +11,7 @@ export class EscrowMessage extends MessageBody implements ActionMessageInterface
 
     @IsNotEmpty()
     @IsEnum(MPAction)
-    public action: MPAction;
+    public type: MPAction;
 
     @IsNotEmpty()
     public item: string;    // using listing instead of item

@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * ProposalType
+ * ProposalCategory
  *
  */
 
-export enum ProposalType {
+export enum ProposalCategory {
 
     PUBLIC_VOTE = 'PUBLIC_VOTE',
     ITEM_VOTE = 'ITEM_VOTE'

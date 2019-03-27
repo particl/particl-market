@@ -61,7 +61,7 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteService } from './VoteService';
 import { VoteActionService } from './VoteActionService';
@@ -703,7 +703,7 @@ export class TestDataService {
             submitter = generateParams.submitter;
         }
 
-        const type = generateParams.listingItemHash ? ProposalType.ITEM_VOTE : ProposalType.PUBLIC_VOTE;
+        const category = generateParams.listingItemHash ? ProposalCategory.ITEM_VOTE : ProposalCategory.PUBLIC_VOTE;
         const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
         const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
         const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
@@ -725,7 +725,7 @@ export class TestDataService {
 
         const proposalCreateRequest = {
             submitter,
-            type,
+            category,
             item,
             title,
             description,

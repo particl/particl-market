@@ -11,7 +11,7 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SearchOrder } from '../enums/SearchOrder';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 
 export class ProposalRepository {
 
@@ -39,7 +39,7 @@ export class ProposalRepository {
             timeStart: '*',
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            type: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
         return await this.search(searchParams, withRelated);
     }

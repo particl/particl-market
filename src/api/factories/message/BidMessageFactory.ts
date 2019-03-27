@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { BidMessage } from '../../messages/BidMessage';
+import { BidMessage } from '../../messages/actions/BidMessage';
 import { IdValuePair } from '../../services/BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageCreateParams } from './MarketplaceMessageFactory';

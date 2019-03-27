@@ -14,7 +14,7 @@ import { ProposalResultRepository } from '../repositories/ProposalResultReposito
 import { ProposalResult } from '../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { MessageException } from '../exceptions/MessageException';
 import { ItemVote } from '../enums/ItemVote';
 import { CoreRpcService } from './CoreRpcService';
@@ -105,8 +105,8 @@ export class ProposalResultService {
     public async shouldRemoveListingItem(proposalResult: resources.ProposalResult, listingItem: resources.ListingItem): Promise<boolean> {
 
         // make sure the Proposal is for removing an item
-        if (proposalResult.Proposal.type !== ProposalType.ITEM_VOTE) {
-            throw new MessageException('Invalid Proposal type.');
+        if (proposalResult.Proposal.category !== ProposalCategory.ITEM_VOTE) {
+            throw new MessageException('Invalid Proposal category.');
         }
 
         // we dont want to remove ListingItems that have related Bids

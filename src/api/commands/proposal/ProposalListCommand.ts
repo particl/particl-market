@@ -18,7 +18,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { ProposalType } from '../../enums/ProposalType';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 import {MissingParamException} from '../../exceptions/MissingParamException';
 import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
@@ -38,7 +38,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      * [0] timeStart | *, optional
      * [1] timeEnd | *, optional
-     * [2] type, optional
+     * [2] category, optional
      * [3] order, optional
      *
      * @param data, RpcRequest
@@ -67,7 +67,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      * [0] timeStart | *, optional
      * [1] timeEnd | *, optional
-     * [2] type, optional
+     * [2] category, optional
      * [3] order, optional
      *
      * @param {RpcRequest} data
@@ -77,7 +77,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
         let timeStart: number | string = '*';
         let timeEnd: number | string = '*';
-        let type: ProposalType = ProposalType.PUBLIC_VOTE;
+        let type: ProposalCategory = ProposalCategory.PUBLIC_VOTE;
         let order: SearchOrder = SearchOrder.ASC;
 
         if (!_.isEmpty(data.params[0])) {
@@ -100,15 +100,15 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
         if (!_.isEmpty(data.params[2])) {
             type = data.params[2];
-            if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
-                type = ProposalType.ITEM_VOTE;
-            } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
-                type = ProposalType.PUBLIC_VOTE;
+            if (type.toUpperCase() === ProposalCategory.ITEM_VOTE.toString()) {
+                type = ProposalCategory.ITEM_VOTE;
+            } else if (type.toUpperCase() === ProposalCategory.PUBLIC_VOTE.toString()) {
+                type = ProposalCategory.PUBLIC_VOTE;
             } else {
-                type = ProposalType.PUBLIC_VOTE;
+                type = ProposalCategory.PUBLIC_VOTE;
             }
         } else {
-            type = ProposalType.PUBLIC_VOTE; // default
+            type = ProposalCategory.PUBLIC_VOTE; // default
         }
 
         if (!_.isEmpty(data.params[3])) {
@@ -131,7 +131,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <startTime> <endTime> <type> <order> ';
+        return this.getName() + ' <startTime> <endTime> <category> <order> ';
     }
 
     public description(): string {

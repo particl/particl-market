@@ -13,7 +13,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('submitter').notNullable();
             table.string('hash').notNullable().unique();
             table.string('item').nullable();   // item hash
-            table.string('type').notNullable();
+            table.string('category').notNullable();
             table.text('title').nullable();
             table.text('description').nullable();
 

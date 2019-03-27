@@ -11,7 +11,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { ProposalType } from '../../src/api/enums/ProposalType';
+import { ProposalCategory } from 'ProposalCategory.ts';
 import { ItemVote } from '../../src/api/enums/ItemVote';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';

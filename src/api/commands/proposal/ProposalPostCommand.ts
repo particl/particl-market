@@ -16,7 +16,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalActionService } from '../../services/ProposalActionService';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
-import { ProposalType } from '../../enums/ProposalType';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -53,7 +53,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-        const type = ProposalType.PUBLIC_VOTE;
+        const type = ProposalCategory.PUBLIC_VOTE;
         const profileId = data.params.shift();
         const proposalTitle = data.params.shift();
         const proposalDescription = data.params.shift();
@@ -90,7 +90,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // TODO: set the max expiration for proposals of type PUBLIC_VOTE
+        // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages
 
         if (data.params.length < 1) {

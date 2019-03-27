@@ -118,7 +118,7 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('option2Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid type of profileId', async () => {
+    test('Should fail to post a Proposal because invalid category of profileId', async () => {
 
         const invalidProfileId = 'invalid profile id';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -152,7 +152,7 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid type of daysRetention', async () => {
+    test('Should fail to post a Proposal because invalid category of daysRetention', async () => {
 
         const invalidDaysRetention = 'Invalid daysRetention';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,

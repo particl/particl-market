@@ -4,7 +4,7 @@
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { ProposalOptionCreateRequest } from './ProposalOptionCreateRequest';
 
 // tslint:disable:variable-name
@@ -26,8 +26,8 @@ export class ProposalUpdateRequest extends RequestBody {
     public item: string;
 
     @IsNotEmpty()
-    @IsEnum(ProposalType)
-    public type: ProposalType;
+    @IsEnum(ProposalCategory)
+    public category: ProposalCategory;
 
     @IsNotEmpty()
     public title: string;

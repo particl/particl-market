@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MessageBody } from '../../core/api/MessageBody';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './actions/ActionMessageInterface';
 import { GovernanceAction } from '../enums/GovernanceAction';
@@ -17,7 +17,7 @@ export class ProposalMessage extends MessageBody implements ActionMessageInterfa
     public title: string;
     public description: string;
     public options: any[];
-    public type: ProposalType;
+    public category: ProposalCategory;
     public hash: string;
     public item?: string;   // itemHash
 

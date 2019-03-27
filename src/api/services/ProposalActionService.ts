@@ -16,7 +16,7 @@ import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from './ProposalService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
@@ -48,13 +48,13 @@ export class ProposalActionService {
     }
 
     /**
-     * creates ProposalMessage (of type MP_PROPOSAL_ADD) and post it
+     * creates ProposalMessage (of category MP_PROPOSAL_ADD) and post it
      *
      * - send():
      *   - create ProposalMessage
      *   - processProposal(), creates the Proposal locally
      *   - post ProposalMessage
-     *   - if ProposalType.ITEM_VOTE:
+     *   - if ProposalCategory.ITEM_VOTE:
      *     - post the votes, voteActionService.vote( profile )
      *
      * @param {string} proposalTitle
@@ -86,7 +86,7 @@ export class ProposalActionService {
         } as MarketplaceMessage;
 
         // if were here to estimate the fee, then do it now.
-        const paidMessage = proposalMessage.type === ProposalType.PUBLIC_VOTE;
+        const paidMessage = proposalMessage.category === ProposalCategory.PUBLIC_VOTE;
         if (estimateFee) {
             return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
         }
@@ -98,8 +98,8 @@ export class ProposalActionService {
         // proposal is processed, so we can now send it
         const result = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
 
-        if (ProposalType.ITEM_VOTE === proposal.type) {
-            // if the Proposal is of type ITEM_VOTE, we also need to send votes for the ListingItems removal
+        if (ProposalCategory.ITEM_VOTE === proposal.category) {
+            // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
             const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
                 return o.description === ItemVote.REMOVE.toString();
             });
@@ -185,7 +185,7 @@ export class ProposalActionService {
      * - private processProposal():
      *   - save/update proposal locally (update: add the fields from smsgmessage)
      *   - createEmptyProposalResult(proposal), make sure empty ProposalResult is created/exists
-     *   - if ProposalType.ITEM_VOTE:
+     *   - if ProposalCategory.ITEM_VOTE:
      *     - create the FlaggedItem if not created yet
      *
      * @param proposalMessage
@@ -203,7 +203,7 @@ export class ProposalActionService {
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest)
                     .then(value => value.toJSON());
 
-                if (ProposalType.ITEM_VOTE === createdProposal.type) {
+                if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
                     // in case of ITEM_VOTE, we also need to create the FlaggedItem
                     const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
                     // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));

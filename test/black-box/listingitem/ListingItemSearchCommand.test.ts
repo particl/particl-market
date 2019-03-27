@@ -110,7 +110,7 @@ describe('ListingItemSearchCommand', () => {
     test('Should fail to searchBy ListingItems if type is invalid', async () => {
         // wtf, why pass defaultListingItemSearchParams?
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.type = 'INVALID';
+        params.category = 'INVALID';
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(404);

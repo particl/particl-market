@@ -271,7 +271,7 @@ export class ListingItemFactory {
 
         const imageCreateRequests: ItemImageCreateRequest[] = [];
         for (const image of images) {
-            const data = await this.getModelImageDatas(image.datas);
+            const data = await this.getModelImageDatas(image.data);
             imageCreateRequests.push({
                 hash: image.hash,
                 data

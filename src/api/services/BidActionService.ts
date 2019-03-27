@@ -23,7 +23,7 @@ import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessage } from '../messages/BidMessage';
+import { BidMessage } from '../messages/actions/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 import { SearchOrder } from '../enums/SearchOrder';
