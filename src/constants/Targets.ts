@@ -10,7 +10,6 @@
 
 export const Targets = {
     Model:     {
-        ActionMessage: 'ActionMessage',
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -33,10 +32,6 @@ export const Targets = {
         LocationMarker: 'LocationMarker',
         LockedOutput: 'LockedOutput',
         Market: 'Market',
-        MessageData: 'MessageData',
-        MessageEscrow: 'MessageEscrow',
-        MessageInfo: 'MessageInfo',
-        MessageObject: 'MessageObject',
         MessagingInformation: 'MessagingInformation',
         Order: 'Order',
         OrderItem: 'OrderItem',
@@ -58,7 +53,6 @@ export const Targets = {
         Vote: 'Vote'
     },
     Repository:     {
-        ActionMessageRepository: 'ActionMessageRepository',
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -81,10 +75,6 @@ export const Targets = {
         LocationMarkerRepository: 'LocationMarkerRepository',
         LockedOutputRepository: 'LockedOutputRepository',
         MarketRepository: 'MarketRepository',
-        MessageDataRepository: 'MessageDataRepository',
-        MessageEscrowRepository: 'MessageEscrowRepository',
-        MessageInfoRepository: 'MessageInfoRepository',
-        MessageObjectRepository: 'MessageObjectRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         OrderItemObjectRepository: 'OrderItemObjectRepository',
         OrderItemRepository: 'OrderItemRepository',
@@ -106,7 +96,6 @@ export const Targets = {
         VoteRepository: 'VoteRepository'
     },
     Service:     {
-        ActionMessageService: 'ActionMessageService',
         AddressService: 'AddressService',
         BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
@@ -138,10 +127,6 @@ export const Targets = {
         LocationMarkerService: 'LocationMarkerService',
         LockedOutputService: 'LockedOutputService',
         MarketService: 'MarketService',
-        MessageDataService: 'MessageDataService',
-        MessageEscrowService: 'MessageEscrowService',
-        MessageInfoService: 'MessageInfoService',
-        MessageObjectService: 'MessageObjectService',
         MessagingInformationService: 'MessagingInformationService',
         OrderItemObjectService: 'OrderItemObjectService',
         OrderItemService: 'OrderItemService',
@@ -352,7 +337,6 @@ export const Targets = {
             ListingItemFactory: 'ListingItemFactory',
             BidFactory: 'BidFactory'
         },
-        ActionMessageFactory: 'ActionMessageFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',

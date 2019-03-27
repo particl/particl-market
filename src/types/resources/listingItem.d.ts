@@ -20,7 +20,6 @@ declare module 'resources' {
         ListingItemObjects: ListingItemObject[];
         Market: Market;
         Bids: Bid[];
-        ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
         FlaggedItem: FlaggedItem;
 

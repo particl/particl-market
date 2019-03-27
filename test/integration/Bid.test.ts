@@ -29,7 +29,6 @@ import { Order } from '../../src/api/models/Order';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
-import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';

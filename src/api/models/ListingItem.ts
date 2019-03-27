@@ -15,7 +15,6 @@ import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import { ActionMessage } from './ActionMessage';
 import { Proposal } from './Proposal';
 import { Logger as LoggerType } from '../../core/Logger';
 
@@ -44,11 +43,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'MessagingInformation',
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
-        'ActionMessages',
-        'ActionMessages.MessageObjects',
-        'ActionMessages.MessageInfo',
-        'ActionMessages.MessageEscrow',
-        'ActionMessages.MessageData',
         'Bids',
         'Bids.BidDatas',
         'Bids.OrderItem',
@@ -290,9 +284,5 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public ShoppingCartItem(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
-    }
-
-    public ActionMessages(): Collection<ActionMessage> {
-        return this.hasMany(ActionMessage, 'listing_item_id', 'id');
     }
 }

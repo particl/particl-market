@@ -35,7 +35,6 @@ import { ListingItemObjectService } from './ListingItemObjectService';
 import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { ActionMessageService } from './ActionMessageService';
 import { ProposalService } from './ProposalService';
 
 export class ListingItemService {
@@ -51,7 +50,6 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
@@ -134,9 +132,6 @@ export class ListingItemService {
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
-        const actionMessages = body.actionMessages || [];
-        delete body.actionMessages;
-
         // this.log.debug('body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the listingItem
@@ -166,15 +161,6 @@ export class ListingItemService {
         for (const object of listingItemObjects) {
             object.listing_item_id = listingItem.id;
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest)
-                .catch(reason => {
-                    this.log.error('Error:', JSON.stringify(reason, null, 2));
-                });
-        }
-
-        // create actionMessages, only used to create testdata
-        for (const actionMessage of actionMessages) {
-            actionMessage.listing_item_id = listingItem.id;
-            await this.actionMessageService.create(actionMessage)
                 .catch(reason => {
                     this.log.error('Error:', JSON.stringify(reason, null, 2));
                 });

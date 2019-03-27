@@ -2,14 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-declare module 'resources' {
+/**
+ * ActionDirection
+ *
+ */
 
-    interface MessageEscrow {
-        id: number;
-        type: string;
-        rawtx: string;
-        createdAt: Date;
-        updatedAt: Date;
-    }
+export enum ActionDirection {
+
+    INCOMING = 'INCOMING',
+    OUTGOING = 'OUTGOING'
 
 }

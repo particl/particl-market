@@ -6,6 +6,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import { ActionDirection } from '../enums/ActionDirection';
 
 // tslint:disable:variable-name
 export class SmsgMessageCreateRequest extends RequestBody {
@@ -15,6 +16,11 @@ export class SmsgMessageCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public status: SmsgMessageStatus;
+
+    @IsNotEmpty()
+    public direction: ActionDirection;
+
+    public actionTarget: string;
 
     @IsNotEmpty()
     public msgid: string;

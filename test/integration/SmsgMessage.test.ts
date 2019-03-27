@@ -21,8 +21,8 @@ import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage'
 import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {ActionMessageTypes} from '../../src/api/enums/ActionMessageTypes';
-import {GovernanceAction} from '../../src/api/enums/GovernanceAction';
+import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';
+import { GovernanceAction } from '../../src/api/enums/GovernanceAction';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

@@ -82,6 +82,8 @@ export class SmsgMessageService {
         // set new values
         smsgMessage.Type = body.type;
         smsgMessage.Status = body.status;
+        smsgMessage.Direction = body.direction;
+        smsgMessage.ActionTarget = body.actionTarget;
         smsgMessage.Msgid = body.msgid;
         smsgMessage.Version = body.version;
         smsgMessage.Read = body.read;

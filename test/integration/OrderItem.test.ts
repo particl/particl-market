@@ -15,7 +15,6 @@ import { OrderItem } from '../../src/api/models/OrderItem';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../src/api/requests/OrderItemUpdateRequest';
-import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';

@@ -4,9 +4,9 @@
 
 import { SmsgMessageStatus } from '../../api/enums/SmsgMessageStatus';
 import { ActionMessageTypes } from '../../api/enums/ActionMessageTypes';
+import { ActionDirection } from '../../api/enums/ActionDirection';
 
 declare module 'resources' {
-
 
     interface SmsgMessage {
         // these fields are in the incoming message
@@ -27,6 +27,8 @@ declare module 'resources' {
         id: number;
         type: ActionMessageTypes; // | string;
         status: SmsgMessageStatus;
+        direction: ActionDirection;
+        actionTarget: string;
 
         createdAt: Date;
         updatedAt: Date;

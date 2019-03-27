@@ -4,7 +4,6 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ActionMessageCreateRequest } from './ActionMessageCreateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemCreateRequest extends RequestBody {

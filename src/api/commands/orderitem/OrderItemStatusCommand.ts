@@ -16,10 +16,10 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { OrderItemStatus } from '../../../core/helpers/OrderItemStatus';
+import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
 import * as resources from 'resources';
 
-export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatus[]> {
+export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatusResponse[]> {
 
     public log: LoggerType;
 
@@ -41,7 +41,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<OrderItemStatus[]> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<OrderItemStatusResponse[]> {
         const itemHash = data.params[0];
         const buyer = data.params[1];
         const seller = data.params[2];
@@ -67,11 +67,11 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         // this.log.debug('listingItems:', JSON.stringify(listingItems, null, 2));
 
         // Extract status details from the orderItems, since that's what we want to return to the userd
-        const orderItemStatuses: OrderItemStatus[] = [];
+        const orderItemStatuses: OrderItemStatusResponse[] = [];
         for (const listingItem of listingItems) {
             for (const bid of listingItem.Bids) {
                 if (!buyer || buyer === '*' || bid.bidder === buyer) {
-                    const orderItemStatus = new OrderItemStatus(listingItem.hash, bid.action, bid.OrderItem.status, bid.bidder, listingItem.seller);
+                    const orderItemStatus = new OrderItemStatusResponse(listingItem.hash, bid.action, bid.OrderItem.status, bid.bidder, listingItem.seller);
                     orderItemStatuses.push(orderItemStatus);
                 }
             }

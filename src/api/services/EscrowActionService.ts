@@ -9,7 +9,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { EventEmitter } from 'events';
-import { ActionMessageService } from './ActionMessageService';
 import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
 import { MessageException } from '../exceptions/MessageException';
@@ -42,7 +41,6 @@ export class EscrowActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
@@ -103,40 +101,7 @@ export class EscrowActionService {
 
         // todo: refactor lock/refund/release since they're pretty much the same
         // todo: add @validate to EscrowLockRequest
-/*
-        const orderItem = escrowRequest.orderItem;
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
 
-        if (_.isEmpty(orderItem)) {
-            throw new MessageException('OrderItem not found!');
-        }
-
-        if (_.isEmpty(escrow)) {
-            throw new MessageException('Escrow not found!');
-        }
-
-        const listingItemModel = await this.listingItemService.findOneByHash(orderItem.itemHash);
-        const listingItem = listingItemModel.toJSON();
-
-        // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest, listingItem);
-
-        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
-
-        // update OrderItemStatus
-        const newOrderStatus = OrderItemStatus.CHANGE;
-        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
-
-        // use escrowfactory to generate the refund message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
-*/
     }
 
     /**
@@ -259,10 +224,6 @@ export class EscrowActionService {
                 const seller = listingItem.seller;
                 const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
 
-                // save ActionMessage
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
-
                 // find the Order, using buyer, seller and Order.OrderItem.itemHash
                 const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
                 const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
@@ -317,10 +278,6 @@ export class EscrowActionService {
                 const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
                 const isMyListingItem = !!listingItem.ListingItemTemplate;
 
-                // save ActionMessage
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
-
                 // find the Order, using buyer, seller and Order.OrderItem.itemHash
                 const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
                 const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
@@ -364,10 +321,6 @@ export class EscrowActionService {
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
-
                 // todo: update order
                 return SmsgMessageStatus.PROCESSED;
             })
@@ -389,10 +342,6 @@ export class EscrowActionService {
         return await this.listingItemService.findOneByHash(escrowMessage.item)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
-
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
 
                 // todo: update order
                 return SmsgMessageStatus.PROCESSED;

@@ -23,7 +23,6 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
-import { ActionMessageService } from './ActionMessageService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalService } from './ProposalService';
 import { ProfileService } from './ProfileService';
@@ -50,7 +49,6 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
@@ -173,11 +171,6 @@ export class ListingItemActionService {
                 // todo: there should be no need for these two updates, set the relations up in the createRequest
                 // update the template relation
                 await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
-
-                // todo: we could propably get rid of these actionmessages
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
-                // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 
                 // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
                 listingItem = await this.listingItemService.findOne(listingItem.id)

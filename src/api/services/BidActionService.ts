@@ -12,7 +12,6 @@ import { Types, Core, Targets, Events } from '../../constants';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { EventEmitter } from 'events';
-import { ActionMessageService } from './ActionMessageService';
 import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
@@ -43,7 +42,6 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
-import { KVS } from 'omp-lib/dist/interfaces/common';
 
 // todo: move
 export interface OutputData {
@@ -72,7 +70,6 @@ export class BidActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
@@ -806,7 +803,6 @@ export class BidActionService {
 
     /**
      * process received BidMessage
-     * - save ActionMessage
      * - create Bid
      *
      * @param {MarketplaceEvent} event
@@ -828,10 +824,6 @@ export class BidActionService {
                 const listingItem = listingItemModel.toJSON();
 
                 // todo: check that the listingitem is yours
-
-                // first save actionmessage
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
 
                 // TODO: should someone be able to bid more than once?
                 // TODO: for that to be possible, we need to be able to identify different bids from one address
@@ -868,7 +860,6 @@ export class BidActionService {
 
     /**
      * process received AcceptBidMessage
-     * - save ActionMessage
      * - update Bid
      *
      * @param {MarketplaceEvent} event
@@ -888,12 +879,6 @@ export class BidActionService {
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
-
-                // TODO: save incoming and outgoing actionmessages
-                // TODO: ... and do it in one place
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
 
                 if (bidMessage) {
 
@@ -952,7 +937,7 @@ export class BidActionService {
      * process received CancelBidMessage
      *
      * @param {MarketplaceEvent} event
-     * @returns {Promise<module:resources.ActionMessage>}
+     * @returns {Promise<module:SmsgMessageStatus>}
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
@@ -968,10 +953,6 @@ export class BidActionService {
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
-
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
 
                 // Get latest bid from listingItemId and bidder so we can get bidId.
                 const params: BidSearchParams = new BidSearchParams({
@@ -1013,7 +994,7 @@ export class BidActionService {
      * process received RejectBidMessage
      *
      * @param {MarketplaceEvent} event
-     * @returns {Promise<module:resources.ActionMessage>}
+     * @returns {Promise<module:SmsgMessageStatus>}
      */
     public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
@@ -1029,10 +1010,6 @@ export class BidActionService {
         return await this.listingItemService.findOneByHash(bidMessage.item)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
-
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
 
                 // Get latest bid from listingItemId and bidder so we can get bidId.
                 const params: BidSearchParams = new BidSearchParams({
@@ -1145,21 +1122,6 @@ export class BidActionService {
         const createdBidModel = await this.bidService.create(bidCreateRequest);
         const createdBid = createdBidModel.toJSON();
         return createdBid;
-    }
-
-    /**
-     * get seller from listingitems MP_ITEM_ADD ActionMessage
-     * todo:  refactor
-     * @param {"resources".ListingItem} listingItem
-     * @returns {Promise<string>}
-     */
-    private getBuyer(listingItem: resources.ListingItem): string {
-        for (const actionMessage of listingItem.ActionMessages) {
-            if (actionMessage.action === 'MPA_BID') {
-                return actionMessage.MessageData.from;
-            }
-        }
-        throw new MessageException('Buyer not found for ListingItem.');
     }
 
     private configureEventListeners(): void {

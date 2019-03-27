@@ -92,6 +92,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
     public get Status(): string { return this.get('status'); }
     public set Status(value: string) { this.set('status', value); }
 
+    public get Direction(): string { return this.get('direction'); }
+    public set Direction(value: string) { this.set('direction', value); }
+
+    public get ActionTarget(): string { return this.get('actionTarget'); }
+    public set ActionTarget(value: string) { this.set('actionTarget', value); }
+
     public get Msgid(): string { return this.get('msgid'); }
     public set Msgid(value: string) { this.set('msgid', value); }
 

@@ -31,13 +31,8 @@ import { BidService } from './BidService';
 import { ProposalService } from './ProposalService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemImageService } from './ItemImageService';
-import { ActionMessageService } from './ActionMessageService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
-import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
-import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
-import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -47,7 +42,6 @@ import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { CreatableModel } from '../enums/CreatableModel';
-import { GenerateActionMessageParams } from '../requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
@@ -56,7 +50,6 @@ import { GenerateProposalParams } from '../requests/params/GenerateProposalParam
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
-import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
 import { CoreRpcService } from './CoreRpcService';
@@ -114,7 +107,6 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -174,9 +166,6 @@ export class TestDataService {
             case CreatableModel.LISTINGITEM: {
                 return await this.listingItemService.create(body.data as ListingItemCreateRequest);
             }
-            case CreatableModel.ACTIONMESSAGE: {
-                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest);
-            }
             case CreatableModel.PROFILE: {
                 return await this.profileService.create(body.data as ProfileCreateRequest);
             }
@@ -221,10 +210,6 @@ export class TestDataService {
             case CreatableModel.LISTINGITEMTEMPLATE: {
                 const generateParams = new GenerateListingItemTemplateParams(body.generateParams);
                 return await this.generateListingItemTemplates(body.amount, body.withRelated, generateParams);
-            }
-            case CreatableModel.ACTIONMESSAGE: {
-                const generateParams = new GenerateActionMessageParams(body.generateParams);
-                return await this.generateActionMessages(body.amount, body.withRelated, generateParams);
             }
             case CreatableModel.LISTINGITEM: {
                 const generateParams = new GenerateListingItemParams(body.generateParams);
@@ -396,7 +381,6 @@ export class TestDataService {
 
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
-            // TODO: actionmessage generation should be configurable
             // const fromAddress = await this.coreRpcService.getNewAddress();
             const marketModel = await this.marketService.getDefault();
             const market = marketModel.toJSON();
@@ -1037,57 +1021,6 @@ export class TestDataService {
             publicKey: Faker.random.uuid()
         }];
         return messagingInformation;
-    }
-
-
-    private async generateActionMessages(amount: number, withRelated: boolean = true,
-                                         generateParams: GenerateActionMessageParams): Promise<resources.ActionMessage[]> {
-        const marketModel = await this.marketService.getDefault();
-        const market = marketModel.toJSON();
-
-        const info = generateParams.generateMessageInfo ? {
-            address: generateParams.seller,
-            memo: generateParams.memo
-        } as MessageInfoCreateRequest : {};
-        const escrow = generateParams.generateMessageEscrow ? {
-            type: generateParams.type,
-            rawtx: generateParams.rawtx
-        } as MessageEscrowCreateRequest : {};
-        const data = generateParams.generateMessageData ? {
-            msgid: generateParams.msgid,
-            version: '0300',
-            received: new Date(),
-            sent: new Date(),
-            from: generateParams.seller,
-            to: market.address
-        } as MessageDataCreateRequest : {};
-        const objects: MessageObjectCreateRequest[] = [];
-        for (let i = generateParams.generateMessageObjectsAmount; i > 0; i--) {
-            const object = {
-                dataId: 'seller',
-                dataValue: generateParams.seller
-            } as MessageObjectCreateRequest;
-            objects.push(object);
-        }
-
-        const actionMessageCreateRequest = {
-            action: generateParams.action,
-            nonce: generateParams.nonce,
-            accepted: generateParams.accepted,
-            listing_item_id: generateParams.listingItemId,
-            info,
-            escrow,
-            data,
-            objects
-        } as ActionMessageCreateRequest;
-
-        const items: resources.ActionMessage[] = [];
-        for (let i = amount; i > 0; i--) {
-            const actionMessageModel = await this.actionMessageService.create(actionMessageCreateRequest);
-            const actionMessage = actionMessageModel.toJSON();
-            items.push(actionMessage);
-        }
-        return this.generateResponse(items, withRelated);
     }
 
     // listingitemobjects
