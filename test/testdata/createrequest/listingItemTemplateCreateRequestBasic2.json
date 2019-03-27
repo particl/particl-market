@@ -35,7 +35,7 @@
         "itemImages": [
             {
                 "hash": "75ea10ae-9f4c-40e8-930a-7b9d170737f9",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",
@@ -47,7 +47,7 @@
             },
             {
                 "hash": "1ffea63a-13df-4d58-85b2-d95ada46eae2",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",

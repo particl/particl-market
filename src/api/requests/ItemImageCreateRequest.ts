@@ -15,7 +15,7 @@ export class ItemImageCreateRequest extends RequestBody {
     public hash: string;
 
     @IsNotEmpty()
-    public datas: ItemImageDataCreateRequest[];
+    public data: ItemImageDataCreateRequest[];
 
 }
 // tslint:enable:variable-name

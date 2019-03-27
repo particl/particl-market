@@ -249,11 +249,6 @@ export class TestDataService {
         this.log.debug('ignoreTables: ', this.ignoreTables);
 
         const tablesToClean = [
-            'message_objects',
-            'message_infos',
-            'message_escrows',
-            'message_datas',
-            'action_messages',
             'order_item_objects',
             'order_items',
             'orders',
@@ -930,7 +925,7 @@ export class TestDataService {
             const fakeHash = Faker.random.uuid();
             const item = {
                 hash: fakeHash,
-                datas: [{
+                data: [{
                     itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ProtocolDSN.LOCAL,

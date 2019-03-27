@@ -56,7 +56,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // create item images
         const itemImage = await this.itemImageService.create({
             item_information_id: listingItemTemplate.ItemInformation.id,
-            datas: [{
+            data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],

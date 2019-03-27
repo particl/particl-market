@@ -132,7 +132,7 @@ export class ListingItemMessageFactory {
             const imageData = await this.getMessageItemInfoImageData(image.ItemImageDatas);
             contentReferences.push({
                 hash: image.hash,
-                datas: imageData,
+                data: imageData,
                 featured: image.featured
             } as ContentReference);
         }
