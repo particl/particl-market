@@ -24,7 +24,7 @@ import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { OrderItemObjectService } from './OrderItemObjectService';
 import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateRequest';
-import { EscrowMessage } from '../messages/EscrowMessage';
+import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemService } from './OrderItemService';
 import { OrderSearchParams } from '../requests/OrderSearchParams';
@@ -204,7 +204,7 @@ export class EscrowActionService {
      */
     private async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        // TODO: EscrowMessage should contain Order.hash to identify the item in case there are two different Orders
+        // TODO: EscrowLockMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
 
         const message = event.marketplaceMessage;
@@ -212,7 +212,7 @@ export class EscrowActionService {
             throw new MessageException('Missing mpaction.');
         }
 
-        const escrowMessage = message.mpaction as EscrowMessage;
+        const escrowMessage = message.mpaction as EscrowLockMessage;
         const listingItemHash = escrowMessage.item;
 
         // find the ListingItem

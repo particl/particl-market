@@ -6,7 +6,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { EscrowMessage } from '../messages/EscrowMessage';
+import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { EscrowRequest } from '../requests/EscrowRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -29,9 +29,9 @@ export class EscrowFactory {
      * @param escrow
      * @param address
      *
-     * @returns {EscrowMessage}
+     * @returns {EscrowLockMessage}
      */
-    public async getMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+    public async getMessage(request: EscrowRequest, rawtx: string): Promise<EscrowLockMessage> {
 
         // TODO: validity check
         // this.checkEscrowActionValidity(request.action, escrow);
@@ -57,20 +57,20 @@ export class EscrowFactory {
      * @param data
      * @returns {Escrow}
      */
-    public getModel(data: EscrowMessage): resources.Escrow {
+    public getModel(data: EscrowLockMessage): resources.Escrow {
 
         // TODO:
         return {} as resources.Escrow;
     }
 
     /**
-     * creates the EscrowMessage for EscrowLockRequest
+     * creates the EscrowLockMessage for EscrowLockRequest
      *
      * @param lockRequest
      * @param escrow
-     * @returns {EscrowMessage}
+     * @returns {EscrowLockMessage}
      */
-    private async getLockMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+    private async getLockMessage(request: EscrowRequest, rawtx: string): Promise<EscrowLockMessage> {
 
 
         return {
@@ -84,7 +84,7 @@ export class EscrowFactory {
                 type: 'lock',
                 rawtx
             }
-        } as EscrowMessage;
+        } as EscrowLockMessage;
     }
 
     /**
@@ -93,7 +93,7 @@ export class EscrowFactory {
      * @param releaseRequest
      * @param escrow
      */
-    private async getReleaseMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+    private async getReleaseMessage(request: EscrowRequest, rawtx: string): Promise<EscrowLockMessage> {
 
         return {
             action: request.action,
@@ -103,7 +103,7 @@ export class EscrowFactory {
                 type: 'release',
                 rawtx
             }
-        } as EscrowMessage;
+        } as EscrowLockMessage;
     }
 
     /**
@@ -112,7 +112,7 @@ export class EscrowFactory {
      * @param refundRequest
      * @param escrow
      */
-    private async getRefundMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+    private async getRefundMessage(request: EscrowRequest, rawtx: string): Promise<EscrowLockMessage> {
 
         return {
             action: request.action,
@@ -123,6 +123,6 @@ export class EscrowFactory {
                 type: 'refund',
                 rawtx
             }
-        } as EscrowMessage;
+        } as EscrowLockMessage;
     }
 }
