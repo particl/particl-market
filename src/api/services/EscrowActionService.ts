@@ -21,7 +21,7 @@ import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowRequest } from '../requests/EscrowRequest';
-import { OrderStatus } from '../enums/OrderStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { OrderItemObjectService } from './OrderItemObjectService';
 import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateRequest';
@@ -81,7 +81,7 @@ export class EscrowActionService {
             const rawtx = await this.createRawTx(escrowRequest);
             const updatedRawTx = await this.updateRawTxOrderItemObject(escrowRequest.orderItem.OrderItemObjects, rawtx);
 
-            await this.updateOrderItemStatus(escrowRequest.orderItem, OrderStatus.ESCROW_LOCKED);
+            await this.updateOrderItemStatus(escrowRequest.orderItem, OrderItemStatus.ESCROW_LOCKED);
 
             return await this.createAndSendMessage(escrowRequest, rawtx);
 
@@ -123,8 +123,8 @@ export class EscrowActionService {
 
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        // update OrderStatus
-        const newOrderStatus = OrderStatus.CHANGE;
+        // update OrderItemStatus
+        const newOrderStatus = OrderItemStatus.CHANGE;
         const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
         // use escrowfactory to generate the refund message
@@ -157,9 +157,9 @@ export class EscrowActionService {
         const rawtx = await this.createRawTx(escrowRequest);
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        // update OrderStatus
+        // update OrderItemStatus
         const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
-        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
+        const newOrderStatus = isMyListingItem ? OrderItemStatus.SHIPPING : OrderItemStatus.COMPLETE;
         await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
         return await this.createAndSendMessage(escrowRequest, rawtx);
@@ -276,7 +276,7 @@ export class EscrowActionService {
                     const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
                     this.log.info('processLock(), rawtx:', JSON.stringify(updatedRawTx, null, 2));
 
-                    const updatedOrderItem = await this.updateOrderItemStatus(orderItem, OrderStatus.ESCROW_LOCKED);
+                    const updatedOrderItem = await this.updateOrderItemStatus(orderItem, OrderItemStatus.ESCROW_LOCKED);
 
                     // remove the sellers locked outputs
                     const selectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.SELLER_OUTPUTS, orderItem.OrderItemObjects);
@@ -334,7 +334,7 @@ export class EscrowActionService {
                     const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
 
-                    const newOrderStatus = isMyListingItem ? OrderStatus.COMPLETE : OrderStatus.SHIPPING;
+                    const newOrderStatus = isMyListingItem ? OrderItemStatus.COMPLETE : OrderItemStatus.SHIPPING;
                     const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
                     return SmsgMessageStatus.PROCESSED;
@@ -489,8 +489,8 @@ export class EscrowActionService {
 
             case MPAction.MPA_RELEASE:
 
-                if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
-                    // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
+                if (OrderItemStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
+                    // seller sends the first MPA_RELEASE, OrderItemStatus.ESCROW_LOCKED
                     // this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
 
                     const buyerReleaseAddress = this.getValueFromOrderItemObjects(BidDataValue.BUYER_RELEASE_ADDRESS, orderItem.OrderItemObjects);
@@ -541,8 +541,8 @@ export class EscrowActionService {
 
                     return signed.hex;
 
-                } else if (OrderStatus.SHIPPING === orderItem.status && !isMyListingItem) {
-                    // buyer sends the MPA_RELEASE, OrderStatus.SHIPPING
+                } else if (OrderItemStatus.SHIPPING === orderItem.status && !isMyListingItem) {
+                    // buyer sends the MPA_RELEASE, OrderItemStatus.SHIPPING
 
                     const completeRawTx = await this.signRawTx(rawtx, true);
                     this.log.debug('createRawTx(), completeRawTx: ', JSON.stringify(completeRawTx, null, 2));
@@ -673,10 +673,10 @@ export class EscrowActionService {
      * updates orderitems status
      *
      * @param {module:resources.OrderItem} orderItem
-     * @param {OrderStatus} newOrderStatus
+     * @param {OrderItemStatus} newOrderStatus
      * @returns {Promise<module:resources.OrderItem>}
      */
-    private async updateOrderItemStatus(orderItem: resources.OrderItem, newOrderStatus: OrderStatus): Promise<resources.OrderItem> {
+    private async updateOrderItemStatus(orderItem: resources.OrderItem, newOrderStatus: OrderItemStatus): Promise<resources.OrderItem> {
 
         const orderItemUpdateRequest = {
             itemHash: orderItem.itemHash,

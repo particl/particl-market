@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * OrderStatus
+ * OrderItemStatus
  *
  */
 
-export enum OrderStatus {
+export enum OrderItemStatus {
 
     AWAITING_ESCROW = 'AWAITING_ESCROW',    // seller has accepted buyers bid, waiting for buyer payment
     ESCROW_LOCKED = 'ESCROW_LOCKED',        // buyer has paid, waiting for seller to ship

@@ -4,7 +4,7 @@
 
 import { RequestBody } from '../../core/api/RequestBody';
 import { SearchOrder } from '../enums/SearchOrder';
-import { OrderStatus } from '../enums/OrderStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
@@ -16,7 +16,7 @@ export class BidSearchParams extends RequestBody {
     public ordering: SearchOrder;
 
     // order status filtering
-    public status: MPAction | OrderStatus;
+    public status: MPAction | OrderItemStatus;
 
     // searchBy by string
     public searchString: string;

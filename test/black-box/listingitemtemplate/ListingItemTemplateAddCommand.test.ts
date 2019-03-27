@@ -6,9 +6,9 @@ import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { Currency } from '../../../src/api/enums/Currency';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 describe('ListingItemTemplateAddCommand', () => {
 
@@ -51,8 +51,8 @@ describe('ListingItemTemplateAddCommand', () => {
             'test short description',       // [2]: short description
             'Long description',             // [3]: long description
             category.id,              // [4]: categoryID
-            PaymentType.SALE,               // [5]: payment type
-            Currency.PARTICL,               // [6]: currency
+            SaleType.SALE,               // [5]: payment type
+            Cryptocurrency.PART,               // [6]: currency
             10.1234,                        // [7]: base price
             2.12341234,                     // [8]: domestic shipping price
             1.12341234,                     // [9]: international shipping price
@@ -93,8 +93,8 @@ describe('ListingItemTemplateAddCommand', () => {
             'test short description 2',     // [2]: short description
             'Long description 2',           // [3]: long description
             category.id,                    // [4]: categoryID
-            PaymentType.SALE,               // [5]: payment type
-            Currency.PARTICL,               // [6]: currency
+            SaleType.SALE,               // [5]: payment type
+            Cryptocurrency.PART,               // [6]: currency
             10.1234,                        // [7]: base price
             2.12341234,                     // [8]: domestic shipping price
             1.12341234                      // [9]: international shipping price

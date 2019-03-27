@@ -13,12 +13,11 @@ import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { ItemImageData } from '../../src/api/models/ItemImageData';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
 import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
 describe('ItemImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,14 +39,14 @@ describe('ItemImageData', () => {
     const testData = {
         imageVersion: ImageVersions.ORIGINAL.propName,
         dataId: null,
-        protocol: ImageDataProtocolType.LOCAL,
+        protocol: ProtocolDSN.LOCAL,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
     } as ItemImageDataCreateRequest;
 
     const testDataUpdated = {
         dataId: null,
-        protocol: ImageDataProtocolType.LOCAL,
+        protocol: ProtocolDSN.LOCAL,
         imageVersion: ImageVersions.ORIGINAL.propName,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat

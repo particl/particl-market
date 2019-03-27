@@ -15,7 +15,7 @@ import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { OrderStatus } from '../../enums/OrderStatus';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -68,8 +68,8 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItem = orderItemModel.toJSON();
 
         const validOrderStatuses = [
-            OrderStatus.ESCROW_LOCKED,
-            OrderStatus.SHIPPING
+            OrderItemStatus.ESCROW_LOCKED,
+            OrderItemStatus.SHIPPING
         ];
 
         // check if in the right state.

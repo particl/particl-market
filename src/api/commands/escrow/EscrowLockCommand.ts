@@ -17,7 +17,7 @@ import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { OrderStatus } from '../../enums/OrderStatus';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
@@ -50,7 +50,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
-        if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
+        if (orderItem.status !== OrderItemStatus.AWAITING_ESCROW) {
             this.log.error('Order is in invalid state');
             throw new MessageException('Order is in invalid state');
         }

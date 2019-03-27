@@ -5,13 +5,12 @@
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 describe('PaymentInformationUpdateCommand', () => {
 
@@ -28,16 +27,16 @@ describe('PaymentInformationUpdateCommand', () => {
     let listingItemTemplate: resources.ListingItemTemplate;
 
     const testData = {
-        type: PaymentType.FREE,
+        type: SaleType.FREE,
         itemPrice: {
-            currency: Currency.PARTICL,
+            currency: Cryptocurrency.PART,
             basePrice: 1,
             shippingPrice: {
                 domestic: 2,
                 international: 3
             },
             cryptocurrencyAddress: {
-                type: CryptocurrencyAddressType.NORMAL,
+                type: CryptoAddressType.NORMAL,
                 address: 'This is NEW address.'
             }
         }

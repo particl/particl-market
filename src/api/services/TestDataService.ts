@@ -15,11 +15,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { ShippingCountries } from '../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { MessagingProtocolType } from '../enums/MessagingProtocolType';
-import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
 import { ListingItemObjectType } from '../enums/ListingItemObjectType';
-import { Currency } from '../enums/Currency';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
@@ -87,7 +83,10 @@ import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinatio
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { EscrowType, MPAction, PaymentType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class TestDataService {
 
@@ -601,7 +600,7 @@ export class TestDataService {
             order_id: 0,
             itemHash: bid.ListingItem.hash,
             bid_id: bid.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             orderItemObjects
         } as OrderItemCreateRequest;
     }
@@ -849,7 +848,7 @@ export class TestDataService {
         const cryptoAddresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             cryptoAddresses.push({
-                type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
+                type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
                 address: await this.coreRpcService.getNewAddress()
             });
         }
@@ -950,7 +949,7 @@ export class TestDataService {
                 datas: [{
                     itemHash: fakeHash,
                     dataId: Faker.internet.url(),
-                    protocol: ImageDataProtocolType.LOCAL,
+                    protocol: ProtocolDSN.LOCAL,
                     imageVersion: 'ORIGINAL',
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcatSmall
@@ -1010,21 +1009,21 @@ export class TestDataService {
 
         const itemPrice = generateParams.generateItemPrice
             ? {
-                currency: Currency.PARTICL.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
+                currency: Cryptocurrency.PART.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 basePrice: _.random(0.1, 1.00),
                 shippingPrice: {
                     domestic: _.random(0.01, 0.10),
                     international: _.random(0.10, 0.20)
                 },
                 cryptocurrencyAddress: {
-                    type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
+                    type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
                     address: await this.coreRpcService.getNewAddress()
                 }
             } as ItemPriceCreateRequest
             : undefined;
 
         const paymentInformation = {
-            type: PaymentType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
+            type: SaleType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(SaleType)),
             escrow,
             itemPrice
         } as PaymentInformationCreateRequest;
@@ -1034,7 +1033,7 @@ export class TestDataService {
     // TODO: type
     private generateMessagingInformationData(): any {
         const messagingInformation = [{
-            protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocolType)),
+            protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocol)),
             publicKey: Faker.random.uuid()
         }];
         return messagingInformation;

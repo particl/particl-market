@@ -5,7 +5,7 @@
 import {IsEnum, IsNotEmpty} from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { OrderItemObjectUpdateRequest } from './OrderItemObjectUpdateRequest';
-import {OrderStatus} from '../enums/OrderStatus';
+import {OrderItemStatus} from '../enums/OrderItemStatus';
 
 // tslint:disable:variable-name
 export class OrderItemUpdateRequest extends RequestBody {
@@ -13,9 +13,9 @@ export class OrderItemUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public itemHash: string;
 
-    @IsEnum(OrderStatus)
+    @IsEnum(OrderItemStatus)
     @IsNotEmpty()
-    public status: OrderStatus;
+    public status: OrderItemStatus;
 
     public orderItemObjects: OrderItemObjectUpdateRequest[];
 

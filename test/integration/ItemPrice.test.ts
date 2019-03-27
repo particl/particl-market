@@ -16,14 +16,13 @@ import { EscrowService } from '../../src/api/services/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemPrice } from '../../src/api/models/ItemPrice';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { EscrowType, PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -47,28 +46,28 @@ describe('ItemPrice', () => {
     let paymentInfoId;
 
     const testData = {
-        payment_information_id: null,
-        currency: Currency.BITCOIN,
+        payment_information_id: 0,
+        currency: Cryptocurrency.BTC,
         basePrice: 0.0001,
         shippingPrice: {
             domestic: 0.123,
             international: 1.234
         },
         cryptocurrencyAddress: {
-            type: CryptocurrencyAddressType.NORMAL,
+            type: CryptoAddressType.NORMAL,
             address: '1234'
         }
     } as ItemPriceCreateRequest;
 
     const testDataUpdated = {
-        currency: Currency.PARTICL,
+        currency: Cryptocurrency.PART,
         basePrice: 0.002,
         shippingPrice: {
             domestic: 1.234,
             international: 2.345
         },
         cryptocurrencyAddress: {
-            type: CryptocurrencyAddressType.STEALTH,
+            type: CryptoAddressType.STEALTH,
             address: '4567'
         }
     } as ItemPriceUpdateRequest;
@@ -95,7 +94,7 @@ describe('ItemPrice', () => {
                 profile_id: defaultProfile.Id,
                 hash: 'itemhash',
                 paymentInformation: {
-                    type: PaymentType.FREE,
+                    type: SaleType.FREE,
                     escrow: {
                         type: EscrowType.MAD,
                         ratio: {

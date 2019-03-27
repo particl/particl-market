@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -14,14 +15,13 @@ import { MessagingInformationService } from '../../src/api/services/MessagingInf
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessagingInformation } from '../../src/api/models/MessagingInformation';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -42,7 +42,7 @@ describe('MessagingInformation', () => {
 
     const testData = {
         listing_item_template_id: null,
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey1'
     } as MessagingInformationCreateRequest;
 
@@ -54,7 +54,7 @@ describe('MessagingInformation', () => {
 
     const testDataUpdated = {
         listing_item_template_id: null,
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey2'
     } as MessagingInformationUpdateRequest;
 

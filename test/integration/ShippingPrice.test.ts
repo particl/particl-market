@@ -21,8 +21,8 @@ import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/ShippingPriceUpdateRequest';
-import { Currency } from '../../src/api/enums/Currency';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 describe('ShippingPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -74,9 +74,9 @@ describe('ShippingPrice', () => {
                 profile_id: defaultProfile.Id,
                 hash: 'itemhash',
                 paymentInformation: {
-                    type: PaymentType.FREE,
+                    type: SaleType.FREE,
                     itemPrice: {
-                        currency: Currency.PARTICL,
+                        currency: Cryptocurrency.PART,
                         basePrice: 3.333
                     }
                 }

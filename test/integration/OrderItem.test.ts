@@ -15,7 +15,7 @@ import { OrderItem } from '../../src/api/models/OrderItem';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../src/api/requests/OrderItemUpdateRequest';
-import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
@@ -170,7 +170,7 @@ describe('OrderItem', () => {
         const testData = {
             itemHash: createdBid.ListingItem.hash,
             bid_id: createdBid.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             order_id: createdOrder.id
         } as OrderItemCreateRequest;
 
@@ -211,7 +211,7 @@ describe('OrderItem', () => {
     test('Should update the OrderItem', async () => {
         const testDataUpdated = {
             itemHash: createdBid.ListingItem.hash,
-            status: OrderStatus.SHIPPING
+            status: OrderItemStatus.SHIPPING
         } as OrderItemUpdateRequest;
 
         const orderItemModel: OrderItem = await orderItemService.update(createdOrderItem.id, testDataUpdated);

@@ -13,7 +13,6 @@ import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemImage } from '../../src/api/models/ItemImage';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
@@ -23,6 +22,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,10 +40,10 @@ describe('ItemImage', () => {
 
     const testData = {
         // item_information_id: 0,
-        // hash
+        // hash: 'hash',
         datas: [{
             dataId: null,
-            protocol: ImageDataProtocolType.LOCAL,
+            protocol: ProtocolDSN.LOCAL,
             imageVersion: 'ORIGINAL',
             encoding: 'BASE64',
             data: ImageProcessing.milkcatTall
@@ -55,7 +55,7 @@ describe('ItemImage', () => {
         // hash,
         datas: [{
             dataId: null,
-            protocol: ImageDataProtocolType.LOCAL,
+            protocol: ProtocolDSN.LOCAL,
             imageVersion: 'ORIGINAL',
             encoding: 'BASE64',
             data: ImageProcessing.milkcat

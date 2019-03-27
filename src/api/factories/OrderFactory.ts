@@ -12,7 +12,7 @@ import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
 import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { OrderStatus } from '../enums/OrderStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
@@ -83,7 +83,7 @@ export class OrderFactory {
         const orderItemCreateRequest = {
             bid_id: bid.id,
             itemHash: bid.ListingItem.hash,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             orderItemObjects
         } as OrderItemCreateRequest;
 

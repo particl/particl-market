@@ -2,10 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {IsEnum, IsNotEmpty, ValidateIf} from 'class-validator';
+import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import {ImageVersion} from '../../core/helpers/ImageVersion';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 // tslint:disable:variable-name
 export class ItemImageDataUpdateRequest extends RequestBody {
@@ -17,7 +16,7 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     public dataId: string | null;
 
     @IsNotEmpty()
-    public protocol: ImageDataProtocolType;
+    public protocol: ProtocolDSN;
 
     @IsNotEmpty()
     public imageVersion: string;

@@ -11,7 +11,7 @@ import { BidSearchParams } from '../requests/BidSearchParams';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
-import { OrderStatus } from '../enums/OrderStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class Bid extends Bookshelf.Model<Bid> {
@@ -59,10 +59,10 @@ export class Bid extends Bookshelf.Model<Bid> {
                 }
 
                 if (options.status
-                    && (options.status === OrderStatus.AWAITING_ESCROW
-                        || options.status === OrderStatus.COMPLETE
-                        || options.status === OrderStatus.ESCROW_LOCKED
-                        || options.status === OrderStatus.SHIPPING)) {
+                    && (options.status === OrderItemStatus.AWAITING_ESCROW
+                        || options.status === OrderItemStatus.COMPLETE
+                        || options.status === OrderItemStatus.ESCROW_LOCKED
+                        || options.status === OrderItemStatus.SHIPPING)) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
                     qb.where('order_items.status', '=', options.status);
                 }

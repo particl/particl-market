@@ -27,7 +27,7 @@ import { GenerateActionMessageParams } from '../../src/api/requests/params/Gener
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as resources from 'resources';
-import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -175,7 +175,7 @@ describe('TestDataService', () => {
         expect(result.hash).toBeDefined();
 
         if (orderGenerateParams.generateListingItem) {
-            expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+            expect(result.OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
             expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
             expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
 

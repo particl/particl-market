@@ -94,15 +94,15 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const profileId = data.params.shift();
         const addressId = data.params.shift();
 
-        // listingitem we are bidding for
+        // get the listingitem we are bidding for
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
             .then(value => {
                 return value.toJSON();
             });
 
         if (new Date().getTime() > listingItem.expiredAt) {
-            this.log.warn(`listingitem has expired!`);
-            throw new MessageException('An item in your basket has expired!');
+            this.log.warn(`ListingItem has expired!`);
+            throw new MessageException('The ListingItem being bidded for has expired!');
         }
 
         // profile that is doing the bidding
@@ -118,6 +118,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // TODO: support for passing custom BidDatas seems to have been removed
         // TODO: the allowed custom BidDatas for a Bid should be defined in the ListingItem
+        // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
         return this.bidActionService.send(listingItem, profile, address/*, additionalParams */);
@@ -149,7 +150,6 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // TODO: move the validation here, add separate error messages for missing parameters
         if (data.params.length < 1) {
             throw new MissingParamException('hash');
         } else if (data.params.length < 2) {

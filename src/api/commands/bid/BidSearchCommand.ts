@@ -18,7 +18,7 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { OrderStatus} from '../../enums/OrderStatus';
+import { OrderItemStatus} from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
@@ -163,7 +163,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             + ' MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
 
-    private getStatus(status: string): MPAction | OrderStatus | undefined {
+    private getStatus(status: string): MPAction | OrderItemStatus | undefined {
         switch (status) {
             case 'MPA_BID':
                 return MPAction.MPA_BID;
@@ -174,13 +174,13 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             case 'MPA_CANCEL':
                 return MPAction.MPA_CANCEL;
             case 'AWAITING_ESCROW':
-                return OrderStatus.AWAITING_ESCROW;
+                return OrderItemStatus.AWAITING_ESCROW;
             case 'ESCROW_LOCKED':
-                return OrderStatus.ESCROW_LOCKED;
+                return OrderItemStatus.ESCROW_LOCKED;
             case 'SHIPPING':
-                return OrderStatus.SHIPPING;
+                return OrderItemStatus.SHIPPING;
             case 'COMPLETE':
-                return OrderStatus.COMPLETE;
+                return OrderItemStatus.COMPLETE;
             case '*':
                 return undefined;
             default:

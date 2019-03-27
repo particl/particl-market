@@ -4,7 +4,7 @@
 
 import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import {ImageDataProtocolType} from '../enums/ImageDataProtocolType';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 // tslint:disable:variable-name
 export class ItemImageDataCreateRequest extends RequestBody {
@@ -13,7 +13,7 @@ export class ItemImageDataCreateRequest extends RequestBody {
     public dataId: string;
 
     @IsNotEmpty()
-    public protocol: ImageDataProtocolType;
+    public protocol: ProtocolDSN;
 
     @IsNotEmpty()
     public imageVersion: string;

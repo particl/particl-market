@@ -5,20 +5,21 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
-import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
-import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
-import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
-import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
-import { InternalServerException } from '../exceptions/InternalServerException';
-import { BidMessage } from '../messages/BidMessage';
-import { EscrowMessage } from '../messages/EscrowMessage';
-import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { ActionMessageCreateRequest } from '../../requests/ActionMessageCreateRequest';
+import { MessageInfoCreateRequest } from '../../requests/MessageInfoCreateRequest';
+import { MessageEscrowCreateRequest } from '../../requests/MessageEscrowCreateRequest';
+import { MessageDataCreateRequest } from '../../requests/MessageDataCreateRequest';
+import { MessageObjectCreateRequest } from '../../requests/MessageObjectCreateRequest';
+import { InternalServerException } from '../../exceptions/InternalServerException';
+import { BidMessage } from '../../messages/BidMessage';
+import { EscrowMessage } from '../../messages/EscrowMessage';
+import { ListingItemAddMessage } from '../../messages/actions/ListingItemAddMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ActionMessageInterface } from '../messages/actions/ActionMessageInterface';
+import { ActionMessageInterface } from '../../messages/actions/ActionMessageInterface';
 
+// TODO: get rid of ActionMessages?
 export class ActionMessageFactory {
 
     public log: LoggerType;
@@ -29,11 +30,11 @@ export class ActionMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getModel(message: ActionMessageInterface,
-                          listingItemId: number, smsgMessage: resources.SmsgMessage): Promise<ActionMessageCreateRequest> {
+    public async getModel(message: ActionMessageInterface, smsgMessage: resources.SmsgMessage,
+                          listingItemId: number): Promise<ActionMessageCreateRequest> {
 
         let actionMessageCreateRequest: ActionMessageCreateRequest;
-        const data = this.getModelMessageData(smsgMessage);
+        const smsgData = this.getModelSmsgMessageData(smsgMessage);
 
         switch (message.action) {
             case MPAction.MPA_LISTING_ADD:
@@ -43,7 +44,7 @@ export class ActionMessageFactory {
                     listing_item_id: listingItemId,
                     action: listingItemMessage.action.toString(),
                     objects: listingItemobjects,
-                    data
+                    data: smsgData
                 } as ActionMessageCreateRequest;
                 break;
 
@@ -57,7 +58,7 @@ export class ActionMessageFactory {
                     listing_item_id: listingItemId,
                     action: bidMessage.action.toString(),
                     objects,
-                    data
+                    data: smsgData
                 } as ActionMessageCreateRequest;
                 break;
 
@@ -81,7 +82,7 @@ export class ActionMessageFactory {
                     accepted: escrowMessage.accepted,
                     info: escrowMessage.info as MessageInfoCreateRequest,
                     escrow: escrowMessage.escrow as MessageEscrowCreateRequest,
-                    data
+                    data: smsgData
                 } as ActionMessageCreateRequest;
                 break;
             case ProposalMessageType.MP_PROPOSAL_ADD:
@@ -113,12 +114,13 @@ export class ActionMessageFactory {
         return createRequests;
     }
 
-    private getModelMessageData(smsgMessage: resources.SmsgMessage): MessageDataCreateRequest {
+    private getModelSmsgMessageData(smsgMessage: resources.SmsgMessage): MessageDataCreateRequest {
         return {
             msgid: smsgMessage.msgid,
             version: smsgMessage.version,
             received: new Date(smsgMessage.received),
             sent: new Date(smsgMessage.sent),
+            daysretention: smsgMessage.daysretention,
             from: smsgMessage.from,
             to: smsgMessage.to
         } as MessageDataCreateRequest;

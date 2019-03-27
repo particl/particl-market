@@ -12,7 +12,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 // tslint:enable:max-line-length
 
 describe('ListingItemTemplatePostCommand', () => {
@@ -137,7 +137,7 @@ describe('ListingItemTemplatePostCommand', () => {
         let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
             brokenListingItemTemplate.id,
             'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
+            ProtocolDSN.LOCAL,
             'BASE64',
             filedata,
             true        // skip resize

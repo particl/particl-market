@@ -3,13 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('MessagingInformationUpdateCommand', () => {
 
@@ -56,7 +56,7 @@ describe('MessagingInformationUpdateCommand', () => {
     });
 
     const messageInfoData = {
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey2'
     };
 

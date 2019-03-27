@@ -15,7 +15,7 @@ import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { OrderStatus } from '../../enums/OrderStatus';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -47,7 +47,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         const orderItemModel = await this.orderItemService.findOne(data.params[0]);
         const orderItem = orderItemModel.toJSON();
 
-        if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
+        if (orderItem.status !== OrderItemStatus.AWAITING_ESCROW) {
             this.log.error('Order is in invalid state');
             throw new MessageException('Order is in invalid state');
         }

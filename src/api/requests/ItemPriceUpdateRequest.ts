@@ -4,7 +4,7 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { Currency } from '../enums/Currency';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 // tslint:disable:variable-name
 export class ItemPriceUpdateRequest extends RequestBody {
@@ -12,9 +12,9 @@ export class ItemPriceUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public payment_information_id: number;
 
-    @IsEnum(Currency)
+    @IsEnum(Cryptocurrency)
     @IsNotEmpty()
-    public currency: Currency;
+    public currency: Cryptocurrency;
 
     @IsNotEmpty()
     public basePrice: number;

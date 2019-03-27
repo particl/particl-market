@@ -19,7 +19,7 @@ import { MessageDataService } from './MessageDataService';
 import { MessageObjectService } from './MessageObjectService';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { MarketService } from './MarketService';
-import { ActionMessageFactory } from '../factories/ActionMessageFactory';
+import { ActionMessageFactory } from '../factories/model/ActionMessageFactory';
 import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import * as resources from 'resources';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -136,7 +136,7 @@ export class ActionMessageService {
 
             // create ActionMessage
 
-            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
+            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, event.smsgMessage, listingItem.id);
             // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);
@@ -161,7 +161,7 @@ export class ActionMessageService {
             } as ListingItemAddMessage;
 
             // create ActionMessage
-            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(listingItemAddMessage, listingItem.id, event.smsgMessage);
+            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(listingItemAddMessage, event.smsgMessage, listingItem.id);
             // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);

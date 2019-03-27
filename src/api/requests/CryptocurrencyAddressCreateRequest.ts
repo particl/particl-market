@@ -4,16 +4,16 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 // tslint:disable:variable-name
 export class CryptocurrencyAddressCreateRequest extends RequestBody {
 
     public profile_id: number;
 
-    @IsEnum(CryptocurrencyAddressType)
+    @IsEnum(CryptoAddressType)
     @IsNotEmpty()
-    public type: CryptocurrencyAddressType;
+    public type: CryptoAddressType;
 
     @IsNotEmpty()
     public address: string;

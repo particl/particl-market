@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import { ActionMessageFactory } from '../../../../src/api/factories/ActionMessageFactory';
+import { ActionMessageFactory } from '../../../../src/api/factories/model/ActionMessageFactory';
 import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
 import { ActionMessageInterface } from '../../../../src/api/messages/actions/ActionMessageInterface';

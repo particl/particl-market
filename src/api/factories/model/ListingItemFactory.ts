@@ -24,13 +24,13 @@ import { CryptocurrencyAddressCreateRequest } from '../../requests/Cryptocurrenc
 import { MessagingInformationCreateRequest } from '../../requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemObjectDataCreateRequest';
-import { MessagingProtocolType } from '../../enums/MessagingProtocolType';
 import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/ItemImageDataService';
 import { ListingItemAddMessage } from '../../messages/actions/ListingItemAddMessage';
 import { ItemInfo, ItemObject, Location, LocationMarker } from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ListingItemFactory {
 
@@ -126,7 +126,7 @@ export class ListingItemFactory {
         const messagingArray: MessagingInformationCreateRequest[] = [];
         for (const messagingData of messaging) {
             messagingArray.push({
-                protocol: MessagingProtocolType[messagingData.protocol],
+                protocol: MessagingProtocol[messagingData.protocol],
                 publicKey: messagingData.public_key
             } as MessagingInformationCreateRequest);
         }

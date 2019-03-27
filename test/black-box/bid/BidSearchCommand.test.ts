@@ -223,7 +223,7 @@ describe('BidSearchCommand', () => {
     });
 
 
-    // TODO: missing tests for OrderStatus
+    // TODO: missing tests for OrderItemStatus
     // TODO: missing tests for searching using searchString
     // TODO: missing tests for searching using bidder
     // TODO: missing tests for searching using multiple bidders

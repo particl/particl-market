@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { OrderStatus } from '../../../src/api/enums/OrderStatus';
+import { OrderItemStatus } from '../../../src/api/enums/OrderItemStatus';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { Logger as LoggerType } from '../../../src/core/Logger';
@@ -396,7 +396,7 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
         expect(myOrderItems[0].bidType).toBe(MPAction.MPA_ACCEPT);
-        expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(myOrderItems[0].orderStatus).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
@@ -425,7 +425,7 @@ describe('OrderItemStatus', () => {
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
-            OrderStatus.AWAITING_ESCROW,
+            OrderItemStatus.AWAITING_ESCROW,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -437,7 +437,7 @@ describe('OrderItemStatus', () => {
             8 * 60,
             200,
             '[0].OrderItems[0].status',
-            OrderStatus.AWAITING_ESCROW.toString()
+            OrderItemStatus.AWAITING_ESCROW.toString()
         );
         orderSearchRes.expectJson();
         orderSearchRes.expectStatusCode(200);
@@ -448,7 +448,7 @@ describe('OrderItemStatus', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
@@ -503,7 +503,7 @@ describe('OrderItemStatus', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW', async () => {
+    test('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderItemStatus.AWAITING_ESCROW', async () => {
 
         expect(bidOnBuyerNode.action).toBe(MPAction.MPA_ACCEPT);
 
@@ -513,7 +513,7 @@ describe('OrderItemStatus', () => {
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnBuyerNode.ListingItem.hash,
-            OrderStatus.AWAITING_ESCROW,
+            OrderItemStatus.AWAITING_ESCROW,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -529,7 +529,7 @@ describe('OrderItemStatus', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
@@ -557,7 +557,7 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
         expect(myOrderItems[0].bidType).toBe(MPAction.MPA_ACCEPT);
-        expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(myOrderItems[0].orderStatus).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 

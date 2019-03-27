@@ -4,7 +4,7 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { MessagingProtocolType } from '../../api/enums/MessagingProtocolType';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class MessagingInformationUpdateRequest extends RequestBody {
@@ -12,9 +12,9 @@ export class MessagingInformationUpdateRequest extends RequestBody {
     public listing_item_id: number;
     public listing_item_template_id: number;
 
-    @IsEnum(MessagingProtocolType)
+    @IsEnum(MessagingProtocol)
     @IsNotEmpty()
-    public protocol: MessagingProtocolType;
+    public protocol: MessagingProtocol;
 
     @IsNotEmpty()
     public publicKey: string;

@@ -12,11 +12,11 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformationUpdateRequest';
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -61,7 +61,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
         if (data.params[6]) {
             cryptocurrencyAddress = {
-                type: CryptocurrencyAddressType.NORMAL,
+                type: CryptoAddressType.NORMAL,
                 address: data.params[6]
             };
         }

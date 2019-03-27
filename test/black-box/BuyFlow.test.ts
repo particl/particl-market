@@ -10,7 +10,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Happy Buy Flow', () => {
@@ -477,7 +477,7 @@ describe('Happy Buy Flow', () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
-            OrderStatus.AWAITING_ESCROW,
+            OrderItemStatus.AWAITING_ESCROW,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -491,7 +491,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
@@ -557,7 +557,7 @@ describe('Happy Buy Flow', () => {
         expect(bidOnBuyerNode).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW');
+        log.debug('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderItemStatus.AWAITING_ESCROW');
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Order has been created
@@ -565,7 +565,7 @@ describe('Happy Buy Flow', () => {
 
         const res: any = await testUtilBuyerNode.rpc(orderCommand, [orderSearchCommand,
             bidOnBuyerNode.ListingItem.hash,
-            OrderStatus.AWAITING_ESCROW,
+            OrderItemStatus.AWAITING_ESCROW,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -579,7 +579,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
@@ -588,7 +588,7 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should find Bids on BUYER node using the OrderStatus.AWAITING_ESCROW', async () => {
+    test('Should find Bids on BUYER node using the OrderItemStatus.AWAITING_ESCROW', async () => {
 
         expect(sent).toBeTruthy();
         expect(bidOnSellerNode).toBeDefined();
@@ -597,7 +597,7 @@ describe('Happy Buy Flow', () => {
         expect(orderOnBuyerNode).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Bid should now be found using OrderStatus');
+        log.debug('Bid should now be found using OrderItemStatus');
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Order has been created
@@ -606,7 +606,7 @@ describe('Happy Buy Flow', () => {
         const response: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             bidOnBuyerNode.ListingItem.hash,
-            OrderStatus.AWAITING_ESCROW
+            OrderItemStatus.AWAITING_ESCROW
         ]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -615,7 +615,7 @@ describe('Happy Buy Flow', () => {
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnBuyerNode.ListingItem.hash);
-        expect(result[0].OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
 
         bidOnBuyerNode = result[0];
 
@@ -624,7 +624,7 @@ describe('Happy Buy Flow', () => {
 
     test('Should post MPA_LOCK from BUYER node', async () => {
 
-        expect(bidOnBuyerNode.OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(bidOnBuyerNode.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
         sent = false;
 
         log.debug('========================================================================================');
@@ -658,19 +658,19 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have updated Order on BUYER node after posting the MPA_LOCK, OrderStatus.ESCROW_LOCKED', async () => {
+    test('Should have updated Order on BUYER node after posting the MPA_LOCK, OrderItemStatus.ESCROW_LOCKED', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been updated on buyer node after posting the MPA_LOCK, OrderStatus.ESCROW_LOCKED');
+        log.debug('Order should have been updated on buyer node after posting the MPA_LOCK, OrderItemStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
         await testUtilBuyerNode.waitFor(5);
 
         const res: any = await testUtilBuyerNode.rpc(orderCommand, [orderSearchCommand,
             bidOnBuyerNode.ListingItem.hash,
-            OrderStatus.ESCROW_LOCKED,
+            OrderItemStatus.ESCROW_LOCKED,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -684,7 +684,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
@@ -692,14 +692,14 @@ describe('Happy Buy Flow', () => {
         log.debug('==> Updated Bid found on BUYER node.');
     });
 
-    test('Should have updated Order on SELLER node after receiving MPA_LOCK, OrderStatus.ESCROW_LOCKED', async () => {
+    test('Should have updated Order on SELLER node after receiving MPA_LOCK, OrderItemStatus.ESCROW_LOCKED', async () => {
 
         expect(sent).toBeTruthy();
         expect(orderOnBuyerNode).toBeDefined();
-        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
 
         log.debug('========================================================================================');
-        log.debug('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderStatus.ESCROW_LOCKED');
+        log.debug('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderItemStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
         const res: any = await testUtilSellerNode.rpcWaitFor(
@@ -707,7 +707,7 @@ describe('Happy Buy Flow', () => {
             [
                 orderSearchCommand,
                 bidOnSellerNode.ListingItem.hash,
-                OrderStatus.ESCROW_LOCKED,
+                OrderItemStatus.ESCROW_LOCKED,
                 buyerProfile.address,
                 sellerProfile.address,
                 SearchOrder.ASC
@@ -715,14 +715,14 @@ describe('Happy Buy Flow', () => {
             8 * 60,
             200,
             '[0].OrderItems[0].status',
-            OrderStatus.ESCROW_LOCKED.toString()
+            OrderItemStatus.ESCROW_LOCKED.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
 
@@ -735,8 +735,8 @@ describe('Happy Buy Flow', () => {
     test('Should post MPA_RELEASE from SELLER node, indicating that the item has been sent', async () => {
 
         expect(sent).toBeTruthy();
-        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
-        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         sent = false;
 
         log.debug('========================================================================================');
@@ -772,19 +772,19 @@ describe('Happy Buy Flow', () => {
     });
 
 
-    test('Should have updated Order on SELLER node after sending MPA_RELEASE, OrderStatus.SHIPPING', async () => {
+    test('Should have updated Order on SELLER node after sending MPA_RELEASE, OrderItemStatus.SHIPPING', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been updated on seller node after sending the MPA_RELEASE, OrderStatus.SHIPPING');
+        log.debug('Order should have been updated on seller node after sending the MPA_RELEASE, OrderItemStatus.SHIPPING');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
-            OrderStatus.SHIPPING,
+            OrderItemStatus.SHIPPING,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -798,7 +798,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
@@ -807,13 +807,13 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have updated Order on BUYER node after receiving MPA_RELEASE, OrderStatus.SHIPPING', async () => {
+    test('Should have updated Order on BUYER node after receiving MPA_RELEASE, OrderItemStatus.SHIPPING', async () => {
 
         expect(sent).toBeTruthy();
-        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
 
         log.debug('========================================================================================');
-        log.debug('BUYER RECEIVES MPA_RELEASE posted from sellers node, OrderStatus.SHIPPING');
+        log.debug('BUYER RECEIVES MPA_RELEASE posted from sellers node, OrderItemStatus.SHIPPING');
         log.debug('========================================================================================');
 
         await testUtilBuyerNode.waitFor(5);
@@ -823,7 +823,7 @@ describe('Happy Buy Flow', () => {
             [
                 orderSearchCommand,
                 bidOnBuyerNode.ListingItem.hash,
-                OrderStatus.SHIPPING,
+                OrderItemStatus.SHIPPING,
                 buyerProfile.address,
                 sellerProfile.address,
                 SearchOrder.ASC
@@ -831,14 +831,14 @@ describe('Happy Buy Flow', () => {
             8 * 60,
             200,
             '[0].OrderItems[0].status',
-            OrderStatus.SHIPPING.toString()
+            OrderItemStatus.SHIPPING.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
 
@@ -851,8 +851,8 @@ describe('Happy Buy Flow', () => {
     test('Should post MPA_RELEASE from BUYER node, indicating that the item has been received', async () => {
 
         expect(sent).toBeTruthy();
-        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderStatus.SHIPPING);
-        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
+        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
         sent = false;
 
         log.debug('========================================================================================');
@@ -889,19 +889,19 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have updated Order on BUYER node after sending MPA_RELEASE, OrderStatus.COMPLETE', async () => {
+    test('Should have updated Order on BUYER node after sending MPA_RELEASE, OrderItemStatus.COMPLETE', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been updated on buyer node after sending the MPA_RELEASE, OrderStatus.COMPLETE');
+        log.debug('Order should have been updated on buyer node after sending the MPA_RELEASE, OrderItemStatus.COMPLETE');
         log.debug('========================================================================================');
 
         await testUtilBuyerNode.waitFor(5);
 
         const res: any = await testUtilBuyerNode.rpc(orderCommand, [orderSearchCommand,
             bidOnBuyerNode.ListingItem.hash,
-            OrderStatus.COMPLETE,
+            OrderItemStatus.COMPLETE,
             buyerProfile.address,
             sellerProfile.address,
             SearchOrder.ASC
@@ -915,7 +915,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.COMPLETE);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnBuyerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
@@ -924,13 +924,13 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have updated Order on SELLER node after receiving MPA_RELEASE, OrderStatus.COMPLETE', async () => {
+    test('Should have updated Order on SELLER node after receiving MPA_RELEASE, OrderItemStatus.COMPLETE', async () => {
 
         expect(sent).toBeTruthy();
-        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderStatus.COMPLETE);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
 
         log.debug('========================================================================================');
-        log.debug('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderStatus.COMPLETE');
+        log.debug('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderItemStatus.COMPLETE');
         log.debug('========================================================================================');
 
         const res: any = await testUtilBuyerNode.rpcWaitFor(
@@ -938,7 +938,7 @@ describe('Happy Buy Flow', () => {
             [
                 orderSearchCommand,
                 bidOnSellerNode.ListingItem.hash,
-                OrderStatus.COMPLETE,
+                OrderItemStatus.COMPLETE,
                 buyerProfile.address,
                 sellerProfile.address,
                 SearchOrder.ASC
@@ -946,14 +946,14 @@ describe('Happy Buy Flow', () => {
             8 * 60,
             200,
             '[0].OrderItems[0].status',
-            OrderStatus.COMPLETE.toString()
+            OrderItemStatus.COMPLETE.toString()
         );
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderStatus.COMPLETE);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
 
@@ -967,8 +967,8 @@ describe('Happy Buy Flow', () => {
     test('Should have no locked outputs left', async () => {
 
         expect(sent).toBeTruthy();
-        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderStatus.COMPLETE);
-        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderStatus.COMPLETE);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
+        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
 
         // incase something went wrong.. unlock the locked outputs
         let response: any = await testUtilSellerNode.rpc(daemonCommand, [

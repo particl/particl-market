@@ -4,7 +4,7 @@
 
 import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { OrderStatus } from '../enums/OrderStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { SearchOrder } from '../enums/SearchOrder';
 
 // tslint:disable:variable-name
@@ -15,8 +15,8 @@ export class OrderSearchParams extends RequestBody {
 
     // TODO: add validation back
     // @ValidateIf(o => o.action)
-    // @IsEnum(OrderStatus)
-    public status: OrderStatus;
+    // @IsEnum(OrderItemStatus)
+    public status: OrderItemStatus;
 
     public buyerAddress: string;
     public sellerAddress: string;

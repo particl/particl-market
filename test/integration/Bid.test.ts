@@ -29,7 +29,7 @@ import { Order } from '../../src/api/models/Order';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
-import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -212,7 +212,7 @@ describe('Bid', () => {
             orderItems: [{
                 itemHash: createdListingItem2.hash,
                 bid_id: createdBid2.id,
-                status: OrderStatus.AWAITING_ESCROW
+                status: OrderItemStatus.AWAITING_ESCROW
             } as OrderItemCreateRequest],
             buyer: createdBid2.bidder,
             seller: 'selleraddress'
@@ -261,7 +261,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW)', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: OrderStatus.AWAITING_ESCROW
+            status: OrderItemStatus.AWAITING_ESCROW
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
@@ -272,7 +272,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and title', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             searchString: createdListingItem2.ItemInformation.title.slice(0, 3)
         } as BidSearchParams;
 
@@ -284,7 +284,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and shortDescription', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             searchString: createdListingItem2.ItemInformation.shortDescription.slice(0, 3)
         } as BidSearchParams;
 
@@ -296,7 +296,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and longDescription', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             searchString: createdListingItem2.ItemInformation.longDescription.slice(0, 3)
         } as BidSearchParams;
 
@@ -308,7 +308,7 @@ describe('Bid', () => {
     test('Should not find Bids by listingItem.id and status (AWAITING_ESCROW) and title', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem2.id,
-            status: OrderStatus.AWAITING_ESCROW,
+            status: OrderItemStatus.AWAITING_ESCROW,
             searchString: 'DOESNOTMATCH'
         } as BidSearchParams;
 

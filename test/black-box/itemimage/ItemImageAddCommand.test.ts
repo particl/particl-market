@@ -5,15 +5,13 @@
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
-import * as Jimp from 'jimp';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 describe('ItemImageAddCommand', () => {
 
@@ -125,7 +123,7 @@ describe('ItemImageAddCommand', () => {
             itemImageAddCommand,
             createdListingItemTemplate.id,
             'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
+            ProtocolDSN.LOCAL,
             'BASE64',
             ImageProcessing.milkcatWide
         ]);
@@ -149,7 +147,7 @@ describe('ItemImageAddCommand', () => {
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
                 + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
             expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
+            expect(imageData.protocol).toBe(ProtocolDSN.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
         }
     });

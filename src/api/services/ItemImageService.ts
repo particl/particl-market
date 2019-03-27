@@ -20,10 +20,10 @@ import { ItemImageDataService } from './ItemImageDataService';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { ItemImageDataRepository } from '../repositories/ItemImageDataRepository';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 
 export class ItemImageService {
@@ -68,7 +68,7 @@ export class ItemImageService {
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
 
         const itemImageDataCreateRequest = {
-            protocol: ImageDataProtocolType.LOCAL,
+            protocol: ProtocolDSN.LOCAL,
             encoding: 'BASE64',
             data: dataStr,
             dataId: imageFile.fieldname, // replaced with local url in factory
@@ -114,7 +114,7 @@ export class ItemImageService {
             body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
             // get all protocols
-            const protocols = Object.keys(ImageDataProtocolType).map(key => (ImageDataProtocolType[key]));
+            const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
 
             if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
@@ -176,7 +176,7 @@ export class ItemImageService {
             body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
             // get all protocols
-            const protocols = Object.keys(ImageDataProtocolType).map(key => (ImageDataProtocolType[key]));
+            const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
 
             if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);

@@ -17,11 +17,11 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { PaymentInformation } from '../../src/api/models/PaymentInformation';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { Currency } from '../../src/api/enums/Currency';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../../src/api/requests/PaymentInformationUpdateRequest';
-import { EscrowType, PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 
 describe('PaymentInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -44,7 +44,7 @@ describe('PaymentInformation', () => {
 
     const testData = {
         listing_item_template_id: 0,
-        type: PaymentType.SALE,
+        type: SaleType.SALE,
         escrow: {
             type: EscrowType.MAD,
             ratio: {
@@ -53,23 +53,23 @@ describe('PaymentInformation', () => {
             }
         },
         itemPrice: {
-            currency: Currency.BITCOIN,
+            currency: Cryptocurrency.BTC,
             basePrice: 0.0001
         }
     } as PaymentInformationCreateRequest;
 
     const testDataUpdated = {
         listing_item_template_id: 0,
-        type: PaymentType.FREE,
+        type: SaleType.FREE,
         escrow: {
-            type: EscrowType.NOP,
+            type: EscrowType.FE,
             ratio: {
                 buyer: 0,
                 seller: 0
             }
         },
         itemPrice: {
-            currency: Currency.PARTICL,
+            currency: Cryptocurrency.PART,
             basePrice: 0.002
         }
     } as PaymentInformationUpdateRequest;
@@ -106,7 +106,7 @@ describe('PaymentInformation', () => {
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
         expect.assertions(1);
         await paymentInformationService.create({
-            type: PaymentType.SALE
+            type: SaleType.SALE
         } as PaymentInformationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
@@ -160,7 +160,7 @@ describe('PaymentInformation', () => {
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
         expect.assertions(1);
         await paymentInformationService.update(createdId, {
-            type: PaymentType.SALE
+            type: SaleType.SALE
         } as PaymentInformationUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );

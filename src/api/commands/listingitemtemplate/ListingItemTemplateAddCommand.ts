@@ -11,10 +11,10 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -58,7 +58,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
             if (data.params[10]) {
                 cryptocurrencyAddress = {
-                    type: CryptocurrencyAddressType.NORMAL,
+                    type: CryptoAddressType.NORMAL,
                     address: data.params[10]
                 };
             }

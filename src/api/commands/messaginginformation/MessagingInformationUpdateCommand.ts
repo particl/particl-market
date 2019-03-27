@@ -34,7 +34,7 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
     /**
      * data.params[]:
      *  [0]: ListingItemTemplate.id
-     *  [1]: protocol (MessagingProtocolType)
+     *  [1]: protocol (MessagingProtocol)
      *  [2]: public key
      *
      * @param data

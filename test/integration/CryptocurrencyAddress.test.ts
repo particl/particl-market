@@ -11,11 +11,11 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CryptocurrencyAddress } from '../../src/api/models/CryptocurrencyAddress';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/CryptocurrencyAddressUpdateRequest';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 describe('CryptocurrencyAddress', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -34,13 +34,13 @@ describe('CryptocurrencyAddress', () => {
 
     const testData = {
         profile_id: 0,
-        type: CryptocurrencyAddressType.NORMAL,
+        type: CryptoAddressType.NORMAL,
         address: '123'
     } as CryptocurrencyAddressCreateRequest;
 
     const testDataUpdated = {
         profile_id: 0,
-        type: CryptocurrencyAddressType.STEALTH,
+        type: CryptoAddressType.STEALTH,
         address: '456'
     } as CryptocurrencyAddressUpdateRequest;
 
