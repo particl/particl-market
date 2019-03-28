@@ -69,7 +69,7 @@ export class SmsgMessageService {
         return newSmsgMessage;
     }
 
-    public async createAll(datas: SmsgMessageCreateRequest[]): Promise<number> {
+    public async createAll(datas: SmsgMessageCreateRequest[]): Promise<string[]> {
         return await this.smsgMessageRepo.createAll(datas);
     }
 

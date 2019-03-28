@@ -596,7 +596,6 @@ export class CoreRpcService extends Rpc {
     private getUrl(): string {
         // this.log.debug('Environment.isTestnet():', Environment.isTestnet());
         // this.log.debug('Environment.isAlpha():', Environment.isAlpha());
-        // this.log.debug('process.env.TESTNET:', process.env.TESTNET);
 
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = process.env.RPC_PORT ?
@@ -608,7 +607,8 @@ export class CoreRpcService extends Rpc {
                     (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
                 )
             );
-        return 'http://' + host + ':' + port;
+        const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
+        return `http://${host}:${port}${wallet}`;
     }
 
 }

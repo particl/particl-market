@@ -15,11 +15,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static RELATIONS = [];
 
-    public static async createAll(datas: any[]): Promise<number> {
-        const result = await Database.knex
-            .insert(datas, 'id')
-            .into('smsg_messages');
-        return result;
+    public static async createAll(datas: any[]): Promise<string[]> {
+        await Database.knex
+                .insert(datas, 'id')
+                .into('smsg_messages');
+
+        return datas.map(msg => msg.msgid);
     }
 
     public static async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = false): Promise<Collection<SmsgMessage>> {

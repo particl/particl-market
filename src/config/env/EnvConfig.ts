@@ -23,7 +23,6 @@ export class EnvConfig {
         RPCHOSTNAME: 'localhost',
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
-        TESTNET: true,
         REGTEST_PORT: 19792,
         REGTEST: false,
         INIT: true,

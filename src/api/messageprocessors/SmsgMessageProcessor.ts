@@ -60,19 +60,19 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
+            .then(async (idsProcessed) => {
+                // after messages are stored, remove them
+                for (const msgid of idsProcessed) {
+                    await this.smsgService.smsg(msgid, true, true)
+                        .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
+                        .catch(reason => {
+                            this.log.error('ERROR: ', reason);
+                        });
+                }
+            })
             .catch(reason => {
                 this.log.error('ERROR: ', reason);
             });
-
-        // after messages are stored, remove them
-        for (const message of messages) {
-            await this.smsgService.smsg(message.msgid, true, true)
-                .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
-                .catch(reason => {
-                    this.log.error('ERROR: ', reason);
-                });
-        }
-
     }
 
     public stop(): void {
@@ -98,10 +98,11 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        await this.smsgService.smsgInbox('unread')
+        await this.smsgService.smsgInbox('unread', '', {updatestatus: false})
             .then( async messages => {
                 if (messages.result !== '0') {
-                    const smsgMessages: IncomingSmsgMessage[] = messages.messages;
+                    // Process 10 smsg messages at a time for SQLite insert
+                    const smsgMessages: IncomingSmsgMessage[] = messages.messages.splice(0, Math.min(10, messages.messages.length));
                     this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 }
