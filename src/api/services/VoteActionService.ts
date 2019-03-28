@@ -4,29 +4,30 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Events, Targets, Types } from '../../constants';
-import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { SmsgService } from './SmsgService';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { EventEmitter } from 'events';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { VoteFactory } from '../factories/VoteFactory';
-import { VoteService } from './VoteService';
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { CoreRpcService } from './CoreRpcService';
-import { MessageException } from '../exceptions/MessageException';
-import { VoteMessage } from '../messages/VoteMessage';
-import { ProposalService } from './ProposalService';
-import { ProposalOptionService } from './ProposalOptionService';
-import { ProposalType } from '../enums/ProposalType';
-import { ListingItemService } from './ListingItemService';
-import { SmsgMessageService } from './SmsgMessageService';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ProposalResultService } from './ProposalResultService';
-import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Core, Events, Targets, Types} from '../../constants';
+import {VoteCreateRequest} from '../requests/VoteCreateRequest';
+import {SmsgService} from './SmsgService';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {EventEmitter} from 'events';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
+import {VoteFactory} from '../factories/VoteFactory';
+import {VoteService} from './VoteService';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import {VoteMessageType} from '../enums/VoteMessageType';
+import {CoreRpcService} from './CoreRpcService';
+import {MessageException} from '../exceptions/MessageException';
+import {VoteMessage} from '../messages/VoteMessage';
+import {ProposalService} from './ProposalService';
+import {ProposalOptionService} from './ProposalOptionService';
+import {ProposalType} from '../enums/ProposalType';
+import {ListingItemService} from './ListingItemService';
+import {SmsgMessageService} from './SmsgMessageService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import {ProposalResultService} from './ProposalResultService';
+import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
+import {ListingItemUpdateRequest} from '../requests/ListingItemUpdateRequest';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -307,6 +308,17 @@ export class VoteActionService {
                         return value.toJSON();
                     });
                 // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
+            }
+
+            if (vote && proposal.type === ProposalType.ITEM_VOTE) {
+                let item: any = await this.listingItemService.findOneByHash(proposal.item);
+                item = item.toJSON();
+                item.removed = true;
+                const itemRet = await this.listingItemService.update(item.id, {
+                    seller: item.seller,
+                    market_id: item.Market.id,
+                    removed: item.removed
+                } as ListingItemUpdateRequest);
             }
 
             if (vote) {

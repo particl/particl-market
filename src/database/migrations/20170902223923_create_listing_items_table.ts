@@ -18,6 +18,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('market_id').references('id')
                 .inTable('markets').onDelete('cascade');
 
+            table.boolean('removed').notNullable().defaultTo(false);
+
             table.integer('listing_item_template_id').unsigned().nullable();
             table.foreign('listing_item_template_id').references('id')
                 .inTable('listing_item_templates').onDelete('cascade');

@@ -92,7 +92,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     // tslint:disable:max-line-length
     public usage(): string {
         return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
-        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString> [<flagged> ]]]]]]]]]]]';
+        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString> [<flagged>]]]]]]]]]]]';
     }
 
     public help(): string {

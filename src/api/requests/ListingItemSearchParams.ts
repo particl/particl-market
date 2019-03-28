@@ -35,6 +35,7 @@ export class ListingItemSearchParams extends RequestBody {
     public seller: string | null;
     public buyer: string | null;
     public withBids: boolean;
+    public showMyFlagged: boolean;
 
     /*
      *  [0]: page, number
@@ -68,6 +69,7 @@ export class ListingItemSearchParams extends RequestBody {
         this.searchString           = generateParams[10] ? generateParams[10] : '';
         this.flagged                = generateParams[11] ? generateParams[11] : false;
         this.withRelated            = generateParams[12] ? generateParams[12] : true;
+        this.showMyFlagged          = generateParams[13] ? generateParams[13] : false;
         // }
         this.itemHash = null;
         this.seller = null;
@@ -89,7 +91,8 @@ export class ListingItemSearchParams extends RequestBody {
             this.shippingDestination,
             this.searchString,
             this.flagged,
-            this.withRelated
+            this.withRelated,
+            this.showMyFlagged
         ];
     }
 }

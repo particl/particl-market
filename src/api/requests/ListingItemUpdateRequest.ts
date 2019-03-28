@@ -21,5 +21,6 @@ export class ListingItemUpdateRequest extends RequestBody {
     public messagingInformation;
     public listingItemObjects;
 
+    public removed: boolean;
 }
 // tslint:enable:variable-name
