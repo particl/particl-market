@@ -17,7 +17,6 @@ exports.start = (envArgs: any) => {
     const environment = {
         APPDATA: process.env.APPDATA,
         NODE_ENV: 'alpha',
-        TESTNET: true,
         INIT: true,
         MIGRATE: true,
         ELECTRON_RUN_AS_NODE: true

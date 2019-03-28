@@ -51,11 +51,11 @@ export class SmsgMessageRepository {
     }
 
     /**
-     * returns just the last id when using sqlite
+     * returns an array of message ids that were added to the DB
      *
      * @param datas
      */
-    public async createAll(datas: any[]): Promise<number> {
+    public async createAll(datas: any[]): Promise<string[]> {
         return await SmsgMessage.createAll(datas);
     }
 
