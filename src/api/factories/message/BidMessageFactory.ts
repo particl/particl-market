@@ -2,22 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
-import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Types } from '../../../constants';
 import { BidMessage } from '../../messages/actions/BidMessage';
-import { IdValuePair } from '../../services/BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ActionMessageCreateParams } from './MarketplaceMessageFactory';
-import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
+import { MessageFactoryInterface } from './MessageFactoryInterface';
+import { BidMessageCreateParams } from './MessageCreateParams';
+import { BuyerData } from 'omp-lib/dist/interfaces/omp';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
-export interface BidMessageCreateParams extends ActionMessageCreateParams {
-    config: BidConfiguration;
-}
-
-export class BidMessageFactory {
+export class BidMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
@@ -29,18 +24,34 @@ export class BidMessageFactory {
 
     /**
      *
-     * @param {MPAction} action
-     * @param {string} itemHash
-     * @param {IdValuePair[]} idValuePairObjects
+     * @param params
+     *      config: BidConfiguration
+     *          shippingAddress: ShippingAddress
+     *          cryptocurrency: Cryptocurrency
+     *          escrow: EscrowType
+     *          objects?: KVS[]
+     *      itemHash: string
+     *      generated?: number
      * @returns {Promise<BidMessage>}
      */
-    public async get(action: MPAction, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
+    public async get(params: BidMessageCreateParams): Promise<BidMessage> {
+
+        // we need to be able to pass the generated timestamp to be able to recreate messages
+        const generated = params.generated ? params.generated : +new Date().getTime();
 
         const message = {
-            action,
-            item: itemHash,
-            objects: idValuePairObjects
+            type: MPAction.MPA_BID,
+            generated,                          // timestamp, when the bidder generated this bid !implementation !protocol
+            item: params.itemHash,              // item hash
+            buyer: {
+                shippingAddress: params.config.shippingAddress
+                // payment                      // payment data will be added later by the omp transactionbuilder
+            } as BuyerData,                     // buyer payment and other purchase details like shipping address
+            objects: params.config.objects
         } as BidMessage;
+
+        // TODO: implement HashableBid
+        message.hash = hash(message);           // bid hash, used to verify on the receiving end
 
         return message;
     }

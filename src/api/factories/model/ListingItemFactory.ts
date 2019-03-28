@@ -31,8 +31,10 @@ import { ItemInfo, ItemObject, Location, LocationMarker } from 'omp-lib/dist/int
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { ListingItemCreateParams } from './ModelCreateParams';
 
-export class ListingItemFactory {
+export class ListingItemFactory implements ModelFactoryInterface {
 
     public log: LoggerType;
 
@@ -45,17 +47,18 @@ export class ListingItemFactory {
     }
 
     /**
+     * create a ListingItemCreateRequest
      *
-     * @param {ListingItemAddMessage} listingItemAddMessage
-     * @param {module:resources.SmsgMessage} smsgMessage
-     * @param {number} marketId
-     * @param {module:resources.ItemCategory} rootCategory
-     * @returns {Promise<ListingItemCreateRequest>}
+     * @param listingItemAddMessage
+     * @param smsgMessage
+     * @param params
      */
-    public async get(listingItemAddMessage: ListingItemAddMessage, smsgMessage: resources.SmsgMessage, marketId: number,
-                     rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
+    public async get(listingItemAddMessage: ListingItemAddMessage,
+                     smsgMessage: resources.SmsgMessage,
+                     params: ListingItemCreateParams): Promise<ListingItemCreateRequest> {
 
-        const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, rootCategory);
+
+        const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
 
@@ -67,7 +70,7 @@ export class ListingItemFactory {
         return {
             hash: listingItemAddMessage.hash,
             seller: smsgMessage.from,
-            market_id: marketId,
+            market_id: params.marketId,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,
             expiredAt: smsgMessage.expiration,
@@ -79,9 +82,6 @@ export class ListingItemFactory {
         } as ListingItemCreateRequest;
     }
 
-    // ---------------
-    // MODEL
-    // ---------------
     private async getModelListingItemObjects(objects: ItemObject[]): Promise<ListingItemObjectCreateRequest[]> {
         const objectArray: ListingItemObjectCreateRequest[] = [];
         for (const object of objects) {
@@ -296,5 +296,4 @@ export class ListingItemFactory {
         }
         return imageDataCreateRequests;
     }
-
 }

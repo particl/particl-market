@@ -32,7 +32,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { ListingItemAddMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';

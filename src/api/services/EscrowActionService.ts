@@ -24,7 +24,6 @@ import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { OrderItemObjectService } from './OrderItemObjectService';
 import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateRequest';
-import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemService } from './OrderItemService';
 import { OrderSearchParams } from '../requests/OrderSearchParams';
@@ -35,6 +34,9 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { Output } from './BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ompVersion } from 'omp-lib/dist/omp';
+import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
+import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
+import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
 
 export class EscrowActionService {
 
@@ -202,7 +204,7 @@ export class EscrowActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Order>}
      */
-    private async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowLockReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         // TODO: EscrowLockMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
@@ -258,14 +260,14 @@ export class EscrowActionService {
 
     }
 
-    private async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowReleaseReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
-        const escrowMessage = message.mpaction as EscrowMessage;
+        const escrowMessage = message.mpaction as EscrowReleaseMessage;
         const listingItemHash = escrowMessage.item;
 
         // find the ListingItem
@@ -308,10 +310,11 @@ export class EscrowActionService {
 
     }
 
-    private async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    // TODO: do we need this?
+    private async processEscrowRequestRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        const escrowMessage = message.mpaction as EscrowMessage;
+        const escrowMessage = message.mpaction as EscrowRefundMessage;
         if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
@@ -330,10 +333,10 @@ export class EscrowActionService {
             });
     }
 
-    private async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        const escrowMessage = message.mpaction as EscrowMessage;
+        const escrowMessage = message.mpaction as EscrowRefundMessage;
         if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
@@ -643,7 +646,7 @@ export class EscrowActionService {
 
         this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processLockEscrowReceivedEvent(event)
+            await this.processEscrowLockReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })
@@ -654,7 +657,7 @@ export class EscrowActionService {
         });
         this.eventEmitter.on(Events.ReleaseEscrowReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processReleaseEscrowReceivedEvent(event)
+            await this.processEscrowReleaseReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })
@@ -665,7 +668,7 @@ export class EscrowActionService {
         });
         this.eventEmitter.on(Events.RefundEscrowReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processRefundEscrowReceivedEvent(event)
+            await this.processEscrowRefundReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })

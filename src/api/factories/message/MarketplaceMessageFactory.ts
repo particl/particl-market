@@ -12,28 +12,21 @@ import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { ListingItemMessageFactory } from './ListingItemMessageFactory';
-
-export interface ActionMessageCreateParams {
-    //
-}
-
-export interface ListingItemMessageCreateParams extends ActionMessageCreateParams {
-    template: resources.ListingItemTemplate;
-}
+import { ListingItemAddMessageFactory } from './ListingItemAddMessageFactory';
+import { MessageCreateParams, ListingItemAddMessageCreateParams } from './MessageCreateParams';
 
 export class MarketplaceMessageFactory {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
-    public async get(type: ActionMessageTypes, parameters: ActionMessageCreateParams): Promise<MarketplaceMessage> {
+    public async get(type: ActionMessageTypes, parameters: MessageCreateParams): Promise<MarketplaceMessage> {
 
         const marketplaceMessage = {
             version: ompVersion()
@@ -41,7 +34,7 @@ export class MarketplaceMessageFactory {
 
         switch (type) {
             case MPAction.MPA_LISTING_ADD:
-                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemMessageCreateParams);
+                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
                 break;
 
             case MPAction.MPA_BID:

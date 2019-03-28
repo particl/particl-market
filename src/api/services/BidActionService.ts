@@ -40,7 +40,7 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import { ListingItemMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { ListingItemAddMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
 
 // todo: move
@@ -58,7 +58,7 @@ export interface Output {
 }
 
 // todo: move
-export interface IdValuePair {
+export interface IdValuePairDeprecatedUseKVS {
     id: string;
     value: any;
 }
@@ -152,12 +152,12 @@ export class BidActionService {
      *
      * @param {module:resources.ListingItem} listingItem
      * @param {any[]} additionalParams
-     * @returns {Promise<IdValuePair[]>}
+     * @returns {Promise<IdValuePairDeprecatedUseKVS[]>}
      */
     public async generateBidDatasForMPA_BID_DEPRECATED(
         listingItem: resources.ListingItem,
-        additionalParams: IdValuePair[]
-    ): Promise<IdValuePair[]> {
+        additionalParams: IdValuePairDeprecatedUseKVS[]
+    ): Promise<IdValuePairDeprecatedUseKVS[]> {
 
         // todo: propably something that we should check earlier
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
@@ -214,7 +214,7 @@ export class BidActionService {
         const buyerEscrowReleaseAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
 
         // convert the bid data params as bid data key value pair
-        // todo: refactor to use resources.BidData instead of this IdValuePair
+        // todo: refactor to use resources.BidData instead of this IdValuePairDeprecatedUseKVS
         const bidDatas = this.getIdValuePairsFromArray([
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs,
             BidDataValue.BUYER_PUBKEY, buyerEcrowPubAddressPublicKey,
@@ -392,14 +392,14 @@ export class BidActionService {
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas for MPA_ACCEPT
-            const bidDatas: IdValuePair[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
+            const bidDatas: IdValuePairDeprecatedUseKVS[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
             // create the bid accept message using the generated bidDatas
             const bidMessage = await this.bidMessageFactory.get(MPAction.MPA_ACCEPT, listingItem.hash, bidDatas);
             // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
-            const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const bidUpdateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bid.bidder, bid);
             const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
             const updatedBid = updatedBidModel.toJSON();
             // this.log.debug('accept(), updatedBid:', JSON.stringify(updatedBid, null, 2));
@@ -465,7 +465,7 @@ export class BidActionService {
     public async generateBidDatasForMPA_ACCEPT(
         listingItem: resources.ListingItem,
         bid: resources.Bid
-    ): Promise<IdValuePair[]> {
+    ): Promise<IdValuePairDeprecatedUseKVS[]> {
 
         if (_.isEmpty(listingItem.PaymentInformation.ItemPrice)) {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
@@ -598,7 +598,7 @@ export class BidActionService {
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
-        const bidDatas: IdValuePair[] = this.getIdValuePairsFromArray([
+        const bidDatas: IdValuePairDeprecatedUseKVS[] = this.getIdValuePairsFromArray([
             BidDataValue.SELLER_OUTPUTS, sellerSelectedOutputData.outputs,
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs, // allready in BidData, not necessarily needed here
             // 'pubkeys', [sellerEscrowPubAddressPublicKey, buyerEcrowPubAddressPublicKey].sort(),
@@ -714,7 +714,7 @@ export class BidActionService {
             const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_CANCEL, listingItem.hash);
 
             // Update the bid in the database with new action.
-            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
                 action: MPAction.MPA_CANCEL,
@@ -777,7 +777,7 @@ export class BidActionService {
             const bidMessage = await this.bidMessageFactory.get(MPAction.MPA_REJECT, listingItem.hash);
 
             // Update the bid in the database with new action.
-            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
                 action: MPAction.MPA_REJECT,
@@ -892,7 +892,7 @@ export class BidActionService {
                     if (existingBid) {
 
                         // update the bid locally
-                        const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
+                        const bidUpdateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder, existingBid);
                         // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
                         let updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
                         let updatedBid: resources.Bid = updatedBidModel.toJSON();
@@ -972,7 +972,7 @@ export class BidActionService {
                 oldBid = oldBid.toJSON();
 
                 // Update the bid in the database with new action.
-                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
                     action: MPAction.MPA_CANCEL,
@@ -1028,7 +1028,7 @@ export class BidActionService {
                 oldBid = oldBid.toJSON();
 
                 // Update the bid in the database with new action.
-                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
                     action: MPAction.MPA_REJECT,
@@ -1068,10 +1068,10 @@ export class BidActionService {
      * [3]: value, string
      *
      * @param {any[]} data
-     * @returns {IdValuePair[]}
+     * @returns {IdValuePairDeprecatedUseKVS[]}
      */
-    public getIdValuePairsFromArray(data: any[]): IdValuePair[] {
-        const idValuePairs: IdValuePair[] = [];
+    public getIdValuePairsFromArray(data: any[]): IdValuePairDeprecatedUseKVS[] {
+        const idValuePairs: IdValuePairDeprecatedUseKVS[] = [];
 
         // convert the bid data params as idValuePairs array
         for (let i = 0; i < data.length; i += 2) {
@@ -1100,7 +1100,7 @@ export class BidActionService {
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
 
         // create a bid
-        const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
+        const bidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder);
 
         // make sure the bids address type is correct
         this.log.debug('found listingItem.id: ', listingItem.id);

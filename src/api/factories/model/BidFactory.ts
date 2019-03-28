@@ -12,11 +12,12 @@ import { MessageException } from '../../exceptions/MessageException';
 import { BidCreateRequest } from '../../requests/BidCreateRequest';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
-import { IdValuePair } from '../../services/BidActionService';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { BidCreateParams } from './ModelCreateParams';
 
-export class BidFactory {
+export class BidFactory implements ModelFactoryInterface {
 
     public log: LoggerType;
 
@@ -27,50 +28,30 @@ export class BidFactory {
     }
 
     /**
-     *
-     * @param {MPAction} action
-     * @param {string} itemHash
-     * @param {IdValuePair[]} idValuePairObjects
-     * @returns {Promise<BidMessage>}
-     */
-    public async getMessage(action: MPAction, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
-
-        const message = {
-            action,
-            item: itemHash,
-            objects: idValuePairObjects
-        } as BidMessage;
-
-        return message;
-    }
-
-    /**
      * create a BidCreateRequest
      *
-     * @param {BidMessage} bidMessage
-     * @param {number} listingItemId
-     * @param {string} bidder
-     * @param {"resources".Bid} latestBid
-     * @returns {Promise<BidCreateRequest>}
+     * @param bidMessage
+     * @param smsgMessage
+     * @param params
      */
-    public async getModel(bidMessage: BidMessage, listingItemId: number, bidder: string, latestBid?: resources.Bid): Promise<BidCreateRequest> {
+    public async get(bidMessage: BidMessage, smsgMessage: resources.SmsgMessage, params: BidCreateParams): Promise<BidCreateRequest> {
 
-        if (!listingItemId) {
+        if (!params.listingItemId) {
             throw new MessageException('Invalid listingItemId.');
         }
 
         // todo: implement part address validator and validate
-        if (!bidder && typeof bidder !== 'string') {
+        if (!params.bidder && typeof params.bidder !== 'string') {
             throw new MessageException('Invalid bidder.');
         }
 
         // check that the bidAction is valid, throw if not
-        if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
+        if (this.checkBidMessageActionValidity(bidMessage, params.latestBid)) {
             const bidDataValues = {};
 
             // copy the existing key-value pairs from latestBid.BidDatas
-            if (latestBid && latestBid.BidDatas) {
-                for (const bidData of latestBid.BidDatas) {
+            if (params.latestBid && params.latestBid.BidDatas) {
+                for (const bidData of params.latestBid.BidDatas) {
                     bidDataValues[bidData.dataId] = bidData.dataValue;
                 }
             }
@@ -111,13 +92,13 @@ export class BidFactory {
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
                 address,
-                listing_item_id: listingItemId,
-                action: bidMessage.action,
-                bidder,
+                listing_item_id: params.listingItemId,
+                action: bidMessage.type,
+                params.bidder,
                 bidDatas
-            } as BidCreateRequest;
+            };
 
-            return bidCreateRequest;
+            return bidCreateRequest as BidCreateRequest;
 
         } else {
             throw new MessageException('Invalid MPAction.');
@@ -169,4 +150,5 @@ export class BidFactory {
             throw new MessageException('Missing BidData value for key: ' + key);
         }
     }
+
 }

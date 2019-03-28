@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { ListingItemMessageCreateParams } from './MarketplaceMessageFactory';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
@@ -27,8 +26,11 @@ import { ItemImageDataService } from '../../services/ItemImageDataService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
+import { MessageFactoryInterface } from './MessageFactoryInterface';
+import { ListingItemAddMessage } from '../../messages/actions/ListingItemAddMessage';
 
-export class ListingItemMessageFactory {
+export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
@@ -41,14 +43,13 @@ export class ListingItemMessageFactory {
     }
 
     /**
-     * Creates a ListingItemMessage from given parameters
+     * Creates a ListingItemAddMessage from given parameters
      *
-     * todo: supports only MPA_LISTING_ADD for now...
      * @param params
      * @returns {Promise<MPA>}
      */
-    public async get(params: ListingItemMessageCreateParams): Promise<MPA> {
 
+    public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
         const information = await this.getMessageItemInfo(params.template.ItemInformation);
         const payment = await this.getMessagePayment(params.template.PaymentInformation);
         const messaging = await this.getMessageMessaging(params.template.MessagingInformation);
@@ -65,7 +66,7 @@ export class ListingItemMessageFactory {
             type: MPAction.MPA_LISTING_ADD,
             item,
             hash: params.template.hash
-        } as MPA_LISTING_ADD;
+        } as ListingItemAddMessage;
     }
 
     private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {

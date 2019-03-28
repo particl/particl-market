@@ -329,7 +329,7 @@ export const Targets = {
     },
     Factory:     {
         message: {
-            ListingItemMessageFactory: 'ListingItemMessageFactory',
+            ListingItemMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',
             BidMessageFactory: 'BidMessageFactory'
         },

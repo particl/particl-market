@@ -40,9 +40,9 @@ import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
 import { ItemImage } from '../models/ItemImage';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { ListingItemMessageFactory } from '../factories/message/ListingItemMessageFactory';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
 import { MPA_LISTING_ADD } from 'omp-lib/dist/interfaces/omp';
-import { ListingItemMessageCreateParams } from '../factories/message/MarketplaceMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../factories/message/MarketplaceMessageFactory';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
 export class ListingItemTemplateService {
@@ -66,7 +66,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

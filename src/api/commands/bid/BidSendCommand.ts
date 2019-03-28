@@ -13,7 +13,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { BidActionService, IdValuePair } from '../../services/BidActionService';
+import { BidActionService, IdValuePairDeprecatedUseKVS } from '../../services/BidActionService';
 import { AddressService } from '../../services/AddressService';
 import { ProfileService } from '../../services/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
