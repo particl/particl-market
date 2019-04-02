@@ -336,22 +336,23 @@ export const Targets = {
             EscrowLockMessageFactory: 'EscrowLockMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
-            ListingItemMessageFactory: 'ListingItemAddMessageFactory',
+            ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',
-            ProposalMessageFactory: 'ProposalAddMessageFactory'
+            ProposalAddMessageFactory: 'ProposalAddMessageFactory',
+            VoteMessageFactory: 'VoteMessageFactory'
         },
         model: {
             BidFactory: 'BidFactory',
             ListingItemFactory: 'ListingItemFactory',
-            ProposalFactory: 'ProposalAddMessageFactory'
+            ProposalFactory: 'ProposalAddMessageFactory',
+            VoteFactory: 'VoteFactory'
         },
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
         RpcCommandFactory: 'RpcCommandFactory',
-        SmsgMessageFactory: 'SmsgMessageFactory',
-        VoteFactory: 'VoteFactory'
+        SmsgMessageFactory: 'SmsgMessageFactory'
     },
     MessageProcessor:     {
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',

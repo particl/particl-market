@@ -40,3 +40,9 @@ export interface ProposalAddMessageCreateParams extends MessageCreateParams {
     itemHash?: string;
 }
 
+export interface VoteMessageCreateParams extends MessageCreateParams {
+    proposalHash: string;
+    proposalOptionHash: string;
+    voter: string;
+    signature: string;
+}

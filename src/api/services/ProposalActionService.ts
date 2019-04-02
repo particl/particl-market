@@ -37,7 +37,7 @@ export class ProposalActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,

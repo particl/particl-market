@@ -17,3 +17,10 @@ export interface BidCreateParams extends ModelCreateParams {
 
 export interface ProposalCreateParams extends ModelCreateParams {
 }
+
+export interface VoteCreateParams extends ModelCreateParams {
+    proposalOption: resources.ProposalOption;
+    weight: number;
+    create: boolean;
+}
+
