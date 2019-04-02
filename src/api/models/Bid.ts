@@ -100,8 +100,8 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get Action(): string { return this.get('action'); }
-    public set Action(value: string) { this.set('action', value); }
+    public get Type(): string { return this.get('type'); }
+    public set Type(value: string) { this.set('type', value); }
 
     public get Bidder(): string { return this.get('bidder'); }
     public set Bidder(value: string) { this.set('bidder', value); }

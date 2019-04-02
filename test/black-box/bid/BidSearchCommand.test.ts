@@ -97,7 +97,7 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItem.hash
-            MPAction.MPA_BID,     // action
+            MPAction.MPA_BID,     // type
             defaultProfile.address      // bidder
         ]).toParamsArray();
 
@@ -127,7 +127,7 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItemhash
-            MPAction.MPA_ACCEPT,  // action
+            MPAction.MPA_ACCEPT,  // type
             defaultProfile.address      // bidder
         ]).toParamsArray();
 

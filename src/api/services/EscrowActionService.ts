@@ -396,7 +396,7 @@ export class EscrowActionService {
         this.log.debug('createRawTx(), rawtx:', rawtx);
         this.log.debug('createRawTx(), pubkeys:', pubkeys);
 
-        if (!bid || bid.action !== MPAction.MPA_ACCEPT
+        if (!bid || bid.type !== MPAction.MPA_ACCEPT
             || !orderItem || !orderItem.OrderItemObjects || orderItem.OrderItemObjects.length === 0
             || !rawtx || !pubkeys) {
 
@@ -404,7 +404,7 @@ export class EscrowActionService {
             throw new MessageException('Not enough valid information to finalize escrow');
         }
 
-        this.log.debug('createRawTx(), request.action:', request.action);
+        this.log.debug('createRawTx(), request.type:', request.action);
 
         switch (request.action) {
 

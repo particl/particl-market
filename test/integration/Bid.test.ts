@@ -175,7 +175,7 @@ describe('Bid', () => {
 
         const result = createdBid1;
         // test the values
-        expect(result.action).toBe(testData.action);
+        expect(result.action).toBe(testData.type);
         expect(result.bidder).toBe(testData.bidder);
         expect(result.ShippingAddress.type).toBe(testData.address.type);
     });
@@ -185,7 +185,7 @@ describe('Bid', () => {
         testData.listing_item_id = createdListingItem2.id;
         testData.bidder = defaultProfile.address;
         testData.address.profile_id = defaultProfile.id;
-        testData.action = MPAction.MPA_ACCEPT;
+        testData.type = MPAction.MPA_ACCEPT;
 
         // log.debug('testData:', JSON.stringify(testData, null, 2));
         const bidModel: Bid = await bidService.create(testData);
@@ -221,7 +221,7 @@ describe('Bid', () => {
 
         const result = createdBid2;
         // test the values
-        expect(result.action).toBe(testData.action);
+        expect(result.action).toBe(testData.type);
         expect(result.bidder).toBe(testData.bidder);
     });
 
@@ -383,11 +383,11 @@ describe('Bid', () => {
 
     test('Should update the Bid', async () => {
         testDataUpdated.listing_item_id = createdListingItem1.id;
-        testDataUpdated.action = MPAction.MPA_CANCEL;
+        testDataUpdated.type = MPAction.MPA_CANCEL;
         const bidModel: Bid = await bidService.update(createdBid1.id, testDataUpdated as BidUpdateRequest);
         const result = bidModel.toJSON();
         // test the values
-        expect(result.action).toBe(testDataUpdated.action);
+        expect(result.action).toBe(testDataUpdated.type);
         expect(result.bidder).toBe(createdBid1.bidder); // we dont update the bidder field
     });
 

@@ -71,7 +71,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         for (const listingItem of listingItems) {
             for (const bid of listingItem.Bids) {
                 if (!buyer || buyer === '*' || bid.bidder === buyer) {
-                    const orderItemStatus = new OrderItemStatusResponse(listingItem.hash, bid.action, bid.OrderItem.status, bid.bidder, listingItem.seller);
+                    const orderItemStatus = new OrderItemStatusResponse(listingItem.hash, bid.type, bid.OrderItem.status, bid.bidder, listingItem.seller);
                     orderItemStatuses.push(orderItemStatus);
                 }
             }

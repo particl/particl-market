@@ -15,7 +15,7 @@ export class BidUpdateRequest extends RequestBody {
 
     @IsEnum(MPAction)
     @IsNotEmpty()
-    public action: MPAction;
+    public type: MPAction;
 
     @IsNotEmpty()
     public bidder: string;

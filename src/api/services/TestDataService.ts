@@ -491,7 +491,7 @@ export class TestDataService {
         ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
-            action,
+            type: action,
             address,
             bidder,
             bidDatas
@@ -526,7 +526,7 @@ export class TestDataService {
             const bidGenerateParams = new GenerateBidParams();
             bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
             bidGenerateParams.generateListingItem = generateParams.generateListingItem;
-            bidGenerateParams.action = MPAction.MPA_ACCEPT;
+            bidGenerateParams.type = MPAction.MPA_ACCEPT;
             bidGenerateParams.listingItemSeller = generateParams.listingItemSeller;
 
             const bids = await this.generateBids(1, true, bidGenerateParams);

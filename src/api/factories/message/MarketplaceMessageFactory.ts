@@ -13,7 +13,20 @@ import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { ListingItemAddMessageFactory } from './ListingItemAddMessageFactory';
-import { MessageCreateParams, ListingItemAddMessageCreateParams } from './MessageCreateParams';
+import {
+    MessageCreateParams,
+    ListingItemAddMessageCreateParams,
+    BidMessageCreateParams,
+    BidAcceptMessageCreateParams,
+    BidCancelMessageCreateParams, BidRejectMessageCreateParams
+} from './MessageCreateParams';
+import { BidMessageFactory } from './BidMessageFactory';
+import { BidAcceptMessageFactory } from './BidAcceptMessageFactory';
+import { BidCancelMessageFactory } from './BidCancelMessageFactory';
+import { BidRejectMessageFactory } from './BidRejectMessageFactory';
+import { EscrowLockMessageFactory } from './EscrowLockMessageFactory';
+import { EscrowRefundMessageFactory } from './EscrowRefundMessageFactory';
+import { EscrowReleaseMessageFactory } from './EscrowReleaseMessageFactory';
 
 export class MarketplaceMessageFactory {
 
@@ -21,6 +34,13 @@ export class MarketplaceMessageFactory {
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemMessageFactory) private listingItemMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) private bidMessageFactory: BidMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) private bidAcceptMessageFactory: BidAcceptMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) private bidCancelMessageFactory: BidCancelMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) private bidRejectMessageFactory: BidRejectMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowLockMessageFactory) private escrowLockMessageFactory: EscrowLockMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowRefundMessageFactory) private escrowRefundMessageFactory: EscrowRefundMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) private escrowReleaseMessageFactory: EscrowReleaseMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -36,14 +56,27 @@ export class MarketplaceMessageFactory {
             case MPAction.MPA_LISTING_ADD:
                 marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
                 break;
-
             case MPAction.MPA_BID:
+                marketplaceMessage.action = await this.bidMessageFactory.get(parameters as BidMessageCreateParams);
+                break;
             case MPAction.MPA_ACCEPT:
+                marketplaceMessage.action = await this.bidAcceptMessageFactory.get(parameters as BidAcceptMessageCreateParams);
+                break;
             case MPAction.MPA_CANCEL:
+                marketplaceMessage.action = await this.bidCancelMessageFactory.get(parameters as BidCancelMessageCreateParams);
+                break;
             case MPAction.MPA_REJECT:
+                marketplaceMessage.action = await this.bidRejectMessageFactory.get(parameters as BidRejectMessageCreateParams);
+                break;
             case MPAction.MPA_LOCK:
+                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                break;
             case MPAction.MPA_REFUND:
+                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                break;
             case MPAction.MPA_RELEASE:
+                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                break;
             case MPAction.UNKNOWN:
             case GovernanceAction.MP_PROPOSAL_ADD:
             case GovernanceAction.MP_VOTE:

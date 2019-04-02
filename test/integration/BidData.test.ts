@@ -113,7 +113,7 @@ describe('BidDatas', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             createdListingItem.hash,    // listingItemhash
-            MPAction.MPA_BID,     // action
+            MPAction.MPA_BID,     // type
             defaultProfile.address,     // bidder
             sellerProfile.address       // listingItemSeller
         ]).toParamsArray();

@@ -136,7 +136,7 @@ describe('Order', () => {
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
             createdListingItem1.hash,           // listingItemhash
-            MPAction.MPA_BID,             // action
+            MPAction.MPA_BID,             // type
             defaultProfile.address,             // bidder
             createdSellerProfile.address        // listingItemSeller
         ]).toParamsArray();

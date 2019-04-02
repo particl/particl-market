@@ -10,5 +10,6 @@ import { ActionMessageInterface } from '../../messages/actions/ActionMessageInte
  * ModelFactoryInterface defines how the Factory classes for the CreateRequests should be implemented
  */
 export interface ModelFactoryInterface {
-    get(actionMessage: ActionMessageInterface, smsgMessage: resources.SmsgMessage, params: ModelCreateParams): Promise<any>;   // TODO: CreateRequestInterface
+    // TODO: return CreateRequestInterface
+    get(actionMessage: ActionMessageInterface, smsgMessage: resources.SmsgMessage, params: ModelCreateParams): Promise<any>;
 }

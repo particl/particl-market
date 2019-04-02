@@ -17,7 +17,7 @@ import { VoteService } from './VoteService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
-import { VoteMessage } from '../messages/VoteMessage';
+import { VoteMessage } from '../messages/actions/VoteMessage';
 import { ProposalService } from './ProposalService';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalCategory } from '../enums/ProposalCategory';

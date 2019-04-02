@@ -36,8 +36,8 @@ export class OrderFactory {
      */
     public async getModelFromBid(bid: resources.Bid): Promise<OrderCreateRequest> {
 
-        // only bids with action MPA_ACCEPT can be converted to Order
-        if (bid.action === MPAction.MPA_ACCEPT) {
+        // only bids with type MPA_ACCEPT can be converted to Order
+        if (bid.type === MPAction.MPA_ACCEPT) {
 
             const address: AddressCreateRequest = this.getShippingAddress(bid);
             const orderItems: OrderItemCreateRequest[] = this.getOrderItems(bid);

@@ -42,7 +42,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: pageLimit, number, default=10, optional
      *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
-     *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     *  [4]: status/type, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
      *  [5]: searchString, string, * for anything, optional
      *  [6...]: bidder: particl address, optional
@@ -97,7 +97,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: pageLimit, number, default=10, optional
      *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
-     *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     *  [4]: status/type, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
      *  [5]: searchString, string, * for anything, optional
      *  [6...]: bidder: particl address, optional

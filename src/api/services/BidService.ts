@@ -179,9 +179,8 @@ export class BidService {
         const bidDatas: BidDataCreateRequest[] = body.bidDatas || [];
         delete body.bidDatas;
 
-        // set new values, we only need to change the action
-        bid.Action = body.action;
-        // bid.Bidder = body.bidder;
+        // set new values, we only need to change the type
+        bid.Type = body.type;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());

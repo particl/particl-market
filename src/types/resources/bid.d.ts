@@ -9,7 +9,7 @@ declare module 'resources' {
     interface Bid {
         id: number;
         bidder: string;
-        action: MPAction;
+        type: MPAction;
         createdAt: Date;
         updatedAt: Date;
         BidDatas: BidData[];

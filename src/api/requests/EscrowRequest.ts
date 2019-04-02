@@ -10,17 +10,17 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 // tslint:disable:variable-name
 export class EscrowRequest extends RequestBody {
 
+    @IsEnum(MPAction)
+    @IsNotEmpty()
+    public type: MPAction;
+
     @IsNotEmpty()
     public orderItem: resources.OrderItem;
 
+    // TODO: deprecated?
     public nonce?: string;      // lock param
     public accepted?: boolean;  // refund param
+    public memo?: string;
 
-    @IsNotEmpty()
-    public memo: string;
-
-    @IsEnum(MPAction)
-    @IsNotEmpty()
-    public action: MPAction;
 }
 // tslint:enable:variable-name

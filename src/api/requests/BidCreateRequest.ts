@@ -17,7 +17,7 @@ export class BidCreateRequest extends RequestBody {
     // TODO: rename to type?
     @IsEnum(MPAction)
     @IsNotEmpty()
-    public action: MPAction;
+    public type: MPAction;
 
     @IsNotEmpty()
     public address: AddressCreateRequest;

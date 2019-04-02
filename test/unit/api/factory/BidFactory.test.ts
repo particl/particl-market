@@ -38,7 +38,7 @@ describe('BidFactory', () => {
 
     });
 
-    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest', async () => {
+    test('Should convert BidMessage, type: MPA_BID to BidCreateRequest', async () => {
 
         const listingItemId = 1;
         const bidMessage = {
@@ -65,7 +65,7 @@ describe('BidFactory', () => {
         expect(bidCreateRequest.bidDatas[0].dataValue).toBe(bidMessage.objects[0].value);
     });
 
-    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest with 9 bidData objects', async () => {
+    test('Should convert BidMessage, type: MPA_BID to BidCreateRequest with 9 bidData objects', async () => {
         const listingItemId = 1;
         const bidMessage = {
             action: MPAction.MPA_BID,
@@ -97,7 +97,7 @@ describe('BidFactory', () => {
         expect(bidCreateRequest.bidDatas[1].dataValue).toBe(bidMessage.objects[1].value);
     });
 
-    test('Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId', async () => {
+    test('Should fail converting BidMessage, type: MPA_BID to BidCreateRequest with undefined listingItemId', async () => {
 
         expect.assertions(1);
         const listingItemId = undefined;
@@ -112,7 +112,7 @@ describe('BidFactory', () => {
 
     });
 
-    test('Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest', async () => {
+    test('Should convert the BidMessage, type: MPA_ACCEPT to BidCreateRequest', async () => {
         const latestBid = {
             action: MPAction.MPA_BID
         };
@@ -137,7 +137,7 @@ describe('BidFactory', () => {
         expect(bidCreateRequest.bidder).toBe(bidderAddress);
     });
 
-    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_ACCEPT', async () => {
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has type: MPA_ACCEPT', async () => {
 
         expect.assertions(3);
 
@@ -151,31 +151,31 @@ describe('BidFactory', () => {
             action: MPAction.MPA_ACCEPT
         };
 
-        // bidMessage.action: MPAction.MPA_BID
-        // latestBid.action: MPAction.MPA_ACCEPT
+        // bidMessage.type: MPAction.MPA_BID
+        // latestBid.type: MPAction.MPA_ACCEPT
         // -> latestBid was allready accepted, cannot bid
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
 
         bidMessage.action = MPAction.MPA_REJECT;
-        // bidMessage.action: MPAction.MPA_REJECT
-        // latestBid.action: MPAction.MPA_ACCEPT
+        // bidMessage.type: MPAction.MPA_REJECT
+        // latestBid.type: MPAction.MPA_ACCEPT
         // -> latestBid was allready accepted, cannot reject
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
 
         bidMessage.action = MPAction.MPA_CANCEL;
-        // bidMessage.action: MPAction.MPA_CANCEL
-        // latestBid.action: MPAction.MPA_ACCEPT
+        // bidMessage.type: MPAction.MPA_CANCEL
+        // latestBid.type: MPAction.MPA_ACCEPT
         // -> latestBid was allready accepted, cannot cancel
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
     });
 
-    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_CANCEL', async () => {
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has type: MPA_CANCEL', async () => {
 
         expect.assertions(2);
 
@@ -189,16 +189,16 @@ describe('BidFactory', () => {
             action: MPAction.MPA_CANCEL
         };
 
-        // latestBid.action: MPAction.MPA_CANCEL
-        // bidMessage.action: MPAction.MPA_REJECT
+        // latestBid.type: MPAction.MPA_CANCEL
+        // bidMessage.type: MPAction.MPA_REJECT
         // -> latestBid was cancelled, cannot reject
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
 
         bidMessage.action = MPAction.MPA_ACCEPT;
-        // latestBid.action: MPAction.MPA_CANCEL
-        // bidMessage.action: MPAction.MPA_ACCEPT
+        // latestBid.type: MPAction.MPA_CANCEL
+        // bidMessage.type: MPAction.MPA_ACCEPT
         // -> latestBid was cancelled, cannot accept
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
@@ -206,7 +206,7 @@ describe('BidFactory', () => {
 
     });
 
-    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_REJECT', async () => {
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has type: MPA_REJECT', async () => {
 
         expect.assertions(3);
 
@@ -220,24 +220,24 @@ describe('BidFactory', () => {
             action: MPAction.MPA_REJECT
         };
 
-        // latestBid.action: MPAction.MPA_REJECT
-        // bidMessage.action: MPAction.MPA_CANCEL
+        // latestBid.type: MPAction.MPA_REJECT
+        // bidMessage.type: MPAction.MPA_CANCEL
         // -> latestBid was rejected, cannot cancel
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
 
         bidMessage.action = MPAction.MPA_ACCEPT;
-        // latestBid.action: MPAction.MPA_REJECT
-        // bidMessage.action: MPAction.MPA_ACCEPT
+        // latestBid.type: MPAction.MPA_REJECT
+        // bidMessage.type: MPAction.MPA_ACCEPT
         // -> latestBid was rejected, cannot accept
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))
         );
 
         bidMessage.action = MPAction.MPA_REJECT;
-        // latestBid.action: MPAction.MPA_REJECT
-        // bidMessage.action: MPAction.MPA_REJECT
+        // latestBid.type: MPAction.MPA_REJECT
+        // bidMessage.type: MPAction.MPA_REJECT
         // -> latestBid was rejected, cannot reject
         await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid).catch(e =>
             expect(e).toEqual(new MessageException('Invalid MPAction.'))

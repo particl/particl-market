@@ -394,7 +394,7 @@ describe('TestDataService', () => {
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             null,                       // listingItemhash
-            MPAction.MPA_BID,     // action
+            MPAction.MPA_BID,     // type
             defaultProfile.address      // bidder
         ]);
 
@@ -430,7 +430,7 @@ describe('TestDataService', () => {
             false,                          // generateListingItemTemplate
             false,                          // generateListingItem
             listingItems[0].hash,           // listingItemHash
-            MPAction.MPA_BID,         // action
+            MPAction.MPA_BID,         // type
             defaultProfile.address          // bidder
             // defaultProfile.address       // listingitem seller
         ]);

@@ -16,7 +16,7 @@ import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/model/BidFactory';
-import { BidMessageCreateParams, BidMessageFactory } from '../factories/message/BidMessageFactory';
+import { BidMessageFactory } from '../factories/message/BidMessageFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
@@ -38,10 +38,13 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowType, MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import { ListingItemAddMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
+import {BidMessageCreateParams} from '../factories/message/MessageCreateParams';
+import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 // todo: move
 export interface OutputData {
@@ -99,8 +102,22 @@ export class BidActionService {
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
                       address: resources.Address): Promise<SmsgSendResponse> {
-        const bid = await buyer.bid(config, ok);
-        FV_MPA_BID.validate(bid);
+
+        // TODO:
+        // - recreate ListingItemMessage with factory
+        // - use omp to generate BidMessage
+        // - save Bid locally
+        // - send
+        // - save outgoing Smsgmessage (BidMessage)
+
+        // const config: BidConfiguration = ...
+        // ok: MPM
+        // let buyer: OpenMarketProtocol;
+
+        // Step1: Buyer does bid
+        // const bid = await buyer.bid(config, ok);
+        // FV_MPA_BID.validate(bid);
+
         // TODO: change send params to BidSendRequest and @validate them
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
@@ -111,20 +128,18 @@ export class BidActionService {
         // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID message
-        const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_BID, listingItem.hash, bidDatas);
+        // const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_BID, listingItem.hash, bidDatas);
 
         // create and post the itemmessage
         const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_BID, {
             config: {
-                address
-            } as BidConfiguration
+                escrow: EscrowType.MULTISIG,
+                shippingAddress: address,
+                cryptocurrency: Cryptocurrency.PART
+            } as BidConfiguration,
+            itemHash: listingItem.hash,
+            generated: +new Date().getTime() // timestamp
         } as BidMessageCreateParams);
-
-        // TODO: fix
-        const marketPlaceMessage = {
-            // version: ompVersion(),
-            mpaction: bidMessage
-        } as MarketplaceMessage;
 
         this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
@@ -382,8 +397,8 @@ export class BidActionService {
      */
     public async accept(bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        // previous bids action needs to be MPA_BID
-        if (bid.action === MPAction.MPA_BID) {
+        // previous bids type needs to be MPA_BID
+        if (bid.type === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -450,8 +465,8 @@ export class BidActionService {
             }
 
         } else {
-            this.log.error(`Bid can not be accepted because its state allready is ${bid.action}`);
-            throw new MessageException(`Bid can not be accepted because its state already is ${bid.action}`);
+            this.log.error(`Bid can not be accepted because its state allready is ${bid.type}`);
+            throw new MessageException(`Bid can not be accepted because its state already is ${bid.type}`);
         }
     }
 
@@ -703,7 +718,7 @@ export class BidActionService {
      */
     public async cancel(bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        if (bid.action === MPAction.MPA_BID) {
+        if (bid.type === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -713,11 +728,11 @@ export class BidActionService {
             // create the bid cancel message
             const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_CANCEL, listingItem.hash);
 
-            // Update the bid in the database with new action.
+            // Update the bid in the database with new type.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
-                action: MPAction.MPA_CANCEL,
+                type: MPAction.MPA_CANCEL,
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
@@ -744,8 +759,8 @@ export class BidActionService {
             }
 
         } else {
-            this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
-            throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
+            this.log.error(`Bid can not be cancelled because it was already been ${bid.type}`);
+            throw new MessageException(`Bid can not be cancelled because it was already been ${bid.type}`);
         }
     }
 
@@ -758,7 +773,7 @@ export class BidActionService {
      */
     public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        if (bid.action === MPAction.MPA_BID) {
+        if (bid.type === MPAction.MPA_BID) {
 
             const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
@@ -776,11 +791,11 @@ export class BidActionService {
             // create the bid reject message
             const bidMessage = await this.bidMessageFactory.get(MPAction.MPA_REJECT, listingItem.hash);
 
-            // Update the bid in the database with new action.
+            // Update the bid in the database with new type.
             const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bid.bidder, bid);
             const bidUpdateRequest: BidUpdateRequest = {
                 listing_item_id: tmpBidCreateRequest.listing_item_id,
-                action: MPAction.MPA_REJECT,
+                type: MPAction.MPA_REJECT,
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
@@ -796,8 +811,8 @@ export class BidActionService {
             // broadcast the reject bid message
             return await this.smsgService.smsgSend(sellerProfile.address, bid.bidder, marketPlaceMessage, false);
         } else {
-            this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
-            throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
+            this.log.error(`Bid can not be rejected because it was already been ${bid.type}`);
+            throw new MessageException(`Bid can not be rejected because it was already been ${bid.type}`);
         }
     }
 
@@ -884,7 +899,7 @@ export class BidActionService {
 
                     // find the Bid
                     const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
-                        return o.action === MPAction.MPA_BID && o.bidder === bidder;
+                        return o.type === MPAction.MPA_BID && o.bidder === bidder;
                     });
 
                     // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
@@ -971,11 +986,11 @@ export class BidActionService {
                 }
                 oldBid = oldBid.toJSON();
 
-                // Update the bid in the database with new action.
+                // Update the bid in the database with new type.
                 const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
-                    action: MPAction.MPA_CANCEL,
+                    type: MPAction.MPA_CANCEL,
                     bidder: tmpBidCreateRequest.bidder,
                     bidDatas: tmpBidCreateRequest.bidDatas
                 } as BidUpdateRequest;
@@ -1027,11 +1042,11 @@ export class BidActionService {
                 }
                 oldBid = oldBid.toJSON();
 
-                // Update the bid in the database with new action.
+                // Update the bid in the database with new type.
                 const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.get(bidMessage, listingItem.id, bidder, oldBid);
                 const bidUpdateRequest: BidUpdateRequest = {
                     listing_item_id: tmpBidCreateRequest.listing_item_id,
-                    action: MPAction.MPA_REJECT,
+                    type: MPAction.MPA_REJECT,
                     bidder: tmpBidCreateRequest.bidder,
                     bidDatas: tmpBidCreateRequest.bidDatas
                 } as BidUpdateRequest;

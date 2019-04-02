@@ -2,17 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { MessageBody } from '../../core/api/MessageBody';
-import { ProposalCategory } from '../enums/ProposalCategory';
+import { MessageBody } from '../../../core/api/MessageBody';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './actions/ActionMessageInterface';
-import { GovernanceAction } from '../enums/GovernanceAction';
+import { ActionMessageInterface } from './ActionMessageInterface';
+import { GovernanceAction } from '../../enums/GovernanceAction';
 
 export class ProposalMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
-    public action: GovernanceAction;
+    public type: GovernanceAction;
     public submitter: string;
     public title: string;
     public description: string;

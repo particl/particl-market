@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ProposalMessage } from '../messages/ProposalMessage';
+import { ProposalMessage } from '../messages/actions/ProposalMessage';
 import { ProposalCategory } from '../enums/ProposalCategory';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';

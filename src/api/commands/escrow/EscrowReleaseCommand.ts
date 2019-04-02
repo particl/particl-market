@@ -79,7 +79,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         }
 
         const bid = orderItem.Bid;
-        if (!bid || bid.action !== MPAction.MPA_ACCEPT) {
+        if (!bid || bid.type !== MPAction.MPA_ACCEPT) {
             this.log.error('No valid information to finalize escrow');
             throw new MessageException('No valid information to finalize escrow');
         }

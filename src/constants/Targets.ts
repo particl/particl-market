@@ -331,7 +331,13 @@ export const Targets = {
         message: {
             ListingItemMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',
-            BidMessageFactory: 'BidMessageFactory'
+            BidMessageFactory: 'BidMessageFactory',
+            BidAcceptMessageFactory: 'BidAcceptMessageFactory',
+            BidCancelMessageFactory: 'BidCancelMessageFactory',
+            BidRejectMessageFactory: 'BidRejectMessageFactory',
+            EscrowLockMessageFactory: 'EscrowLockMessageFactory',
+            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
+            EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory'
         },
         model: {
             ListingItemFactory: 'ListingItemFactory',

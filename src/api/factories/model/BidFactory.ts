@@ -59,7 +59,7 @@ export class BidFactory implements ModelFactoryInterface {
             // copy the new key-value pairs from bidMessage overriding the old if some exist
             if (bidMessage.objects) {
                 for (const bidData of bidMessage.objects) {
-                    bidDataValues[bidData.id] = bidData.value;
+                    bidDataValues[bidData.key] = bidData.value;
                 }
             }
 
@@ -74,7 +74,7 @@ export class BidFactory implements ModelFactoryInterface {
             // this.log.debug('bidDatas:', JSON.stringify(bidDatas, null, 2));
 
             let address;
-            if (bidMessage.action === MPAction.MPA_BID) {
+            if (bidMessage.type === MPAction.MPA_BID) {
                 const firstName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, bidDatas);
                 const lastName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_LAST_NAME, bidDatas);
                 const addressLine1 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, bidDatas);
@@ -93,12 +93,12 @@ export class BidFactory implements ModelFactoryInterface {
             const bidCreateRequest = {
                 address,
                 listing_item_id: params.listingItemId,
-                action: bidMessage.type,
-                params.bidder,
+                type: bidMessage.type,
+                bidder: params.bidder,
                 bidDatas
-            };
+            } as BidCreateRequest;
 
-            return bidCreateRequest as BidCreateRequest;
+            return bidCreateRequest;
 
         } else {
             throw new MessageException('Invalid MPAction.');
@@ -106,7 +106,7 @@ export class BidFactory implements ModelFactoryInterface {
     }
 
     /**
-     * Checks if the action in the given BidMessage is valid for the latest bid
+     * Checks if the type in the given BidMessage is valid for the latest bid
      *
      * @param bidMessage
      * @param latestBid
@@ -114,21 +114,21 @@ export class BidFactory implements ModelFactoryInterface {
      */
     private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
         if (latestBid) {
-            switch (latestBid.action) {
+            switch (latestBid.type) {
                 case MPAction.MPA_BID.toString():
                     // if the latest bid was allready bidded on, then the message needs to be something else
-                    return bidMessage.action !== MPAction.MPA_BID.toString();
+                    return bidMessage.type !== MPAction.MPA_BID.toString();
                 case MPAction.MPA_ACCEPT.toString():
                     // latest bid was allready accepted, any bid is invalid
                     return false;
                 case MPAction.MPA_CANCEL.toString():
                     // latest bid was cancelled, so we allow only new bids
-                    return bidMessage.action === MPAction.MPA_BID.toString();
+                    return bidMessage.type === MPAction.MPA_BID.toString();
                 case MPAction.MPA_REJECT.toString():
                     // latest bid was rejected, so we allow only new bids
-                    return bidMessage.action === MPAction.MPA_BID.toString();
+                    return bidMessage.type === MPAction.MPA_BID.toString();
             }
-        } else if (bidMessage.action === MPAction.MPA_BID.toString()) {
+        } else if (bidMessage.type === MPAction.MPA_BID.toString()) {
             // if no existing bid and message is MPA_BID -> true
             return true;
         }

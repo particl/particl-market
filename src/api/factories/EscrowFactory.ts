@@ -34,7 +34,7 @@ export class EscrowFactory {
     public async getMessage(request: EscrowRequest, rawtx: string): Promise<EscrowLockMessage> {
 
         // TODO: validity check
-        // this.checkEscrowActionValidity(request.action, escrow);
+        // this.checkEscrowActionValidity(request.type, escrow);
 
         switch (request.action) {
             case MPAction.MPA_LOCK:
@@ -74,16 +74,19 @@ export class EscrowFactory {
 
 
         return {
-            action: request.action,
-            item: request.orderItem.itemHash,
-            nonce: request.nonce,
-            info: {
-                memo: request.memo
-            },
-            escrow: {
-                type: 'lock',
-                rawtx
-            }
+            type: request.action,
+            bid: undefined,
+            buyer: undefined,
+            info: undefined
+//            item: request.orderItem.itemHash,
+//            nonce: request.nonce,
+//            info: {
+//                memo: request.memo
+//            },
+//            escrow: {
+//                type: 'lock',
+//                rawtx
+//            }
         } as EscrowLockMessage;
     }
 

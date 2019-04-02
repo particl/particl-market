@@ -56,7 +56,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         const bid = orderItem.Bid;
-        if (!bid || bid.action !== MPAction.MPA_ACCEPT) {
+        if (!bid || bid.type !== MPAction.MPA_ACCEPT) {
             this.log.error('No valid information to finalize escrow');
             throw new MessageException('No valid information to finalize escrow');
         }
@@ -86,10 +86,10 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         return this.escrowActionService.lock({
+            type: MPAction.MPA_LOCK,
             orderItem,
             nonce: data.params[1],
-            memo: data.params[2],
-            action: MPAction.MPA_LOCK
+            memo: data.params[2]
         } as EscrowRequest);
 
     }
