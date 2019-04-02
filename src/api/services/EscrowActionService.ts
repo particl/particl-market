@@ -12,13 +12,11 @@ import { EventEmitter } from 'events';
 import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
 import { MessageException } from '../exceptions/MessageException';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
-import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowRequest } from '../requests/EscrowRequest';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
@@ -38,7 +36,7 @@ import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
 import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
-import {EscrowMessageCreateParams} from '../factories/message/MessageCreateParams';
+import { EscrowMessageCreateParams } from '../factories/message/MessageCreateParams';
 
 export class EscrowActionService {
 
@@ -54,7 +52,6 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,

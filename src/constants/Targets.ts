@@ -343,7 +343,6 @@ export const Targets = {
             ListingItemFactory: 'ListingItemFactory',
             BidFactory: 'BidFactory'
         },
-        EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',

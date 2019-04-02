@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -18,7 +19,6 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import * as resources from "resources";
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 

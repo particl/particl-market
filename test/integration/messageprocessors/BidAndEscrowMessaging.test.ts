@@ -28,7 +28,6 @@ import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
-import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
 import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
@@ -36,6 +35,9 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 import { BidMessageFactory } from '../../../src/api/factories/message/BidMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowRefundMessageFactory } from '../../../src/api/factories/message/EscrowRefundMessageFactory';
+import { EscrowLockMessageFactory } from '../../../src/api/factories/message/EscrowLockMessageFactory';
+import { EscrowReleaseMessageFactory } from '../../../src/api/factories/message/EscrowReleaseMessageFactory';
 
 
 describe('BidAndEscrowMessageProcessing', () => {
@@ -57,7 +59,9 @@ describe('BidAndEscrowMessageProcessing', () => {
     let orderService: OrderService;
 
     let bidMessageFactory: BidMessageFactory;
-    let escrowFactory: EscrowFactory;
+    let escrowLockMessageFactory: EscrowLockMessageFactory;
+    let escrowRefundMessageFactory: EscrowRefundMessageFactory;
+    let escrowReleaseMessageFactory: EscrowReleaseMessageFactory;
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -85,7 +89,9 @@ describe('BidAndEscrowMessageProcessing', () => {
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
         bidMessageFactory = app.IoC.getNamed<BidMessageFactory>(Types.Factory, Targets.Factory.message.BidMessageFactory);
-        escrowFactory = app.IoC.getNamed<EscrowFactory>(Types.Factory, Targets.Factory.EscrowFactory);
+        escrowLockMessageFactory = app.IoC.getNamed<EscrowLockMessageFactory>(Types.Factory, Targets.Factory.message.EscrowLockMessageFactory);
+        escrowRefundMessageFactory = app.IoC.getNamed<EscrowRefundMessageFactory>(Types.Factory, Targets.Factory.message.EscrowRefundMessageFactory);
+        escrowReleaseMessageFactory = app.IoC.getNamed<EscrowReleaseMessageFactory>(Types.Factory, Targets.Factory.message.EscrowReleaseMessageFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
