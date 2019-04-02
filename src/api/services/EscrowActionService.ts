@@ -37,6 +37,8 @@ import { ompVersion } from 'omp-lib/dist/omp';
 import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import {EscrowMessageCreateParams} from '../factories/message/MessageCreateParams';
 
 export class EscrowActionService {
 
@@ -53,6 +55,7 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
@@ -153,19 +156,16 @@ export class EscrowActionService {
 
     private async createAndSendMessage(escrowRequest: EscrowRequest, rawtx: string): Promise<SmsgSendResponse> {
 
-        // use escrowfactory to generate the message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
-
-        const marketPlaceMessage = {
-            version: ompVersion(),
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
+        const marketplaceMessage = await this.marketplaceMessageFactory.get(escrowRequest.type, {
+            bidHash: 'TODO',
+            memo: escrowRequest.memo
+        } as EscrowMessageCreateParams);
 
         const isMyListingItem = !_.isEmpty(escrowRequest.orderItem.Bid.ListingItem.ListingItemTemplate);
         const sendFromAddress = isMyListingItem ? escrowRequest.orderItem.Order.seller : escrowRequest.orderItem.Order.buyer;
         const sendToAddress = isMyListingItem ? escrowRequest.orderItem.Order.buyer : escrowRequest.orderItem.Order.seller;
 
-        return await this.smsgService.smsgSend(sendFromAddress, sendToAddress, marketPlaceMessage, false);
+        return await this.smsgService.smsgSend(sendFromAddress, sendToAddress, marketplaceMessage, false);
     }
 
     /**
@@ -210,15 +210,17 @@ export class EscrowActionService {
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
 
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
+        if (!message.action) {   // ACTIONEVENT
+            throw new MessageException('Missing action.');
         }
 
-        const escrowMessage = message.mpaction as EscrowLockMessage;
-        const listingItemHash = escrowMessage.item;
+        const escrowMessage = message.action as EscrowLockMessage;
+        // TODO: FIX THIS
+        // TODO: fetch bid -> order -> orderitem -> item
+        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
 
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(escrowMessage.item)
+        return await this.listingItemService.findOneByHash(listingItemHash)
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
@@ -263,15 +265,17 @@ export class EscrowActionService {
     private async processEscrowReleaseReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
+        if (!message.action) {   // ACTIONEVENT
+            throw new MessageException('Missing action.');
         }
 
-        const escrowMessage = message.mpaction as EscrowReleaseMessage;
-        const listingItemHash = escrowMessage.item;
+        const escrowMessage = message.action as EscrowReleaseMessage;
+        // TODO: FIX THIS
+        // TODO: fetch bid -> order -> orderitem -> item
+        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
 
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(escrowMessage.item)
+        return await this.listingItemService.findOneByHash(listingItemHash)
             .then(async listingItemModel => {
 
                 const listingItem: resources.ListingItem = listingItemModel.toJSON();
@@ -314,13 +318,18 @@ export class EscrowActionService {
     private async processEscrowRequestRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        const escrowMessage = message.mpaction as EscrowRefundMessage;
-        if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
+        const escrowMessage = message.action as EscrowRefundMessage;
+        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
+
+        if (!escrowMessage || !listingItemHash) {   // ACTIONEVENT
+            throw new MessageException('Missing action.');
         }
 
+        // TODO: FIX THIS
+        // TODO: fetch bid -> order -> orderitem -> item
+
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(escrowMessage.item)
+        return await this.listingItemService.findOneByHash(listingItemHash)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 
@@ -336,13 +345,14 @@ export class EscrowActionService {
     private async processEscrowRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        const escrowMessage = message.mpaction as EscrowRefundMessage;
-        if (!escrowMessage || !escrowMessage.item) {   // ACTIONEVENT
+        const escrowMessage = message.action as EscrowRefundMessage;
+        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
+        if (!escrowMessage || !listingItemHash) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
         // find the ListingItem
-        return await this.listingItemService.findOneByHash(escrowMessage.item)
+        return await this.listingItemService.findOneByHash(listingItemHash)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 
@@ -404,9 +414,9 @@ export class EscrowActionService {
             throw new MessageException('Not enough valid information to finalize escrow');
         }
 
-        this.log.debug('createRawTx(), request.type:', request.action);
+        this.log.debug('createRawTx(), request.type:', request.type);
 
-        switch (request.action) {
+        switch (request.type) {
 
             case MPAction.MPA_LOCK:
 

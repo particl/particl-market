@@ -18,6 +18,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import * as resources from "resources";
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -83,11 +84,23 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         }
 
         return this.escrowActionService.refund({
+            type: MPAction.MPA_REFUND,
             orderItem,
             accepted: data.params[1],
-            memo: data.params[2],
-            action: MPAction.MPA_REFUND
+            memo: data.params[2]
         } as EscrowRequest);
+    }
+
+    /**
+     * data.params[]:
+     * [0]:
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // TODO: IMPLEMENT
+        return data;
     }
 
     public usage(): string {

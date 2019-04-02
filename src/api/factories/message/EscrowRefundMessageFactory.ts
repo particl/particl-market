@@ -5,11 +5,10 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { BidMessage } from '../../messages/actions/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BuyerData } from 'omp-lib/dist/interfaces/omp';
-import { EscrowRefundMessageCreateParams } from './MessageCreateParams';
+import { EscrowMessageCreateParams } from './MessageCreateParams';
 import { EscrowRefundMessage } from '../../messages/actions/EscrowRefundMessage';
 
 export class EscrowRefundMessageFactory implements MessageFactoryInterface {
@@ -28,7 +27,7 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
      *      bidHash: string
      * @returns {Promise<EscrowRefundMessage>}
      */
-    public async get(params: EscrowRefundMessageCreateParams): Promise<EscrowRefundMessage> {
+    public async get(params: EscrowMessageCreateParams): Promise<EscrowRefundMessage> {
 
         const message = {
             type: MPAction.MPA_REFUND,

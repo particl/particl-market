@@ -27,17 +27,8 @@ export interface BidRejectMessageCreateParams extends MessageCreateParams {
     bidHash: string;                    // bid hash to reject
 }
 
-export interface EscrowLockMessageCreateParams extends MessageCreateParams {
+export interface EscrowMessageCreateParams extends MessageCreateParams {
     bidHash: string;                    // bid hash to reject
     memo?: string;
 }
-
-export interface EscrowRefundMessageCreateParams extends MessageCreateParams {
-    bidHash: string;                    // bid hash to refund
-}
-
-export interface EscrowReleaseMessageCreateParams extends MessageCreateParams {
-    bidHash: string;                    // bid hash to release
-}
-
 

@@ -18,7 +18,7 @@ import {
     ListingItemAddMessageCreateParams,
     BidMessageCreateParams,
     BidAcceptMessageCreateParams,
-    BidCancelMessageCreateParams, BidRejectMessageCreateParams
+    BidCancelMessageCreateParams, BidRejectMessageCreateParams, EscrowMessageCreateParams
 } from './MessageCreateParams';
 import { BidMessageFactory } from './BidMessageFactory';
 import { BidAcceptMessageFactory } from './BidAcceptMessageFactory';
@@ -69,13 +69,13 @@ export class MarketplaceMessageFactory {
                 marketplaceMessage.action = await this.bidRejectMessageFactory.get(parameters as BidRejectMessageCreateParams);
                 break;
             case MPAction.MPA_LOCK:
-                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                marketplaceMessage.action = await this.escrowLockMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
             case MPAction.MPA_REFUND:
-                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                marketplaceMessage.action = await this.escrowRefundMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
             case MPAction.MPA_RELEASE:
-                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                marketplaceMessage.action = await this.escrowReleaseMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
             case MPAction.UNKNOWN:
             case GovernanceAction.MP_PROPOSAL_ADD:

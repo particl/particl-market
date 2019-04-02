@@ -47,9 +47,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItem = orderItemModel.toJSON();
 
         return this.escrowActionService.release({
+            type: MPAction.MPA_RELEASE,
             orderItem,
-            memo: data.params[1],
-            action: MPAction.MPA_RELEASE
+            memo: data.params[1]
         } as EscrowRequest);
     }
 

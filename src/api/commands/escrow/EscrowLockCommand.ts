@@ -94,6 +94,18 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
     }
 
+    /**
+     * data.params[]:
+     * [0]:
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // TODO: IMPLEMENT
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] ';
     }
