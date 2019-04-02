@@ -41,9 +41,8 @@ import { ItemImageService } from './ItemImageService';
 import { ItemImage } from '../models/ItemImage';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
-import { MPA_LISTING_ADD } from 'omp-lib/dist/interfaces/omp';
-import { ListingItemAddMessageCreateParams } from '../factories/message/MarketplaceMessageFactory';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ListingItemAddMessageCreateParams } from '../factories/message/MessageCreateParams';
 
 export class ListingItemTemplateService {
 
@@ -356,7 +355,7 @@ export class ListingItemTemplateService {
         // convert the template to message
         const action = await this.listingItemMessageFactory.get({
             template: listingItemTemplate
-        } as ListingItemMessageCreateParams) as MPA_LISTING_ADD;
+        } as ListingItemAddMessageCreateParams);
 
         const marketplaceMessage = {
             version: ompVersion(),

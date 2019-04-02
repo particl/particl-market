@@ -32,10 +32,12 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { ListingItemAddMessageCreateParams, MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
+import { ListingItemCreateParams } from '../factories/model/ModelCreateParams';
+import { ListingItemAddMessageCreateParams } from '../factories/message/MessageCreateParams';
 
 export class ListingItemActionService {
 
@@ -101,7 +103,7 @@ export class ListingItemActionService {
         // create the MPA_LISTING_ADD
         const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
             template: itemTemplate
-        } as ListingItemMessageCreateParams);
+        } as ListingItemAddMessageCreateParams);
 
         // validate the MPA_LISTING_ADD
         ListingItemAddValidator.validate(marketplaceMessage);
@@ -150,7 +152,11 @@ export class ListingItemActionService {
                 const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot()
                     .then(value => value.toJSON());
 
-                const listingItemCreateRequest = await this.listingItemFactory.get(listingItemAddMessage, smsgMessage, market.id, rootCategory);
+                const listingItemCreateRequest = await this.listingItemFactory.get(listingItemAddMessage, {
+                        marketId: market.id,
+                        rootCategory
+                    } as ListingItemCreateParams,
+                    smsgMessage);
                 // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 let listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)

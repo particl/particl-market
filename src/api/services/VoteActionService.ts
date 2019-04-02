@@ -4,35 +4,33 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Core, Events, Targets, Types} from '../../constants';
-import {VoteCreateRequest} from '../requests/VoteCreateRequest';
-import {SmsgService} from './SmsgService';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {EventEmitter} from 'events';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
-import {VoteFactory} from '../factories/model/VoteFactory';
-import {VoteService} from './VoteService';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {CoreRpcService} from './CoreRpcService';
-import {MessageException} from '../exceptions/MessageException';
-import {VoteMessage} from '../messages/actions/VoteMessage';
-import {ProposalService} from './ProposalService';
-import {ProposalOptionService} from './ProposalOptionService';
-import {ProposalCategory} from '../enums/ProposalCategory';
-import {ListingItemService} from './ListingItemService';
-import {SmsgMessageService} from './SmsgMessageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {ProposalResultService} from './ProposalResultService';
-import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
-import {ompVersion} from 'omp-lib/dist/omp';
-import {GovernanceAction} from '../enums/GovernanceAction';
-import {VoteMessageFactory} from '../factories/message/VoteMessageFactory';
-import {MarketplaceMessageFactory} from '../factories/message/MarketplaceMessageFactory';
-import {VoteMessageCreateParams} from '../factories/message/MessageCreateParams';
-import {ProposalAddMessage} from '../messages/actions/ProposalAddMessage';
-import {VoteCreateParams} from '../factories/model/ModelCreateParams';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Core, Events, Targets, Types } from '../../constants';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { SmsgService } from './SmsgService';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { EventEmitter } from 'events';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { VoteFactory } from '../factories/model/VoteFactory';
+import { VoteService } from './VoteService';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { CoreRpcService } from './CoreRpcService';
+import { MessageException } from '../exceptions/MessageException';
+import { VoteMessage } from '../messages/actions/VoteMessage';
+import { ProposalService } from './ProposalService';
+import { ProposalOptionService } from './ProposalOptionService';
+import { ProposalCategory } from '../enums/ProposalCategory';
+import { ListingItemService } from './ListingItemService';
+import { SmsgMessageService } from './SmsgMessageService';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { ProposalResultService } from './ProposalResultService';
+import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { VoteMessageFactory } from '../factories/message/VoteMessageFactory';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { VoteMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { VoteCreateParams } from '../factories/model/ModelCreateParams';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -296,11 +294,12 @@ export class VoteActionService {
                 // Vote was found, update it
                 // when vote is found, we are either receiving our own vote or someone is voting again
                 // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
-                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get(voteMessage, smsgMessage, {
-                    proposalOption: votedProposalOption,
-                    weight: balance,
-                    create: false
-                } as VoteCreateParams );
+                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get(voteMessage, {
+                        proposalOption: votedProposalOption,
+                        weight: balance,
+                        create: false
+                    } as VoteCreateParams,
+                    smsgMessage);
                 this.log.debug('found vote, updating the existing one');
                 this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
                 this.log.debug('proposal.id: ' + proposal.id);
@@ -313,11 +312,12 @@ export class VoteActionService {
                 // Vote doesnt exist yet, so we need to create it.
                 // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
                 this.log.debug('did not find vote, creating...');
-                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get(voteMessage, smsgMessage, {
-                    proposalOption: votedProposalOption,
-                    weight: balance,
-                    create: true
-                } as VoteCreateParams );
+                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get(voteMessage, {
+                        proposalOption: votedProposalOption,
+                        weight: balance,
+                        create: true
+                    } as VoteCreateParams,
+                    smsgMessage);
 
                 vote = await this.voteService.create(voteCreateRequest)
                     .then(value => {

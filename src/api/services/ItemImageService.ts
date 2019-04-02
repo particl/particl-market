@@ -25,7 +25,6 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { ItemImageDataRepository } from '../repositories/ItemImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
-
 export class ItemImageService {
 
     public log: LoggerType;
@@ -68,18 +67,18 @@ export class ItemImageService {
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
 
         const itemImageDataCreateRequest = {
+            dataId: imageFile.fieldname, // replaced with local url in factory
             protocol: ProtocolDSN.LOCAL,
+            imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: 'BASE64',
             data: dataStr,
-            dataId: imageFile.fieldname, // replaced with local url in factory
-            imageVersion: ImageVersions.ORIGINAL.propName,
             originalMime: imageFile.mimetype,
             originalName: imageFile.originalname
         } as ItemImageDataCreateRequest;
 
         const itemImageCreateRequest = {
             item_information_id: itemInformationId,
-            datas: [itemImageDataCreateRequest]
+            data: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
 
         return await this.create(itemImageCreateRequest);

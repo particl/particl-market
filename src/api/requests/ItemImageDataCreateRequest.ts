@@ -18,7 +18,6 @@ export class ItemImageDataCreateRequest extends RequestBody {
     @IsNotEmpty()
     public imageVersion: string;
 
-    @IsNotEmpty()
     public imageHash: string;
 
     public encoding: string;

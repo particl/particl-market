@@ -522,13 +522,7 @@ export class TestDataService {
 
         // generate bid
         if (generateParams.generateBid) {
-
-            const bidGenerateParams = new GenerateBidParams();
-            bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
-            bidGenerateParams.generateListingItem = generateParams.generateListingItem;
-            bidGenerateParams.type = MPAction.MPA_ACCEPT;
-            bidGenerateParams.listingItemSeller = generateParams.listingItemSeller;
-
+            const bidGenerateParams = new GenerateBidParams(generateParams.toParamsArray());
             const bids = await this.generateBids(1, true, bidGenerateParams);
             bid = bids[0];
 

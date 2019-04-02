@@ -97,7 +97,7 @@ export class BidFactory implements ModelFactoryInterface {
 
             let hash = '';
             if (bidMessage.type === MPAction.MPA_BID) {
-                hash = (bidMessage as BidMessage).hash;
+                hash = bidMessage.hash;
             }
 
             // create and return the request that can be used to create the bid

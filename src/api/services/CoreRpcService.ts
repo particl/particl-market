@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 import * as WebRequest from 'web-request';
-import {inject, decorate, named, injectable} from 'inversify';
+import { inject, decorate, named, injectable } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
@@ -13,9 +13,8 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Output } from './BidActionService';
-
 import { Rpc } from 'omp-lib';
-import { RpcUnspentOutput } from 'omp-lib/dist/abstract/rpc';
+import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;

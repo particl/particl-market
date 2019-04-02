@@ -31,12 +31,12 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { Output } from './BidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
 import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { EscrowMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { BidService } from './BidService';
 
 export class EscrowActionService {
 
@@ -44,6 +44,7 @@ export class EscrowActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
@@ -211,10 +212,10 @@ export class EscrowActionService {
             throw new MessageException('Missing action.');
         }
 
-        const escrowMessage = message.action as EscrowLockMessage;
-        // TODO: FIX THIS
-        // TODO: fetch bid -> order -> orderitem -> item
-        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
+        const escrowLockMessage = message.action as EscrowLockMessage;
+        const bid: resources.Bid = await this.bidService.findOneByHash(escrowLockMessage.bid)
+            .then(value => value.toJSON());
+        const listingItemHash = bid.ListingItem.hash;
 
         // find the ListingItem
         return await this.listingItemService.findOneByHash(listingItemHash)
@@ -233,8 +234,9 @@ export class EscrowActionService {
 
                 if (orderItem) {
 
+                    // TODO: BROKEN
                     // update rawtx
-                    const rawtx = escrowMessage.escrow.rawtx;
+                    const rawtx = ''; // escrowLockMessage.escrow.rawtx;
                     const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
                     this.log.info('processLock(), rawtx:', JSON.stringify(updatedRawTx, null, 2));
 
@@ -289,8 +291,9 @@ export class EscrowActionService {
 
                 if (orderItem) {
 
+                    // TODO: BROKEN!!!
                     // update rawtx
-                    const rawtx = escrowMessage.escrow.rawtx;
+                    const rawtx = ''; // escrowMessage.escrow.rawtx;
                     const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
 
@@ -315,12 +318,15 @@ export class EscrowActionService {
     private async processEscrowRequestRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
-        const escrowMessage = message.action as EscrowRefundMessage;
-        const listingItemHash = escrowMessage.bid; // escrowMessage.item;
+        const escrowRefundMessage = message.action as EscrowRefundMessage;
 
-        if (!escrowMessage || !listingItemHash) {   // ACTIONEVENT
+        if (!escrowRefundMessage) {   // ACTIONEVENT
             throw new MessageException('Missing action.');
         }
+
+        const bid: resources.Bid = await this.bidService.findOneByHash(escrowRefundMessage.bid)
+            .then(value => value.toJSON());
+        const listingItemHash = bid.ListingItem.hash;
 
         // TODO: FIX THIS
         // TODO: fetch bid -> order -> orderitem -> item

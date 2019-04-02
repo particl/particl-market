@@ -8,25 +8,19 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
-
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
-
 import { BidRepository } from '../repositories/BidRepository';
-
 import { Bid } from '../models/Bid';
-
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { BidSearchParams } from '../requests/BidSearchParams';
-
 import { EventEmitter } from 'events';
 import { BidDataService } from './BidDataService';
 import { ListingItemService } from './ListingItemService';
 import { AddressService } from './AddressService';
 import { ProfileService } from './ProfileService';
-
 import { SearchOrder } from '../enums/SearchOrder';
 
 export class BidService {

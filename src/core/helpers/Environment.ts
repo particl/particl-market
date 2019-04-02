@@ -70,8 +70,6 @@ export class Environment {
         return packageInfo;
     }
 
-/*
-    TODO: are these needed?
     public static isTestnet(): boolean {
         return !this.isProduction();
     }
@@ -79,7 +77,7 @@ export class Environment {
     public static isRegtest(): boolean {
         return this.isTruthy(process.env.REGTEST);
     }
-*/
+
     public static isTruthy(bool: string): boolean {
         try {
             return bool.toLowerCase() === 'true';
