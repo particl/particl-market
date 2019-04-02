@@ -16,6 +16,11 @@ import { BidDataValue } from '../../enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { BidCreateParams } from './ModelCreateParams';
+import { BidAcceptMessage } from '../../messages/actions/BidAcceptMessage';
+import { BidRejectMessage } from '../../messages/actions/BidRejectMessage';
+import { BidCancelMessage } from '../../messages/actions/BidCancelMessage';
+
+export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
 
 export class BidFactory implements ModelFactoryInterface {
 
@@ -27,6 +32,7 @@ export class BidFactory implements ModelFactoryInterface {
         this.log = new Logger(__filename);
     }
 
+
     /**
      * create a BidCreateRequest
      *
@@ -34,7 +40,7 @@ export class BidFactory implements ModelFactoryInterface {
      * @param smsgMessage
      * @param params
      */
-    public async get(bidMessage: BidMessage, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
+    public async get(bidMessage: BidMessageTypes, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
         if (!params.listingItemId) {
             throw new MessageException('Invalid listingItemId.');
@@ -89,11 +95,17 @@ export class BidFactory implements ModelFactoryInterface {
                 } as AddressCreateRequest;
             }
 
+            let hash = '';
+            if (bidMessage.type === MPAction.MPA_BID) {
+                hash = (bidMessage as BidMessage).hash;
+            }
+
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
+                type: bidMessage.type,
+                hash,
                 address,
                 listing_item_id: params.listingItemId,
-                type: bidMessage.type,
                 bidder: params.bidder,
                 bidDatas
             } as BidCreateRequest;
@@ -112,7 +124,7 @@ export class BidFactory implements ModelFactoryInterface {
      * @param latestBid
      * @returns {boolean}
      */
-    private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
+    private checkBidMessageActionValidity(bidMessage: BidMessageTypes, latestBid?: resources.Bid): boolean {
         if (latestBid) {
             switch (latestBid.type) {
                 case MPAction.MPA_BID.toString():
@@ -127,6 +139,8 @@ export class BidFactory implements ModelFactoryInterface {
                 case MPAction.MPA_REJECT.toString():
                     // latest bid was rejected, so we allow only new bids
                     return bidMessage.type === MPAction.MPA_BID.toString();
+                default:
+                    throw new MessageException('Unknown BidMessage.type');
             }
         } else if (bidMessage.type === MPAction.MPA_BID.toString()) {
             // if no existing bid and message is MPA_BID -> true

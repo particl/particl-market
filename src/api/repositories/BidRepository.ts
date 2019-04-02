@@ -31,6 +31,10 @@ export class BidRepository {
         return this.BidModel.fetchById(id, withRelated);
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Bid> {
+        return this.BidModel.fetchByHash(hash, withRelated);
+    }
+
     /**
      *
      * @param options, BidSearchParams

@@ -37,6 +37,16 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Bid> {
+        if (withRelated) {
+            return await Bid.where<Bid>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Bid.where<Bid>({ hash: value }).fetch();
+        }
+    }
+
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
         options.ordering = options.ordering ? options.ordering : SearchOrder.ASC;

@@ -58,6 +58,15 @@ export class BidService {
         return bid;
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Bid> {
+        const bid = await this.bidRepo.findOneByHash(hash, withRelated);
+        if (bid === null) {
+            this.log.warn(`Bid with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return bid;
+    }
+
     public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
         const params = {
             listingItemHash: hash

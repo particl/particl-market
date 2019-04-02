@@ -422,7 +422,7 @@ export class BidActionService {
             // create the bid accept message using the generated bidDatas
             const bidAcceptMessage = await this.bidAcceptMessageFactory.get({
                 bidHash: bid.hash
-            } as BidAcceptMessageCreateParams) as BidAcceptMessage;
+            } as BidAcceptMessageCreateParams);
             // MPAction.MPA_ACCEPT, listingItem.hash, bidDatas);
             // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
@@ -925,7 +925,10 @@ export class BidActionService {
             throw new MessageException('Missing action.');
         }
 
-        return await this.listingItemService.findOneByHash(bidAcceptMessage.item)
+        const bid: resources.Bid = await this.bidService.findOneByHash(bidAcceptMessage.bid)
+            .then(value => value.toJSON());
+
+        return await this.listingItemService.findOneByHash(bid.ListingItem.hash)
             .then(async listingItemModel => {
 
                 const listingItem = listingItemModel.toJSON();
@@ -1007,7 +1010,10 @@ export class BidActionService {
             throw new MessageException('Missing action.');
         }
 
-        return await this.listingItemService.findOneByHash(bidCancelMessage.item)
+        const bid: resources.Bid = await this.bidService.findOneByHash(bidCancelMessage.bid)
+            .then(value => value.toJSON());
+
+        return await this.listingItemService.findOneByHash(bid.ListingItem.hash)
             .then(async listingItemModel => {
 
                 const listingItem: resources.ListingItem = listingItemModel.toJSON();
@@ -1072,7 +1078,10 @@ export class BidActionService {
             throw new MessageException('Missing action.');
         }
 
-        return await this.listingItemService.findOneByHash(bidRejectMessage.item)
+        let bid: resources.Bid = await this.bidService.findOneByHash(bidRejectMessage.bid)
+            .then(value => value.toJSON());
+
+        return await this.listingItemService.findOneByHash(bid.ListingItem.hash)
             .then(async listingItemModel => {
                 const listingItem = listingItemModel.toJSON();
 
@@ -1105,8 +1114,9 @@ export class BidActionService {
                     bidder: tmpBidCreateRequest.bidder,
                     bidDatas: tmpBidCreateRequest.bidDatas
                 } as BidUpdateRequest;
-                const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
-                const bid = bidModel.toJSON();
+
+                bid = await this.bidService.update(oldBid.id, bidUpdateRequest)
+                    .then(value => value.toJSON());
 
                 // remove buyers lockedoutputs
                 let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
