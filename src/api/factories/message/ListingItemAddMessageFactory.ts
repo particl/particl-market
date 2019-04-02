@@ -19,12 +19,12 @@ import {
     PaymentInfo,
     PaymentInfoEscrow, PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
-import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ItemImageDataService } from '../../services/ItemImageDataService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
+import {CryptoAddress, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
 import { MessageFactoryInterface } from './MessageFactoryInterface';

@@ -14,3 +14,6 @@ export interface BidCreateParams extends ModelCreateParams {
     bidder: string;
     latestBid?: resources.Bid;
 }
+
+export interface ProposalCreateParams extends ModelCreateParams {
+}

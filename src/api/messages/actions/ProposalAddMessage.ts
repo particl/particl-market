@@ -7,17 +7,24 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { GovernanceAction } from '../../enums/GovernanceAction';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 
-export class ProposalMessage extends MessageBody implements ActionMessageInterface {
+export class ProposalAddMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
-    public type: GovernanceAction;
+    public type: GovernanceAction.MP_PROPOSAL_ADD;
+    @IsNotEmpty()
     public submitter: string;
+    @IsNotEmpty()
     public title: string;
+    @IsNotEmpty()
     public description: string;
+    @IsNotEmpty()
     public options: any[];
+    @IsNotEmpty()
     public category: ProposalCategory;
+    @IsNotEmpty()
     public hash: string;
     public item?: string;   // itemHash
 

@@ -10,6 +10,8 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 
 export class ListingItemAddMessage extends MessageBody implements ActionMessageInterface, MPA_LISTING_ADD {
 
+    @IsEnum(MPAction)
+    @IsNotEmpty()
     public type: MPAction.MPA_LISTING_ADD;
 
     @IsNotEmpty()

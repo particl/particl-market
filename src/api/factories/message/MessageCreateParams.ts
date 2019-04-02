@@ -32,3 +32,11 @@ export interface EscrowMessageCreateParams extends MessageCreateParams {
     memo?: string;
 }
 
+export interface ProposalAddMessageCreateParams extends MessageCreateParams {
+    title: string;
+    description: string;
+    options: string[];
+    sender: resources.Profile;
+    itemHash?: string;
+}
+

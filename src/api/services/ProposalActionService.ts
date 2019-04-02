@@ -12,12 +12,11 @@ import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from './ProposalService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { ProposalCategory } from '../enums/ProposalCategory';
-import { ProposalMessage } from '../messages/actions/ProposalMessage';
+import { ProposalAddMessage } from '../messages/actions/ProposalAddMessage';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -27,33 +26,40 @@ import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { Proposal } from '../models/Proposal';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../enums/GovernanceAction';
+import { ProposalAddMessageFactory } from '../factories/message/ProposalAddMessageFactory';
+import { ProposalAddMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { ProposalFactory } from '../factories/model/ProposalFactory';
 
 export class ProposalActionService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
-                @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-                @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-                @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-                @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-                @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
-                @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
-                @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+
         this.log = new Logger(__filename);
         this.configureEventListeners();
     }
 
     /**
-     * creates ProposalMessage (of category MP_PROPOSAL_ADD) and post it
+     * creates ProposalAddMessage (of category MP_PROPOSAL_ADD) and post it
      *
      * - send():
-     *   - create ProposalMessage
+     *   - create ProposalAddMessage
      *   - processProposal(), creates the Proposal locally
-     *   - post ProposalMessage
+     *   - post ProposalAddMessage
      *   - if ProposalCategory.ITEM_VOTE:
      *     - post the votes, voteActionService.vote( profile )
      *
@@ -71,32 +77,28 @@ export class ProposalActionService {
                       senderProfile: resources.Profile, marketplace: resources.Market, itemHash?: string | undefined,
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
-        const proposalMessage = await this.proposalFactory.getMessage(
-            GovernanceAction.MP_PROPOSAL_ADD,
-            proposalTitle,
-            proposalDescription,
+        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(GovernanceAction.MP_PROPOSAL_ADD, {
+            title: proposalTitle,
+            description: proposalDescription,
             options,
-            senderProfile,
+            sender: senderProfile,
             itemHash
-        );
+        } as ProposalAddMessageCreateParams);
 
-        const msg = {
-            version: ompVersion(),
-            mpaction: proposalMessage
-        } as MarketplaceMessage;
+        const proposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
 
-        // if were here to estimate the fee, then do it now.
-        const paidMessage = proposalMessage.category === ProposalCategory.PUBLIC_VOTE;
+        // if were here to just estimate the fee, then do it now.
+        const paidMessage = proposalAddMessage.category === ProposalCategory.PUBLIC_VOTE;
         if (estimateFee) {
-            return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+            return await this.smsgService.smsgSend(senderProfile.address, marketplace.address, marketplaceMessage, paidMessage, daysRetention, estimateFee);
         }
 
         // processProposal "processes" the Proposal, creating or updating the Proposal.
         // called from send() and processProposalReceivedEvent()
-        const proposal: resources.Proposal = await this.processProposal(proposalMessage);
+        const proposal: resources.Proposal = await this.processProposal(proposalAddMessage);
 
         // proposal is processed, so we can now send it
-        const result = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
+        const result = await this.smsgService.smsgSend(senderProfile.address, marketplace.address, marketplaceMessage, paidMessage, daysRetention, estimateFee);
 
         if (ProposalCategory.ITEM_VOTE === proposal.category) {
             // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
@@ -118,7 +120,7 @@ export class ProposalActionService {
     }
 
     /**
-     * process received ProposalMessage:
+     * process received ProposalAddMessage:
      *   - this.processProposal()
      *   - don't create votes, votes are created when they arrive
      *   - flaggeditem and initial ProposalResult are created in processProposal
@@ -129,7 +131,7 @@ export class ProposalActionService {
     public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const proposalMessage: ProposalMessage = marketplaceMessage.mpaction as ProposalMessage;
+        const proposalMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
 
         // processProposal will create or update the Proposal
         return await this.processProposal(proposalMessage, smsgMessage)
@@ -179,8 +181,8 @@ export class ProposalActionService {
 
     /**
      * processProposal "processes" the Proposal, creating or updating the Proposal.
-     * called from send() and processProposalReceivedEvent(), meaning before the ProposalMessage is sent
-     * and after the ProposalMessage is received.
+     * called from send() and processProposalReceivedEvent(), meaning before the ProposalAddMessage is sent
+     * and after the ProposalAddMessage is received.
      *
      * - private processProposal():
      *   - save/update proposal locally (update: add the fields from smsgmessage)
@@ -191,12 +193,12 @@ export class ProposalActionService {
      * @param proposalMessage
      * @param smsgMessage
      */
-    private async processProposal(proposalMessage: ProposalMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
+    private async processProposal(proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
 
         // when called from send() we create a ProposalCreateRequest with no smsgMessage data.
         // later, when the smsgMessage for this proposal is received,
         // the relevant smsgMessage data will be updated and included in the request
-        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
+        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get(proposalMessage, smsgMessage);
         const proposalModel: Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
             .catch(async reason => {
                 // proposal doesnt exist yet, so we need to create it.
