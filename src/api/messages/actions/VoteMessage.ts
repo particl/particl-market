@@ -6,14 +6,21 @@ import { MessageBody } from '../../../core/api/MessageBody';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { GovernanceAction } from '../../enums/GovernanceAction';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class VoteMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
     public type: GovernanceAction.MP_VOTE;
+    @IsNotEmpty()
     public proposalHash: string;
+    @IsNotEmpty()
     public proposalOptionHash: string;
+    @IsNotEmpty()
     public voter: string;
+    @IsNotEmpty()
     public signature: string;
+
+    public objects?: KVS[];
 }

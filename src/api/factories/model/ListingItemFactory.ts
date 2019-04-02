@@ -54,8 +54,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
      * @param params
      */
     public async get(listingItemAddMessage: ListingItemAddMessage,
-                     smsgMessage: resources.SmsgMessage,
-                     params: ListingItemCreateParams): Promise<ListingItemCreateRequest> {
+                     params: ListingItemCreateParams,
+                     smsgMessage: resources.SmsgMessage): Promise<ListingItemCreateRequest> {
 
 
         const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);

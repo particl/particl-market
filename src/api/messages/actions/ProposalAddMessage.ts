@@ -8,6 +8,7 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class ProposalAddMessage extends MessageBody implements ActionMessageInterface {
 
@@ -27,5 +28,7 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
     @IsNotEmpty()
     public hash: string;
     public item?: string;   // itemHash
+
+    public objects?: KVS[];
 
 }

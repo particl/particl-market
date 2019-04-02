@@ -106,6 +106,9 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get Bidder(): string { return this.get('bidder'); }
     public set Bidder(value: string) { this.set('bidder', value); }
 
+    public get Hash(): string { return this.get('hash'); }
+    public set Hash(value: string) { this.set('hash', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

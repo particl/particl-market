@@ -7,6 +7,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MPA_RELEASE, SellerData } from 'omp-lib/dist/interfaces/omp';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class EscrowReleaseMessage extends MessageBody implements ActionMessageInterface, MPA_RELEASE {
 
@@ -19,5 +20,7 @@ export class EscrowReleaseMessage extends MessageBody implements ActionMessageIn
 
     @IsNotEmpty()
     public seller: SellerData;
+
+    public objects?: KVS[];
 
 }

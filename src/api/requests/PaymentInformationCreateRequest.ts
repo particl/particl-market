@@ -6,7 +6,7 @@ import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { EscrowCreateRequest } from './EscrowCreateRequest';
 import { ItemPriceCreateRequest } from './ItemPriceCreateRequest';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 
 // tslint:disable:variable-name
 export class PaymentInformationCreateRequest extends RequestBody {
@@ -14,9 +14,9 @@ export class PaymentInformationCreateRequest extends RequestBody {
     public listing_item_id: number;
     public listing_item_template_id: number;
 
-    @IsEnum(PaymentType)
+    @IsEnum(SaleType)
     @IsNotEmpty()
-    public type: PaymentType;
+    public type: SaleType;
 
     public escrow: EscrowCreateRequest;
     public itemPrice: ItemPriceCreateRequest;

@@ -7,6 +7,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { MPA_CANCEL} from 'omp-lib/dist/interfaces/omp';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidCancelMessage extends MessageBody implements ActionMessageInterface, MPA_CANCEL {
 
@@ -16,5 +17,7 @@ export class BidCancelMessage extends MessageBody implements ActionMessageInterf
 
     @IsNotEmpty()
     public bid: string;
+
+    public objects?: KVS[];
 
 }

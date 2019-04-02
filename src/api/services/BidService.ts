@@ -69,6 +69,7 @@ export class BidService {
      * searchBy Bid using given BidSearchParams
      *
      * @param options
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
@@ -94,6 +95,8 @@ export class BidService {
 
     @validate()
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
+
+        // TODO: hash generation
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
@@ -181,6 +184,7 @@ export class BidService {
 
         // set new values, we only need to change the type
         bid.Type = body.type;
+        bid.Hash = body.hash;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());

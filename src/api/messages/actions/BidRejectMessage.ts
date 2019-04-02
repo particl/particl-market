@@ -7,6 +7,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { MPA_REJECT} from 'omp-lib/dist/interfaces/omp';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidRejectMessage extends MessageBody implements ActionMessageInterface, MPA_REJECT {
 
@@ -16,5 +17,7 @@ export class BidRejectMessage extends MessageBody implements ActionMessageInterf
 
     @IsNotEmpty()
     public bid: string;
+
+    public objects?: KVS[];
 
 }

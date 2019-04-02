@@ -7,6 +7,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BuyerData, MPA_REFUND} from 'omp-lib/dist/interfaces/omp';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class EscrowRefundMessage extends MessageBody implements ActionMessageInterface, MPA_REFUND {
 
@@ -19,5 +20,7 @@ export class EscrowRefundMessage extends MessageBody implements ActionMessageInt
 
     @IsNotEmpty()
     public buyer: BuyerData;
+
+    public objects?: KVS[];
 
 }

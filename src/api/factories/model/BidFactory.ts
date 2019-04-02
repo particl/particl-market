@@ -34,7 +34,7 @@ export class BidFactory implements ModelFactoryInterface {
      * @param smsgMessage
      * @param params
      */
-    public async get(bidMessage: BidMessage, smsgMessage: resources.SmsgMessage, params: BidCreateParams): Promise<BidCreateRequest> {
+    public async get(bidMessage: BidMessage, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
         if (!params.listingItemId) {
             throw new MessageException('Invalid listingItemId.');

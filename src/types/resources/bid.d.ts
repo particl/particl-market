@@ -8,6 +8,7 @@ declare module 'resources' {
 
     interface Bid {
         id: number;
+        hash: string;
         bidder: string;
         type: MPAction;
         createdAt: Date;

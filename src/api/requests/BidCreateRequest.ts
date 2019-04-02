@@ -26,6 +26,8 @@ export class BidCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public bidder: string;
+    @IsNotEmpty()
+    public hash: string;
 
     public bidDatas: BidDataCreateRequest[];
 }

@@ -11,5 +11,5 @@ import { ActionMessageInterface } from '../../messages/actions/ActionMessageInte
  */
 export interface ModelFactoryInterface {
     // TODO: return CreateRequestInterface
-    get(actionMessage: ActionMessageInterface, smsgMessage?: resources.SmsgMessage, params?: ModelCreateParams): Promise<any>;
+    get(actionMessage: ActionMessageInterface, params?: ModelCreateParams, smsgMessage?: resources.SmsgMessage): Promise<any>;
 }
