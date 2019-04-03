@@ -846,12 +846,12 @@ export class TestDataService {
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
         // get default profile
-        const defaultProfileModel = await this.profileService.getDefault();
-        const defaultProfile = defaultProfileModel.toJSON();
+        const defaultProfile: resources.Profile = await this.profileService.getDefault()
+            .then(value => value.toJSON());
 
         // get default market
-        const defaultMarketModel = await this.marketService.getDefault();
-        const defaultMarket = defaultMarketModel.toJSON();
+        const defaultMarket: resources.Market = await this.marketService.getDefault()
+            .then(value => value.toJSON());
 
         // set seller to given address or get a new one
         const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress();
@@ -871,8 +871,11 @@ export class TestDataService {
             expiryTime: 4,
             postedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 100000000,
-            receivedAt: new Date().getTime()
+            receivedAt: new Date().getTime(),
+            generatedAt: new Date().getTime()
         } as ListingItemCreateRequest;
+
+        // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id
         let listingItemTemplate: resources.ListingItemTemplate | null = null;
@@ -883,7 +886,6 @@ export class TestDataService {
                 listingItemCreateRequest.listing_item_template_id = listingItemTemplate.id;
             }
         }
-
         return listingItemCreateRequest;
     }
 

@@ -98,14 +98,14 @@ export class ItemImageService {
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         // get the existing ItemImageDatas
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.datas;
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         // get the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
         // remove ItemImageDatas from the body
-        delete body.datas;
+        delete body.data;
 
         if (itemImageDataOriginal) { // the original should always exist, its used to create the other versions
 
@@ -159,13 +159,13 @@ export class ItemImageService {
         const body = JSON.parse(JSON.stringify(data));
 
         // grab the existing imagedatas
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.datas;
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         // get the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
-        delete body.datas;
+        delete body.data;
 
         const itemImage = await this.findOne(id, false);
 

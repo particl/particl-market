@@ -135,8 +135,8 @@ export class ListingItemService {
         // this.log.debug('body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the listingItem
-        const listingItemModel = await this.listingItemRepo.create(body);
-        const listingItem = listingItemModel.toJSON();
+        const listingItem: resources.ListingItem = await this.listingItemRepo.create(body)
+            .then(value => value.toJSON());
 
         // create related models
         if (!_.isEmpty(itemInformation)) {

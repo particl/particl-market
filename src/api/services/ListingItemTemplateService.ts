@@ -317,7 +317,7 @@ export class ListingItemTemplateService {
 
             if (!itemImageDataOriginal) {
                 // there's something wrong with the ItemImage if original image doesnt have data
-                throw new MessageException('Original image data not found.');
+                throw new MessageException('Error while resizing: Original image data not found.');
             }
 
             if (!itemImageDataResized) {

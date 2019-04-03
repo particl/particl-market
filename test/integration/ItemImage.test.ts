@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -23,6 +24,9 @@ import { ItemImageDataService } from '../../src/api/services/ItemImageDataServic
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
+import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
+import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -41,25 +45,26 @@ describe('ItemImage', () => {
     const testData = {
         // item_information_id: 0,
         // hash: 'hash',
-        datas: [{
-            dataId: null,
+        data: [{
+            // item_image_id: 0,
+            dataId: '',
             protocol: ProtocolDSN.LOCAL,
-            imageVersion: 'ORIGINAL',
+            imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: 'BASE64',
             data: ImageProcessing.milkcatTall
-        }]
+        } as ItemImageDataCreateRequest]
     } as ItemImageCreateRequest;
 
     const testDataUpdated = {
         // item_information_id,
         // hash,
-        datas: [{
-            dataId: null,
+        data: [{
+            dataId: '',
             protocol: ProtocolDSN.LOCAL,
-            imageVersion: 'ORIGINAL',
+            imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: 'BASE64',
             data: ImageProcessing.milkcat
-        }]
+        } as ItemImageDataUpdateRequest]
     } as ItemImageUpdateRequest;
 
 
@@ -94,7 +99,7 @@ describe('ItemImage', () => {
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0];
-
+        log.debug('created ListingItem: ', JSON.stringify(createdListingItem, null, 2));
     });
 
     afterAll(async () => {
@@ -113,21 +118,23 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
-        const itemImageModel: ItemImage = await itemImageService.create(testData);
-        createdImageId = itemImageModel.Id;
-        const result = itemImageModel.toJSON();
+        log.debug('testData: ', JSON.stringify(testData, null, 2));
+
+        const result: resources.ItemImage = await itemImageService.create(testData)
+            .then(value => value.toJSON());
+        createdImageId = result.id;
 
         const imageUrl = process.env.APP_HOST
         + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-        + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
+        + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
         expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
         expect(result.ItemImageDatas.length).toBe(4);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
@@ -145,7 +152,7 @@ describe('ItemImage', () => {
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
 
-        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         const result = itemImage[0];
         expect(result.hash).toBe(imageHash);
@@ -158,15 +165,15 @@ describe('ItemImage', () => {
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
+            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
-        const imageHash = ObjectHash.getHash(testData.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
@@ -180,20 +187,20 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.datas[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + createdImageId + '/' + testData.datas[0].imageVersion;
+            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.datas[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.datas[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.datas[0].encoding);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
 
         expect(result.ItemImageDatas.length).toBe(4);
 

@@ -16,7 +16,7 @@ export class ItemImageUpdateRequest extends RequestBody {
     public hash: string;
 
     @IsNotEmpty()
-    public datas: ItemImageDataUpdateRequest[];
+    public data: ItemImageDataUpdateRequest[];
 
     public featured: boolean;
 

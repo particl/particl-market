@@ -9,6 +9,7 @@ import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 // tslint:disable:variable-name
 export class ItemImageDataCreateRequest extends RequestBody {
 
+    // @IsNotEmpty()
     public item_image_id: number;
     public dataId: string;
 
@@ -18,6 +19,7 @@ export class ItemImageDataCreateRequest extends RequestBody {
     @IsNotEmpty()
     public imageVersion: string;
 
+    @IsNotEmpty()
     public imageHash: string;
 
     public encoding: string;

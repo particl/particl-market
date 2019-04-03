@@ -9,11 +9,9 @@ import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 // tslint:disable:variable-name
 export class ItemImageDataUpdateRequest extends RequestBody {
 
-    @IsNotEmpty()
-    public item_image_id: number;
-
     // @IsNotEmpty()
-    public dataId: string | null;
+    public item_image_id: number;
+    public dataId: string;
 
     @IsNotEmpty()
     public protocol: ProtocolDSN;
@@ -24,16 +22,10 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public imageHash: string;
 
-    // @IsNotEmpty()
-    public encoding: string | null;
-
-    // @IsNotEmpty()
+    public encoding: string;
     public data: string;
+    public originalMime: string;
+    public originalName: string;
 
-    // @IsNotEmpty()
-    public originalMime: string | null;
-
-    // @IsNotEmpty()
-    public originalName: string | null;
 }
 // tslint:enable:variable-name
