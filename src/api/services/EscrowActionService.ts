@@ -13,7 +13,6 @@ import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
@@ -30,13 +29,13 @@ import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { Output } from './BidActionService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
-import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
-import { EscrowMessageCreateParams } from '../factories/message/MessageCreateParams';
 import { BidService } from './BidService';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ompVersion } from 'omp-lib/dist/omp';
 
 export class EscrowActionService {
 
@@ -53,8 +52,6 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
     ) {
@@ -154,10 +151,18 @@ export class EscrowActionService {
 
     private async createAndSendMessage(escrowRequest: EscrowRequest, rawtx: string): Promise<SmsgSendResponse> {
 
-        const marketplaceMessage = await this.marketplaceMessageFactory.get(escrowRequest.type, {
-            bidHash: 'TODO',
-            memo: escrowRequest.memo
-        } as EscrowMessageCreateParams);
+        // TODO: BROKEN!!!
+        //  const marketplaceMessage = await this.marketplaceMessageFactory.get(escrowRequest.type, {
+        //    bidHash: 'TODO',
+        //    memo: escrowRequest.memo
+        // } as EscrowMessageCreateParams);
+
+
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: {} as EscrowLockMessage
+        };
 
         const isMyListingItem = !_.isEmpty(escrowRequest.orderItem.Bid.ListingItem.ListingItemTemplate);
         const sendFromAddress = isMyListingItem ? escrowRequest.orderItem.Order.seller : escrowRequest.orderItem.Order.buyer;

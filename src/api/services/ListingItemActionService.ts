@@ -32,12 +32,12 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
 import { ListingItemCreateParams } from '../factories/model/ModelCreateParams';
-import { ListingItemAddMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { ListingItemAddMessageCreateParams} from '../factories/message/MessageCreateParams';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
 
 export class ListingItemActionService {
 
@@ -58,7 +58,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -101,9 +101,14 @@ export class ListingItemActionService {
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create the MPA_LISTING_ADD
-        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
+        const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             template: itemTemplate
         } as ListingItemAddMessageCreateParams);
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: listingItemAddMessage
+        };
 
         // validate the MPA_LISTING_ADD
         ListingItemAddValidator.validate(marketplaceMessage);

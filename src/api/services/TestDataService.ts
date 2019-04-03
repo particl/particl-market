@@ -56,7 +56,6 @@ import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
 import { OrderService } from './OrderService';
-import { OrderFactory } from '../factories/OrderFactory';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
@@ -108,7 +107,6 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -558,7 +556,7 @@ export class TestDataService {
         const bid: resources.Bid = bidModel.toJSON();
 
         // then generate ordercreaterequest with some orderitems and orderitemobjects
-        const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
+        const orderCreateRequest = await this.bidService.getOrderFromBid(bid);
 
         if (!generateParams.generateOrderItem) {
             orderCreateRequest.orderItems = [];

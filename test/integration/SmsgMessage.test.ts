@@ -15,7 +15,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { SmsgMessage } from '../../src/api/models/SmsgMessage';
 import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
-import { SmsgMessageFactory } from '../../src/api/factories/SmsgMessageFactory';
+import { SmsgMessageFactory } from '../../src/api/factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
 import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage';
 import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
@@ -89,7 +89,7 @@ describe('SmsgMessage', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.SmsgMessageService);
-        smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.SmsgMessageFactory);
+        smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

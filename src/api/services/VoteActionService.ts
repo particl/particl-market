@@ -26,11 +26,10 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProposalResultService } from './ProposalResultService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
-import { GovernanceAction } from '../enums/GovernanceAction';
 import { VoteMessageFactory } from '../factories/message/VoteMessageFactory';
-import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
-import { VoteMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { VoteMessageCreateParams} from '../factories/message/MessageCreateParams';
 import { VoteCreateParams } from '../factories/model/ModelCreateParams';
+import { ompVersion } from 'omp-lib/dist/omp';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -49,7 +48,6 @@ export class VoteActionService {
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
@@ -132,14 +130,17 @@ export class VoteActionService {
         if (senderAddress.balance > 0) {
             const signature = await this.signVote(proposal, proposalOption, senderAddress.address);
 
-            const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(GovernanceAction.MP_VOTE, {
+            const voteMessage: VoteMessage = await this.voteMessageFactory.get({
                 proposalHash: proposal.hash,
                 proposalOptionHash: proposalOption.hash,
                 voter: senderAddress.address,
                 signature
             } as VoteMessageCreateParams);
 
-            const voteMessage = marketplaceMessage.action as VoteMessage;
+            const marketplaceMessage: MarketplaceMessage = {
+                version: ompVersion(),
+                action: voteMessage
+            };
 
             // processVote "processes" the Vote, creating or updating the Vote.
             // called from send() and processVoteReceivedEvent()

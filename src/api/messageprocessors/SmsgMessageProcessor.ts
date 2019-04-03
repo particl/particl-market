@@ -2,17 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-
 import { EventEmitter } from '../../core/api/events';
 import { SmsgService } from '../services/SmsgService';
-
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { SmsgMessageService } from '../services/SmsgMessageService';
-import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
-import * as resources from 'resources';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessage } from '../models/SmsgMessage';
 import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
@@ -26,7 +24,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

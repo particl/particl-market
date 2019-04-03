@@ -15,7 +15,7 @@ import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { MessageException } from '../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { GovernanceAction } from '../enums/GovernanceAction';
@@ -38,7 +38,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter

@@ -331,11 +331,11 @@ export const Targets = {
             VoteRootCommand: 'VoteRootCommand'
         }
     },
-    Factory:     {
+    Factory: {
         message: {
-            BidMessageFactory: 'BidMessageFactory',
             BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',
+            BidMessageFactory: 'BidMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             EscrowLockMessageFactory: 'EscrowLockMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
@@ -348,15 +348,15 @@ export const Targets = {
         model: {
             BidFactory: 'BidFactory',
             ListingItemFactory: 'ListingItemFactory',
-            ProposalFactory: 'ProposalAddMessageFactory',
+            OrderFactory: 'OrderFactory',
+            ProposalFactory: 'ProposalFactory',
+            SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'
         },
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
-        OrderFactory: 'OrderFactory',
-        RpcCommandFactory: 'RpcCommandFactory',
-        SmsgMessageFactory: 'SmsgMessageFactory'
+        RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',

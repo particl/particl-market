@@ -13,4 +13,6 @@ interface MPAExtension {
     type: ActionMessageTypes;
 }
 
-export interface ActionMessageInterface extends Overwrite<MPA, MPAExtension> {}
+export interface ActionMessageInterface extends Overwrite<MPA, MPAExtension> {
+    type: ActionMessageTypes;
+}

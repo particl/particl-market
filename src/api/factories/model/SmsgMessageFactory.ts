@@ -3,17 +3,17 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Core, Types} from '../../constants';
-import {SmsgMessageCreateRequest} from '../requests/SmsgMessageCreateRequest';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {MessageException} from '../exceptions/MessageException';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
-import {ActionMessageTypes} from '../enums/ActionMessageTypes';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {ActionDirection} from '../enums/ActionDirection';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Types } from '../../../constants';
+import { SmsgMessageCreateRequest } from '../../requests/SmsgMessageCreateRequest';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { MessageException } from '../../exceptions/MessageException';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { IncomingSmsgMessage } from '../../messages/IncomingSmsgMessage';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class SmsgMessageFactory {
 

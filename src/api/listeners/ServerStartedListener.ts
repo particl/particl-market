@@ -13,11 +13,6 @@ import { MessageProcessor } from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
-import { ListingItemActionService } from '../services/ListingItemActionService';
-import { BidActionService } from '../services/BidActionService';
-import { EscrowActionService } from '../services/EscrowActionService';
-import { ProposalActionService } from '../services/ProposalActionService';
-import { VoteActionService } from '../services/VoteActionService';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
@@ -43,11 +38,6 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) public bidActionService: BidActionService,
-        @inject(Types.Service) @named(Targets.Service.EscrowActionService) public escrowActionService: EscrowActionService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {

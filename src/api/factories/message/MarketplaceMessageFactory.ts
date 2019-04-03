@@ -35,7 +35,7 @@ export class MarketplaceMessageFactory {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) private bidMessageFactory: BidMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) private bidAcceptMessageFactory: BidAcceptMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) private bidCancelMessageFactory: BidCancelMessageFactory,
@@ -58,7 +58,7 @@ export class MarketplaceMessageFactory {
 
         switch (type) {
             case MPAction.MPA_LISTING_ADD:
-                marketplaceMessage.action = await this.listingItemMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
+                marketplaceMessage.action = await this.listingItemAddMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
                 break;
             case MPAction.MPA_BID:
                 marketplaceMessage.action = await this.bidMessageFactory.get(parameters as BidMessageCreateParams);

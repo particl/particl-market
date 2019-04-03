@@ -16,7 +16,6 @@ import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/model/BidFactory';
-import { BidMessageFactory } from '../factories/message/BidMessageFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
@@ -30,7 +29,6 @@ import { SearchOrder } from '../enums/SearchOrder';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { Bid } from '../models/Bid';
-import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { BidDataService } from './BidDataService';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
@@ -40,7 +38,6 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
 import { BidAcceptMessageCreateParams, BidCancelMessageCreateParams, BidMessageCreateParams } from '../factories/message/MessageCreateParams';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
@@ -51,6 +48,7 @@ import { BidCancelMessageFactory } from '../factories/message/BidCancelMessageFa
 import { BidAcceptMessage } from '../messages/actions/BidAcceptMessage';
 import { BidCancelMessage } from '../messages/actions/BidCancelMessage';
 import { BidRejectMessage } from '../messages/actions/BidRejectMessage';
+import { BidMessageFactory } from '../factories/message/BidMessageFactory';
 
 // todo: move
 export interface OutputData {
@@ -91,9 +89,7 @@ export class BidActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) private bidAcceptMessageFactory: BidAcceptMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) private bidRejectMessageFactory: BidRejectMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) private bidCancelMessageFactory: BidCancelMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) private bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
     ) {
@@ -140,7 +136,7 @@ export class BidActionService {
         // const bidMessage: BidMessage = await this.bidMessageFactory.get(MPAction.MPA_BID, listingItem.hash, bidDatas);
 
         // create and post the itemmessage
-        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_BID, {
+        const bidMessage: BidMessage = await this.bidMessageFactory.get({
             config: {
                 escrow: EscrowType.MULTISIG,
                 shippingAddress: address,
@@ -150,8 +146,12 @@ export class BidActionService {
             generated: +new Date().getTime() // timestamp
         } as BidMessageCreateParams);
 
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: bidMessage
+        };
+
         this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
-        const bidMessage = marketplaceMessage.action as BidMessage;
 
         // save bid locally before broadcasting
         const createdBid: resources.Bid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
@@ -438,7 +438,7 @@ export class BidActionService {
             // this.log.debug('accept(), updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
-            const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
+            const orderCreateRequest = await this.bidService.getOrderFromBid(updatedBid);
             const order: resources.Order = await this.orderService.create(orderCreateRequest)
                 .then(value => value.toJSON());
 
@@ -957,7 +957,7 @@ export class BidActionService {
                             .then(value => value.toJSON());
 
                         // create the order from the bid
-                        const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
+                        const orderCreateRequest = await this.bidService.getOrderFromBid(updatedBid);
                         const order: resources.Order = await this.orderService.create(orderCreateRequest)
                             .then(value => value.toJSON());
 

@@ -28,7 +28,7 @@ import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ItemImageDataService } from '../../services/ItemImageDataService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import {CryptoAddress, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
 import { MessageFactoryInterface } from './MessageFactoryInterface';

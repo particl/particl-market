@@ -26,11 +26,10 @@ import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { Proposal } from '../models/Proposal';
-import { GovernanceAction } from '../enums/GovernanceAction';
 import { ProposalAddMessageFactory } from '../factories/message/ProposalAddMessageFactory';
-import { ProposalAddMessageCreateParams } from '../factories/message/MessageCreateParams';
-import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { ProposalAddMessageCreateParams} from '../factories/message/MessageCreateParams';
 import { ProposalFactory } from '../factories/model/ProposalFactory';
+import { ompVersion } from 'omp-lib/dist/omp';
 
 export class ProposalActionService {
 
@@ -39,7 +38,7 @@ export class ProposalActionService {
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
@@ -77,7 +76,7 @@ export class ProposalActionService {
                       senderProfile: resources.Profile, marketplace: resources.Market, itemHash?: string | undefined,
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
-        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(GovernanceAction.MP_PROPOSAL_ADD, {
+        const proposalAddMessage: ProposalAddMessage = await this.proposalAddMessageFactory.get({
             title: proposalTitle,
             description: proposalDescription,
             options,
@@ -85,7 +84,10 @@ export class ProposalActionService {
             itemHash
         } as ProposalAddMessageCreateParams);
 
-        const proposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: proposalAddMessage
+        };
 
         // if were here to just estimate the fee, then do it now.
         const paidMessage = proposalAddMessage.category === ProposalCategory.PUBLIC_VOTE;

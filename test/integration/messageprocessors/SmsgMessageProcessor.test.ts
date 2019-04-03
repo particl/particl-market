@@ -6,12 +6,11 @@ import * from 'jest';
 import * as resources from 'resources';
 import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { Types, Core, Targets } from '../../../src/constants';
+import { Targets, Types } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
-import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
@@ -23,11 +22,15 @@ import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessa
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../../../src/api/services/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../../../src/api/requests/SmsgMessageCreateRequest';
-import { SmsgMessageFactory } from '../../../src/api/factories/SmsgMessageFactory';
+import { SmsgMessageFactory } from '../../../src/api/factories/model/SmsgMessageFactory';
 import { MessageProcessor } from '../../../src/api/messageprocessors/MessageProcessor';
 import { SmsgMessageSearchParams } from '../../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ListingItemAddMessageFactory } from '../../../src/api/factories/message/ListingItemAddMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../../../src/api/factories/message/MessageCreateParams';
+import { ListingItemAddMessage } from '../../../src/api/messages/actions/ListingItemAddMessage';
+import {ompVersion} from 'omp-lib/dist/omp';
 
 
 describe('MessageProcessor', () => {
@@ -42,6 +45,7 @@ describe('MessageProcessor', () => {
     let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
     let smsgMessageService: SmsgMessageService;
+    let listingItemAddMessageFactory: ListingItemAddMessageFactory;
     let listingItemFactory: ListingItemFactory;
     let smsgMessageFactory: SmsgMessageFactory;
     let messageProcessor: MessageProcessor;
@@ -63,7 +67,8 @@ describe('MessageProcessor', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.SmsgMessageService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
-        smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.SmsgMessageFactory);
+        listingItemAddMessageFactory = app.IoC.getNamed<ListingItemAddMessageFactory>(Types.Factory, Targets.Factory.message.ListingItemAddMessageFactory);
+        smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
         messageProcessor = app.IoC.getNamed<MessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.MessageProcessor);
 
         // clean up the db, first removes all data and then seeds the db with default data
@@ -81,13 +86,14 @@ describe('MessageProcessor', () => {
     const createSmsgMessage = async (listingItemTemplate: resources.ListingItemTemplate, index: number): resources.SmsgMessage => {
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplate);
+        const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
+            template: listingItemTemplate
+        } as ListingItemAddMessageCreateParams);
 
-        const marketplaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            item: listingItemMessage,
-            market: defaultMarket.address
-        } as MarketplaceMessage;
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: listingItemAddMessage
+        };
 
         // put the MarketplaceMessage in SmsgMessage
         const listingItemSmsg = {
