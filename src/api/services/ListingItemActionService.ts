@@ -3,44 +3,44 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Core, Events, Targets, Types} from '../../constants';
-import {request, validate} from '../../core/api/Validate';
-import {ListingItem} from '../models/ListingItem';
-import {MessagingInformationService} from './MessagingInformationService';
-import {PaymentInformationService} from './PaymentInformationService';
-import {ItemCategoryService} from './ItemCategoryService';
-import {ListingItemTemplatePostRequest} from '../requests/ListingItemTemplatePostRequest';
-import {ListingItemUpdatePostRequest} from '../requests/ListingItemUpdatePostRequest';
-import {ListingItemTemplateService} from './ListingItemTemplateService';
-import {ListingItemFactory} from '../factories/model/ListingItemFactory';
-import {SmsgService} from './SmsgService';
-import {ListingItemObjectService} from './ListingItemObjectService';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
-import {EventEmitter} from 'events';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
-import {ListingItemService} from './ListingItemService';
-import {CoreRpcService} from './CoreRpcService';
-import {ProposalService} from './ProposalService';
-import {ProfileService} from './ProfileService';
-import {MarketService} from './MarketService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {SmsgMessageService} from './SmsgMessageService';
-import {FlaggedItemCreateRequest} from '../requests/FlaggedItemCreateRequest';
-import {FlaggedItem} from '../models/FlaggedItem';
-import {FlaggedItemService} from './FlaggedItemService';
-import {ListingItemAddMessage} from '../messages/actions/ListingItemAddMessage';
-import {ListingItemAddValidator} from '../messages/validators/ListingItemAddValidator';
-import {ListingItemCreateParams} from '../factories/model/ModelCreateParams';
-import {ListingItemAddMessageCreateParams} from '../factories/message/MessageCreateParams';
-import {MPM, ompVersion} from 'omp-lib/dist/omp';
-import {ListingItemAddMessageFactory} from '../factories/message/ListingItemAddMessageFactory';
-import {MarketplaceMessageFactory} from '../factories/message/MarketplaceMessageFactory';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {MPA} from 'omp-lib/dist/interfaces/omp';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Core, Events, Targets, Types } from '../../constants';
+import { request, validate } from '../../core/api/Validate';
+import { ListingItem } from '../models/ListingItem';
+import { MessagingInformationService } from './MessagingInformationService';
+import { PaymentInformationService } from './PaymentInformationService';
+import { ItemCategoryService } from './ItemCategoryService';
+import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
+import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
+import { ListingItemTemplateService } from './ListingItemTemplateService';
+import { ListingItemFactory } from '../factories/model/ListingItemFactory';
+import { SmsgService } from './SmsgService';
+import { ListingItemObjectService } from './ListingItemObjectService';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { EventEmitter } from 'events';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { ListingItemService } from './ListingItemService';
+import { CoreRpcService } from './CoreRpcService';
+import { ProposalService } from './ProposalService';
+import { ProfileService } from './ProfileService';
+import { MarketService } from './MarketService';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
+import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../models/FlaggedItem';
+import { FlaggedItemService } from './FlaggedItemService';
+import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
+import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
+import { ListingItemCreateParams } from '../factories/model/ModelCreateParams';
+import { ListingItemAddMessageCreateParams } from '../factories/message/MessageCreateParams';
+import { MPM, ompVersion } from 'omp-lib/dist/omp';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import { MarketplaceMessageFactory } from '../factories/message/MarketplaceMessageFactory';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPA } from 'omp-lib/dist/interfaces/omp';
 
 export class ListingItemActionService {
 
@@ -80,7 +80,9 @@ export class ListingItemActionService {
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
-        // fetch the listingItemTemplate
+        // - fetch the ListingItemTemplate
+        // -
+
         const itemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true)
             .then(value => value.toJSON());
 
@@ -91,11 +93,10 @@ export class ListingItemActionService {
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 
-        const marketModel = data.marketId
-            ? await this.marketService.findOne(data.marketId)
-            : await this.marketService.getDefault();
+        const market: resources.Market = data.marketId
+            ? await this.marketService.findOne(data.marketId).then(value => value.toJSON())
+            : await this.marketService.getDefault().then(value => value.toJSON());
 
-        const market: resources.Market = marketModel.toJSON();
         this.log.debug('market.id:', market.id);
 
         // todo: reason for this? to throw an exception unless category exists?!

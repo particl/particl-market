@@ -23,11 +23,11 @@ export class BidData extends Bookshelf.Model<BidData> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get DataValue(): string { return this.get('data_value'); }
-    public set DataValue(value: string) { this.set('data_value', value); }
+    public get Key(): string { return this.get('key'); }
+    public set Key(value: string) { this.set('key', value); }
 
-    public get DataId(): string { return this.get('data_id'); }
-    public set DataId(value: string) { this.set('data_id', value); }
+    public get Value(): string { return this.get('value'); }
+    public set Value(value: string) { this.set('value', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

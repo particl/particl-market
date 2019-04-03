@@ -58,11 +58,10 @@ export class BidDataService {
         const bidData = await this.findOne(id, false);
 
         // set new values
-        bidData.DataValue = body.dataValue;
-        bidData.DataId = body.dataId;
+        bidData.Key = body.key;
+        bidData.Value = body.value;
         // update bidData record
         const updatedBidData = await this.bidDataRepo.update(id, bidData.toJSON());
-
         return updatedBidData;
     }
 
