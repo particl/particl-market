@@ -338,7 +338,7 @@ export const Targets = {
             BidMessageFactory: 'BidMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             EscrowLockMessageFactory: 'EscrowLockMessageFactory',
-            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
+            EscrowRefundMessageFactorgeneratedAty: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',

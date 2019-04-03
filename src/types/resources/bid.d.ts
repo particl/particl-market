@@ -10,13 +10,15 @@ declare module 'resources' {
         id: number;
         hash: string;
         bidder: string;
+        generatedAt: number;
         type: MPAction;
-        createdAt: Date;
-        updatedAt: Date;
         BidDatas: BidData[];
         ListingItem: ListingItem;
         ShippingAddress: Address;
         OrderItem: OrderItem;
+
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

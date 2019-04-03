@@ -13,6 +13,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('type').notNullable();
             table.string('bidder').notNullable();
             table.string('hash').notNullable();
+            table.integer('generated_at').notNullable();
 
             table.integer('listing_item_id').unsigned().notNullable();
             table.foreign('listing_item_id').references('id')

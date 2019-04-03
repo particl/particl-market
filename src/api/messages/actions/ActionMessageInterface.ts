@@ -15,4 +15,6 @@ interface MPAExtension {
 
 export interface ActionMessageInterface extends Overwrite<MPA, MPAExtension> {
     type: ActionMessageTypes;
+    generated: number;
+    hash: string;
 }
