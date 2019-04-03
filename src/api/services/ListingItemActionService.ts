@@ -3,41 +3,44 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Events, Targets, Types } from '../../constants';
-import { request, validate } from '../../core/api/Validate';
-import { ListingItem } from '../models/ListingItem';
-import { MessagingInformationService } from './MessagingInformationService';
-import { PaymentInformationService } from './PaymentInformationService';
-import { ItemCategoryService } from './ItemCategoryService';
-import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
-import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ListingItemFactory } from '../factories/model/ListingItemFactory';
-import { SmsgService } from './SmsgService';
-import { ListingItemObjectService } from './ListingItemObjectService';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { EventEmitter } from 'events';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { ListingItemService } from './ListingItemService';
-import { CoreRpcService } from './CoreRpcService';
-import { ProposalService } from './ProposalService';
-import { ProfileService } from './ProfileService';
-import { MarketService } from './MarketService';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { SmsgMessageService } from './SmsgMessageService';
-import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
-import { FlaggedItem } from '../models/FlaggedItem';
-import { FlaggedItemService } from './FlaggedItemService';
-import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
-import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
-import { ListingItemCreateParams } from '../factories/model/ModelCreateParams';
-import { ListingItemAddMessageCreateParams} from '../factories/message/MessageCreateParams';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Core, Events, Targets, Types} from '../../constants';
+import {request, validate} from '../../core/api/Validate';
+import {ListingItem} from '../models/ListingItem';
+import {MessagingInformationService} from './MessagingInformationService';
+import {PaymentInformationService} from './PaymentInformationService';
+import {ItemCategoryService} from './ItemCategoryService';
+import {ListingItemTemplatePostRequest} from '../requests/ListingItemTemplatePostRequest';
+import {ListingItemUpdatePostRequest} from '../requests/ListingItemUpdatePostRequest';
+import {ListingItemTemplateService} from './ListingItemTemplateService';
+import {ListingItemFactory} from '../factories/model/ListingItemFactory';
+import {SmsgService} from './SmsgService';
+import {ListingItemObjectService} from './ListingItemObjectService';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
+import {EventEmitter} from 'events';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
+import {ListingItemService} from './ListingItemService';
+import {CoreRpcService} from './CoreRpcService';
+import {ProposalService} from './ProposalService';
+import {ProfileService} from './ProfileService';
+import {MarketService} from './MarketService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import {SmsgMessageService} from './SmsgMessageService';
+import {FlaggedItemCreateRequest} from '../requests/FlaggedItemCreateRequest';
+import {FlaggedItem} from '../models/FlaggedItem';
+import {FlaggedItemService} from './FlaggedItemService';
+import {ListingItemAddMessage} from '../messages/actions/ListingItemAddMessage';
+import {ListingItemAddValidator} from '../messages/validators/ListingItemAddValidator';
+import {ListingItemCreateParams} from '../factories/model/ModelCreateParams';
+import {ListingItemAddMessageCreateParams} from '../factories/message/MessageCreateParams';
+import {MPM, ompVersion} from 'omp-lib/dist/omp';
+import {ListingItemAddMessageFactory} from '../factories/message/ListingItemAddMessageFactory';
+import {MarketplaceMessageFactory} from '../factories/message/MarketplaceMessageFactory';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {MPA} from 'omp-lib/dist/interfaces/omp';
 
 export class ListingItemActionService {
 
@@ -59,6 +62,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -101,17 +105,12 @@ export class ListingItemActionService {
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create the MPA_LISTING_ADD
-        const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
             template: itemTemplate
         } as ListingItemAddMessageCreateParams);
 
-        const marketplaceMessage: MarketplaceMessage = {
-            version: ompVersion(),
-            action: listingItemAddMessage
-        };
-
         // validate the MPA_LISTING_ADD
-        ListingItemAddValidator.validate(marketplaceMessage);
+        ListingItemAddValidator.isValid(marketplaceMessage);
 
         // post the MPA_LISTING_ADD
         return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
@@ -143,7 +142,7 @@ export class ListingItemActionService {
         const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
         // validate the MPA_LISTING_ADD
-        ListingItemAddValidator.validate(marketplaceMessage);
+        ListingItemAddValidator.isValid(marketplaceMessage);
 
         // process the message and return SmsgMessageStatus as a result
         return await this.marketService.findByAddress(smsgMessage.to)
