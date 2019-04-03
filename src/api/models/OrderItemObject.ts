@@ -27,11 +27,11 @@ export class OrderItemObject extends Bookshelf.Model<OrderItemObject> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get DataId(): string { return this.get('dataId'); }
-    public set DataId(value: string) { this.set('dataId', value); }
+    public get Key(): string { return this.get('key'); }
+    public set Key(value: string) { this.set('key', value); }
 
-    public get DataValue(): string { return this.get('dataValue'); }
-    public set DataValue(value: string) { this.set('dataValue', value); }
+    public get Value(): string { return this.get('value'); }
+    public set Value(value: string) { this.set('value', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

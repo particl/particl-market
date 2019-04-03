@@ -61,8 +61,8 @@ export class OrderItemObjectService {
         const orderItemObject = await this.findOne(id, false);
 
         // set new values
-        orderItemObject.DataId = body.dataId;
-        orderItemObject.DataValue = body.dataValue;
+        orderItemObject.Key = body.key;
+        orderItemObject.Value = body.value;
 
         // update orderItemObject record
         const updatedOrderItemObject = await this.orderItemObjectRepo.update(id, orderItemObject.toJSON());

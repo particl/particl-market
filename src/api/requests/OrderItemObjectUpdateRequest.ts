@@ -9,10 +9,10 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class OrderItemObjectUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public dataId: string;
+    public key: string;
 
     @IsNotEmpty()
-    public dataValue: string;
+    public value: string;
 
 }
 // tslint:enable:variable-name

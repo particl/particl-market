@@ -6,8 +6,8 @@ declare module 'resources' {
 
     interface OrderItemObject {
         id: number;
-        dataId: string;
-        dataValue: string;
+        key: string;
+        value: string;
         createdAt: Date;
         updatedAt: Date;
     }

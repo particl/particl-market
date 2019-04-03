@@ -213,7 +213,7 @@ export class BidService {
             // create new BidDatas
             for (const bidData of bidDatas) {
                 bidData.bid_id = id;
-                bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
+                bidData.value = typeof (bidData.value) === 'string' ? bidData.value : JSON.stringify(bidData.value);
                 await this.bidDataService.create(bidData);
             }
         }
@@ -294,8 +294,8 @@ export class BidService {
         const orderItemObjectCreateRequests: OrderItemObjectCreateRequest[] = [];
         for (const bidData of bidDatas) {
             const orderItemObjectCreateRequest = {
-                dataId: bidData.dataId,
-                dataValue: bidData.dataValue
+                key: bidData.key,
+                value: bidData.value
             } as OrderItemObjectCreateRequest;
             orderItemObjectCreateRequests.push(orderItemObjectCreateRequest);
         }
