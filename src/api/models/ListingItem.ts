@@ -236,6 +236,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get ReceivedAt(): number { return this.get('receivedAt'); }
     public set ReceivedAt(value: number) { this.set('receivedAt', value); }
 
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

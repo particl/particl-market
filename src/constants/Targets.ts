@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -132,6 +128,7 @@ export const Targets = {
         LockedOutputService: 'LockedOutputService',
         MarketService: 'MarketService',
         MessagingInformationService: 'MessagingInformationService',
+        OmpService: 'OmpService',
         OrderItemObjectService: 'OrderItemObjectService',
         OrderItemService: 'OrderItemService',
         OrderService: 'OrderService',
@@ -331,31 +328,34 @@ export const Targets = {
             VoteRootCommand: 'VoteRootCommand'
         }
     },
-    Factory: {
+    Factory:     {
+        ImageFactory: 'ImageFactory',
+        ItemCategoryFactory: 'ItemCategoryFactory',
         message: {
             BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidMessageFactory: 'BidMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             EscrowLockMessageFactory: 'EscrowLockMessageFactory',
-            EscrowRefundMessageFactorgeneratedAty: 'EscrowRefundMessageFactory',
+            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',
+            MessageCreateParams: 'MessageCreateParams',
+            MessageFactoryInterface: 'MessageFactoryInterface',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'
         },
+        MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
             BidFactory: 'BidFactory',
             ListingItemFactory: 'ListingItemFactory',
-            OrderFactory: 'OrderFactory',
+            ModelCreateParams: 'ModelCreateParams',
+            ModelFactoryInterface: 'ModelFactoryInterface',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'
         },
-        ImageFactory: 'ImageFactory',
-        ItemCategoryFactory: 'ItemCategoryFactory',
-        MessagingInformationFactory: 'MessagingInformationFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {

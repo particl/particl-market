@@ -20,4 +20,9 @@ export class BidCancelMessage extends MessageBody implements ActionMessageInterf
 
     public objects?: KVS[];
 
+    @IsNotEmpty()
+    public generated: number;
+    @IsNotEmpty()
+    public hash: string;
+
 }

@@ -199,6 +199,7 @@ export class ListingItemService {
         listingItem.PostedAt = body.postedAt;
         listingItem.ExpiredAt = body.expiredAt;
         listingItem.ReceivedAt = body.receivedAt;
+        listingItem.GeneratedAt = body.generatedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());

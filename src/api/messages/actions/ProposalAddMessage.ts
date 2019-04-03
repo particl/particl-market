@@ -31,4 +31,7 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
 
     public objects?: KVS[];
 
+    @IsNotEmpty()
+    public generated: number;
+
 }

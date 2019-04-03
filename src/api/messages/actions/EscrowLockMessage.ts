@@ -26,4 +26,9 @@ export class EscrowLockMessage extends MessageBody implements ActionMessageInter
 
     public objects?: KVS[];
 
+    @IsNotEmpty()
+    public generated: number;
+    @IsNotEmpty()
+    public hash: string;
+
 }

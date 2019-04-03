@@ -23,4 +23,10 @@ export class VoteMessage extends MessageBody implements ActionMessageInterface {
     public signature: string;
 
     public objects?: KVS[];
+
+    @IsNotEmpty()
+    public hash: string;
+    @IsNotEmpty()
+    public generated: number;
+
 }

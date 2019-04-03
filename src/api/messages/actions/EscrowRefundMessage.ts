@@ -23,4 +23,9 @@ export class EscrowRefundMessage extends MessageBody implements ActionMessageInt
 
     public objects?: KVS[];
 
+    @IsNotEmpty()
+    public generated: number;
+    @IsNotEmpty()
+    public hash: string;
+
 }

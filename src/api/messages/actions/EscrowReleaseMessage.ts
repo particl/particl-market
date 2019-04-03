@@ -23,4 +23,9 @@ export class EscrowReleaseMessage extends MessageBody implements ActionMessageIn
 
     public objects?: KVS[];
 
+    @IsNotEmpty()
+    public generated: number;
+    @IsNotEmpty()
+    public hash: string;
+
 }

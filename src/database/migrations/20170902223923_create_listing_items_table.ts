@@ -23,6 +23,7 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('listing_item_templates').onDelete('cascade');
 
             table.integer('expiry_time').unsigned();
+            table.integer('generated_at').notNullable();
             table.integer('received_at').notNullable();
             table.integer('posted_at').notNullable();
             table.integer('expired_at').notNullable();

@@ -21,13 +21,14 @@ export class ListingItemCreateRequest extends RequestBody {
     // in days
     @IsNotEmpty()
     public expiryTime: number;
-
     @IsNotEmpty()
     public postedAt: number;
     @IsNotEmpty()
     public expiredAt: number;
     @IsNotEmpty()
     public receivedAt: number;
+    @IsNotEmpty()
+    public generatedAt: number;
 
     public itemInformation;
     public paymentInformation;

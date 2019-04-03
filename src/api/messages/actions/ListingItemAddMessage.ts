@@ -22,4 +22,8 @@ export class ListingItemAddMessage extends MessageBody implements ActionMessageI
     public hash: string;
 
     public objects?: KVS[];
+
+    @IsNotEmpty()
+    public generated: number;
+
 }
