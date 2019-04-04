@@ -14,10 +14,7 @@ import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
 import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
 import { ActionMessageInterface } from '../messages/actions/ActionMessageInterface';
 
-export class OmpService{
-
-    public log: LoggerType;
-    public omp: OpenMarketProtocol;
+export class OmpService {
 
     private static getMPM(message: ActionMessageInterface): MPM {
         return {
@@ -25,6 +22,9 @@ export class OmpService{
             version: ompVersion()
         } as MPM;
     }
+
+    public log: LoggerType;
+    public omp: OpenMarketProtocol;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
