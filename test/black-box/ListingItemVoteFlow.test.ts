@@ -149,7 +149,7 @@ describe('Happy ListingItem Vote Flow', () => {
     test('Should post ListingItemTemplate to the default marketplace', async () => {
 
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_ITEM_ADD');
+        log.debug('Node1 POSTS MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -188,7 +188,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_ITEM_ADD');
+        log.debug('Node1 RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         // wait for some time to make sure it's received
@@ -212,7 +212,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store ListingItem for later tests
         listingItemNode1 = result;
 
-        log.debug('==> Node1 received MP_ITEM_ADD.');
+        log.debug('==> Node1 received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -221,7 +221,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_ITEM_ADD');
+        log.debug('Node2 RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -243,7 +243,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store ListingItem for later tests
         listingItemNode2 = result;
 
-        log.debug('==> Node2 received MP_ITEM_ADD.');
+        log.debug('==> Node2 received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 

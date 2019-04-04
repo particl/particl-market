@@ -20,7 +20,7 @@ export class SmsgMessageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public direction: ActionDirection;
 
-    public actionTarget: string;
+    public target: string;
 
     @IsNotEmpty()
     public msgid: string;

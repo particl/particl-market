@@ -28,7 +28,7 @@ declare module 'resources' {
         type: ActionMessageTypes;
         status: SmsgMessageStatus;
         direction: ActionDirection;
-        actionTarget: string;
+        target: string;
 
         createdAt: Date;
         updatedAt: Date;

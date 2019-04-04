@@ -31,13 +31,12 @@ export class SmsgMessageFactory {
             .then( marketplaceMessage => {
 
                 const type = this.getType(marketplaceMessage);
-                const status = SmsgMessageStatus.NEW;
 
                 const createRequest = {
                     type,
-                    status,
+                    status: SmsgMessageStatus.NEW,
                     direction: ActionDirection.INCOMING,
-                    actionTarget: '',
+                    target: '',
                     msgid: message.msgid,
                     version: message.version,
                     read: message.read,
@@ -58,14 +57,12 @@ export class SmsgMessageFactory {
                 return createRequest;
             })
             .catch(reason => {
-                const type = MPAction.UNKNOWN;
-                const status = SmsgMessageStatus.PARSING_FAILED;
 
                 const createRequest = {
-                    type,
-                    status,
+                    type: MPAction.UNKNOWN,
+                    status: SmsgMessageStatus.PARSING_FAILED,
                     direction: ActionDirection.INCOMING,
-                    actionTarget: '',
+                    target: '',
                     msgid: message.msgid,
                     version: message.version,
                     read: message.read,
@@ -109,6 +106,7 @@ export class SmsgMessageFactory {
 
         if (marketplaceMessage.action && marketplaceMessage.action.type) {
             // omp-lib
+            this.log.debug('getType(): ', marketplaceMessage.action.type);
             return marketplaceMessage.action.type;
         } else {
             // json object, but not something that we're expecting

@@ -393,7 +393,7 @@ export class EscrowActionService {
         // signs the rawtx and broadcasts it.'
 
         // MPA_REFUND
-        // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
+        // rawtx: 'The vendor decodes the rawtx from MPA_REQUEST_REFUND and recreates the whole
         // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
         // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
         // The vendor can decide to broadcast it himself.'

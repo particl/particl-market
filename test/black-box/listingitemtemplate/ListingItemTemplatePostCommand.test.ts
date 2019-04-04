@@ -98,7 +98,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-    test('Should receive MP_ITEM_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
+    test('Should receive MPA_LISTING_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
         // wait for some time to make sure it's received
         await testUtil.waitFor(5);

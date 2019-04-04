@@ -136,7 +136,7 @@ describe('Happy Buy Flow', () => {
     test('Should post ListingItem from SELLER node', async () => {
 
         log.debug('========================================================================================');
-        log.debug('SELLER POSTS MP_ITEM_ADD');
+        log.debug('SELLER POSTS MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
@@ -169,13 +169,13 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have received ListingItem (MP_ITEM_ADD) on SELLER node, ListingItem is created', async () => {
+    test('Should have received ListingItem (MPA_LISTING_ADD) on SELLER node, ListingItem is created', async () => {
 
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('SELLER RECEIVES MP_ITEM_ADD posted from sellers node, ListingItem is created and matched with the existing ListingItemTemplate');
+        log.debug('SELLER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created and matched with the existing ListingItemTemplate');
         log.debug('========================================================================================');
 
         let response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand,
@@ -210,11 +210,11 @@ describe('Happy Buy Flow', () => {
         // store ListingItem for later tests
         listingItemReceivedSellerNode = result;
 
-        log.debug('==> SELLER received MP_ITEM_ADD.');
+        log.debug('==> SELLER received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 
-    test('Should have received ListingItem (MP_ITEM_ADD) on BUYER node, ListingItem is created', async () => {
+    test('Should have received ListingItem (MPA_LISTING_ADD) on BUYER node, ListingItem is created', async () => {
 
         // ListingItem should have been received on seller node
         expect(listingItemReceivedSellerNode).toBeDefined();
@@ -223,7 +223,7 @@ describe('Happy Buy Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('BUYER RECEIVES MP_ITEM_ADD posted from sellers node, ListingItem is created');
+        log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(
@@ -253,7 +253,7 @@ describe('Happy Buy Flow', () => {
         // store ListingItem for later tests
         listingItemReceivedBuyerNode = result;
 
-        log.debug('==> BUYER received MP_ITEM_ADD.');
+        log.debug('==> BUYER received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 

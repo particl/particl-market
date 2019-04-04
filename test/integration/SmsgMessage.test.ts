@@ -65,7 +65,7 @@ describe('SmsgMessage', () => {
         expiration: 1535021936,
         payloadsize: 624,
         from: 'psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW',
-        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_PROPOSAL_ADD\",\"submitter\":\"psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW\",\"blockStart\":224827,\"blockEnd\":227707,\"title\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7cd9f3529249260\",\"description\":\"\",\"options\":[{\"optionId\":0,\"description\":\"OK\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"5d32207b35f31ac5acaccbd3f8cc4e2f81f025594455a6dfac62773ae61760a6\"},{\"optionId\":1,\"description\":\"Remove\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"bd1e498cfa1ed48616e8e142feb60406cb3d112b79b265f2807afc828e733fc5\"}],\"type\":\"ITEM_VOTE\",\"hash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\"}}'
+        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_PROPOSAL_ADD\",\"submitter\":\"psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW\",\"blockStart\":224827,\"blockEnd\":227707,\"title\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7cd9f3529249260\",\"description\":\"\",\"options\":[{\"optionId\":0,\"description\":\"OK\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"5d32207b35f31ac5acaccbd3f8cc4e2f81f025594455a6dfac62773ae61760a6\"},{\"optionId\":1,\"description\":\"Remove\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"bd1e498cfa1ed48616e8e142feb60406cb3d112b79b265f2807afc828e733fc5\"}],\"hash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\"}}'
     };
 
     const voteMessage = {
@@ -142,7 +142,7 @@ describe('SmsgMessage', () => {
         expect(result.updatedAt).toBeGreaterThan(1530000000000);
     };
 
-    test('Should create a new SmsgMessage from listingItemMessage', async () => {
+    test('Should create a new SmsgMessage from IncomingSmsgMessage (listingItemMessage)', async () => {
 
         log.debug('listingItemMessage: ', JSON.stringify(listingItemMessage, null, 2));
 
@@ -155,8 +155,8 @@ describe('SmsgMessage', () => {
         log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
-/*
-    test('Should create a new SmsgMessage from proposalMessage', async () => {
+
+    test('Should create a new SmsgMessage from IncomingSmsgMessage (proposalMessage)', async () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(proposalMessage);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
@@ -168,7 +168,7 @@ describe('SmsgMessage', () => {
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
-    test('Should create a new SmsgMessage from voteMessage', async () => {
+    test('Should create a new SmsgMessage from IncomingSmsgMessage (voteMessage)', async () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(voteMessage);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
@@ -251,7 +251,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MPA_LISTING_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -266,7 +266,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(1);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MPA_PROPOSAL_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MPA_LISTING_ADD, ProposalMessageType.MPA_PROPOSAL_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -281,7 +281,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
     });
 
-    test('Should searchBy for SmsgMessages: [MPAction.MP_ITEM_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
+    test('Should searchBy for SmsgMessages: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -343,7 +343,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [MPAction.MP_ITEM_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
+    test('Should searchBy for SmsgMessages: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -371,8 +371,5 @@ describe('SmsgMessage', () => {
         smsgMessages = smsgMessageCollection.toJSON();
         expect(smsgMessages.length).toBe(2);
     });
-
-
-*/
 
 });
