@@ -81,10 +81,10 @@ export class MarketplaceMessageFactory {
             case MPAction.MPA_RELEASE:
                 marketplaceMessage.action = await this.escrowReleaseMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
-            case GovernanceAction.MP_PROPOSAL_ADD:
+            case GovernanceAction.MPA_PROPOSAL_ADD:
                 marketplaceMessage.action = await this.proposalMessageFactory.get(parameters as ProposalAddMessageCreateParams);
                 break;
-            case GovernanceAction.MP_VOTE:
+            case GovernanceAction.MPA_VOTE:
                 marketplaceMessage.action = await this.voteMessageFactory.get(parameters as VoteMessageCreateParams);
                 break;
 

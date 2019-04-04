@@ -53,6 +53,7 @@ export class SmsgMessageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public text: string;
 
+    // these are only here because we need to set these manually since knex doesn't set these in correct format
     public updated_at: number;
     public created_at: number;
 }

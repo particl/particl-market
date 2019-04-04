@@ -46,6 +46,7 @@ export class SmsgMessageRepository {
             const smsgMessageCreated = await smsgMessage.save();
             return this.SmsgMessageModel.fetchById(smsgMessageCreated.id);
         } catch (error) {
+            this.log.error(JSON.stringify(error, null, 2));
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
     }

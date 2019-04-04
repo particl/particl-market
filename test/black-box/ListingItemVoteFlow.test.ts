@@ -253,7 +253,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 FLAGS LISTINGITEM / POSTS MP_PROPOSAL_ADD');
+        log.debug('Node2 FLAGS LISTINGITEM / POSTS MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -273,7 +273,7 @@ describe('Happy ListingItem Vote Flow', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toEqual('Sent.');
-        log.debug('==> Node2 sent MP_PROPOSAL_ADD.');
+        log.debug('==> Node2 sent MPA_PROPOSAL_ADD.');
     });
 
     test('Should have created Proposal on node2', async () => {
@@ -283,7 +283,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node2 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -315,7 +315,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node1 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -348,7 +348,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store proposalNode1 for later tests
         proposalNode1 = result;
 
-        log.debug('==> Node1 received MP_PROPOSAL_ADD.');
+        log.debug('==> Node1 received MPA_PROPOSAL_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -359,7 +359,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node2 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -403,7 +403,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store Proposal for later tests
         proposalNode2 = result;
 
-        log.debug('==> Node2 received MP_PROPOSAL_ADD.');
+        log.debug('==> Node2 received MPA_PROPOSAL_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -415,7 +415,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.KEEP)');
+        log.debug('Node1 POSTS MPA_VOTE (ItemVote.KEEP)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpc(voteCommand, [
@@ -449,7 +449,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Node1 RECEIVES MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(3);
@@ -523,7 +523,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpcWaitFor(
@@ -555,7 +555,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Node2 POSTS MPA_VOTE (default profile)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -591,7 +591,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(3);
@@ -628,7 +628,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node1 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpcWaitFor(
@@ -665,7 +665,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_VOTE_ADD (voter2)');
+        log.debug('Node2 POSTS MPA_VOTE (voter2)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -698,7 +698,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         // lets wait for some time to receive the vote otherwise rpcWaitFor will return the previous result

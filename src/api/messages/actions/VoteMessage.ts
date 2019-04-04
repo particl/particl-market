@@ -12,7 +12,7 @@ export class VoteMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
-    public type: GovernanceAction.MP_VOTE;
+    public type: GovernanceAction.MPA_VOTE;
     @IsNotEmpty()
     public proposalHash: string;
     @IsNotEmpty()

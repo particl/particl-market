@@ -10,7 +10,7 @@
 
 export enum GovernanceAction {
 
-    MP_PROPOSAL_ADD = 'MP_PROPOSAL_ADD',
-    MP_VOTE = 'MP_VOTE'
+    MPA_PROPOSAL_ADD = 'MPA_PROPOSAL_ADD',
+    MPA_VOTE = 'MPA_VOTE'
 
 }

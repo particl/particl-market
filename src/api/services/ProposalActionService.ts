@@ -53,7 +53,7 @@ export class ProposalActionService {
     }
 
     /**
-     * creates ProposalAddMessage (of category MP_PROPOSAL_ADD) and post it
+     * creates ProposalAddMessage (of category MPA_PROPOSAL_ADD) and post it
      *
      * - send():
      *   - create ProposalAddMessage

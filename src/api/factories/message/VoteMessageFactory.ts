@@ -33,7 +33,7 @@ export class VoteMessageFactory implements MessageFactoryInterface {
     public async get(params: VoteMessageCreateParams): Promise<VoteMessage> {
 
         const voteMessage = {
-            type: GovernanceAction.MP_VOTE,
+            type: GovernanceAction.MPA_VOTE,
             proposalHash: params.proposalHash,
             proposalOptionHash: params.proposalOptionHash,
             signature: params.signature,

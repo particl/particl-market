@@ -12,6 +12,9 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('type').notNullable();
             table.string('status').notNullable();
+            table.string('direction').notNullable();
+            table.string('action_target').nullable();
+
             table.string('msgid').notNullable().unique();
             table.string('version').notNullable();
             table.boolean('read').nullable();

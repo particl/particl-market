@@ -33,8 +33,8 @@ export class MessageProcessor implements MessageProcessorInterface {
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
     private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
     private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPAction.MPA_RELEASE, MPAction.MPA_REFUND];
-    private PROPOSAL_MESSAGES = [GovernanceAction.MP_PROPOSAL_ADD];
-    private VOTE_MESSAGES = [GovernanceAction.MP_VOTE];
+    private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
+    private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
 
     // tslint:disable:max-line-length
     constructor(
@@ -258,9 +258,9 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.RefundEscrowReceivedEvent;
             case MPAction.MPA_RELEASE:
                 return Events.ReleaseEscrowReceivedEvent;
-            case GovernanceAction.MP_PROPOSAL_ADD:
+            case GovernanceAction.MPA_PROPOSAL_ADD:
                 return Events.ProposalReceivedEvent;
-            case GovernanceAction.MP_VOTE:
+            case GovernanceAction.MPA_VOTE:
                 return Events.VoteReceivedEvent;
             case MPAction.MPA_LISTING_ADD:
                 return Events.ListingItemReceivedEvent;

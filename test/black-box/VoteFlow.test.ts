@@ -78,7 +78,7 @@ describe('Happy Vote Flow', () => {
     test('Should post Proposal from node1', async () => {
 
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_PROPOSAL_ADD');
+        log.debug('Node1 POSTS MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -109,7 +109,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node1 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -138,7 +138,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node2 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -176,7 +176,7 @@ describe('Happy Vote Flow', () => {
         sent = false;
 
         log.debug('========================================================================================');
-        log.debug('Vote1 - Node1 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Vote1 - Node1 POSTS MPA_VOTE (default profile)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpc(voteCommand, [
@@ -206,7 +206,7 @@ describe('Happy Vote Flow', () => {
         expect(vote1AddressCount).toBeGreaterThan(0);
 
         log.debug('========================================================================================');
-        log.debug('Vote1 - Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Vote1 - Node1 RECEIVES MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
         log.debug('vote1AddressCount: ', vote1AddressCount);
 
@@ -266,7 +266,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote1 - Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Vote1 - Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
         log.debug('vote1AddressCount: ', vote1AddressCount);
 
@@ -294,7 +294,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote1 - Node1 POSTS MP_VOTE_ADD with different optionId');
+        log.debug('Vote1 - Node1 POSTS MPA_VOTE with different optionId');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpc(voteCommand, [
@@ -353,7 +353,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote2 - Node2 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Vote2 - Node2 POSTS MPA_VOTE (default profile)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -380,7 +380,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote2 - Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Vote2 - Node2 RECEIVES MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
         log.debug('vote1AddressCount: ', vote1AddressCount);
         log.debug('vote2AddressCount: ', vote2AddressCount);
@@ -446,7 +446,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote2 - Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Vote2 - Node1 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
         log.debug('vote1AddressCount: ', vote1AddressCount);
         log.debug('vote2AddressCount: ', vote2AddressCount);
@@ -480,7 +480,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote2 repost - Node2 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Vote2 repost - Node2 POSTS MPA_VOTE (default profile)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -506,7 +506,7 @@ describe('Happy Vote Flow', () => {
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Vote2 repost - Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Vote2 repost - Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         // lets wait for some time to receive the vote otherwise rpcWaitFor will return the previous result

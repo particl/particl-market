@@ -25,7 +25,7 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: ActionMessageTypes; // | string;
+        type: ActionMessageTypes;
         status: SmsgMessageStatus;
         direction: ActionDirection;
         actionTarget: string;

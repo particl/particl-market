@@ -14,7 +14,7 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
-    public type: GovernanceAction.MP_PROPOSAL_ADD;
+    public type: GovernanceAction.MPA_PROPOSAL_ADD;
     @IsNotEmpty()
     public submitter: string;
     @IsNotEmpty()
