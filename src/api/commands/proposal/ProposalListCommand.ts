@@ -80,25 +80,21 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         let type: ProposalType = ProposalType.PUBLIC_VOTE;
         let order: SearchOrder = SearchOrder.ASC;
 
-        if (!_.isEmpty(data.params[0])) {
+        if (_.isString(data.params[0]) || (_.isFinite(data.params[0]) && +data.params[0] > 0) ) {
             timeStart = data.params[0];
             if (typeof timeStart === 'string' && timeStart !== '*') {
                 throw new InvalidParamException('timeStart', 'number or \'*\'');
             }
-        } else {
-            timeStart = '*';
         }
 
-        if (!_.isEmpty(data.params[1])) {
+        if (_.isString(data.params[1]) || (_.isFinite(data.params[1]) && +data.params[1] > 0) ) {
             timeEnd = data.params[1];
             if (typeof timeEnd === 'string' && timeEnd !== '*') {
                 throw new InvalidParamException('timeEnd', 'number or \'*\'');
             }
-        } else {
-            timeEnd = '*';
         }
 
-        if (!_.isEmpty(data.params[2])) {
+        if (_.isString(data.params[2]) && data.params[2].length) {
             type = data.params[2];
             if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
                 type = ProposalType.ITEM_VOTE;
@@ -107,19 +103,15 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             } else {
                 type = ProposalType.PUBLIC_VOTE;
             }
-        } else {
-            type = ProposalType.PUBLIC_VOTE; // default
         }
 
-        if (!_.isEmpty(data.params[3])) {
+        if (_.isString(data.params[3]) && data.params[3].length) {
             order = data.params[3];
             if (order.toUpperCase() === SearchOrder.DESC.toString()) {
                 order = SearchOrder.DESC;
             } else {
                 order = SearchOrder.ASC;
             }
-        } else {
-            order = SearchOrder.ASC; // default
         }
 
         data.params = [];
