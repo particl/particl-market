@@ -15,7 +15,6 @@ import { ListingItemTemplateService } from '../../src/api/services/ListingItemTe
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { Escrow } from '../../src/api/models/Escrow';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
@@ -51,7 +50,7 @@ describe('Escrow', () => {
     } as EscrowCreateRequest;
 
     const testDataUpdated = {
-        type: EscrowType.NOP,
+        type: EscrowType.MULTISIG,
         ratio: {
             buyer: 100,
             seller: 100
@@ -121,8 +120,8 @@ describe('Escrow', () => {
 
     test('Should create a new Escrow', async () => {
         testData.payment_information_id = listingItemTemplate.PaymentInformation.id;
-        const escrowModel: Escrow = await escrowService.create(testData);
-        createdEscrow = escrowModel.toJSON();
+        createdEscrow = await escrowService.create(testData)
+            .then(value => value.toJSON());
         const result = createdEscrow;
 
         expect(result.type).toBe(testData.type);
@@ -139,8 +138,8 @@ describe('Escrow', () => {
     });
 
     test('Should list Escrows with our new create one', async () => {
-        const escrowCollection = await escrowService.findAll();
-        const escrow = escrowCollection.toJSON();
+        const escrow: resources.Escrow[] = await escrowService.findAll()
+            .then(value => value.toJSON());
         expect(escrow.length).toBe(1);
 
         const result = escrow[0];
@@ -150,8 +149,8 @@ describe('Escrow', () => {
     });
 
     test('Should return one Escrow', async () => {
-        const escrowModel: Escrow = await escrowService.findOne(createdEscrow.id);
-        const result = escrowModel.toJSON();
+        const result: resources.Escrow = await escrowService.findOne(createdEscrow.id)
+            .then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
@@ -161,20 +160,20 @@ describe('Escrow', () => {
     test('Should throw ValidationException because there is no payment_information_id', async () => {
         expect.assertions(1);
         await escrowService.update(createdEscrow.id, {
-            type: EscrowType.NOP,
+            type: EscrowType.MULTISIG,
             ratio: {
                 buyer: 100,
                 seller: 100
             }
-        } as EscrowUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-            );
+        } as EscrowUpdateRequest)
+            .catch(e =>
+                expect(e).toEqual(new ValidationException('Request body is not valid', [])));
     });
 
     test('Should update the Escrow', async () => {
         testDataUpdated.payment_information_id = listingItemTemplate.PaymentInformation.id;
-        const escrowModel: Escrow = await escrowService.update(createdEscrow.id, testDataUpdated);
-        const result = escrowModel.toJSON();
+        const result: resources.Escrow = await escrowService.update(createdEscrow.id, testDataUpdated)
+            .then(value => value.toJSON());
 
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.Ratio.buyer).toBe(testDataUpdated.ratio.buyer);
@@ -186,20 +185,23 @@ describe('Escrow', () => {
 
         // delete Escrow
         await escrowService.destroy(createdEscrow.id);
-        await escrowService.findOne(createdEscrow.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdEscrow.id))
-        );
+        await escrowService.findOne(createdEscrow.id)
+            .catch(e =>
+                expect(e).toEqual(new NotFoundException(createdEscrow.id))
+            );
 
         // delete ListingItemTemplate
         await listingItemTemplateService.destroy(listingItemTemplate.id);
-        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
-        );
+        await listingItemTemplateService.findOne(listingItemTemplate.id)
+            .catch(e =>
+                expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
+            );
 
         // PaymentInformation should have been removed too
-        await paymentInformationService.findOne(listingItemTemplate.PaymentInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.PaymentInformation.id))
-        );
+        await paymentInformationService.findOne(listingItemTemplate.PaymentInformation.id)
+            .catch(e =>
+                expect(e).toEqual(new NotFoundException(listingItemTemplate.PaymentInformation.id))
+            );
     });
 
 });
