@@ -13,7 +13,7 @@
         "createdAt": 1520294533385,
         "ItemPrice": {
             "id": 4,
-            "currency": "PARTICL",
+            "currency": "PART",
             "basePrice": 76.31903702293027,
             "paymentInformationId": 4,
             "cryptocurrencyAddressId": 4,

@@ -4,6 +4,10 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import {ItemInformationCreateRequest} from './ItemInformationCreateRequest';
+import {PaymentInformationCreateRequest} from './PaymentInformationCreateRequest';
+import {MessagingInformationCreateRequest} from './MessagingInformationCreateRequest';
+import {ListingItemObjectCreateRequest} from './ListingItemObjectCreateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemCreateRequest extends RequestBody {
@@ -30,9 +34,9 @@ export class ListingItemCreateRequest extends RequestBody {
     @IsNotEmpty()
     public generatedAt: number;
 
-    public itemInformation;
-    public paymentInformation;
-    public messagingInformation;
-    public listingItemObjects;
+    public itemInformation: ItemInformationCreateRequest;
+    public paymentInformation: PaymentInformationCreateRequest;
+    public messagingInformation: MessagingInformationCreateRequest[];
+    public listingItemObjects: ListingItemObjectCreateRequest[];
 }
 // tslint:enable:variable-name

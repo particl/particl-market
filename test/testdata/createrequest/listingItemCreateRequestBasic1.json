@@ -3,6 +3,7 @@
     "postedAt": 1536786316653,
     "expiredAt": 1536886316653,
     "receivedAt": 1536786317653,
+    "generatedAt": 1536786317653,
     "itemInformation": {
         "title": "Small Soft Gloves",
         "shortDescription": "Ergonomic Tuna",
@@ -62,7 +63,7 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
+            "currency": "PART",
             "basePrice": 76.31903702293027,
             "shippingPrice": {
                 "domestic": 2.13268661244928,

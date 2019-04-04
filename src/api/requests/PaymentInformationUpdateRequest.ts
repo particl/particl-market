@@ -5,6 +5,8 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowUpdateRequest } from './EscrowUpdateRequest';
+import { ItemPriceUpdateRequest } from './ItemPriceUpdateRequest';
 
 // tslint:disable:variable-name
 export class PaymentInformationUpdateRequest extends RequestBody {
@@ -17,7 +19,8 @@ export class PaymentInformationUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public type: SaleType;
 
-    public escrow;
-    public itemPrice;
+    public escrow: EscrowUpdateRequest;
+    public itemPrice: ItemPriceUpdateRequest;
+
 }
 // tslint:enable:variable-name

@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -70,12 +71,17 @@ export class ListingItemObjectService {
         delete body.listingItemObjectDatas;
 
         // If the request body was valid we will create the listingItemObject
-        const listingItemObject = await this.listingItemObjectRepo.create(body);
+        const listingItemObject: resources.ListingItemObject = await this.listingItemObjectRepo.create(body)
+            .then(value => value.toJSON());
 
         for (const objectData of listingItemObjectDatas) {
-            objectData.listing_item_object_id = listingItemObject.Id;
+            objectData.listing_item_object_id = listingItemObject.id;
+            this.log.debug('objectData: ', JSON.stringify(objectData, null, 2));
+
             await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
         }
+
+        this.log.debug('objectDatas saved');
 
         // finally find and return the created listingItemObject
         const newListingItemObject = await this.findOne(listingItemObject.id);

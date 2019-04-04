@@ -145,7 +145,7 @@ export class ItemImageDataService {
         // strip header and write the file
         const base64Image = base64String.split(';base64,').pop();
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-        this.log.debug('saveImageFile(): ', filename);
+        // this.log.debug('saveImageFile(): ', filename);
         try {
             fs.writeFileSync(filename, base64Image, { encoding: 'base64' });
         } catch (err) {

@@ -5,6 +5,7 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowRatioUpdateRequest} from './EscrowRatioUpdateRequest';
 
 // tslint:disable:variable-name
 export class EscrowUpdateRequest extends RequestBody {
@@ -16,7 +17,7 @@ export class EscrowUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public type: EscrowType;
 
-    public ratio;
+    public ratio: EscrowRatioUpdateRequest;
 
 }
 // tslint:enable:variable-name

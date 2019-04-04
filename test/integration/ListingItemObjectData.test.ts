@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -11,7 +12,6 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
@@ -20,16 +20,14 @@ import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import {MarketService} from '../../src/api/services/MarketService';
-import * as resources from "resources";
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {ListingItemObject} from '../../src/api/models/ListingItemObject';
-import {ListingItemObjectService} from '../../src/api/services/ListingItemObjectService';
-import {ListingItemObjectType} from '../../src/api/enums/ListingItemObjectType';
-import {ListingItemObjectCreateRequest} from '../../src/api/requests/ListingItemObjectCreateRequest';
+import { MarketService } from '../../src/api/services/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { ListingItemObject } from '../../src/api/models/ListingItemObject';
+import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
+import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -72,13 +70,9 @@ describe('ListingItemObjectData', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         templateData.hash = ObjectHash.getHash(templateData, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);

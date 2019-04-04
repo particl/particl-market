@@ -95,15 +95,19 @@ export class ItemInformationService {
             await this.itemLocationService.create(itemLocation);
         }
 
-        for (const shippingDestination of shippingDestinations) {
-            shippingDestination.item_information_id = itemInformation.Id;
-            await this.shippingDestinationService.create(shippingDestination);
+        if (shippingDestinations) {
+            for (const shippingDestination of shippingDestinations) {
+                shippingDestination.item_information_id = itemInformation.Id;
+                await this.shippingDestinationService.create(shippingDestination);
+            }
         }
 
-        for (const itemImage of itemImages) {
-            itemImage.item_information_id = itemInformation.Id;
-            // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-            await this.itemImageService.create(itemImage);
+        if (itemImages) {
+            for (const itemImage of itemImages) {
+                itemImage.item_information_id = itemInformation.Id;
+                // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
+                await this.itemImageService.create(itemImage);
+            }
         }
 
         // finally find and return the created itemInformation

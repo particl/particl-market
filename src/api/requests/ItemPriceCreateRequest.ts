@@ -5,6 +5,8 @@
 import { IsNotEmpty, IsEnum, IsPositive } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import {ShippingPriceCreateRequest} from './ShippingPriceCreateRequest';
+import {CryptocurrencyAddressCreateRequest} from './CryptocurrencyAddressCreateRequest';
 
 // tslint:disable:variable-name
 export class ItemPriceCreateRequest extends RequestBody {
@@ -20,8 +22,8 @@ export class ItemPriceCreateRequest extends RequestBody {
     @IsPositive()
     public basePrice: number;
 
-    public shippingPrice;
+    public shippingPrice: ShippingPriceCreateRequest;
 
-    public cryptocurrencyAddress;
+    public cryptocurrencyAddress: CryptocurrencyAddressCreateRequest;
 }
 // tslint:enable:variable-name

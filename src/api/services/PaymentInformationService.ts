@@ -112,6 +112,7 @@ export class PaymentInformationService {
             relatedEscrow.payment_information_id = id;
             await this.escrowService.create(relatedEscrow);
         }
+
         // find related record and delete it
         let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON();
         await this.itemPriceService.destroy(relatedItemPrice.id);

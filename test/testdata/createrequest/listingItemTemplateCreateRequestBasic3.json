@@ -61,7 +61,7 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
+            "currency": "PART",
             "basePrice": 1000,
             "shippingPrice": {
                 "domestic": 2,

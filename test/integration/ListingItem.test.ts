@@ -109,14 +109,9 @@ describe('ListingItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
@@ -182,12 +177,12 @@ describe('ListingItem', () => {
         expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(createRequest.itemPrice.cryptocurrencyAddress.address);
     };
 
-    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation, createRequest: MessagingInformationCreateRequest) => {
+    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation, createRequest: MessagingInformationCreateRequest[]) => {
         expect(results[0].protocol).toBe(createRequest[0].protocol);
         expect(results[0].publicKey).toBe(createRequest[0].publicKey);
     };
 
-    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObjects, createRequest: ListingItemObjectCreateRequest) => {
+    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObjects, createRequest: ListingItemObjectCreateRequest[]) => {
         expect(results[0].type).toBe(createRequest[0].type);
         expect(results[0].description).toBe(createRequest[0].description);
         expect(results[0].order).toBe(createRequest[0].order);
@@ -337,8 +332,8 @@ describe('ListingItem', () => {
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem1 = listingItemModel.toJSON();
+        createdListingItem1 = await listingItemService.create(testDataToSave)
+            .then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
@@ -439,8 +434,8 @@ describe('ListingItem', () => {
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem2 = listingItemModel.toJSON();
+        createdListingItem2 = await listingItemService.create(testDataToSave)
+            .then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
@@ -474,6 +469,7 @@ describe('ListingItem', () => {
         testDataToSave.postedAt = new Date().getTime();
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
+        testDataToSave.generatedAt = new Date().getTime();
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem3 = listingItemModel.toJSON();

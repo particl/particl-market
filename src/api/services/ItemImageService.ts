@@ -92,7 +92,7 @@ export class ItemImageService {
     @validate()
     public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
 
-        const startTime = new Date().getTime();
+        // const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
@@ -145,7 +145,7 @@ export class ItemImageService {
             const newItemImage = await this.findOne(itemImage.Id);
             // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
 
-            this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
+            // this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
             return newItemImage;
         } else {
             throw new MessageException('Original image data not found.');

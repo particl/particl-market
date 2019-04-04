@@ -5,6 +5,8 @@
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ShippingPriceUpdateRequest } from './ShippingPriceUpdateRequest';
+import { CryptocurrencyAddressUpdateRequest } from './CryptocurrencyAddressUpdateRequest';
 
 // tslint:disable:variable-name
 export class ItemPriceUpdateRequest extends RequestBody {
@@ -19,8 +21,8 @@ export class ItemPriceUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public basePrice: number;
 
-    public shippingPrice;
+    public shippingPrice: ShippingPriceUpdateRequest;
 
-    public cryptocurrencyAddress;
+    public cryptocurrencyAddress: CryptocurrencyAddressUpdateRequest;
 }
 // tslint:enable:variable-name

@@ -115,10 +115,10 @@ export class ListingItemService {
      */
     @validate()
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
-        // const startTime = new Date().getTime();
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
@@ -144,32 +144,35 @@ export class ListingItemService {
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
         }
 
+        this.log.debug('iteminfo saved');
+
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
 
-        for (const msgInfo of messagingInformation) {
-            msgInfo.listing_item_id = listingItem.id;
-            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
-                .catch(reason => {
-                    this.log.error('Error:', JSON.stringify(reason, null, 2));
-                });
+        this.log.debug('paymentinfo saved');
+
+        if (!_.isEmpty(messagingInformation)) {
+            for (const msgInfo of messagingInformation) {
+                msgInfo.listing_item_id = listingItem.id;
+                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+            }
+            this.log.debug('msginfo saved');
         }
 
-        // create listingItemObjects
-        for (const object of listingItemObjects) {
-            object.listing_item_id = listingItem.id;
-            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest)
-                .catch(reason => {
-                    this.log.error('Error:', JSON.stringify(reason, null, 2));
-                });
+        if (!_.isEmpty(listingItemObjects)) {
+            for (const object of listingItemObjects) {
+                object.listing_item_id = listingItem.id;
+                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+            }
+            this.log.debug('listingItemObjects saved');
         }
 
         // finally find and return the created listingItem
         const result = await this.findOne(listingItem.id);
 
-        // this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
 

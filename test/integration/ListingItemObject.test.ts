@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -20,7 +21,6 @@ import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingIt
 import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingItemObjectUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/MarketService';
 

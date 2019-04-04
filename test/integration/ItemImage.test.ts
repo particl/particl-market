@@ -40,7 +40,7 @@ describe('ItemImage', () => {
     let listingItemService: ListingItemService;
 
     let createdImageId;
-    let createdListingItem;
+    let createdListingItem: resources.ListingItem;
 
     const testData = {
         // item_information_id: 0,
@@ -119,8 +119,6 @@ describe('ItemImage', () => {
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
         const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
-
-        log.debug('testData: ', JSON.stringify(testData, null, 2));
 
         const result: resources.ItemImage = await itemImageService.create(testData)
             .then(value => value.toJSON());
