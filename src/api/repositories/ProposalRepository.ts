@@ -39,7 +39,7 @@ export class ProposalRepository {
             timeStart: '*',
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalCategory.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
         return await this.search(searchParams, withRelated);
     }

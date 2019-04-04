@@ -50,7 +50,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         const searchParams = {
             timeStart: data.params[0],
             timeEnd: data.params[1],
-            type: data.params[2],
+            category: data.params[2],
             order: data.params[3]
         } as ProposalSearchParams;
 

@@ -34,9 +34,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         const proposalCollection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
-                if (options.type) {
+                if (options.category) {
                     // searchBy all
-                    qb.where('proposals.type', '=', options.type.toString());
+                    qb.where('proposals.category', '=', options.category.toString());
                 }
 
                 if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {

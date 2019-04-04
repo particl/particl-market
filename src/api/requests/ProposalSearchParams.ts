@@ -15,7 +15,7 @@ export class ProposalSearchParams extends RequestBody {
     public order: SearchOrder = SearchOrder.ASC;
 
     @IsEnum(ProposalCategory)
-    public type: ProposalCategory;
+    public category: ProposalCategory;
 
     public timeStart: number | string;
     public timeEnd: number | string;
