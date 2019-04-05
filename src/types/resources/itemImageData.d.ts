@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 declare module 'resources' {
 

@@ -10,11 +10,9 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { ProposalCategory } from 'ProposalCategory.ts';
 import { ItemVote } from '../../src/api/enums/ItemVote';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
-import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';
+import { SmsgSendResponse } from '../../src/api/responses/SmsgSendResponse';
 // tslint:enable:max-line-length
 
 describe('Happy ListingItem Vote Flow', () => {

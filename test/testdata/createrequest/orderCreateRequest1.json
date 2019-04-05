@@ -7,8 +7,8 @@
         "bid_id": 0,
         "status": "AWAITING_ESCROW",
         "orderItemObjects": [{
-            "dataId": "testid",
-            "dataValue": "testdata"
+            "key": "testid",
+            "value": "testdata"
         }]
     }],
     "address": {

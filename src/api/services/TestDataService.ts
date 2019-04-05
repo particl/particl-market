@@ -80,6 +80,15 @@ import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypt
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import {hash} from 'omp-lib/dist/hasher/hash';
+import {EscrowRatioCreateRequest} from '../requests/EscrowRatioCreateRequest';
+import {ShippingPriceCreateRequest} from '../requests/ShippingPriceCreateRequest';
+import {MessagingInformationCreateRequest} from '../requests/MessagingInformationCreateRequest';
+import {ListingItemObjectCreateRequest} from '../requests/ListingItemObjectCreateRequest';
+import {ListingItemObjectDataCreateRequest} from '../requests/ListingItemObjectDataCreateRequest';
+import {ItemImageDataCreateRequest} from '../requests/ItemImageDataCreateRequest';
+import {ImageVersions} from '../../core/helpers/ImageVersionEnumType';
+import {LocationMarkerCreateRequest} from '../requests/LocationMarkerCreateRequest';
+import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
 
 export class TestDataService {
 
@@ -314,27 +323,22 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
-            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+            this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
 
-            let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
-            let result = listingItemTemplateModel.toJSON();
+            let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
+                .then(value => value.toJSON());
 
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
-                let market: resources.Market;
-                if (generateParams.marketId === null) {
-                    const marketModel = await this.marketService.getDefault();
-                    market = marketModel.toJSON();
-                } else {
-                    const marketModel = await this.marketService.findOne(generateParams.marketId);
-                    market = marketModel.toJSON();
-                }
+                const market: resources.Market = generateParams.marketId
+                    ? await this.marketService.getDefault().then(value => value.toJSON())
+                    : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
 
                 const listingItemCreateRequest = {
-                    seller: result.Profile.address,
+                    seller: listingItemTemplate.Profile.address,
                     market_id: market.id,
-                    listing_item_template_id: result.id,
+                    listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
@@ -342,21 +346,22 @@ export class TestDataService {
                     expiryTime: 10,
                     postedAt: new Date().getTime(),
                     expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
-                    receivedAt: new Date().getTime()
+                    receivedAt: new Date().getTime(),
+                    generatedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
 
                 // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-                const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-                const listingItem = listingItemModel.toJSON();
+                const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
+                    .then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
                 // fetch new relation
-                listingItemTemplateModel = await this.listingItemTemplateService.findOne(result.id);
-                result = listingItemTemplateModel.toJSON();
+                listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id)
+                    .then(value => value.toJSON());
 
             }
-            items.push(result);
+            items.push(listingItemTemplate);
         }
         return this.generateResponse(items, withRelated);
     }
@@ -763,8 +768,8 @@ export class TestDataService {
         const items: resources.Profile[] = [];
         for (let i = amount; i > 0; i--) {
             const profile = await this.generateProfileData(generateParams);
-            const savedProfileModel = await this.profileService.create(profile);
-            const result = savedProfileModel.toJSON();
+            const result: resources.Profile = await this.profileService.create(profile)
+                .then(value => value.toJSON());
             items.push(result);
         }
         return this.generateResponse(items, withRelated);
@@ -785,11 +790,15 @@ export class TestDataService {
     private async generateProfileData(generateParams: GenerateProfileParams): Promise<ProfileCreateRequest> {
         const name = 'TEST-' + Faker.name.firstName();
         const address = await this.coreRpcService.getNewAddress();
-
-        const profile = await this.generateAddressesData(_.random(1, 5));
-        const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
-        const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? await this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
-        const settings = generateParams.generateSettings ? await this.generateSettings(_.random(1, 5)) : [];
+        const shippingAddresses = generateParams.generateShippingAddresses
+            ? await this.generateAddressesData(_.random(1, 5))
+            : [];
+        const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses
+            ? await this.generateCryptocurrencyAddressesData(_.random(1, 5))
+            : [];
+        const settings = generateParams.generateSettings
+            ? await this.generateSettings(_.random(1, 5))
+            : [];
 
         return {
             name,
@@ -801,7 +810,7 @@ export class TestDataService {
     }
 
     private async generateAddressesData(amount: number): Promise<AddressCreateRequest[]> {
-        const addresses: any[] = [];
+        const addresses: AddressCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
                 firstName: Faker.name.firstName(),
@@ -814,29 +823,29 @@ export class TestDataService {
                 state: Faker.address.state(),
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 type: AddressType.SHIPPING_OWN
-            });
+            } as AddressCreateRequest);
         }
         return addresses;
     }
 
     private async generateCryptocurrencyAddressesData(amount: number): Promise<CryptocurrencyAddressCreateRequest[]> {
-        const cryptoAddresses: any[] = [];
+        const cryptoAddresses: CryptocurrencyAddressCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             cryptoAddresses.push({
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
                 address: await this.coreRpcService.getNewAddress()
-            });
+            } as CryptocurrencyAddressCreateRequest);
         }
         return cryptoAddresses;
     }
 
     private async generateSettings(amount: number): Promise<SettingCreateRequest[]> {
-        const settings: any[] = [];
+        const settings: SettingCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             settings.push({
                 key: Faker.random.word(),
                 value: Faker.random.word()
-            });
+            } as SettingCreateRequest);
         }
         return settings;
     }
@@ -894,44 +903,45 @@ export class TestDataService {
     }
 
     private generateShippingDestinationsData(amount: number): ShippingDestinationCreateRequest[] {
-        const items: any[] = [];
+        const items: ShippingDestinationCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             items.push({
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 shippingAvailability: ShippingAvailability.SHIPS
-            });
+            } as ShippingDestinationCreateRequest);
         }
         return items;
     }
 
-    private generateItemLocationData(): any {
+    private generateItemLocationData(): ItemLocationCreateRequest {
         return {
             country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
             address: Faker.address.streetAddress(),
+            description: Faker.lorem.paragraph(),
             locationMarker: {
+                lat: _.random(-50, 50),
+                lng: _.random(-50, 50),
                 markerTitle: Faker.lorem.word(),
-                markerText: Faker.lorem.sentence(),
-                lat: Faker.address.latitude(),
-                lng: Faker.address.longitude()
-            }
-        };
+                markerText: Faker.lorem.sentence()
+            } as LocationMarkerCreateRequest
+        } as ItemLocationCreateRequest;
     }
 
     private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
-        const items: any[] = [];
+        const items: ItemImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             const fakeHash = Faker.random.uuid();
             const item = {
                 hash: fakeHash,
                 data: [{
-                    itemHash: fakeHash,
+                    // itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ProtocolDSN.LOCAL,
-                    imageVersion: 'ORIGINAL',
+                    imageVersion: ImageVersions.ORIGINAL.propName,
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcatSmall
-                }]
-            };
+                }] as ItemImageDataCreateRequest[]
+            } as ItemImageCreateRequest;
             items.push(item);
         }
         return items;
@@ -976,49 +986,47 @@ export class TestDataService {
 
         const escrow = generateParams.generateEscrow
             ? {
-                type: EscrowType.MAD.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
+                type: EscrowType.MAD, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
                     buyer: _.random(1, 100),
                     seller: _.random(1, 100)
-                }
+                } as EscrowRatioCreateRequest
             } as EscrowCreateRequest
             : undefined;
 
         const itemPrice = generateParams.generateItemPrice
             ? {
-                currency: Cryptocurrency.PART.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
+                currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 basePrice: _.random(0.1, 1.00),
                 shippingPrice: {
                     domestic: _.random(0.01, 0.10),
                     international: _.random(0.10, 0.20)
-                },
+                } as ShippingPriceCreateRequest,
                 cryptocurrencyAddress: {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
                     address: await this.coreRpcService.getNewAddress()
-                }
+                } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;
 
         const paymentInformation = {
-            type: SaleType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(SaleType)),
+            type: SaleType.SALE, // Faker.random.arrayElement(Object.getOwnPropertyNames(SaleType)),
             escrow,
             itemPrice
         } as PaymentInformationCreateRequest;
         return paymentInformation;
     }
 
-    // TODO: type
-    private generateMessagingInformationData(): any {
-        const messagingInformation = [{
+    private generateMessagingInformationData(): MessagingInformationCreateRequest[] {
+        const messagingInformations: MessagingInformationCreateRequest[] = [{
             protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocol)),
             publicKey: Faker.random.uuid()
-        }];
-        return messagingInformation;
+        }] as MessagingInformationCreateRequest[];
+        return messagingInformations;
     }
 
-    // listingitemobjects
-    private generateListingItemObjectsData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): any {
-        const listingItemObjectDatas = generateParams.generateObjectDatas
+    private generateListingItemObjectsData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): ListingItemObjectCreateRequest[] {
+        const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = generateParams.generateObjectDatas
             ? this.generateObjectDataData(_.random(1, 5))
             : [];
 
@@ -1027,20 +1035,19 @@ export class TestDataService {
             description: Faker.lorem.paragraph(),
             order: Faker.random.number(),
             listingItemObjectDatas
-        }];
+        }] as ListingItemObjectCreateRequest[];
         return listingItemObjects;
     }
 
-    // TODO: type
-    private generateObjectDataData(amount: number): any[] {
-        const object: any[] = [];
+    private generateObjectDataData(amount: number): ListingItemObjectDataCreateRequest[] {
+        const objects: ListingItemObjectDataCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
-            object.push({
+            objects.push({
                 key: Faker.lorem.slug(),
                 value: Faker.lorem.word()
-            });
+            } as ListingItemObjectDataCreateRequest);
         }
-        return object;
+        return objects;
     }
 
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
@@ -1049,15 +1056,9 @@ export class TestDataService {
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
-        let profile: resources.Profile;
-
-        if (generateParams.profileId === null) {
-            const profileModel = await this.profileService.getDefault();
-            profile = profileModel.toJSON();
-        } else {
-            const profileModel = await this.profileService.findOne(generateParams.profileId);
-            profile = profileModel.toJSON();
-        }
+        const profile: resources.Profile = generateParams.profileId === null
+            ? await this.profileService.getDefault().then(value => value.toJSON())
+            : await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
 
         const listingItemTemplateCreateRequest = {
             itemInformation,

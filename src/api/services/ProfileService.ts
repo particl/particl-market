@@ -83,6 +83,7 @@ export class ProfileService {
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body = JSON.parse(JSON.stringify(data));
 
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
         if ( !body.address ) {
             body.address = await this.getNewAddress();
         }

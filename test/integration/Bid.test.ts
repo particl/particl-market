@@ -25,7 +25,6 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/params
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderService } from '../../src/api/services/OrderService';
-import { Order } from '../../src/api/models/Order';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
@@ -34,8 +33,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
-import {OrderItemStatus} from '../../src/api/enums/OrderItemStatus';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

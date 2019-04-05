@@ -63,10 +63,11 @@ export class ItemImageDataService {
         const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
         body.data = fileName;
 
-        const itemImageData = await this.itemImageDataRepo.create(body);
+        const itemImageData: resources.ItemImageData = await this.itemImageDataRepo.create(body)
+            .then(value => value.toJSON());
 
         // finally find and return the created itemImageData
-        const newItemImageData = await this.findOne(itemImageData.Id);
+        const newItemImageData = await this.findOne(itemImageData.id);
         // this.log.debug('itemImageDataService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newItemImageData;
     }
