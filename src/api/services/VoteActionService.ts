@@ -27,6 +27,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ProposalResultService } from './ProposalResultService';
 import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { ItemVote } from '../enums/ItemVote';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -318,6 +319,12 @@ export class VoteActionService {
                 // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
                 // we can now check whether the ListingItem should be removed or not
                 if (proposal.type === ProposalType.ITEM_VOTE) {
+                    const {ismine} = await this.coreRpcService.getAddressInfo(voteMessage.voter);
+                    // if this vote is mine lets set/unset the removed flag
+                    if (ismine) {
+                        this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    }
+
                     const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
                         .then(value => value.toJSON());
                     await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
