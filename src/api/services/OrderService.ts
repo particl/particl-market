@@ -74,7 +74,7 @@ export class OrderService {
     public async create( @request(OrderCreateRequest) data: OrderCreateRequest): Promise<Order> {
         const startTime = new Date().getTime();
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: OrderCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         // you need at least one order item to create an order

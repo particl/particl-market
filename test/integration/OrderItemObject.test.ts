@@ -11,7 +11,6 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { OrderItemObject } from '../../src/api/models/OrderItemObject';
 import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
 import { OrderItemObjectCreateRequest } from '../../src/api/requests/OrderItemObjectCreateRequest';
 import { OrderItemObjectUpdateRequest } from '../../src/api/requests/OrderItemObjectUpdateRequest';
