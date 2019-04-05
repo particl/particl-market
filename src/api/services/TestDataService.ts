@@ -79,6 +79,7 @@ import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import {hash} from 'omp-lib/dist/hasher/hash';
 
 export class TestDataService {
 
@@ -463,38 +464,41 @@ export class TestDataService {
         address.profile_id = defaultProfile.Id;
 
         const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress();
-        const action = generateParams.action ? generateParams.action : MPAction.MPA_BID;
+        const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
 
         // TODO: generate biddatas
         const bidDatas = [
-            {dataId: 'size', dataValue: 'XL'},
-            {dataId: 'color', dataValue: 'pink'},
-            {dataId: BidDataValue.BUYER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+            {key: 'size', value: 'XL'},
+            {key: 'color', value: 'pink'},
+            {key: BidDataValue.BUYER_OUTPUTS, value: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
                 ',\"vout\":1,\"amount\":1.52497491}]'},
-            {dataId: BidDataValue.BUYER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
-            {dataId: BidDataValue.BUYER_CHANGE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
-            {dataId: BidDataValue.BUYER_CHANGE_AMOUNT, dataValue: 96.52477491},
-            {dataId: BidDataValue.BUYER_RELEASE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
-            {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
-            {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
+            {key: BidDataValue.BUYER_PUBKEY, value: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
+            {key: BidDataValue.BUYER_CHANGE_ADDRESS, value: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {key: BidDataValue.BUYER_CHANGE_AMOUNT, value: 96.52477491},
+            {key: BidDataValue.BUYER_RELEASE_ADDRESS, value: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
+            {key: BidDataValue.SELLER_PUBKEY, value: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
+            {key: BidDataValue.SELLER_OUTPUTS, value: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
                 ',\"vout\":1,\"amount\":1.52497491}]'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, dataValue: 'asdf'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, dataValue: 'asdf'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, dataValue: 'asdf'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, dataValue: 'asdf'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_CITY, dataValue: 'asdf'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_STATE, dataValue: ''},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, dataValue: '1234'},
-            {dataId: BidDataValue.SHIPPING_ADDRESS_COUNTRY, dataValue: 'FI'}
+            {key: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf'},
+            {key: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf'},
+            {key: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf'},
+            {key: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: 'asdf'},
+            {key: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'asdf'},
+            {key: BidDataValue.SHIPPING_ADDRESS_STATE, value: ''},
+            {key: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234'},
+            {key: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI'}
         ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
-            type: action,
+            type,
             address,
             bidder,
-            bidDatas
+            bidDatas,
+            generatedAt: new Date().getTime()
         } as BidCreateRequest;
         // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
+
+        bidCreateRequest.hash = ObjectHash.getHash(bidCreateRequest, HashableObjectType.BID_CREATEREQUEST);
 
         // if we have a hash, fetch the listingItem and set the relation
         if (generateParams.listingItemHash) {

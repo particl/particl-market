@@ -17,6 +17,7 @@ export enum HashableObjectType {
     LISTINGITEMTEMPLATE = 'ListingItemTemplate',
 
     ORDER_CREATEREQUEST = 'Order',
+    BID_CREATEREQUEST = 'Bid',
 
     PROPOSAL_MESSAGE = 'ProposalMessage',
     PROPOSAL_CREATEREQUEST = 'ProposalCreateRequest',

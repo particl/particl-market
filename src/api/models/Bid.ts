@@ -47,52 +47,52 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
-    public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
+    public static async search(searchParams: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
-        options.ordering = options.ordering ? options.ordering : SearchOrder.ASC;
-        options.page = options.page ? options.page : 0;
-        options.pageLimit = options.pageLimit ? options.pageLimit : 10;
+        searchParams.ordering = searchParams.ordering ? searchParams.ordering : SearchOrder.ASC;
+        searchParams.page = searchParams.page ? searchParams.page : 0;
+        searchParams.pageLimit = searchParams.pageLimit ? searchParams.pageLimit : 10;
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
 
-                if (options.listingItemId) {
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                if (searchParams.listingItemId) {
+                    qb.where('bids.listing_item_id', '=', searchParams.listingItemId);
                 }
 
-                if (options.status
-                    && (options.status === MPAction.MPA_ACCEPT
-                        || options.status === MPAction.MPA_BID
-                        || options.status === MPAction.MPA_CANCEL
-                        || options.status === MPAction.MPA_REJECT)) {
-                    qb.where('bids.action', '=', options.status);
+                if (searchParams.status
+                    && (searchParams.status === MPAction.MPA_ACCEPT
+                        || searchParams.status === MPAction.MPA_BID
+                        || searchParams.status === MPAction.MPA_CANCEL
+                        || searchParams.status === MPAction.MPA_REJECT)) {
+                    qb.where('bids.type', '=', searchParams.status);
                 }
 
-                if (options.status
-                    && (options.status === OrderItemStatus.AWAITING_ESCROW
-                        || options.status === OrderItemStatus.COMPLETE
-                        || options.status === OrderItemStatus.ESCROW_LOCKED
-                        || options.status === OrderItemStatus.SHIPPING)) {
+                if (searchParams.status
+                    && (searchParams.status === OrderItemStatus.AWAITING_ESCROW
+                        || searchParams.status === OrderItemStatus.COMPLETE
+                        || searchParams.status === OrderItemStatus.ESCROW_LOCKED
+                        || searchParams.status === OrderItemStatus.SHIPPING)) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
-                    qb.where('order_items.status', '=', options.status);
+                    qb.where('order_items.status', '=', searchParams.status);
                 }
 
-                if (options.searchString) {
+                if (searchParams.searchString) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%')
-                        .orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%')
-                        .orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.where('item_informations.title', 'LIKE', '%' + searchParams.searchString + '%')
+                        .orWhere('item_informations.short_description', 'LIKE', '%' + searchParams.searchString + '%')
+                        .orWhere('item_informations.long_description', 'LIKE', '%' + searchParams.searchString + '%');
                 }
 
-                if (!_.isEmpty(options.bidders)) {
-                    qb.whereIn('bids.bidder', options.bidders);
+                if (!_.isEmpty(searchParams.bidders)) {
+                    qb.whereIn('bids.bidder', searchParams.bidders);
                 }
 
             })
-            .orderBy('bids.updated_at', options.ordering)
+            .orderBy('bids.updated_at', searchParams.ordering)
             .query({
-                limit: options.pageLimit,
-                offset: options.page * options.pageLimit
+                limit: searchParams.pageLimit,
+                offset: searchParams.page * searchParams.pageLimit
             });
 
         if (withRelated) {

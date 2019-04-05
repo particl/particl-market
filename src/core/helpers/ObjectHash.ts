@@ -11,6 +11,7 @@ import { HashableOrder } from './HashableOrder';
 import { HashableProposal } from './HashableProposal';
 import { HashableProposalOption } from './HashableProposalOption';
 import { Logger as LoggerType } from '../Logger';
+import { HashableBid } from './HashableBid';
 
 export class ObjectHash {
 
@@ -19,7 +20,6 @@ export class ObjectHash {
      * @param objectToHash
      * @param {HashableObjectType} type
      * @param {string[]} extraData
-     * @param {boolean} timestampedHash
      * @returns {string}
      */
     public static getHash(
@@ -47,6 +47,10 @@ export class ObjectHash {
             }
             case HashableObjectType.ORDER_CREATEREQUEST: {
                 hashableObject = new HashableOrder(objectToHash);
+                break;
+            }
+            case HashableObjectType.BID_CREATEREQUEST: {
+                hashableObject = new HashableBid(objectToHash);
                 break;
             }
             case HashableObjectType.PROPOSAL_MESSAGE:

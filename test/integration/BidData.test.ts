@@ -49,13 +49,13 @@ describe('BidDatas', () => {
     let createdId;
 
     const testData = {
-        dataId: 'color',
-        dataValue: 'black'
+        key: 'color',
+        value: 'black'
     } as BidDataCreateRequest;
 
     const testDataUpdated = {
-        dataId: 'color',
-        dataValue: 'black'
+        key: 'color',
+        value: 'black'
     } as BidDataUpdateRequest;
 
 
@@ -72,8 +72,8 @@ describe('BidDatas', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         // generate seller profile
         const sellerProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
@@ -85,9 +85,6 @@ describe('BidDatas', () => {
         } as TestDataGenerateRequest);
         sellerProfile = profiles[0];
 
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation
             true,                               // generateItemLocation
@@ -97,7 +94,8 @@ describe('BidDatas', () => {
             true,                               // generateEscrow
             true,                               // generateItemPrice
             true,                               // generateMessagingInformation
-            false                               // generateListingItemObjects
+            false,                              // generateListingItemObjects
+            false                               // generateObjectDatas
         ]).toParamsArray();
 
         const listingItems = await testDataService.generate({
@@ -113,7 +111,7 @@ describe('BidDatas', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             createdListingItem.hash,    // listingItemhash
-            MPAction.MPA_BID,     // type
+            MPAction.MPA_BID,           // type
             defaultProfile.address,     // bidder
             sellerProfile.address       // listingItemSeller
         ]).toParamsArray();

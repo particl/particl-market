@@ -14,7 +14,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
     public generateListingItemTemplate = true;
     public generateListingItem = true;
     public listingItemHash: string;
-    public action: string;
+    public type: string;
     public bidder: string;
     public listingItemSeller: string;
 
@@ -41,7 +41,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             // if item hash was given, set generateListingItem to false
             this.generateListingItem = this.listingItemHash ? false : true;
 
-            this.action = generateParams[3] ? generateParams[3] : null;
+            this.type = generateParams[3] ? generateParams[3] : null;
             this.bidder = generateParams[4] ? generateParams[4] : null;
 
             this.listingItemSeller = generateParams[5] ? generateParams[5] : null;
@@ -54,7 +54,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.generateListingItemTemplate,
             this.generateListingItem,
             this.listingItemHash,
-            this.action,
+            this.type,
             this.bidder,
             this.listingItemSeller
         ];

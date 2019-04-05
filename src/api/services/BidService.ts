@@ -187,7 +187,7 @@ export class BidService {
     @validate()
     public async update(id: number, @request(BidUpdateRequest) data: BidUpdateRequest): Promise<Bid> {
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: BidUpdateRequest = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const bid = await this.findOne(id, false);
@@ -199,6 +199,7 @@ export class BidService {
         // set new values, we only need to change the type
         bid.Type = body.type;
         bid.Hash = body.hash;
+        bid.GeneratedAt = body.generatedAt;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
