@@ -50,6 +50,7 @@ import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
+import {ListingItemCreateRequest} from '../../src/api/requests/ListingItemCreateRequest';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -121,13 +122,9 @@ describe('ListingItemTemplate', async () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
     });
 
     const expectListingItemTemplateFromCreateRequest = (result: resources.ListingItemTemplate, createRequest: ListingItemTemplateCreateRequest) => {
@@ -219,12 +216,12 @@ describe('ListingItemTemplate', async () => {
         expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(createRequest.itemPrice.cryptocurrencyAddress.address);
     };
 
-    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation, createRequest: MessagingInformationCreateRequest) => {
+    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation[], createRequest: MessagingInformationCreateRequest[]) => {
         expect(results[0].protocol).toBe(createRequest[0].protocol);
         expect(results[0].publicKey).toBe(createRequest[0].publicKey);
     };
 
-    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObjects, createRequest: ListingItemObjectCreateRequest) => {
+    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObject[], createRequest: ListingItemObjectCreateRequest[]) => {
         expect(results[0].type).toBe(createRequest[0].type);
         expect(results[0].description).toBe(createRequest[0].description);
         expect(results[0].order).toBe(createRequest[0].order);
@@ -451,17 +448,15 @@ describe('ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
 
-        log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
-
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
+        createdListingItemTemplate1 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate1, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should findAll ListingItemTemplates containing the previously created one', async () => {
-        const listingItemTemplateCollection = await listingItemTemplateService.findAll();
-        const listingItemTemplates = listingItemTemplateCollection.toJSON();
+        const listingItemTemplates: resources.ListingItemTemplate = await listingItemTemplateService.findAll()
+            .then(value => value.toJSON());
         const result = listingItemTemplates[0];
 
         expect(listingItemTemplates).toHaveLength(1);
@@ -469,8 +464,8 @@ describe('ListingItemTemplate', async () => {
     });
 
     test('Should findOne ListingItemTemplate using id', async () => {
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.findOne(createdListingItemTemplate1.id);
-        const result = listingItemTemplateModel.toJSON();
+        const result: resources.ListingItemTemplate = await listingItemTemplateService.findOne(createdListingItemTemplate1.id)
+            .then(value => value.toJSON());
 
         expect(result.hash).toBe(createdListingItemTemplate1.hash);
     });
@@ -486,8 +481,7 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate2 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
     }, 600000); // timeout to 600s
@@ -503,8 +497,7 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
@@ -513,8 +506,8 @@ describe('ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave);
-        updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave)
+            .then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToSave);
     }, 600000); // timeout to 600s
@@ -535,8 +528,7 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
@@ -556,8 +548,7 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
-        createdListingItemTemplate3 = listingItemTemplateModel.toJSON();
+        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
     }, 600000); // timeout to 600s
@@ -583,8 +574,7 @@ describe('ListingItemTemplate', async () => {
         } as ListingItemTemplateCreateRequest;
 
         // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
-        const listingItemTemplate: ListingItemTemplate = await listingItemTemplateService.create(listingItemTemplateCreateRequest);
-        createdListingItemTemplate3 = listingItemTemplate.toJSON();
+        createdListingItemTemplate3 = await listingItemTemplateService.create(listingItemTemplateCreateRequest).then(value => value.toJSON());
 
         // create ListingItem with relation to ListingItemTemplate
         testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
@@ -594,13 +584,13 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.postedAt = new Date().getTime();
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
+        testDataToSave.generatedAt = new Date().getTime();
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem1 = listingItemModel.toJSON();
+        createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
-        expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
+        expectListingItemFromCreateRequest(createdListingItem1, testDataToSave as ListingItemTemplateCreateRequest);
         expect(createdListingItem1.ListingItemTemplate.id).toBe(createdListingItemTemplate3.id);
     }, 600000); // timeout to 600s
 
@@ -619,26 +609,26 @@ describe('ListingItemTemplate', async () => {
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
-        let listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
-        updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
+            .then(value => value.toJSON());
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // remove some more data
         delete testDataToUpdate.messagingInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
-        updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
+            .then(value => value.toJSON());
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // and even more
         delete testDataToUpdate.paymentInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
-        updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
+            .then(value => value.toJSON());
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // and more
         delete testDataToUpdate.itemInformation;
-        listingItemTemplateModel = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate);
-        updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
+        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
+            .then(value => value.toJSON());
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
         // delete related ListingItem
@@ -659,8 +649,8 @@ describe('ListingItemTemplate', async () => {
         await expectListingItemTemplateWasDeleted(createdListingItemTemplate2);
 
         // expect to have no templates at this point
-        const listingItemTemplateCollection = await listingItemTemplateService.findAll();
-        const listingItemTemplates = listingItemTemplateCollection.toJSON();
+        const listingItemTemplates: resources.ListingItemTemplate[] = await listingItemTemplateService.findAll()
+            .then(value => value.toJSON());
         expect(listingItemTemplates).toHaveLength(0);
 
         // then generate some
@@ -669,8 +659,6 @@ describe('ListingItemTemplate', async () => {
 
     }, 600000); // timeout to 600s
 
-
-    // TODO: missing searchBy tests
 
     test('Should return ListingItemTemplates having relation to ListingItem', async () => {
         const searchParams = {
@@ -684,8 +672,8 @@ describe('ListingItemTemplate', async () => {
             hasItems: true
         } as ListingItemTemplateSearchParams;
 
-        const templateCollection = await listingItemTemplateService.search(searchParams);
-        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
+            .then(value => value.toJSON());
         expect(templates.length).toBe(6);
         // log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
         expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
@@ -703,8 +691,8 @@ describe('ListingItemTemplate', async () => {
             hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templateCollection = await listingItemTemplateService.search(searchParams);
-        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
+            .then(value => value.toJSON());
         expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeLessThan(templates[3].updatedAt);
     });
@@ -721,8 +709,8 @@ describe('ListingItemTemplate', async () => {
             hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templateCollection = await listingItemTemplateService.search(searchParams);
-        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
+            .then(value => value.toJSON());
         expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeGreaterThan(templates[3].updatedAt);
     });
@@ -739,8 +727,8 @@ describe('ListingItemTemplate', async () => {
             // hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templateCollection = await listingItemTemplateService.search(searchParams);
-        const templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
+            .then(value => value.toJSON());
         expect(templates.length).toBe(1);
 
     });
@@ -769,8 +757,7 @@ describe('ListingItemTemplate', async () => {
             // hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        let templateCollection = await listingItemTemplateService.search(searchParams);
-        let templates: resources.ListingItemTemplate[] = templateCollection.toJSON();
+        let templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(2);
         expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 1');
         expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 2');
@@ -786,13 +773,10 @@ describe('ListingItemTemplate', async () => {
             // hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        templateCollection = await listingItemTemplateService.search(searchParams);
-        templates = templateCollection.toJSON();
+        templates = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(2);
         expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 2');
         expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 1');
 
     });
-
-
 });
