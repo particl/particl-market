@@ -104,7 +104,7 @@ describe('OrderItem', () => {
             listingItem.hash,           // listingItemHash
             MPAction.MPA_ACCEPT,        // type
             buyerProfile.address,       // bidder
-            sellerProfile.address       // listingItemSeller
+            sellerProfile.address       // seller
         ]).toParamsArray();
 
         const bids: resources.Bid[] = await testDataService.generate({
@@ -123,7 +123,7 @@ describe('OrderItem', () => {
             listingItem.hash,           // listingItemhash
             bid.id,                     // bidId
             buyerProfile.address,       // bidder
-            sellerProfile.address       // listingItemSeller
+            sellerProfile.address       // seller
         ]);
 
         const orders: resources.Order[] = await testDataService.generate({

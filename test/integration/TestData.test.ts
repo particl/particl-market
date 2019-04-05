@@ -27,7 +27,7 @@ import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createreque
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {OrderItemStatus} from '../../src/api/enums/OrderItemStatus';
+import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -454,8 +454,7 @@ describe('TestDataService', () => {
         await testDataService.clean(true);
 
         // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+        const defaultProfile: resources.Profile = await profileService.getDefault().then(value => value.toJSON());
 
         // [0]: generateListingItemTemplate, generate a ListingItemTemplate
         // [1]: generateListingItem, generate a ListingItem
@@ -464,17 +463,17 @@ describe('TestDataService', () => {
         // [4]: listingItemhash, attach bid to existing ListingItem
         // [5]: bidId, attach Order to existing Bid
         // [6]: bidder, bidders address
-        // [7]: listingItemSeller, ListingItem sellers address
+        // [7]: seller, ListingItem sellers address
 
         const orderGenerateParams = new GenerateOrderParams([
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             true,                       // generateBid
-            true,                      // generateOrderItem
+            true,                       // generateOrderItem
             null,                       // listingItemhash
             null,                       // bidId
             null,                       // bidder
-            defaultProfile.address      // listingItemSeller
+            defaultProfile.address      // seller
         ]);
 
         const generatedOrders = await testDataService.generate({

@@ -235,28 +235,22 @@ export class BidService {
      */
     public async getOrderFromBid(bid: resources.Bid): Promise<OrderCreateRequest> {
 
-        // only bids with type MPA_ACCEPT can be converted to Order
-        if (bid.type === MPAction.MPA_ACCEPT) {
+        const address: AddressCreateRequest = this.getShippingAddress(bid);
+        const orderItems: OrderItemCreateRequest[] = this.getOrderItems(bid);
+        const buyer: string = bid.bidder;
+        const seller: string = bid.ListingItem.seller;
 
-            const address: AddressCreateRequest = this.getShippingAddress(bid);
-            const orderItems: OrderItemCreateRequest[] = this.getOrderItems(bid);
-            const buyer: string = bid.bidder;
-            const seller: string = bid.ListingItem.seller;
+        const orderCreateRequest = {
+            address,
+            orderItems,
+            buyer,
+            seller
+        } as OrderCreateRequest;
 
-            const orderCreateRequest = {
-                address,
-                orderItems,
-                buyer,
-                seller
-            } as OrderCreateRequest;
+        // can we move this hashing to service level
+        orderCreateRequest.hash = ObjectHash.getHash(orderCreateRequest, HashableObjectType.ORDER_CREATEREQUEST);
+        return orderCreateRequest;
 
-            // can we move this hashing to service level
-            orderCreateRequest.hash = ObjectHash.getHash(orderCreateRequest, HashableObjectType.ORDER_CREATEREQUEST);
-            return orderCreateRequest;
-
-        } else {
-            throw new MessageException('Cannot create Order from this MPAction.');
-        }
     }
 
     private getShippingAddress(bid: resources.Bid): AddressCreateRequest {

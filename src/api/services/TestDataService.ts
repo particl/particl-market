@@ -529,7 +529,15 @@ export class TestDataService {
 
         // generate bid
         if (generateParams.generateBid) {
-            const bidGenerateParams = new GenerateBidParams(generateParams.toParamsArray());
+            const bidGenerateParams = new GenerateBidParams([
+                generateParams.generateListingItemTemplate,
+                generateParams.generateListingItem,
+                generateParams.listingItemHash,
+                MPAction.MPA_BID,
+                generateParams.bidder,
+                generateParams.seller
+            ]);
+
             const bids = await this.generateBids(1, true, bidGenerateParams);
             bid = bids[0];
 
@@ -624,7 +632,7 @@ export class TestDataService {
             throw new NotImplementedException();
             /*
             // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
+            listingItemGenerateParams.seller = generateParams.seller ? generateParams.seller : null;
 
             this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
 

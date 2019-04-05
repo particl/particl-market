@@ -136,7 +136,7 @@ describe('LockedOutput', () => {
             listingItem.hash,           // listingItemhash
             MPAction.MPA_BID,     // type
             defaultProfile.address,     // bidder
-            sellerProfile.address       // listingItemSeller
+            sellerProfile.address       // seller
         ]).toParamsArray();
 
         const bids = await testDataService.generate({

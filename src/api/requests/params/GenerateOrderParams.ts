@@ -18,7 +18,7 @@ export class GenerateOrderParams implements GenerateOrderParamsInterface {
     public listingItemHash: string;
     public bidId: number;
     public bidder: string;
-    public listingItemSeller: string;
+    public seller: string;
 
     /**
      * generateParams[]:
@@ -29,7 +29,7 @@ export class GenerateOrderParams implements GenerateOrderParamsInterface {
      * [4]: listingItemhash, attach bid to existing ListingItem
      * [5]: bidId, attach Order to existing Bid
      * [6]: bidder, bidders address
-     * [7]: listingItemSeller, ListingItem sellers address
+     * [7]: seller, ListingItem sellers address
      *
      * @param generateParams
      */
@@ -55,7 +55,7 @@ export class GenerateOrderParams implements GenerateOrderParamsInterface {
             // TODO: change, bidder is buyer in Order, so propably should be changed here
             this.bidder = generateParams[6] ? generateParams[6] : null;
 
-            this.listingItemSeller = generateParams[7] ? generateParams[7] : null;
+            this.seller = generateParams[7] ? generateParams[7] : null;
         }
 
     }
@@ -69,7 +69,7 @@ export class GenerateOrderParams implements GenerateOrderParamsInterface {
             this.listingItemHash,
             this.bidId,
             this.bidder,
-            this.listingItemSeller
+            this.seller
         ];
     }
 

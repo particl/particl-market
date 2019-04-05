@@ -26,7 +26,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
      * [2]: listingItemhash, attach bid to existing ListingItem
      * [3]: type, bid type, see MPAction
      * [4]: bidder, bidders address
-     * [5]: listingItemSeller, ListingItem sellers address
+     * [5]: seller, ListingItem sellers address
      *
      * @param generateParams
      */
