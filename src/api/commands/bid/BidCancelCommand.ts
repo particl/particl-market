@@ -14,7 +14,7 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { BidActionService } from '../../services/BidActionService';
+import { BidActionService } from '../../services/action/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/BidService';
 
@@ -26,7 +26,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
+        @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_CANCEL);
         this.log = new Logger(__filename);

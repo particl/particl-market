@@ -5,30 +5,30 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named} from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
-import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
-import { SmsgService } from './SmsgService';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets, Events } from '../../../constants';
+import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
+import { SmsgService } from '../SmsgService';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
-import { ProposalService } from './ProposalService';
-import { MessageException } from '../exceptions/MessageException';
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { ProposalCategory } from '../enums/ProposalCategory';
-import { ProposalAddMessage } from '../messages/action/ProposalAddMessage';
-import { ListingItemService } from './ListingItemService';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { SmsgMessageService } from './SmsgMessageService';
-import { ItemVote } from '../enums/ItemVote';
-import { FlaggedItemService } from './FlaggedItemService';
-import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
-import { FlaggedItem } from '../models/FlaggedItem';
+import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
+import { ProposalService } from '../ProposalService';
+import { MessageException } from '../../exceptions/MessageException';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import { ListingItemService } from '../ListingItemService';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { SmsgMessageService } from '../SmsgMessageService';
+import { ItemVote } from '../../enums/ItemVote';
+import { FlaggedItemService } from '../FlaggedItemService';
+import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
-import { Proposal } from '../models/Proposal';
-import { ProposalAddMessageFactory } from '../factories/message/ProposalAddMessageFactory';
-import { ProposalAddMessageCreateParams} from '../factories/message/MessageCreateParams';
-import { ProposalFactory } from '../factories/model/ProposalFactory';
+import { Proposal } from '../../models/Proposal';
+import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
+import { ProposalAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
+import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
 
 export class ProposalActionService {
@@ -44,7 +44,7 @@ export class ProposalActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
 

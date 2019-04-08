@@ -10,7 +10,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionService } from '../../services/EscrowActionService';
+import { EscrowActionService } from '../../services/action/EscrowActionService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -25,7 +25,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.EscrowActionService) private escrowActionService: EscrowActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_RELEASE);

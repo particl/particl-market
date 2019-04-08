@@ -17,14 +17,14 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { VoteActionService } from '../../services/VoteActionService';
+import { VoteActionService } from '../../services/action/VoteActionService';
 
 export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType

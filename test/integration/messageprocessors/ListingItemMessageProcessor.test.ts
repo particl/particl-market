@@ -10,7 +10,7 @@ import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
-import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
+import { ListingItemAddActionService } from '../../../src/api/services/action/ListingItemAddActionService';
 import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
 import { ListingItemAddMessage } from '../../../src/api/messages/action/ListingItemAddMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
@@ -34,7 +34,7 @@ describe('ListingItemMessage', () => {
     let marketService: MarketService;
     let profileService: ProfileService;
     let listingItemFactory: ListingItemFactory;
-    let listingItemActionService: ListingItemActionService;
+    let listingItemActionService: ListingItemAddActionService;
     let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
 
@@ -50,7 +50,7 @@ describe('ListingItemMessage', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
+        listingItemActionService = app.IoC.getNamed<ListingItemAddActionService>(Types.Service, Targets.Service.ListingItemActionService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);

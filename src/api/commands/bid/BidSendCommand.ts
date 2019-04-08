@@ -13,17 +13,16 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { BidActionService, IdValuePairDeprecatedUseKVS } from '../../services/BidActionService';
+import { BidActionService } from '../../services/action/BidActionService';
 import { AddressService } from '../../services/AddressService';
 import { ProfileService } from '../../services/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import * as resources from 'resources';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidDataValue } from '../../enums/BidDataValue';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {KVS} from 'omp-lib/dist/interfaces/common';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -55,7 +54,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
+        @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_SEND);
         this.log = new Logger(__filename);

@@ -23,6 +23,8 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';
 import { GovernanceAction } from '../../src/api/enums/GovernanceAction';
+import {SmsgMessageCreateParams} from '../../src/api/factories/model/ModelCreateParams';
+import {ActionDirection} from '../../src/api/enums/ActionDirection';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -49,7 +51,12 @@ describe('SmsgMessage', () => {
         expiration: 1535194736,
         payloadsize: 704,
         from: 'psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW',
-        text: '{\"version\":\"0.0.1.0\","action":{"type":"MPA_LISTING_ADD",\"item\":{\"hash\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7cd9f3529249260\",\"information\":{\"title\":\"testing with wallet unlock\",\"short_description\":\"test\",\"long_description\":\"test\",\"category\":[\"cat_ROOT\",\"cat_particl\",\"cat_particl_free_swag\"],\"location\":{\"country\":\"AD\",\"address\":\"a\",\"gps\":{}},\"shipping_destinations\":[],\"images\":[]},\"payment\":{\"type\":\"SALE\",\"escrow\":{\"type\":\"MAD\",\"ratio\":{\"buyer\":100,\"seller\":100}},\"cryptocurrency\":[{\"currency\":\"PART\",\"base_price\":1,\"shipping_price\":{\"domestic\":1,\"international\":1}}]},\"messaging\":[],\"objects\":[],\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"expiryTime\":4}}}'
+        text: '{\"version\":\"0.0.1.0\","action":{"type":"MPA_LISTING_ADD",\"item\":{\"hash\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7c' +
+            'd9f3529249260\",\"information\":{\"title\":\"testing with wallet unlock\",\"short_description\":\"test\",\"long_description\":\"test\",' +
+            '\"category\":[\"cat_ROOT\",\"cat_particl\",\"cat_particl_free_swag\"],\"location\":{\"country\":\"AD\",\"address\":\"a\",\"gps\":{}},' +
+            '\"shipping_destinations\":[],\"images\":[]},\"payment\":{\"type\":\"SALE\",\"escrow\":{\"type\":\"MAD\",\"ratio\":{\"buyer\":100,' +
+            '\"seller\":100}},\"cryptocurrency\":[{\"currency\":\"PART\",\"base_price\":1,\"shipping_price\":{\"domestic\":1,\"international\":1}}]},' +
+            '\"messaging\":[],\"objects\":[],\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"expiryTime\":4}}}'
     };
 
     const proposalMessage = {
@@ -65,7 +72,14 @@ describe('SmsgMessage', () => {
         expiration: 1535021936,
         payloadsize: 624,
         from: 'psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW',
-        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_PROPOSAL_ADD\",\"submitter\":\"psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW\",\"blockStart\":224827,\"blockEnd\":227707,\"title\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7cd9f3529249260\",\"description\":\"\",\"options\":[{\"optionId\":0,\"description\":\"OK\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"5d32207b35f31ac5acaccbd3f8cc4e2f81f025594455a6dfac62773ae61760a6\"},{\"optionId\":1,\"description\":\"Remove\",\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"hash\":\"bd1e498cfa1ed48616e8e142feb60406cb3d112b79b265f2807afc828e733fc5\"}],\"hash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\"}}'
+        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_PROPOSAL_ADD\",\"submitter\":\"psERtzYWqnZ9dXD9BqEW1ZA7dnLTHaoXfW\",' +
+            '\"blockStart\":224827,\"blockEnd\":227707,\"title\":\"1173c5f72a5612b9bccff555d39add69362407a3d034e9aaf7cd9f3529249260\",' +
+            '\"description\":\"\",\"options\":[{\"optionId\":0,\"description\":\"OK\",' +
+            '\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",' +
+            '\"hash\":\"5d32207b35f31ac5acaccbd3f8cc4e2f81f025594455a6dfac62773ae61760a6\"},{\"optionId\":1,\"description\":\"Remove\",' +
+            '\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",' +
+            '\"hash\":\"bd1e498cfa1ed48616e8e142feb60406cb3d112b79b265f2807afc828e733fc5\"}],' +
+            '\"hash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\"}}'
     };
 
     const voteMessage = {
@@ -81,7 +95,9 @@ describe('SmsgMessage', () => {
         expiration: 1534077607,
         payloadsize: 320,
         from: 'poJJukenuB455RciQ6a1JPe7frNxBLUqLw',
-        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_VOTE\",\"proposalHash\":\"75f0ccdfa65c5b09562b840b1ed862b56155a734c0ec7d0f73d9bc59b6093428\",\"optionId\":1,\"voter\":\"poJJukenuB455RciQ6a1JPe7frNxBLUqLw\",\"block\":217484,\"weight\":1}}'
+        text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_VOTE\",' +
+            '\"proposalHash\":\"75f0ccdfa65c5b09562b840b1ed862b56155a734c0ec7d0f73d9bc59b6093428\",' +
+            '\"optionId\":1,\"voter\":\"poJJukenuB455RciQ6a1JPe7frNxBLUqLw\",\"block\":217484,\"weight\":1}}'
     };
 
     beforeAll(async () => {
@@ -146,7 +162,9 @@ describe('SmsgMessage', () => {
 
         log.debug('listingItemMessage: ', JSON.stringify(listingItemMessage, null, 2));
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemMessage);
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemMessage, {
+            direction: ActionDirection.INCOMING
+        } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, listingItemMessage);
 
@@ -158,7 +176,9 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (proposalMessage)', async () => {
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(proposalMessage);
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(proposalMessage, {
+            direction: ActionDirection.INCOMING
+        } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, proposalMessage);
 
@@ -170,7 +190,9 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (voteMessage)', async () => {
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(voteMessage);
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(voteMessage, {
+            direction: ActionDirection.INCOMING
+        } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, voteMessage);
 
@@ -251,7 +273,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MPA_LISTING_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -266,7 +288,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(1);
     });
 
-    test('Should searchBy for SmsgMessages: [ListingItemMessageType.MPA_LISTING_ADD, ProposalMessageType.MPA_PROPOSAL_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -281,7 +303,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
     });
 
-    test('Should searchBy for SmsgMessages: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -343,7 +365,7 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE], status: NEW', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',

@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { VoteActionService } from '../../services/VoteActionService';
+import { VoteActionService } from '../../services/action/VoteActionService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
@@ -28,7 +28,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService

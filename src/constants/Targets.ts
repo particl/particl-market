@@ -96,8 +96,15 @@ export const Targets = {
         VoteRepository: 'VoteRepository'
     },
     Service:     {
+        action: {
+            // BaseActionService: 'BaseActionService',
+            BidActionService: 'BidActionService',
+            EscrowActionService: 'EscrowActionService',
+            ListingItemAddActionService: 'ListingItemAddActionService',
+            ProposalActionService: 'ProposalActionService',
+            VoteActionService: 'VoteActionService'
+        },
         AddressService: 'AddressService',
-        BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
         CoreCookieService: 'CoreCookieService',
@@ -107,7 +114,6 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
-        EscrowActionService: 'EscrowActionService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',
@@ -119,7 +125,6 @@ export const Targets = {
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
         ItemPriceService: 'ItemPriceService',
-        ListingItemActionService: 'ListingItemActionService',
         ListingItemObjectDataService: 'ListingItemObjectDataService',
         ListingItemObjectService: 'ListingItemObjectService',
         ListingItemService: 'ListingItemService',
@@ -135,7 +140,6 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
-        ProposalActionService: 'ProposalActionService',
         ProposalOptionResultService: 'ProposalOptionResultService',
         ProposalOptionService: 'ProposalOptionService',
         ProposalResultService: 'ProposalResultService',
@@ -149,7 +153,6 @@ export const Targets = {
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
-        VoteActionService: 'VoteActionService',
         VoteService: 'VoteService'
     },
     Command:     {

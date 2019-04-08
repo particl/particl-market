@@ -11,7 +11,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionService } from '../../services/EscrowActionService';
+import { EscrowActionService } from '../../services/action/EscrowActionService';
 import { OrderItemService } from '../../services/OrderItemService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
@@ -26,7 +26,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.EscrowActionService) private escrowActionService: EscrowActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_LOCK);

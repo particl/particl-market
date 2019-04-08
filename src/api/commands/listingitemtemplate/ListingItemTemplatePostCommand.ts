@@ -14,7 +14,7 @@ import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTempla
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ListingItemActionService } from '../../services/ListingItemActionService';
+import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/MarketService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
@@ -26,7 +26,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
@@ -60,7 +60,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             marketId
         } as ListingItemTemplatePostRequest;
 
-        const response = await this.listingItemActionService.post(postRequest, estimateFee);
+        const response = await this.listingItemAddActionService.post(postRequest, estimateFee);
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
         return response;

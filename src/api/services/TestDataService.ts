@@ -63,10 +63,10 @@ import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { ProposalCategory } from '../enums/ProposalCategory';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteService } from './VoteService';
-import { VoteActionService } from './VoteActionService';
+import { VoteActionService } from './action/VoteActionService';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
-import { ProposalActionService } from './ProposalActionService';
+import { ProposalActionService } from './action/ProposalActionService';
 import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
@@ -109,11 +109,11 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) private proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) private proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalActionService,
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) private proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,

@@ -17,7 +17,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
-import { ProposalActionService } from '../../services/ProposalActionService';
+import { ProposalActionService } from '../../services/action/ProposalActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -32,7 +32,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService
+        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalActionService
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);
