@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
+import { Types, Core, Targets } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
@@ -68,13 +68,14 @@ export class MessageProcessor implements MessageProcessorInterface {
                     this.log.error('Could not parse the MarketplaceMessage.');
                     return null;
                 });
-            const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
+
+            //  const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
 
             // this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
             // this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
             // this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
-            if (marketplaceMessage !== null && eventType !== null && emitEvent) {
+            if (marketplaceMessage !== null && smsgMessage.type !== null && emitEvent) {
                 smsgMessage.text = '';
 
                 const marketplaceEvent: MarketplaceMessageEvent = {
@@ -91,19 +92,19 @@ export class MessageProcessor implements MessageProcessorInterface {
                 // this.log.debug('SENDING: ', eventType);
 
                 // send event to the eventTypes processor
-                this.eventEmitter.emit(eventType, marketplaceEvent);
+                this.eventEmitter.emit(smsgMessage.type, marketplaceEvent);
 
                 // send event to cli
-                // todo: send marketplaceEvent to Cli
-                this.eventEmitter.emit(Events.Cli, {
-                    message: eventType,
-                    data: marketplaceMessage
-                });
+                // todo: fix the cli at some point
+                // this.eventEmitter.emit(Events.Cli, {
+                //    message: eventType,
+                //    data: marketplaceMessage
+                // });
 
             } else {
                 // parsing failed, log some error data and update the smsgMessage
                 this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
-                this.log.error('eventType:', JSON.stringify(eventType, null, 2));
+                this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
                 this.log.error('emitEvent:', JSON.stringify(emitEvent, null, 2));
                 this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
@@ -239,33 +240,5 @@ export class MessageProcessor implements MessageProcessorInterface {
             this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);
         }
         return messages;
-    }
-
-    // TODO: make this static?
-    private async getEventForMessageType(messageType: ActionMessageTypes): Promise<string | null> {
-        switch (messageType) {
-            case MPAction.MPA_BID:
-                return Events.BidReceivedEvent;
-            case MPAction.MPA_ACCEPT:
-                return Events.AcceptBidReceivedEvent;
-            case MPAction.MPA_REJECT:
-                return Events.RejectBidReceivedEvent;
-            case MPAction.MPA_CANCEL:
-                return Events.CancelBidReceivedEvent;
-            case MPAction.MPA_LOCK:
-                return Events.LockEscrowReceivedEvent;
-            case MPAction.MPA_REFUND:
-                return Events.RefundEscrowReceivedEvent;
-            case MPAction.MPA_RELEASE:
-                return Events.ReleaseEscrowReceivedEvent;
-            case GovernanceAction.MPA_PROPOSAL_ADD:
-                return Events.ProposalReceivedEvent;
-            case GovernanceAction.MPA_VOTE:
-                return Events.VoteReceivedEvent;
-            case MPAction.MPA_LISTING_ADD:
-                return Events.ListingItemReceivedEvent;
-            default:
-                return null;
-        }
     }
 }

@@ -2,10 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
-import { inject, multiInject, named } from 'inversify';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
+import { Core, Targets, Types } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { SmsgService } from '../services/SmsgService';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
@@ -14,6 +13,8 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessage } from '../models/SmsgMessage';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
 
 export class SmsgMessageProcessor implements MessageProcessorInterface {
 
@@ -50,7 +51,9 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
             // todo: this is an old problem and should be tested again if we could get rid of this now
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
-            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
+            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg, {
+                direction: ActionDirection.INCOMING
+            } as SmsgMessageCreateParams);
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
 

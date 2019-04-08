@@ -4,7 +4,7 @@
 
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
+import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemService } from '../services/ListingItemService';
 
