@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
@@ -204,10 +204,10 @@ export class EscrowActionService {
 
     /**
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:resources.Order>}
      */
-    private async processEscrowLockReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowLockReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         // TODO: EscrowLockMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
@@ -266,7 +266,7 @@ export class EscrowActionService {
 
     }
 
-    private async processEscrowReleaseReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowReleaseReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         if (!message.action) {   // ACTIONEVENT
@@ -320,7 +320,7 @@ export class EscrowActionService {
     }
 
     // TODO: do we need this?
-    private async processEscrowRequestRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowRequestRefundReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         const escrowRefundMessage = message.action as EscrowRefundMessage;
@@ -350,7 +350,7 @@ export class EscrowActionService {
             });
     }
 
-    private async processEscrowRefundReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    private async processEscrowRefundReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         const escrowMessage = message.action as EscrowRefundMessage;
@@ -608,9 +608,9 @@ export class EscrowActionService {
      * @returns {any}
      */
     private getValueFromOrderItemObjects(key: string, orderItemObjects: resources.OrderItemObject[]): any {
-        const value = orderItemObjects.find(kv => kv.dataId === key);
+        const value = orderItemObjects.find(kv => kv.key === key);
         if (value) {
-            return value.dataValue[0] === '[' ? JSON.parse(value.dataValue) : value.dataValue;
+            return value.value[0] === '[' ? JSON.parse(value.value) : value.value;
         } else {
             this.log.error('Missing OrderItemObject value for key: ' + key);
             throw new MessageException('Missing OrderItemObject value for key: ' + key);
@@ -625,12 +625,12 @@ export class EscrowActionService {
      * @returns {Promise<any>}
      */
     private async updateRawTxOrderItemObject(orderItemObjects: resources.OrderItemObject[], newRawtx: string): Promise<any> {
-        const rawtxObject = orderItemObjects.find(kv => kv.dataId === 'rawtx');
+        const rawtxObject = orderItemObjects.find(kv => kv.key === 'rawtx');
 
         if (rawtxObject) {
             const updatedOrderItemObject = await this.orderItemObjectService.update(rawtxObject.id, {
-                dataId: BidDataValue.RAW_TX.toString(),
-                dataValue: newRawtx
+                key: BidDataValue.RAW_TX.toString(),
+                value: newRawtx
             } as OrderItemObjectUpdateRequest);
             return updatedOrderItemObject.toJSON();
         } else {

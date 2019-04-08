@@ -2,16 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import {Environment} from '../../core/helpers/Environment';
-import * as resources from 'resources';
-import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
-import {MessageException} from '../exceptions/MessageException';
+import { MessageException } from '../exceptions/MessageException';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 
 export class SmsgService {
 
@@ -167,9 +166,9 @@ export class SmsgService {
      *  "from": "str"                     (string) Address the message was sent from
      * }
      *
-     * @returns {Promise<IncomingSmsgMessage>}
+     * @returns {Promise<CoreSmsgMessage>}
      */
-    public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<IncomingSmsgMessage> {
+    public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<CoreSmsgMessage> {
         const response = await this.coreRpcService.call('smsg', [msgId, {
                 delete: remove,
                 setread: setRead,

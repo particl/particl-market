@@ -42,10 +42,10 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateListingItemObjects = true;
 
     public generateObjectDatas = true;
-    public profileId: number | null = null;
+    public profileId: number;
     public generateListingItem = false;
-    public marketId: number | null = null;
-    public categoryId: number | null = null;
+    public marketId: number;
+    public categoryId: number;
 
     /**
      * generateParams[]:

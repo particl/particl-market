@@ -18,7 +18,6 @@ import { ProfileService } from '../../../src/api/services/ProfileService';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
-import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../../../src/api/services/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../../../src/api/requests/SmsgMessageCreateRequest';
@@ -30,7 +29,8 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessageFactory } from '../../../src/api/factories/message/ListingItemAddMessageFactory';
 import { ListingItemAddMessageCreateParams } from '../../../src/api/factories/message/MessageCreateParams';
 import { ListingItemAddMessage } from '../../../src/api/messages/actions/ListingItemAddMessage';
-import {ompVersion} from 'omp-lib/dist/omp';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 
 
 describe('MessageProcessor', () => {
@@ -110,7 +110,7 @@ describe('MessageProcessor', () => {
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
-        } as IncomingSmsgMessage;
+        } as CoreSmsgMessage;
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemSmsg);
         return await smsgMessageService.create(smsgMessageCreateRequest)

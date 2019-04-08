@@ -58,7 +58,7 @@ export class BidFactory implements ModelFactoryInterface {
             // copy the existing key-value pairs from latestBid.BidDatas
             if (params.latestBid && params.latestBid.BidDatas) {
                 for (const bidData of params.latestBid.BidDatas) {
-                    bidDataValues[bidData.dataId] = bidData.dataValue;
+                    bidDataValues[bidData.key] = bidData.value;
                 }
             }
 
@@ -72,8 +72,8 @@ export class BidFactory implements ModelFactoryInterface {
             // create bidDataCreateRequests
             const bidDatas = Object.keys(bidDataValues).map( (key) => {
                 return {
-                    dataId: key,
-                    dataValue: bidDataValues[key]
+                    key,
+                    value: bidDataValues[key]
                 } as BidDataCreateRequest;
             });
 
@@ -156,9 +156,9 @@ export class BidFactory implements ModelFactoryInterface {
      * @returns {any}
      */
     private getValueFromBidDatas(key: string, bidDatas: BidDataCreateRequest[]): string {
-        const value = bidDatas.find(kv => kv.dataId === key);
+        const value = bidDatas.find(kv => kv.key === key);
         if ( value ) {
-            return value.dataValue;
+            return value.value;
         } else {
             this.log.error('Missing BidData value for key: ' + key);
             throw new MessageException('Missing BidData value for key: ' + key);

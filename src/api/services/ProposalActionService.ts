@@ -11,7 +11,7 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { ProposalService } from './ProposalService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
@@ -127,10 +127,10 @@ export class ProposalActionService {
      *   - don't create votes, votes are created when they arrive
      *   - flaggeditem and initial ProposalResult are created in processProposal
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processProposalReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const proposalMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;

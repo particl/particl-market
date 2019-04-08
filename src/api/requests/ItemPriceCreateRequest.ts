@@ -13,6 +13,7 @@ export class ItemPriceCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public payment_information_id: number;
+    public cryptocurrency_address_id: number;
 
     @IsEnum(Cryptocurrency)
     @IsNotEmpty()

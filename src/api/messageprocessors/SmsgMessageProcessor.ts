@@ -13,7 +13,7 @@ import { SmsgMessageService } from '../services/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessage } from '../models/SmsgMessage';
-import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 
 export class SmsgMessageProcessor implements MessageProcessorInterface {
 
@@ -40,7 +40,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
      */
-    public async process(messages: IncomingSmsgMessage[]): Promise<void> {
+    public async process(messages: CoreSmsgMessage[]): Promise<void> {
 
         const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
         this.log.debug('INCOMING messages.length: ', messages.length);
@@ -49,7 +49,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         for (const message of messages) {
             // todo: this is an old problem and should be tested again if we could get rid of this now
             // get the message again using smsg, since the smsginbox doesnt return expiration
-            const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
+            const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
@@ -100,7 +100,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
             .then( async messages => {
                 if (messages.result !== '0') {
                     // Process 10 smsg messages at a time for SQLite insert
-                    const smsgMessages: IncomingSmsgMessage[] = messages.messages.splice(0, Math.min(10, messages.messages.length));
+                    const smsgMessages: CoreSmsgMessage[] = messages.messages.splice(0, Math.min(10, messages.messages.length));
                     this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 }

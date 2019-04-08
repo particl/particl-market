@@ -14,7 +14,7 @@ import { SmsgMessageService } from '../services/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { MessageException } from '../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -77,7 +77,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (marketplaceMessage !== null && eventType !== null && emitEvent) {
                 smsgMessage.text = '';
 
-                const marketplaceEvent: MarketplaceEvent = {
+                const marketplaceEvent: MarketplaceMessageEvent = {
                     smsgMessage,
                     marketplaceMessage
                 };

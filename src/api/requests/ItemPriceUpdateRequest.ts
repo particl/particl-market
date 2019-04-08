@@ -11,6 +11,9 @@ import { CryptocurrencyAddressUpdateRequest } from './CryptocurrencyAddressUpdat
 // tslint:disable:variable-name
 export class ItemPriceUpdateRequest extends RequestBody {
 
+    public payment_information_id: number;
+    public cryptocurrency_address_id: number;
+
     @IsEnum(Cryptocurrency)
     @IsNotEmpty()
     public currency: Cryptocurrency;

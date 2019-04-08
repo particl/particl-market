@@ -5,7 +5,7 @@
 import { MarketplaceMessage } from './MarketplaceMessage';
 import * as resources from 'resources';
 
-export class MarketplaceEvent {
+export class MarketplaceMessageEvent {
     public smsgMessage: resources.SmsgMessage;
     public marketplaceMessage: MarketplaceMessage;
 }

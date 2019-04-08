@@ -10,10 +10,10 @@ import { SmsgMessageCreateRequest } from '../../requests/SmsgMessageCreateReques
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { IncomingSmsgMessage } from '../../messages/IncomingSmsgMessage';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
 
 export class SmsgMessageFactory {
 
@@ -25,7 +25,7 @@ export class SmsgMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(message: IncomingSmsgMessage): Promise<SmsgMessageCreateRequest> {
+    public async get(message: CoreSmsgMessage): Promise<SmsgMessageCreateRequest> {
 
         return await this.parseJSONSafe(message.text)
             .then( marketplaceMessage => {

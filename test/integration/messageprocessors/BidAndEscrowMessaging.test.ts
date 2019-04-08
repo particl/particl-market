@@ -25,12 +25,12 @@ import { GenerateProfileParams } from '../../../src/api/requests/params/Generate
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../../../src/api/messages/MarketplaceMessageEvent';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
-import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
+import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 import { BidMessageFactory } from '../../../src/api/factories/message/BidMessageFactory';
@@ -189,7 +189,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         //
     });
 
-    test('Should process MarketplaceEvent containing MPA_BID BidMessage', async () => {
+    test('Should process MarketplaceMessageEvent containing MPA_BID BidMessage', async () => {
 
         // BUYER -> SELLER
         expect(listingItem).toBeDefined();
@@ -225,7 +225,7 @@ describe('BidAndEscrowMessageProcessing', () => {
             market: defaultMarket.address
         };
 
-        const smsgMessage: IncomingSmsgMessage = {
+        const smsgMessage: CoreSmsgMessage = {
             msgid: 'TESTMESSAGE' + new Date().getTime(),
             version: '0300',
             location: 'inbox',
@@ -241,11 +241,11 @@ describe('BidAndEscrowMessageProcessing', () => {
             text: JSON.stringify(marketplaceMessage)
         };
 
-        // process the message like it was received as MarketplaceEvent
+        // process the message like it was received as MarketplaceMessageEvent
         const processingResult = await bidActionService.processBidReceivedEvent({
             smsgMessage,
             marketplaceMessage
-        } as MarketplaceEvent);
+        } as MarketplaceMessageEvent);
 
         expect(processingResult).toBe(SmsgMessageStatus.PROCESSED);
 

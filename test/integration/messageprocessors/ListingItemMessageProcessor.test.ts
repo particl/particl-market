@@ -12,7 +12,7 @@ import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
 import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
-import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
+import { ListingItemAddMessage } from '../../../src/api/messages/action/ListingItemAddMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
@@ -20,7 +20,7 @@ import { ProfileService } from '../../../src/api/services/ProfileService';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
-import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
+import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 
 
@@ -95,7 +95,7 @@ describe('ListingItemMessage', () => {
     });
     // tslint:enable:max-line-length
 
-    const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
+    const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemAddMessage) => {
 
         expect(result.id).not.toBeNull();
         expect(result.hash).not.toBeNull();
@@ -107,32 +107,32 @@ describe('ListingItemMessage', () => {
         expect(result).not.toHaveProperty('objects');
 
         // ItemInformation
-        expect(result.ItemInformation.title).toBe(message.information.title);
-        expect(result.ItemInformation.shortDescription).toBe(message.information.short_description);
-        expect(result.ItemInformation.longDescription).toBe(message.information.long_description);
+        expect(result.ItemInformation.title).toBe(message.item.information.title);
+        expect(result.ItemInformation.shortDescription).toBe(message.item.information.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(message.item.information.longDescription);
 
         // ItemInformation.ItemCategory
-        expect(result.ItemInformation.ItemCategory.key).toBe(message.information.category[2]);
+        expect(result.ItemInformation.ItemCategory.key).toBe(message.item.information.category[2]);
         expect(result.ItemInformation.ItemCategory.parentItemCategoryId).not.toBeNull();
 
         // ItemInformation.ItemLocation
-        expect(result.ItemInformation.ItemLocation.country).toBe(message.information.location.country);
-        expect(result.ItemInformation.ItemLocation.address).toBe(message.information.location.address);
+        expect(result.ItemInformation.ItemLocation.country).toBe(message.item.information.location.country);
+        expect(result.ItemInformation.ItemLocation.address).toBe(message.item.information.location.address);
 
         // ItemInformation.ItemLocation.LocationMarker
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(message.information.location.gps.marker_title);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(message.information.location.gps.marker_text);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(message.information.location.gps.lat);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(message.information.location.gps.lng);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(message.item.information.location.gps.marker_title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(message.item.information.location.gps.marker_text);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(message.item.information.location.gps.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(message.item.information.location.gps.lng);
 
         // ItemInformation.ShippingDestinations
-        expect(result.ItemInformation.ShippingDestinations.length).toBe(message.information.shipping_destinations.length);
+        expect(result.ItemInformation.ShippingDestinations.length).toBe(message.item.information.shippingDestinations.length);
         // todo: test the shipping destinations
         // expect(message.information.shipping_destinations).toContain('-MOROCCO');
         // expect(message.information.shipping_destinations).toContain('PANAMA');
 
         // ItemInformation.ItemImages
-        expect(result.ItemInformation.ItemImages.length).toBe(message.information.images.length);
+        expect(result.ItemInformation.ItemImages.length).toBe(message.item.information.images.length);
         // todo: test the images
         // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
         // expect(message.information.images[0].data.length).toBe(1);
@@ -141,33 +141,33 @@ describe('ListingItemMessage', () => {
         // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
 
         // PaymentInformation
-        expect(result.PaymentInformation.type).toBe(message.payment.type);
+        expect(result.PaymentInformation.type).toBe(message.item.payment.type);
 
         // PaymentInformation.Escrow
-        expect(result.PaymentInformation.Escrow.type).toBe(message.payment.escrow.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(message.item.payment.escrow.type);
 
         // PaymentInformation.Escrow.Ratio
-        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(message.payment.escrow.ratio.buyer);
-        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(message.payment.escrow.ratio.seller);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(message.item.payment.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(message.item.payment.escrow.ratio.seller);
 
         // PaymentInformation.ItemPrice
         const itemPrice = result.PaymentInformation.ItemPrice;
-        expect(itemPrice.currency).toBe(message.payment.cryptocurrency[0].currency);
-        expect(itemPrice.basePrice).toBe(message.payment.cryptocurrency[0].base_price);
+        expect(itemPrice.currency).toBe(message.item.payment.options[0].currency);
+        expect(itemPrice.basePrice).toBe(message.item.payment.options[0].base_price);
 
         // PaymentInformation.ItemPrice.CryptocurrencyAddress
         const cryptocurrencyAddress = result.PaymentInformation.ItemPrice.CryptocurrencyAddress;
-        expect(cryptocurrencyAddress.type).toBe(message.payment.cryptocurrency[0].address.type);
-        expect(cryptocurrencyAddress.address).toBe(message.payment.cryptocurrency[0].address.address);
+        expect(cryptocurrencyAddress.type).toBe(message.item.payment.options[0].address.type);
+        expect(cryptocurrencyAddress.address).toBe(message.item.payment.options[0].address.address);
 
         // PaymentInformation.ItemPrice.ShippingPrice
         const shippingPrice = result.PaymentInformation.ItemPrice.ShippingPrice;
-        expect(shippingPrice.domestic).toBe(message.payment.cryptocurrency[0].shipping_price.domestic);
-        expect(shippingPrice.international).toBe(message.payment.cryptocurrency[0].shipping_price.international);
+        expect(shippingPrice.domestic).toBe(message.item.payment.options[0].shipping_price.domestic);
+        expect(shippingPrice.international).toBe(message.item.payment.options[0].shipping_price.international);
 
         // MessagingInformation
-        expect(result.MessagingInformation[0].protocol).toBe(message.messaging[0].protocol);
-        expect(result.MessagingInformation[0].publicKey).toBe(message.messaging[0].public_key);
+        expect(result.MessagingInformation[0].protocol).toBe(message.item.messaging[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(message.item.messaging[0].public_key);
 
         // listingitem-object
         // TODO test listingitemobjects
@@ -176,7 +176,7 @@ describe('ListingItemMessage', () => {
         // expect(result.ListingItemObjects[0].order).toBe(message.objects[0].order);
     };
 
-    test('Should process MarketplaceEvent containing ListingItemMessage', async () => {
+    test('Should process MarketplaceMessageEvent containing ListingItemMessage', async () => {
 
         // the first template is used to generate the message and is deleted before message processing to
         // test processing on a situation where the message receiver is not the seller
@@ -213,7 +213,7 @@ describe('ListingItemMessage', () => {
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
-        } as IncomingSmsgMessage;
+        } as CoreSmsgMessage;
 
         // we have the message, so remove the template
         await listingItemTemplateService.destroy(listingItemTemplates[0].id);
@@ -234,7 +234,7 @@ describe('ListingItemMessage', () => {
 
     });
 
-    test('Should process MarketplaceEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate', async () => {
+    test('Should process MarketplaceMessageEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate', async () => {
 
         // there should be no related ListingItem yet
         expect(listingItemTemplates[1].ListingItems.length).toBe(0);
@@ -268,7 +268,7 @@ describe('ListingItemMessage', () => {
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
-        } as IncomingSmsgMessage;
+        } as CoreSmsgMessage;
 
         // process the message like it was received from the network
         const status: SmsgMessageStatus = await listingItemActionService.processListingItemReceivedEvent({

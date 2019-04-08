@@ -10,7 +10,7 @@ import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { MessageException } from '../exceptions/MessageException';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
@@ -456,8 +456,8 @@ export class BidActionService {
             // TODO: clean this up, so that we can add this with bidService.update
             const orderHashBidData = await this.bidDataService.create({
                 bid_id: updatedBid.id,
-                dataId: BidDataValue.ORDER_HASH.toString(),
-                dataValue: order.hash
+                key: BidDataValue.ORDER_HASH.toString(),
+                value: order.hash
             } as BidDataCreateRequest);
 
             // this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
@@ -853,10 +853,10 @@ export class BidActionService {
      * process received BidMessage
      * - create Bid
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processBidReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const bidder = event.smsgMessage.from;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
@@ -911,10 +911,10 @@ export class BidActionService {
      * process received AcceptBidMessage
      * - update Bid
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processAcceptBidReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const bidder = event.smsgMessage.from;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
@@ -996,10 +996,10 @@ export class BidActionService {
     /**
      * process received CancelBidMessage
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:SmsgMessageStatus>}
      */
-    public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processCancelBidReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const bidder = event.smsgMessage.from;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
@@ -1063,10 +1063,10 @@ export class BidActionService {
     /**
      * process received RejectBidMessage
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:SmsgMessageStatus>}
      */
-    public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processRejectBidReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const bidder = event.smsgMessage.to;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
@@ -1168,9 +1168,9 @@ export class BidActionService {
      * @returns {any}
      */
     private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
-        const value = bidDatas.find(kv => kv.dataId === key);
+        const value = bidDatas.find(kv => kv.key === key);
         if (value) {
-            return value.dataValue;
+            return value.value;
         } else {
             this.log.error('Missing BidData value for key: ' + key);
             throw new MessageException('Missing BidData value for key: ' + key);

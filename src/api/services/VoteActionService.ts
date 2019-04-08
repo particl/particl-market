@@ -11,7 +11,7 @@ import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { SmsgService } from './SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { VoteFactory } from '../factories/model/VoteFactory';
 import { VoteService } from './VoteService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
@@ -204,10 +204,10 @@ export class VoteActionService {
      * - this.processVote()
      * - proposalService.recalculateProposalResult(proposal)
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processVoteReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const voteMessage: VoteMessage = event.marketplaceMessage.action as VoteMessage;

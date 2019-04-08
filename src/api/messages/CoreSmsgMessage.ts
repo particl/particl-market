@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 
-export class IncomingSmsgMessage {
+export class CoreSmsgMessage {
 
     public msgid: string;
     public version: string;

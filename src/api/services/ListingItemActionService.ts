@@ -21,7 +21,7 @@ import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { ListingItemService } from './ListingItemService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalService } from './ProposalService';
@@ -133,10 +133,10 @@ export class ListingItemActionService {
     /**
      * processes received ListingItemMessage
      *
-     * @param {MarketplaceEvent} event
+     * @param {MarketplaceMessageEvent} event
      * @returns {Promise<"resources".ListingItem>}
      */
-    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+    public async processListingItemReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;

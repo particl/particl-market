@@ -17,7 +17,7 @@ import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../src/api/factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
-import { IncomingSmsgMessage } from '../../src/api/messages/IncomingSmsgMessage';
+import { CoreSmsgMessage } from '../../src/api/messages/CoreSmsgMessage';
 import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -99,7 +99,7 @@ describe('SmsgMessage', () => {
         result: SmsgMessageCreateRequest,
         type: ActionMessageTypes,
         status: SmsgMessageStatus,
-        smsgMessage: IncomingSmsgMessage) => {
+        smsgMessage: CoreSmsgMessage) => {
 
         expect(result.type).toBe(type);
         expect(result.status).toBe(status);
