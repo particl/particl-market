@@ -8,6 +8,7 @@
  */
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidCreateRequest } from '../../api/requests/BidCreateRequest';
+import { BidDataCreateRequest } from '../../api/requests/BidDataCreateRequest';
 
 export class HashableBid {
 
@@ -23,7 +24,18 @@ export class HashableBid {
             this.bidder = input.bidder;
             this.generatedAt = input.generatedAt;
             this.type = input.type;
-            input.bidDatas = input.bidDatas.sort();
+            // input.bidDatas = input.bidDatas.sort();
+
+            input.bidDatas.sort((a: BidDataCreateRequest, b: BidDataCreateRequest) => {
+                if (a.key < b.key) {
+                    return 1;
+                }
+                if (a.key > b.key) {
+                    return -1;
+                }
+                return 0;
+            });
+
             for (const item of input.bidDatas) {
                 this.bidDatas = this.bidDatas + item.key + ':' + item.value + ':';
             }

@@ -7,6 +7,7 @@
  *
  */
 import { OrderCreateRequest } from '../../api/requests/OrderCreateRequest';
+import {OrderItemCreateRequest} from '../../api/requests/OrderItemCreateRequest';
 
 export class HashableOrder {
 
@@ -20,7 +21,18 @@ export class HashableOrder {
         if (input) {
             this.buyer = input.buyer;
             this.seller = input.seller;
-            input.orderItems = input.orderItems.sort();
+            // input.orderItems = input.orderItems.sort();
+
+            input.orderItems.sort((a: OrderItemCreateRequest, b: OrderItemCreateRequest) => {
+                if (a.itemHash < b.itemHash) {
+                    return 1;
+                }
+                if (a.itemHash > b.itemHash) {
+                    return -1;
+                }
+                return 0;
+            });
+
             for (const item of input.orderItems) {
                 this.itemHashes = this.itemHashes + item.itemHash + ':';
             }

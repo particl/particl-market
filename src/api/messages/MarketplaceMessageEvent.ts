@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { MarketplaceMessage } from './MarketplaceMessage';
 import * as resources from 'resources';
+import { MarketplaceMessage } from './MarketplaceMessage';
 
 export class MarketplaceMessageEvent {
     public smsgMessage: resources.SmsgMessage;
