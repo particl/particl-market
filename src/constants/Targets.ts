@@ -97,7 +97,7 @@ export const Targets = {
     },
     Service:     {
         action: {
-            // BaseActionService: 'BaseActionService',
+            BaseActionService: 'BaseActionService',
             BidActionService: 'BidActionService',
             EscrowActionService: 'EscrowActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',

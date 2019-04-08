@@ -41,8 +41,12 @@ import { ListingItemAddMessageFactory } from '../../factories/message/ListingIte
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MPA } from 'omp-lib/dist/interfaces/omp';
+import { BaseActionService } from './BaseActionService';
+import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
+import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import {ListingItemAddRequest} from '../../requests/post/ListingItemAddRequest';
 
-export class ListingItemAddActionService {
+export class ListingItemAddActionService extends BaseActionService {
 
     public log: LoggerType;
 
@@ -59,15 +63,96 @@ export class ListingItemAddActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
-        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) private marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) public listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) public marketplaceMessageFactory: MarketplaceMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(MPAction.MPA_LISTING_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
-        this.configureEventListeners();
+        // this.configureEventListeners();
+    }
+
+    /**
+     * create the MarketplaceMessage to which is to be posted to the network
+     * @param params
+     */
+    public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
+        return await this.listingItemTemplateService.findOne(params.listingItemTemplateId, true)
+            .then(async templateModel => {
+                const listingItemTemplate: resources.ListingItemTemplate = templateModel.toJSON();
+                return await this.marketplaceMessageFactory.get(
+                    MPAction.MPA_LISTING_ADD, {
+                        template: listingItemTemplate
+                    } as ListingItemAddMessageCreateParams);
+            });
+    }
+
+    /**
+     * validate the MarketplaceMessage to which is to be posted to the network
+     * @param message
+     */
+    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+        return ListingItemAddValidator.isValid(message);
+    }
+
+    /**
+     * this is implemented in the abstract class, just doing some logging here
+     * @param params
+     */
+    public async post(params: PostRequestInterface): Promise<SmsgSendResponse> {
+        this.log.debug('post(): ', JSON.stringify(params, null, 2));
+        return super.post(params);
+    }
+
+    /**
+     * handles the received ListingItemAddMessage and return SmsgMessageStatus as a result
+     *
+     * @param event
+     */
+    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
+
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
+
+        // - first get the Market, fail if it doesn't exist
+        // - if ListingItem contains a custom category, create them
+        // - fetch the root category with related to create the listingItemCreateRequest
+        // - create the ListingItem with the listingItemCreateRequest
+        // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
+        // - if there's a matching ListingItemTemplate, create a relation
+
+        return await this.marketService.findByAddress(smsgMessage.to)
+            .then(async marketModel => {
+                const market: resources.Market = marketModel.toJSON();
+
+                await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
+                const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+                const listingItemCreateRequest = await this.listingItemFactory.get(actionMessage, {
+                        marketId: market.id,
+                        rootCategory
+                    } as ListingItemCreateParams,
+                    smsgMessage);
+
+                return await this.listingItemService.create(listingItemCreateRequest)
+                    .then(async value => {
+                        const listingItem: resources.ListingItem = value.toJSON();
+                        // await this.createFlaggedItemIfNeeded(listingItem);
+                        // await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+                        return SmsgMessageStatus.PROCESSED;
+                    })
+                    .catch(reason => {
+                        return SmsgMessageStatus.PROCESSING_FAILED;
+                    });
+            })
+            .catch(reason => {
+                // market not found
+                return SmsgMessageStatus.PROCESSING_FAILED;
+            });
     }
 
     /**
@@ -77,6 +162,7 @@ export class ListingItemAddActionService {
      * @param estimateFee
      * @returns {Promise<SmsgSendResponse>}
      */
+/*
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
@@ -116,19 +202,7 @@ export class ListingItemAddActionService {
         // post the MPA_LISTING_ADD
         return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
     }
-
-    /**
-     * update a ListingItem based on a given ListingItem as ListingItemUpdateMessage
-     *
-     * @param data
-     * @returns {Promise<void>}
-     */
-    @validate()
-    public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
-
-        // TODO: update not implemented/supported yet
-        throw new NotImplementedException();
-    }
+*/
 
     /**
      * processes received ListingItemMessage
@@ -234,5 +308,6 @@ export class ListingItemAddActionService {
         });
 
     }
+
 
 }
