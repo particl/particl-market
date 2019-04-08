@@ -5,11 +5,11 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { BidMessage } from '../../messages/actions/BidMessage';
+import { BidMessage } from '../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BuyerData, LockInfo } from 'omp-lib/dist/interfaces/omp';
-import { EscrowLockMessage } from '../../messages/actions/EscrowLockMessage';
+import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowMessageCreateParams } from './MessageCreateParams';
 
 export class EscrowLockMessageFactory implements MessageFactoryInterface {

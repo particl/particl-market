@@ -7,7 +7,8 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import { KVS } from 'omp-lib/dist/interfaces/common';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class ProposalAddMessage extends MessageBody implements ActionMessageInterface {
 

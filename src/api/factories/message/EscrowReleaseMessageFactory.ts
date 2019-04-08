@@ -9,7 +9,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { SellerData} from 'omp-lib/dist/interfaces/omp';
 import { EscrowMessageCreateParams } from './MessageCreateParams';
-import { EscrowReleaseMessage } from '../../messages/actions/EscrowReleaseMessage';
+import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 
 export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
 

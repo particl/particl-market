@@ -26,7 +26,7 @@ import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObject
 import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/ItemImageDataService';
-import { ListingItemAddMessage } from '../../messages/actions/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ItemInfo, ItemObject, Location, LocationMarker } from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';

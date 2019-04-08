@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { BidMessage } from '../../messages/actions/BidMessage';
+import { BidMessage } from '../../messages/action/BidMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidCreateRequest } from '../../requests/BidCreateRequest';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
@@ -16,9 +16,9 @@ import { BidDataValue } from '../../enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { BidCreateParams } from './ModelCreateParams';
-import { BidAcceptMessage } from '../../messages/actions/BidAcceptMessage';
-import { BidRejectMessage } from '../../messages/actions/BidRejectMessage';
-import { BidCancelMessage } from '../../messages/actions/BidCancelMessage';
+import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
+import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
+import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
 

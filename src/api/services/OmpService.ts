@@ -6,13 +6,13 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { BidConfiguration, Cryptocurrency, MPM, ompVersion, OpenMarketProtocol } from 'omp-lib/dist/omp';
 import { CoreRpcService } from './CoreRpcService';
-import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
-import { BidMessage } from '../messages/actions/BidMessage';
-import { EscrowLockMessage } from '../messages/actions/EscrowLockMessage';
-import { BidAcceptMessage } from '../messages/actions/BidAcceptMessage';
-import { EscrowRefundMessage } from '../messages/actions/EscrowRefundMessage';
-import { EscrowReleaseMessage } from '../messages/actions/EscrowReleaseMessage';
-import { ActionMessageInterface } from '../messages/actions/ActionMessageInterface';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
+import { BidMessage } from '../messages/action/BidMessage';
+import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
+import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
+import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
+import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 
 export class OmpService {
 

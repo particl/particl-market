@@ -22,7 +22,7 @@ import { ListingItemService } from './ListingItemService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessage } from '../messages/actions/BidMessage';
+import { BidMessage } from '../messages/action/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -45,9 +45,9 @@ import { BidCreateParams } from '../factories/model/ModelCreateParams';
 import { BidAcceptMessageFactory } from '../factories/message/BidAcceptMessageFactory';
 import { BidRejectMessageFactory } from '../factories/message/BidRejectMessageFactory';
 import { BidCancelMessageFactory } from '../factories/message/BidCancelMessageFactory';
-import { BidAcceptMessage } from '../messages/actions/BidAcceptMessage';
-import { BidCancelMessage } from '../messages/actions/BidCancelMessage';
-import { BidRejectMessage } from '../messages/actions/BidRejectMessage';
+import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
+import { BidCancelMessage } from '../messages/action/BidCancelMessage';
+import { BidRejectMessage } from '../messages/action/BidRejectMessage';
 import { BidMessageFactory } from '../factories/message/BidMessageFactory';
 
 // todo: move

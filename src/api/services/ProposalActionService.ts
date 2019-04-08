@@ -16,7 +16,7 @@ import { ProposalService } from './ProposalService';
 import { MessageException } from '../exceptions/MessageException';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { ProposalCategory } from '../enums/ProposalCategory';
-import { ProposalAddMessage } from '../messages/actions/ProposalAddMessage';
+import { ProposalAddMessage } from '../messages/action/ProposalAddMessage';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';

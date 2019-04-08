@@ -28,7 +28,7 @@ import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddMessageFactory } from '../../../src/api/factories/message/ListingItemAddMessageFactory';
 import { ListingItemAddMessageCreateParams } from '../../../src/api/factories/message/MessageCreateParams';
-import { ListingItemAddMessage } from '../../../src/api/messages/actions/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../../../src/api/messages/action/ListingItemAddMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 

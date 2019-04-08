@@ -6,7 +6,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { VoteMessage } from '../../messages/actions/VoteMessage';
+import { VoteMessage } from '../../messages/action/VoteMessage';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { VoteMessageCreateParams } from './MessageCreateParams';

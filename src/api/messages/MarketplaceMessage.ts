@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MPM } from 'omp-lib/dist/interfaces/omp';
-import { ActionMessageInterface } from './actions/ActionMessageInterface';
+import { ActionMessageInterface } from './action/ActionMessageInterface';
 
 /**
  * MPMExtension defines how the MPM will be extended

@@ -32,7 +32,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
-import { ListingItemAddMessage } from '../messages/actions/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../messages/validators/ListingItemAddValidator';
 import { ListingItemCreateParams } from '../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../factories/message/MessageCreateParams';

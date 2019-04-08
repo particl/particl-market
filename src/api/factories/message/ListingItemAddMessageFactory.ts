@@ -32,7 +32,7 @@ import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { ListingItemAddMessage } from '../../messages/actions/ListingItemAddMessage';
+import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 

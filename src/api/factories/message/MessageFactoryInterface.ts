@@ -4,7 +4,7 @@
 
 import { MessageCreateParams } from './MessageCreateParams';
 import { MPA } from 'omp-lib/dist/interfaces/omp';
-import {ActionMessageInterface} from '../../messages/actions/ActionMessageInterface';
+import {ActionMessageInterface} from '../../messages/action/ActionMessageInterface';
 
 /**
  * MessageFactoryInterface defines how the Factory classes for the Messages should be implemented

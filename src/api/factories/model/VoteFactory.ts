@@ -7,13 +7,13 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { VoteMessage } from '../../messages/actions/VoteMessage';
+import { VoteMessage } from '../../messages/action/VoteMessage';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
 import { ProposalOptionService } from '../../services/ProposalOptionService';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {ProposalAddMessage} from '../../messages/actions/ProposalAddMessage';
+import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
 import {ProposalCreateParams, VoteCreateParams} from './ModelCreateParams';
 import {ProposalCreateRequest} from '../../requests/ProposalCreateRequest';
 

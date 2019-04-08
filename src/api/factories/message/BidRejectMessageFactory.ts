@@ -5,11 +5,11 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { BidMessage } from '../../messages/actions/BidMessage';
+import { BidMessage } from '../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidRejectMessageCreateParams } from './MessageCreateParams';
-import { BidRejectMessage } from '../../messages/actions/BidRejectMessage';
+import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 
 export class BidRejectMessageFactory implements MessageFactoryInterface {
 

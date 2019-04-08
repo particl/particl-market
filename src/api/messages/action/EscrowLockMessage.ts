@@ -7,7 +7,7 @@ import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BuyerData, LockInfo, MPA_LOCK } from 'omp-lib/dist/interfaces/omp';
-import { KVS } from 'omp-lib/dist/interfaces/common';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class EscrowLockMessage extends MessageBody implements ActionMessageInterface, MPA_LOCK {
 

@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ActionMessageInterface } from '../messages/actions/ActionMessageInterface';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import * as resources from 'resources';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 
