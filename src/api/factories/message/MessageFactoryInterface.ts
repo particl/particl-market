@@ -9,7 +9,6 @@ import {ActionMessageInterface} from '../../messages/action/ActionMessageInterfa
 /**
  * MessageFactoryInterface defines how the Factory classes for the Messages should be implemented
  */
-
 export interface MessageFactoryInterface {
     get(params: MessageCreateParams): Promise<ActionMessageInterface>;
 }

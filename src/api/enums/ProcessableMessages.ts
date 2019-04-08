@@ -3,8 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
-import * as resources from 'resources';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import * as resources from 'resources';
 
 export type ProcessableMessages = ActionMessageInterface
                                 // | ListingItemMessageInterface

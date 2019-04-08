@@ -10,10 +10,11 @@ import { SmsgMessageCreateRequest } from '../../requests/SmsgMessageCreateReques
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
+import { SmsgMessageCreateParams } from './ModelCreateParams';
 
 export class SmsgMessageFactory {
 
@@ -25,7 +26,7 @@ export class SmsgMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(message: CoreSmsgMessage): Promise<SmsgMessageCreateRequest> {
+    public async get(message: CoreSmsgMessage, params: SmsgMessageCreateParams): Promise<SmsgMessageCreateRequest> {
 
         return await this.parseJSONSafe(message.text)
             .then( marketplaceMessage => {
@@ -35,8 +36,8 @@ export class SmsgMessageFactory {
                 const createRequest = {
                     type,
                     status: SmsgMessageStatus.NEW,
-                    direction: ActionDirection.INCOMING,
-                    target: '',
+                    direction: params.direction,
+                    target: params.target,
                     msgid: message.msgid,
                     version: message.version,
                     read: message.read,

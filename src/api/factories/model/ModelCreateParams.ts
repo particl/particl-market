@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export interface ModelCreateParams {
     //
@@ -28,3 +29,7 @@ export interface VoteCreateParams extends ModelCreateParams {
     create: boolean;
 }
 
+export interface SmsgMessageCreateParams extends ModelCreateParams {
+    direction: ActionDirection;
+    target?: string;
+}

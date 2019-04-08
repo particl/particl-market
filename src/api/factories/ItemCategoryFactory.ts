@@ -14,7 +14,6 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 export class ItemCategoryFactory {
 
     public log: LoggerType;
-    private isFound: boolean;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType

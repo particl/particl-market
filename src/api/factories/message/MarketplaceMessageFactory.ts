@@ -89,6 +89,7 @@ export class MarketplaceMessageFactory {
                 break;
 
             case MPAction.UNKNOWN:
+            default:
                 throw new NotImplementedException();
         }
 
