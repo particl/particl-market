@@ -10,7 +10,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
+import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -18,7 +18,8 @@ import { ListingItemAddActionService } from '../../services/action/ListingItemAd
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/MarketService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MessageSendParams } from '../../requests/params/MessageSendParams';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -54,15 +55,24 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const marketId = data.params[2] || undefined;
         const estimateFee: boolean = typeof data.params[3] === 'boolean' ? data.params[3] : false;
 
+        const fromAddress = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+            .then(value => {
+                const template: resources.ListingItemTemplate = value.toJSON();
+                return template.Profile.address;
+            });
+
+        const toAddress = await this.marketService.findOne(marketId)
+            .then(value => {
+                const market: resources.Market = value.toJSON();
+                return market.address;
+            });
+
         const postRequest = {
-            listingItemTemplateId,
-            daysRetention,
-            marketId
-        } as ListingItemTemplatePostRequest;
+            sendParams: new MessageSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
+            listingItemTemplateId
+        } as ListingItemAddRequest;
 
-        const response = await this.listingItemAddActionService.post(postRequest, estimateFee);
-
-        this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
+        const response = await this.listingItemAddActionService.post(postRequest);
         return response;
     }
 
@@ -77,7 +87,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
+        // TODO: use InvalidParamException and MissingParamException
         if (data.params.length < 1) {
             throw new MessageException('Missing listingItemTemplateId.');
         }

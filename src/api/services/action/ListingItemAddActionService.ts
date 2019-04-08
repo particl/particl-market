@@ -11,13 +11,10 @@ import { ListingItem } from '../../models/ListingItem';
 import { MessagingInformationService } from '../MessagingInformationService';
 import { PaymentInformationService } from '../PaymentInformationService';
 import { ItemCategoryService } from '../ItemCategoryService';
-import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
-import { ListingItemUpdatePostRequest } from '../../requests/ListingItemUpdatePostRequest';
 import { ListingItemTemplateService } from '../ListingItemTemplateService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from '../ListingItemObjectService';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -29,22 +26,19 @@ import { ProfileService } from '../ProfileService';
 import { MarketService } from '../MarketService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../SmsgMessageService';
-import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
-import { FlaggedItem } from '../../models/FlaggedItem';
 import { FlaggedItemService } from '../FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../../messages/validators/ListingItemAddValidator';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
-import { MPM, ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MPA } from 'omp-lib/dist/interfaces/omp';
 import { BaseActionService } from './BaseActionService';
 import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import {ListingItemAddRequest} from '../../requests/post/ListingItemAddRequest';
+import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
+import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -103,7 +97,8 @@ export class ListingItemAddActionService extends BaseActionService {
      * this is implemented in the abstract class, just doing some logging here
      * @param params
      */
-    public async post(params: PostRequestInterface): Promise<SmsgSendResponse> {
+    /*@validate()*/
+    public async post(/*@request(PostRequestInterface)*/ params: PostRequestInterface): Promise<SmsgSendResponse> {
         this.log.debug('post(): ', JSON.stringify(params, null, 2));
         return super.post(params);
     }
@@ -141,8 +136,8 @@ export class ListingItemAddActionService extends BaseActionService {
                 return await this.listingItemService.create(listingItemCreateRequest)
                     .then(async value => {
                         const listingItem: resources.ListingItem = value.toJSON();
-                        // await this.createFlaggedItemIfNeeded(listingItem);
-                        // await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+                        await this.createFlaggedItemIfNeeded(listingItem);
+                        await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
                         return SmsgMessageStatus.PROCESSED;
                     })
                     .catch(reason => {
@@ -156,158 +151,52 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * post a ListingItem based on a given ListingItem as ListingItemMessage
+     * If a ListingItemTemplate matching with ListingItem is found, add a relation
      *
-     * @param data
-     * @param estimateFee
-     * @returns {Promise<SmsgSendResponse>}
+     * @param listingItem
      */
-/*
-    @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest, estimateFee: boolean = false): Promise<SmsgSendResponse> {
-
-        // - fetch the ListingItemTemplate
-        // -
-
-        const itemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true)
-            .then(value => value.toJSON());
-
-        // TODO: should validate that the template has the required info
-        // TODO: recalculate the template.hash in case the related data has changed
-
-        // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
-        // get the templates profile address
-        const profileAddress = itemTemplate.Profile.address;
-
-        const market: resources.Market = data.marketId
-            ? await this.marketService.findOne(data.marketId).then(value => value.toJSON())
-            : await this.marketService.getDefault().then(value => value.toJSON());
-
-        this.log.debug('market.id:', market.id);
-
-        // todo: reason for this? to throw an exception unless category exists?!
-        // find itemCategory with related
-        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true)
-            .then(value => value.toJSON());
-        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
-
-        // create the MPA_LISTING_ADD
-        const marketplaceMessage: MarketplaceMessage = await this.marketplaceMessageFactory.get(MPAction.MPA_LISTING_ADD, {
-            template: itemTemplate
-        } as ListingItemAddMessageCreateParams);
-
-        // validate the MPA_LISTING_ADD
-        ListingItemAddValidator.isValid(marketplaceMessage);
-
-        // post the MPA_LISTING_ADD
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketplaceMessage, true, data.daysRetention, estimateFee);
+    public async updateListingItemAndTemplateRelationIfNeeded(listingItem: resources.ListingItem): Promise<ListingItem> {
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOneByHash(listingItem.hash)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                return undefined;
+            });
+        return await this.listingItemService.updateListingItemAndTemplateRelation(listingItem, listingItemTemplate);
     }
-*/
 
     /**
-     * processes received ListingItemMessage
+     * If a Proposal to remove the ListingItem is found, create FlaggedItem
      *
-     * @param {MarketplaceMessageEvent} event
-     * @returns {Promise<"resources".ListingItem>}
+     * @param listingItem
      */
-    public async processListingItemReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
-
-        // validate the MPA_LISTING_ADD
-        ListingItemAddValidator.isValid(marketplaceMessage);
-
-        // process the message and return SmsgMessageStatus as a result
-        return await this.marketService.findByAddress(smsgMessage.to)
-            .then(async marketModel => {
-                const market: resources.Market = marketModel.toJSON();
-
-                // create the new custom categories in case there are some
-                await this.itemCategoryService.createCategoriesFromArray(listingItemAddMessage.item.information.category);
-
-                // find the categories/get the root category with related
-                const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot()
-                    .then(value => value.toJSON());
-
-                const listingItemCreateRequest = await this.listingItemFactory.get(listingItemAddMessage, {
-                        marketId: market.id,
-                        rootCategory
-                    } as ListingItemCreateParams,
-                    smsgMessage);
-                // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
-
-                let listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
-                    .then(value => value.toJSON());
-
-                // if proposal for the listingitem is found, create flaggeditem
-                await this.proposalService.findOneByItemHash(listingItem.hash)
-                    .then(async value => {
-                        const proposal: resources.Proposal = value.toJSON();
-                        const flaggedItem = await this.createFlaggedItemForProposal(proposal);
-                        // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
-                        return proposal;
-                    })
-                    .catch(reason => {
-                        return null;
-                    });
-
-                // todo: there should be no need for these two updates, set the relations up in the createRequest
-                // update the template relation
-                await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
-
-                // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-                listingItem = await this.listingItemService.findOne(listingItem.id)
-                    .then(value => value.toJSON());
-
-                this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
-                return SmsgMessageStatus.PROCESSED;
+    private async createFlaggedItemIfNeeded(listingItem: resources.ListingItem): Promise<resources.FlaggedItem | void> {
+        await this.proposalService.findOneByItemHash(listingItem.hash)
+            .then(async value => {
+                const proposal: resources.Proposal = value.toJSON();
+                return await this.createFlaggedItemForListingItem(listingItem, proposal);
             })
             .catch(reason => {
-                return SmsgMessageStatus.PARSING_FAILED;
+                return null;
             });
-
     }
 
+
     /**
+     * Create FlaggedItem for ListingItem having a Proposal to remove it
      *
+     * @param listingItem
      * @param {module:resources.Proposal} proposal
      * @returns {Promise<module:resources.FlaggedItem>}
      */
-    public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        // if listingitem exists && theres no relation -> add relation to listingitem
-
-        const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
+    private async createFlaggedItemForListingItem(listingItem: resources.ListingItem,
+                                                  proposal: resources.Proposal): Promise<resources.FlaggedItem> {
         const flaggedItemCreateRequest = {
             listing_item_id: listingItem.id,
             proposal_id: proposal.id,
             reason: proposal.description
         } as FlaggedItemCreateRequest;
 
-        const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
-        return flaggedItemModel.toJSON();
+        return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
     }
-
-    private configureEventListeners(): void {
-        this.log.info('Configuring EventListeners');
-
-        this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);
-            await this.processListingItemReceivedEvent(event)
-                .then(async status => {
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
-                })
-                .catch(async reason => {
-                    this.log.debug('ERRORED event: ', JSON.stringify(event, null, 2));
-                    this.log.error('ERROR: ListingItemMessage processing failed.', reason);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
-                });
-        });
-
-    }
-
 
 }

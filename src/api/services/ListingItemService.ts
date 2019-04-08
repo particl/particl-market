@@ -368,6 +368,19 @@ export class ListingItemService {
     }
 
     /**
+     *
+     * @param listingItem
+     * @param listingItemTemplate
+     */
+    public async updateListingItemAndTemplateRelation(listingItem: resources.ListingItem,
+                                                      listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItem> {
+        const listingItemModel: ListingItem = await this.findOne(listingItem.id, false);
+        listingItemModel.set('listingItemTemplateId', listingItemTemplate.id);
+        await this.listingItemRepo.update(listingItem.id, listingItemModel.toJSON());
+        return await this.findOne(listingItem.id);
+    }
+
+    /**
      * check if object is exist in a array
      * todo: this is utility function, does not belong here
      *
