@@ -120,7 +120,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        return this.bidActionService.send(listingItem, profile, address/*, additionalParams */);
+        return {} as SmsgSendResponse; // this.bidActionService.send(listingItem, profile, address/*, additionalParams */);
     }
 
     /**

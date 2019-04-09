@@ -47,7 +47,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             .then(value => {
                 return value.toJSON();
             });
-        return this.bidActionService.accept(bid);
+        return {} as SmsgSendResponse; // this.bidActionService.accept(bid);
     }
 
     /**

@@ -48,7 +48,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
                 return value.toJSON();
             });
 
-        return this.bidActionService.reject(bid);
+        return {} as SmsgSendResponse; // this.bidActionService.reject(bid);
     }
 
     /**

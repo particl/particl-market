@@ -12,7 +12,6 @@ import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
-import { Output } from './action/BidActionService';
 import { Rpc } from 'omp-lib';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 
@@ -22,6 +21,13 @@ declare function unescape(s: string): string;
 let RPC_REQUEST_ID = 1;
 
 // todo: create interfaces for results, and move them to separate files
+
+export interface Output {
+    txid?: string;
+    vout?: number;
+    amount?: number;
+    data?: string;
+}
 
 export interface BlockchainInfo {
     chain: string;                      // current network name as defined in BIP70 (main, test, regtest)

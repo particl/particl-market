@@ -54,7 +54,6 @@ export class ListingItemAddActionService extends BaseActionService {
     ) {
         super(MPAction.MPA_LISTING_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
-        // this.configureEventListeners();
     }
 
     /**

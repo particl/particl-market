@@ -47,7 +47,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
                 return value.toJSON();
             });
 
-        return this.bidActionService.cancel(bid);
+        return {} as SmsgSendResponse; // this.bidActionService.cancel(bid);
     }
 
     /**
