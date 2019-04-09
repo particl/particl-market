@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/ItemImageService';
+import { ItemImageService } from '../../services/model/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -23,7 +23,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService
     ) {
         super(Commands.ITEMIMAGE_REMOVE);
         this.log = new Logger(__filename);

@@ -26,7 +26,7 @@ import {
 import {EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { ItemImageDataService } from '../../services/ItemImageDataService';
+import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -40,7 +40,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

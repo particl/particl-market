@@ -9,10 +9,10 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { EscrowService } from '../../src/api/services/EscrowService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { EscrowService } from '../../src/api/services/model/EscrowService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
@@ -20,7 +20,7 @@ import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest'
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { MarketService } from '../../src/api/services/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('Escrow', () => {
@@ -61,11 +61,11 @@ describe('Escrow', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

@@ -8,12 +8,12 @@ import { inject, named } from 'inversify';
 import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request } from 'inversify-express-utils';
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
-import { ItemImageService } from '../services/ItemImageService';
+import { ItemImageService } from '../services/model/ItemImageService';
 import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import { MessageException } from '../exceptions/MessageException';
-import { ItemImageDataService } from '../services/ItemImageDataService';
+import { ItemImageDataService } from '../services/model/ItemImageDataService';
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -25,8 +25,8 @@ export class ItemImageController {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.ItemImageHttpUploadService) private itemImageHttpUploadService: ItemImageHttpUploadService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

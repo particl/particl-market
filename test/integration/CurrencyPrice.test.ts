@@ -11,7 +11,7 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
-import { CurrencyPriceService } from '../../src/api/services/CurrencyPriceService';
+import { CurrencyPriceService } from '../../src/api/services/model/CurrencyPriceService';
 import { CurrencyPriceParams } from '../../src/api/requests/CurrencyPriceParams';
 import * as createRequestCurrencyPricePARTINR from '../testdata/createrequest/currencyPricePARTINR.json';
 import * as updateRequestCurrencyPricePARTINR from '../testdata/updaterequest/currencyPricePARTINR.json';
@@ -35,7 +35,7 @@ describe('CurrencyPrice', () => {
         process.env.CHASING_COINS_API_DELAY = 1000;
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        currencyPriceService = app.IoC.getNamed<CurrencyPriceService>(Types.Service, Targets.Service.CurrencyPriceService);
+        currencyPriceService = app.IoC.getNamed<CurrencyPriceService>(Types.Service, Targets.Service.model.CurrencyPriceService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

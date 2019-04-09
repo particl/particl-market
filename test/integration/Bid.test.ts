@@ -10,21 +10,21 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { BidService } from '../../src/api/services/BidService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { BidDataService } from '../../src/api/services/BidDataService';
+import { BidService } from '../../src/api/services/model/BidService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { BidDataService } from '../../src/api/services/model/BidDataService';
 import { Bid } from '../../src/api/models/Bid';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { OrderItemService } from '../../src/api/services/OrderItemService';
-import { OrderService } from '../../src/api/services/OrderService';
+import { OrderItemService } from '../../src/api/services/model/OrderItemService';
+import { OrderService } from '../../src/api/services/model/OrderService';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
@@ -67,13 +67,13 @@ describe('Bid', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
-        orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
-        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
+        orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.model.OrderService);
+        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.model.BidDataService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

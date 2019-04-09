@@ -7,16 +7,14 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { AddressService } from '../../services/AddressService';
-import { ProfileService } from '../../services/ProfileService';
+import { AddressService } from '../../services/model/AddressService';
+import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { AddressType } from '../../enums/AddressType';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
-import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
@@ -27,8 +25,8 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService
     ) {
         super(Commands.ADDRESS_LIST);
         this.log = new Logger(__filename);

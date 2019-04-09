@@ -8,13 +8,13 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemInformation } from '../../src/api/models/ItemInformation';
@@ -136,12 +136,12 @@ describe('ItemInformation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
-        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
 
         // clean up the db, first removes all data and then seeds the db with default data

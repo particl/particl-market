@@ -10,12 +10,12 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { OrderService } from '../../src/api/services/OrderService';
+import { OrderService } from '../../src/api/services/model/OrderService';
 import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { BidService } from '../../src/api/services/BidService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { BidService } from '../../src/api/services/model/BidService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
@@ -25,8 +25,8 @@ import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { OrderItemService } from '../../src/api/services/OrderItemService';
-import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
+import { OrderItemService } from '../../src/api/services/model/OrderItemService';
+import { OrderItemObjectService } from '../../src/api/services/model/OrderItemObjectService';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemObjectCreateRequest } from '../../src/api/requests/OrderItemObjectCreateRequest';
@@ -62,13 +62,13 @@ describe('Order', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
-        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
-        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.OrderItemObjectService);
-        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.model.OrderService);
+        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
+        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.model.OrderItemObjectService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

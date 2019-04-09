@@ -11,9 +11,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import {TestDataService} from '../../services/TestDataService';
-import {TestDataCreateRequest} from '../../requests/TestDataCreateRequest';
-import {MessageException} from '../../exceptions/MessageException';
+import { TestDataService } from '../../services/TestDataService';
+import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 

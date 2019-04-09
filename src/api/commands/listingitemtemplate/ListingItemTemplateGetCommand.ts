@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -17,7 +17,7 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ItemImageDataService } from '../../services/ItemImageDataService';
+import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
 
@@ -25,8 +25,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private itemImageDataService: ItemImageDataService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory
     ) {
         super(Commands.TEMPLATE_GET);

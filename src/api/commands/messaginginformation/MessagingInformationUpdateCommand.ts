@@ -2,21 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import { MessagingInformationService } from '../../services/MessagingInformationService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { MessagingInformationService } from '../../services/model/MessagingInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { MessagingInformationUpdateRequest } from '../../requests/MessagingInformationUpdateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
 
 export class MessagingInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<MessagingInformation> {
 
@@ -24,8 +24,8 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) private messagingInformationService: MessagingInformationService
     ) {
         super(Commands.MESSAGINGINFORMATION_UPDATE);
         this.log = new Logger(__filename);

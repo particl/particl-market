@@ -12,8 +12,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCart } from '../../models/ShoppingCart';
-import { ShoppingCartService } from '../../services/ShoppingCartService';
-import { ProfileService } from '../../services/ProfileService';
+import { ShoppingCartService } from '../../services/model/ShoppingCartService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 import { MessageException } from '../../exceptions/MessageException';
 
@@ -22,8 +22,8 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartService) private shoppingCartService: ShoppingCartService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_LIST);

@@ -12,18 +12,18 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { LockedOutput } from '../../src/api/models/LockedOutput';
-import { LockedOutputService } from '../../src/api/services/LockedOutputService';
+import { LockedOutputService } from '../../src/api/services/model/LockedOutputService';
 import { LockedOutputCreateRequest } from '../../src/api/requests/LockedOutputCreateRequest';
 import { LockedOutputUpdateRequest } from '../../src/api/requests/LockedOutputUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('LockedOutput', () => {
@@ -71,11 +71,11 @@ describe('LockedOutput', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        lockedOutputService = app.IoC.getNamed<LockedOutputService>(Types.Service, Targets.Service.LockedOutputService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        lockedOutputService = app.IoC.getNamed<LockedOutputService>(Types.Service, Targets.Service.model.LockedOutputService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

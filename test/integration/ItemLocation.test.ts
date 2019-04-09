@@ -8,18 +8,18 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemLocation } from '../../src/api/models/ItemLocation';
 import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
 import * as resources from 'resources';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -72,12 +72,12 @@ describe('ItemLocation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

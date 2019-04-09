@@ -2,28 +2,28 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
-import { EscrowService } from '../../services/EscrowService';
+import { EscrowService } from '../../services/model/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
 
 export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.ESCROW_ADD);

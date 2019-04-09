@@ -6,8 +6,8 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/ItemImageService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ItemImageService } from '../../services/model/ItemImageService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -23,8 +23,8 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMIMAGE_ADD);
         this.log = new Logger(__filename);

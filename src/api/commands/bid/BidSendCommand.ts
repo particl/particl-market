@@ -3,21 +3,21 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/action/BidActionService';
-import { AddressService } from '../../services/AddressService';
-import { ProfileService } from '../../services/ProfileService';
+import { AddressService } from '../../services/model/AddressService';
+import { ProfileService } from '../../services/model/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import * as resources from 'resources';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -51,9 +51,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.AddressService) private addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_SEND);

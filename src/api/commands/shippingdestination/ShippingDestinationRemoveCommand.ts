@@ -2,22 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ShippingDestinationService } from '../../services/ShippingDestinationService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ShippingDestinationService } from '../../services/model/ShippingDestinationService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
 
 export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -25,8 +23,8 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.SHIPPINGDESTINATION_REMOVE);
         this.log = new Logger(__filename);

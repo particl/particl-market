@@ -7,17 +7,16 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Profile } from '../models/Profile';
-import { ProfileService } from './ProfileService';
+import { ProfileService } from './model/ProfileService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import {MessageException} from '../exceptions/MessageException';
 
 export class DefaultProfileService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

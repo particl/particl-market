@@ -8,7 +8,7 @@ import { Core, Targets, Types } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { SmsgService } from '../services/SmsgService';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { SmsgMessageService } from '../services/SmsgMessageService';
+import { SmsgMessageService } from '../services/model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessage } from '../models/SmsgMessage';
@@ -26,7 +26,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     // tslint:disable:max-line-length
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter

@@ -13,10 +13,10 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { SettingUpdateRequest } from '../../requests/SettingUpdateRequest';
-import { SettingService } from '../../services/SettingService';
+import { SettingService } from '../../services/model/SettingService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SettingCreateRequest } from '../../requests/SettingCreateRequest';
-import { ProfileService } from '../../services/ProfileService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class SettingSetCommand extends BaseCommand implements RpcCommandInterface<Setting> {
 
@@ -24,8 +24,8 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) private settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) private settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_SET);
         this.log = new Logger(__filename);

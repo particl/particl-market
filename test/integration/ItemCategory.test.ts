@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemCategoryService } from '../../src/api/services/ItemCategoryService';
+import { ItemCategoryService } from '../../src/api/services/model/ItemCategoryService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemCategory } from '../../src/api/models/ItemCategory';
@@ -68,7 +68,7 @@ describe('ItemCategory', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.ItemCategoryService);
+        itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.model.ItemCategoryService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean(false);

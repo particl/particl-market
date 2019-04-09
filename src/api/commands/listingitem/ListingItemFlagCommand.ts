@@ -8,15 +8,15 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ProfileService } from '../../services/ProfileService';
-import { MarketService } from '../../services/MarketService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MarketService } from '../../services/model/MarketService';
 import { ProposalActionService } from '../../services/action/ProposalActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -29,9 +29,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalActionService
     ) {
         super(Commands.ITEM_FLAG);

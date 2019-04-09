@@ -7,13 +7,13 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/ItemImageService';
+import { ItemImageService } from '../../services/model/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemImage } from '../../models/ItemImage';
@@ -24,8 +24,8 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_FEATURED_IMAGE);
         this.log = new Logger(__filename);

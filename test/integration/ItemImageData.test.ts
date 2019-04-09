@@ -8,11 +8,11 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
 import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
@@ -56,11 +56,11 @@ describe('ItemImageData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.ItemImageDataService);
+        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

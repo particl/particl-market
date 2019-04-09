@@ -6,7 +6,7 @@ import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgService } from '../SmsgService';
-import { SmsgMessageService } from '../SmsgMessageService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 
 /**

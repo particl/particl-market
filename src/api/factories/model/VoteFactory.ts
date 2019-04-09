@@ -10,7 +10,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { VoteMessage } from '../../messages/action/VoteMessage';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
-import { ProposalOptionService } from '../../services/ProposalOptionService';
+import { ProposalOptionService } from '../../services/model/ProposalOptionService';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import {ModelFactoryInterface} from './ModelFactoryInterface';
 import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
@@ -22,7 +22,7 @@ export class VoteFactory implements ModelFactoryInterface {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

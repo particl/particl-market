@@ -8,11 +8,11 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { EscrowService } from '../../src/api/services/EscrowService';
-import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/model/EscrowService';
+import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { PaymentInformation } from '../../src/api/models/PaymentInformation';
@@ -78,12 +78,12 @@ describe('PaymentInformation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
-        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
+        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

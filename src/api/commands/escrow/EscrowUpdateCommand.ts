@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { EscrowService } from '../../services/EscrowService';
+import { EscrowService } from '../../services/model/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -14,7 +14,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { EscrowUpdateRequest } from '../../requests/EscrowUpdateRequest';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -22,8 +22,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.EscrowService) private escrowService: EscrowService
     ) {
         super(Commands.ESCROW_UPDATE);
         this.log = new Logger(__filename);

@@ -14,24 +14,24 @@ import { MessageException } from '../../src/api/exceptions/MessageException';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { EscrowService } from '../../src/api/services/EscrowService';
-import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
-import { ItemPriceService } from '../../src/api/services/ItemPriceService';
-import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
-import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
-import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
-import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/model/EscrowService';
+import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
+import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
+import { ShippingPriceService } from '../../src/api/services/model/ShippingPriceService';
+import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
+import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
+import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
@@ -97,27 +97,27 @@ describe('ListingItemTemplate', async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
-        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
 
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
-        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
-        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.EscrowRatioService);
-        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
-        shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.ShippingPriceService);
-        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
+        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
+        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
+        shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.model.ShippingPriceService);
+        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
 
-        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
+        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.model.MessagingInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

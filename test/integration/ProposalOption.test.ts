@@ -12,16 +12,16 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalOption } from '../../src/api/models/ProposalOption';
-import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
+import { ProposalOptionService } from '../../src/api/services/model/ProposalOptionService';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
-import { ProposalService } from '../../src/api/services/ProposalService';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { Proposal } from '../../src/api/models/Proposal';
 import { ItemVote } from '../../src/api/enums/ItemVote';
 
@@ -58,10 +58,10 @@ describe('ProposalOption', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
-        proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.ProposalOptionService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.model.ProposalOptionService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

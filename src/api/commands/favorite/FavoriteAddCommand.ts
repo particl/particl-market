@@ -6,9 +6,9 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { FavoriteItemService } from '../../services/FavoriteItemService';
-import { ListingItemService } from '../../services/ListingItemService';
-import { ProfileService } from '../../services/ProfileService';
+import { FavoriteItemService } from '../../services/model/FavoriteItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -26,9 +26,9 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.FavoriteItemService) private favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.FAVORITE_ADD);
         this.log = new Logger(__filename);

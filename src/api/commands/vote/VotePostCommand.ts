@@ -14,9 +14,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { ProfileService } from '../../services/ProfileService';
-import { MarketService } from '../../services/MarketService';
-import { ProposalService } from '../../services/ProposalService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MarketService } from '../../services/model/MarketService';
+import { ProposalService } from '../../services/model/ProposalService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -29,9 +29,9 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService
     ) {
         super(Commands.VOTE_POST);
         this.log = new Logger(__filename);

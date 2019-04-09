@@ -7,11 +7,11 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ProposalService } from '../services/ProposalService';
+import { ProposalService } from '../services/model/ProposalService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { ProposalCategory } from '../enums/ProposalCategory';
-import { ProposalResultService } from '../services/ProposalResultService';
-import { ListingItemService } from '../services/ListingItemService';
+import { ProposalResultService } from '../services/model/ProposalResultService';
+import { ListingItemService } from '../services/model/ListingItemService';
 
 // TODO: this should be refactored, this is not a MessageProcessor!
 
@@ -26,9 +26,9 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService
     ) {
         this.log = new Logger(__filename);
     }

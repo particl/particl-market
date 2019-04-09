@@ -12,13 +12,13 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/ShippingDestinationUpdateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -62,13 +62,13 @@ describe('ShippingDestination', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

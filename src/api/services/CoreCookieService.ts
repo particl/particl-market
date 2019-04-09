@@ -2,16 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
-
-import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
-
 
 /**
  * Deals with Authentication.

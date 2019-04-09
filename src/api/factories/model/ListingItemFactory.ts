@@ -25,7 +25,7 @@ import { MessagingInformationCreateRequest } from '../../requests/MessagingInfor
 import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
-import { ItemImageDataService } from '../../services/ItemImageDataService';
+import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ItemInfo, ItemObject, Location, LocationMarker } from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
@@ -41,7 +41,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService
     ) {
         this.log = new Logger(__filename);
     }

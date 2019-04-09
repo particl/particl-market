@@ -9,8 +9,8 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemImage } from '../../src/api/models/ItemImage';
@@ -20,7 +20,7 @@ import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
+import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
@@ -73,8 +73,8 @@ describe('ItemImage', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.ItemImageDataService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

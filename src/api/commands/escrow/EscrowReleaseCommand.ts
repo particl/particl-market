@@ -16,7 +16,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { OrderItemService } from '../../services/OrderItemService';
+import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
@@ -26,7 +26,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_RELEASE);
         this.log = new Logger(__filename);

@@ -7,8 +7,8 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
@@ -23,8 +23,8 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.ITEMIMAGE_LIST);

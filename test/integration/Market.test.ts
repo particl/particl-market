@@ -11,7 +11,7 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Market } from '../../src/api/models/Market';
-import { MarketService } from '../../src/api/services/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/MarketUpdateRequest';
 
@@ -42,7 +42,7 @@ describe('Market', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

@@ -2,12 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -17,7 +18,6 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
-import * as resources from 'resources';
 
 export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatusResponse[]> {
 
@@ -25,7 +25,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.ORDERITEM_STATUS);
         this.log = new Logger(__filename);

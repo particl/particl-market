@@ -10,7 +10,7 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
 import { SmsgService } from '../SmsgService';
-import { SmsgMessageService } from '../SmsgMessageService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MessageException } from '../../exceptions/MessageException';

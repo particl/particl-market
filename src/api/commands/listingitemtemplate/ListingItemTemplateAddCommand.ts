@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
@@ -22,7 +22,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_ADD);
         this.log = new Logger(__filename);

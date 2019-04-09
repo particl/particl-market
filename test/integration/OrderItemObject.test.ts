@@ -11,17 +11,17 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
+import { OrderItemObjectService } from '../../src/api/services/model/OrderItemObjectService';
 import { OrderItemObjectCreateRequest } from '../../src/api/requests/OrderItemObjectCreateRequest';
 import { OrderItemObjectUpdateRequest } from '../../src/api/requests/OrderItemObjectUpdateRequest';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { OrderItemService } from '../../src/api/services/OrderItemService';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { OrderItemService } from '../../src/api/services/model/OrderItemService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { MarketService } from '../../src/api/services/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -62,10 +62,10 @@ describe('OrderItemObject', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
-        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.OrderItemObjectService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
+        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.model.OrderItemObjectService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

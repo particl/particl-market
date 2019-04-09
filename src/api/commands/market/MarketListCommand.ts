@@ -12,7 +12,7 @@ import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketService } from '../../services/MarketService';
+import { MarketService } from '../../services/model/MarketService';
 
 /*
  * Get a list of all markets
@@ -23,7 +23,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
 
     ) {
         super(Commands.MARKET_LIST);

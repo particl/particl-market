@@ -11,8 +11,8 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Setting } from '../../src/api/models/Setting';
-import { SettingService } from '../../src/api/services/SettingService';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { SettingService } from '../../src/api/services/model/SettingService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { SettingCreateRequest } from '../../src/api/requests/SettingCreateRequest';
 import { SettingUpdateRequest } from '../../src/api/requests/SettingUpdateRequest';
 import * as resources from 'resources';
@@ -44,8 +44,8 @@ describe('Setting', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        settingService = app.IoC.getNamed<SettingService>(Types.Service, Targets.Service.SettingService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        settingService = app.IoC.getNamed<SettingService>(Types.Service, Targets.Service.model.SettingService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

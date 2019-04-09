@@ -2,19 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as _ from 'lodash';
-import { PaymentInformationService } from '../../services/PaymentInformationService';
+import { PaymentInformationService } from '../../services/model/PaymentInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformationUpdateRequest';
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
@@ -24,8 +24,8 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService
     ) {
         super(Commands.PAYMENTINFORMATION_UPDATE);
         this.log = new Logger(__filename);

@@ -10,7 +10,7 @@ import { Types, Core, Targets } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { SmsgMessageService } from '../services/SmsgMessageService';
+import { SmsgMessageService } from '../services/model/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -39,7 +39,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     // tslint:disable:max-line-length
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {

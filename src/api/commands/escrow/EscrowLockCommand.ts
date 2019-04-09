@@ -12,7 +12,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowActionService } from '../../services/action/EscrowActionService';
-import { OrderItemService } from '../../services/OrderItemService';
+import { OrderItemService } from '../../services/model/OrderItemService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -27,7 +27,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_LOCK);
         this.log = new Logger(__filename);

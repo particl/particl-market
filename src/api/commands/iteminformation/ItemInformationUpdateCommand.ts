@@ -2,11 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemInformationService } from '../../services/ItemInformationService';
+import { ItemInformationService } from '../../services/model/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
@@ -14,8 +15,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -23,8 +23,8 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);

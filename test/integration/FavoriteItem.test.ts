@@ -9,10 +9,10 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { FavoriteItemService } from '../../src/api/services/model/FavoriteItemService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
@@ -46,10 +46,10 @@ describe('FavoriteItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

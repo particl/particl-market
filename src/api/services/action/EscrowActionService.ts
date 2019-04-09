@@ -9,31 +9,31 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
-import { EscrowService } from '../EscrowService';
-import { ListingItemService } from '../ListingItemService';
+import { EscrowService } from '../model/EscrowService';
+import { ListingItemService } from '../model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { OrderService } from '../OrderService';
+import { OrderService } from '../model/OrderService';
 import { SmsgService } from '../SmsgService';
 import { CoreRpcService } from '../CoreRpcService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { OrderItemObjectService } from '../OrderItemObjectService';
+import { OrderItemObjectService } from '../model/OrderItemObjectService';
 import { OrderItemObjectUpdateRequest } from '../../requests/OrderItemObjectUpdateRequest';
 import { OrderItemUpdateRequest } from '../../requests/OrderItemUpdateRequest';
-import { OrderItemService } from '../OrderItemService';
+import { OrderItemService } from '../model/OrderItemService';
 import { OrderSearchParams } from '../../requests/OrderSearchParams';
-import { LockedOutputService } from '../LockedOutputService';
+import { LockedOutputService } from '../model/LockedOutputService';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { SmsgMessageService } from '../SmsgMessageService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
 import { Output } from './BidActionService';
 import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
-import { BidService } from '../BidService';
+import { BidService } from '../model/BidService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
 
@@ -42,16 +42,16 @@ export class EscrowActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemObjectService) private orderItemObjectService: OrderItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemObjectService) private orderItemObjectService: OrderItemObjectService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.LockedOutputService) private lockedOutputService: LockedOutputService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
     ) {

@@ -13,24 +13,24 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { VoteFactory } from '../../factories/model/VoteFactory';
-import { VoteService } from '../VoteService';
+import { VoteService } from '../model/VoteService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { CoreRpcService } from '../CoreRpcService';
 import { MessageException } from '../../exceptions/MessageException';
 import { VoteMessage } from '../../messages/action/VoteMessage';
-import { ProposalService } from '../ProposalService';
-import { ProposalOptionService } from '../ProposalOptionService';
+import { ProposalService } from '../model/ProposalService';
+import { ProposalOptionService } from '../model/ProposalOptionService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
-import { ListingItemService } from '../ListingItemService';
-import { SmsgMessageService } from '../SmsgMessageService';
+import { ListingItemService } from '../model/ListingItemService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ProposalResultService } from '../ProposalResultService';
+import { ProposalResultService } from '../model/ProposalResultService';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
 import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
 import { VoteMessageCreateParams} from '../../factories/message/MessageCreateParams';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
-import {GovernanceAction} from '../../enums/GovernanceAction';
+import { GovernanceAction } from '../../enums/GovernanceAction';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -52,12 +52,12 @@ export class VoteActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
-        @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
-        @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
+        @inject(Types.Service) @named(Targets.Service.model.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

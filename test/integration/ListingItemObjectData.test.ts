@@ -12,20 +12,20 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
-import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import { MarketService } from '../../src/api/services/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { ListingItemObject } from '../../src/api/models/ListingItemObject';
-import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
+import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 
@@ -61,11 +61,11 @@ describe('ListingItemObjectData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

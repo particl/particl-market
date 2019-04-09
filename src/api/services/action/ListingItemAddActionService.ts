@@ -8,25 +8,25 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { request, validate } from '../../../core/api/Validate';
 import { ListingItem } from '../../models/ListingItem';
-import { MessagingInformationService } from '../MessagingInformationService';
-import { PaymentInformationService } from '../PaymentInformationService';
-import { ItemCategoryService } from '../ItemCategoryService';
-import { ListingItemTemplateService } from '../ListingItemTemplateService';
+import { MessagingInformationService } from '../model/MessagingInformationService';
+import { PaymentInformationService } from '../model/PaymentInformationService';
+import { ItemCategoryService } from '../model/ItemCategoryService';
+import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { SmsgService } from '../SmsgService';
-import { ListingItemObjectService } from '../ListingItemObjectService';
+import { ListingItemObjectService } from '../model/ListingItemObjectService';
 import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
-import { ListingItemService } from '../ListingItemService';
+import { ListingItemService } from '../model/ListingItemService';
 import { CoreRpcService } from '../CoreRpcService';
-import { ProposalService } from '../ProposalService';
-import { ProfileService } from '../ProfileService';
-import { MarketService } from '../MarketService';
+import { ProposalService } from '../model/ProposalService';
+import { ProfileService } from '../model/ProfileService';
+import { MarketService } from '../model/MarketService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { SmsgMessageService } from '../SmsgMessageService';
-import { FlaggedItemService } from '../FlaggedItemService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
+import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ListingItemAddValidator } from '../../messages/validators/ListingItemAddValidator';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
@@ -44,19 +44,19 @@ export class ListingItemAddActionService extends BaseActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
-        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) public listingItemAddMessageFactory: ListingItemAddMessageFactory,

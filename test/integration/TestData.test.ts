@@ -10,11 +10,11 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemCategoryService } from '../../src/api/services/ItemCategoryService';
-import { AddressService } from '../../src/api/services/AddressService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ItemCategoryService } from '../../src/api/services/model/ItemCategoryService';
+import { AddressService } from '../../src/api/services/model/AddressService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { MessageException } from '../../src/api/exceptions/MessageException';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
@@ -46,11 +46,11 @@ describe('TestDataService', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.ItemCategoryService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.model.ItemCategoryService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db
         await testDataService.clean();

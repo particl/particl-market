@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { MarketService } from '../../services/MarketService';
+import { MarketService } from '../../services/model/MarketService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -20,7 +20,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
         super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);

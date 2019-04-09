@@ -7,7 +7,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { OrderService } from '../../services/OrderService';
+import { OrderService } from '../../services/model/OrderService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
@@ -22,7 +22,7 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService
+        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService
     ) {
         super(Commands.ORDER_SEARCH);
         this.log = new Logger(__filename);

@@ -17,20 +17,20 @@ import { ShippingCountries } from '../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 import { ListingItem } from '../models/ListingItem';
-import { ListingItemService } from './ListingItemService';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
+import { ListingItemService } from './model/ListingItemService';
+import { ListingItemTemplateService } from './model/ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
 import { DefaultMarketService } from './DefaultMarketService';
-import { ProfileService } from './ProfileService';
-import { MarketService } from './MarketService';
-import { ItemCategoryService } from './ItemCategoryService';
-import { FavoriteItemService } from './FavoriteItemService';
-import { ItemInformationService } from './ItemInformationService';
-import { BidService } from './BidService';
-import { ProposalService } from './ProposalService';
-import { PaymentInformationService } from './PaymentInformationService';
-import { ItemImageService } from './ItemImageService';
+import { ProfileService } from './model/ProfileService';
+import { MarketService } from './model/MarketService';
+import { ItemCategoryService } from './model/ItemCategoryService';
+import { FavoriteItemService } from './model/FavoriteItemService';
+import { ItemInformationService } from './model/ItemInformationService';
+import { BidService } from './model/BidService';
+import { ProposalService } from './model/ProposalService';
+import { PaymentInformationService } from './model/PaymentInformationService';
+import { ItemImageService } from './model/ItemImageService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
@@ -55,17 +55,17 @@ import { AddressType } from '../enums/AddressType';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import { OrderService } from './OrderService';
+import { OrderService } from './model/OrderService';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { ProposalCategory } from '../enums/ProposalCategory';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { VoteService } from './VoteService';
+import { VoteService } from './model/VoteService';
 import { VoteActionService } from './action/VoteActionService';
-import { ProposalResultService } from './ProposalResultService';
-import { ProposalOptionResultService } from './ProposalOptionResultService';
+import { ProposalResultService } from './model/ProposalResultService';
+import { ProposalOptionResultService } from './model/ProposalOptionResultService';
 import { ProposalActionService } from './action/ProposalActionService';
 import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
 import { BidDataValue } from '../enums/BidDataValue';
@@ -79,16 +79,15 @@ import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
-import {hash} from 'omp-lib/dist/hasher/hash';
-import {EscrowRatioCreateRequest} from '../requests/EscrowRatioCreateRequest';
-import {ShippingPriceCreateRequest} from '../requests/ShippingPriceCreateRequest';
-import {MessagingInformationCreateRequest} from '../requests/MessagingInformationCreateRequest';
-import {ListingItemObjectCreateRequest} from '../requests/ListingItemObjectCreateRequest';
-import {ListingItemObjectDataCreateRequest} from '../requests/ListingItemObjectDataCreateRequest';
-import {ItemImageDataCreateRequest} from '../requests/ItemImageDataCreateRequest';
-import {ImageVersions} from '../../core/helpers/ImageVersionEnumType';
-import {LocationMarkerCreateRequest} from '../requests/LocationMarkerCreateRequest';
-import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
+import { EscrowRatioCreateRequest } from '../requests/EscrowRatioCreateRequest';
+import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateRequest';
+import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
+import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
+import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 
 export class TestDataService {
 
@@ -99,23 +98,23 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) private proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.FavoriteItemService) private favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) private proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalActionService,
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) private proposalResultService: ProposalResultService,
-        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
-        @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) private proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

@@ -11,17 +11,17 @@ import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { BidData } from '../../src/api/models/BidData';
-import { BidDataService } from '../../src/api/services/BidDataService';
-import { BidService } from '../../src/api/services/BidService';
-import { MarketService } from '../../src/api/services/MarketService';
+import { BidDataService } from '../../src/api/services/model/BidDataService';
+import { BidService } from '../../src/api/services/model/BidService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -63,11 +63,11 @@ describe('BidDatas', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
+        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.model.BidDataService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

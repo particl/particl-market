@@ -2,23 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemLocationService } from '../../services/ItemLocationService';
+import { ItemLocationService } from '../../services/model/ItemLocationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import * as _ from 'lodash';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
-import {LocationMarkerCreateRequest} from '../../requests/LocationMarkerCreateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/LocationMarkerCreateRequest';
 
 export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -26,8 +26,8 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemLocationService) private itemLocationService: ItemLocationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMLOCATION_ADD);
         this.log = new Logger(__filename);

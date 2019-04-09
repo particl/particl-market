@@ -2,24 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ItemImageService } from './ItemImageService';
+import { ListingItemTemplateService } from './model/ListingItemTemplateService';
+import { ItemImageService } from './model/ItemImageService';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
-import * as resources from 'resources';
-import {IsNotEmpty} from 'class-validator';
 
 export class ItemImageHttpUploadService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

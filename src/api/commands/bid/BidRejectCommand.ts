@@ -2,21 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as resources from 'resources';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { BidActionService } from '../../services/action/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { BidService } from '../../services/BidService';
+import { BidService } from '../../services/model/BidService';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -24,8 +24,8 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_REJECT);

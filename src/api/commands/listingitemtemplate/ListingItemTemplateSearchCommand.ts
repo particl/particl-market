@@ -2,13 +2,14 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { SearchOrderField } from '../../enums/SearchOrderField';
@@ -19,9 +20,7 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import * as resources from 'resources';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { ProfileService } from '../../services/ProfileService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -30,8 +29,8 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_SEARCH);
         this.log = new Logger(__filename);

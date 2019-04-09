@@ -14,8 +14,8 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalActionService } from '../../services/action/ProposalActionService';
-import { ProfileService } from '../../services/ProfileService';
-import { MarketService } from '../../services/MarketService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MarketService } from '../../services/model/MarketService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -29,8 +29,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalActionService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService
     ) {
         super(Commands.PROPOSAL_POST);
         this.log = new Logger(__filename);

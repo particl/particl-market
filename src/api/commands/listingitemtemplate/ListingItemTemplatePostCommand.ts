@@ -16,8 +16,8 @@ import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { MessageException } from '../../exceptions/MessageException';
-import { MarketService } from '../../services/MarketService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { MarketService } from '../../services/model/MarketService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
 
@@ -28,8 +28,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_POST);
         this.log = new Logger(__filename);

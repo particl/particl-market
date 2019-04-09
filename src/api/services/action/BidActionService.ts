@@ -12,13 +12,13 @@ import { Types, Core, Targets } from '../../../constants';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
-import { BidService } from '../BidService';
-import { ProfileService } from '../ProfileService';
-import { MarketService } from '../MarketService';
+import { BidService } from '../model/BidService';
+import { ProfileService } from '../model/ProfileService';
+import { MarketService } from '../model/MarketService';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { SmsgService } from '../SmsgService';
 import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemService } from '../ListingItemService';
+import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { Profile } from '../../models/Profile';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
@@ -29,13 +29,13 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { BidUpdateRequest } from '../../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../../requests/BidCreateRequest';
 import { Bid } from '../../models/Bid';
-import { OrderService } from '../OrderService';
-import { BidDataService } from '../BidDataService';
+import { OrderService } from '../model/OrderService';
+import { BidDataService } from '../model/BidDataService';
 import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
-import { LockedOutputService } from '../LockedOutputService';
+import { LockedOutputService } from '../model/LockedOutputService';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { SmsgMessageService } from '../SmsgMessageService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
@@ -75,16 +75,16 @@ export class BidActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.BidDataService) private bidDataService: BidDataService,
-        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.BidDataService) private bidDataService: BidDataService,
+        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.LockedOutputService) private lockedOutputService: LockedOutputService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) private bidMessageFactory: BidMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) private bidAcceptMessageFactory: BidAcceptMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) private bidRejectMessageFactory: BidRejectMessageFactory,

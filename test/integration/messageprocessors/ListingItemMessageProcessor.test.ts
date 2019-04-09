@@ -9,17 +9,17 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
-import { MarketService } from '../../../src/api/services/MarketService';
+import { MarketService } from '../../../src/api/services/model/MarketService';
 import { ListingItemAddActionService } from '../../../src/api/services/action/ListingItemAddActionService';
 import { ListingItemFactory } from '../../../src/api/factories/model/ListingItemFactory';
 import { ListingItemAddMessage } from '../../../src/api/messages/action/ListingItemAddMessage';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
-import { ProfileService } from '../../../src/api/services/ProfileService';
+import { ProfileService } from '../../../src/api/services/model/ProfileService';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
-import { ListingItemService } from '../../../src/api/services/ListingItemService';
-import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
+import { ListingItemService } from '../../../src/api/services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../../src/api/services/model/ListingItemTemplateService';
 import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 
@@ -48,11 +48,11 @@ describe('ListingItemMessage', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemActionService = app.IoC.getNamed<ListingItemAddActionService>(Types.Service, Targets.Service.action.ListingItemAddActionService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data

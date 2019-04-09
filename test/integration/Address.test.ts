@@ -13,8 +13,8 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Address } from '../../src/api/models/Address';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateRequest';
-import { AddressService } from '../../src/api/services/AddressService';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { AddressService } from '../../src/api/services/model/AddressService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { AddressType } from '../../src/api/enums/AddressType';
 
 describe('Address', () => {
@@ -60,8 +60,8 @@ describe('Address', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

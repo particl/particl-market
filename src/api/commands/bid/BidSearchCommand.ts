@@ -8,8 +8,8 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { BidService } from '../../services/BidService';
-import { ListingItemService } from '../../services/ListingItemService';
+import { BidService } from '../../services/model/BidService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -28,8 +28,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);

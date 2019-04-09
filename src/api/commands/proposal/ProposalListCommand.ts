@@ -8,19 +8,17 @@ import { validate, request } from '../../../core/api/Validate';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProposalService } from '../../services/ProposalService';
+import { ProposalService } from '../../services/model/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Proposal } from '../../models/Proposal';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalCategory } from '../../enums/ProposalCategory';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 
@@ -28,7 +26,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService
     ) {
         super(Commands.PROPOSAL_LIST);
         this.log = new Logger(__filename);

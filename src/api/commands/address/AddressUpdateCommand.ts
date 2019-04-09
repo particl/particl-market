@@ -2,12 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
-import { AddressService } from '../../services/AddressService';
+import { AddressService } from '../../services/model/AddressService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -16,9 +17,7 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingZips } from '../../../core/helpers/ShippingZips';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ZipCodeNotFoundException } from '../../exceptions/ZipCodeNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -30,7 +29,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService
+        @inject(Types.Service) @named(Targets.Service.model.AddressService) private addressService: AddressService
     ) {
         super(Commands.ADDRESS_UPDATE);
         this.log = new Logger(__filename);
