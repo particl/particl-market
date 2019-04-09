@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets, Events } from '../../../constants';
+import { Types, Core, Targets } from '../../../constants';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';

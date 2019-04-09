@@ -50,7 +50,7 @@ describe('ListingItemMessage', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemActionService = app.IoC.getNamed<ListingItemAddActionService>(Types.Service, Targets.Service.ListingItemActionService);
+        listingItemActionService = app.IoC.getNamed<ListingItemAddActionService>(Types.Service, Targets.Service.action.ListingItemAddActionService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
@@ -190,7 +190,7 @@ describe('ListingItemMessage', () => {
         expect(listingItemTemplate.ListingItems.length).toBe(0);
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[0]);
+        const listingItemMessage: ListingItemAddMessage = await listingItemFactory.get(listingItemTemplates[0]);
 
         const marketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -219,7 +219,7 @@ describe('ListingItemMessage', () => {
         await listingItemTemplateService.destroy(listingItemTemplates[0].id);
 
         // process the message like it was received from the network
-        const status: SmsgMessageStatus = await listingItemActionService.processListingItemReceivedEvent({
+        const status: SmsgMessageStatus = await listingItemActionService.onEvent({
             smsgMessage: listingItemSmsg,
             marketplaceMessage
         });
@@ -245,7 +245,7 @@ describe('ListingItemMessage', () => {
         expect(listingItemTemplate.ListingItems.length).toBe(0);
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1]);
+        const listingItemMessage: ListingItemAddMessage = await listingItemFactory.get(listingItemTemplates[1]);
 
         const marketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -271,7 +271,7 @@ describe('ListingItemMessage', () => {
         } as CoreSmsgMessage;
 
         // process the message like it was received from the network
-        const status: SmsgMessageStatus = await listingItemActionService.processListingItemReceivedEvent({
+        const status: SmsgMessageStatus = await listingItemActionService.onEvent({
             smsgMessage: listingItemSmsg,
             marketplaceMessage
         });

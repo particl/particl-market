@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Events, Targets, Types } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { SmsgService } from '../SmsgService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';

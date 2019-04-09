@@ -5,7 +5,7 @@
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Events, Targets, Types } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { request, validate } from '../../../core/api/Validate';
 import { ListingItem } from '../../models/ListingItem';
 import { MessagingInformationService } from '../MessagingInformationService';
@@ -35,7 +35,6 @@ import { ListingItemAddMessageFactory } from '../../factories/message/ListingIte
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
-import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
@@ -95,10 +94,11 @@ export class ListingItemAddActionService extends BaseActionService {
 
     /**
      * this is implemented in the abstract class, just doing some logging here
+     *
      * @param params
      */
-    /*@validate()*/
-    public async post(/*@request(PostRequestInterface)*/ params: PostRequestInterface): Promise<SmsgSendResponse> {
+    @validate()
+    public async post(@request(ListingItemAddRequest) params: ListingItemAddRequest): Promise<SmsgSendResponse> {
         this.log.debug('post(): ', JSON.stringify(params, null, 2));
         return super.post(params);
     }
