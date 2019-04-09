@@ -1210,7 +1210,7 @@ export class BidActionService {
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
-        this.eventEmitter.on(Events.BidReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_BID, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processBidReceivedEvent(event)
                 .then(async status => {
@@ -1221,7 +1221,7 @@ export class BidActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(Events.AcceptBidReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_ACCEPT, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processAcceptBidReceivedEvent(event)
                 .then(async status => {
@@ -1232,7 +1232,7 @@ export class BidActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(Events.CancelBidReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_CANCEL, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processCancelBidReceivedEvent(event)
                 .then(async status => {
@@ -1243,7 +1243,7 @@ export class BidActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_REJECT, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processRejectBidReceivedEvent(event)
                 .then(async status => {

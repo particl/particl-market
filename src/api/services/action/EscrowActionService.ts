@@ -662,7 +662,7 @@ export class EscrowActionService {
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
-        this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_LOCK, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processEscrowLockReceivedEvent(event)
                 .then(async status => {
@@ -673,7 +673,7 @@ export class EscrowActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(Events.ReleaseEscrowReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_RELEASE, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processEscrowReleaseReceivedEvent(event)
                 .then(async status => {
@@ -684,7 +684,7 @@ export class EscrowActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(Events.RefundEscrowReceivedEvent, async (event) => {
+        this.eventEmitter.on(MPAction.MPA_REFUND, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processEscrowRefundReceivedEvent(event)
                 .then(async status => {

@@ -30,6 +30,7 @@ import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
 import { VoteMessageCreateParams} from '../../factories/message/MessageCreateParams';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
+import {GovernanceAction} from '../../enums/GovernanceAction';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -421,7 +422,7 @@ export class VoteActionService {
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
-        this.eventEmitter.on(Events.VoteReceivedEvent, async (event) => {
+        this.eventEmitter.on(GovernanceAction.MPA_VOTE, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processVoteReceivedEvent(event)
                 .then(async status => {

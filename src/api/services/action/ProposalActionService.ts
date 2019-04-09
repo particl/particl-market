@@ -30,6 +30,8 @@ import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMe
 import { ProposalAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {GovernanceAction} from '../../enums/GovernanceAction';
 
 export class ProposalActionService {
 
@@ -168,7 +170,7 @@ export class ProposalActionService {
     private configureEventListeners(): void {
         this.log.info('Configuring EventListeners ');
 
-        this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
+        this.eventEmitter.on(GovernanceAction.MPA_PROPOSAL_ADD, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processProposalReceivedEvent(event)
                 .then(async status => {
