@@ -23,8 +23,8 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';
 import { GovernanceAction } from '../../src/api/enums/GovernanceAction';
-import {SmsgMessageCreateParams} from '../../src/api/factories/model/ModelCreateParams';
-import {ActionDirection} from '../../src/api/enums/ActionDirection';
+import { SmsgMessageCreateParams } from '../../src/api/factories/model/ModelCreateParams';
+import { ActionDirection } from '../../src/api/enums/ActionDirection';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

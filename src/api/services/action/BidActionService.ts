@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -24,7 +23,7 @@ import { BidDataService } from '../model/BidDataService';
 import { LockedOutputService } from '../model/LockedOutputService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
 import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
 import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
@@ -34,14 +33,25 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { BidRequest } from '../../requests/post/BidRequest';
 import { request, validate } from '../../../core/api/Validate';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
+import { ListingItemAddActionService } from './ListingItemAddActionService';
+import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { OmpService } from '../OmpService';
+import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
+import { BidValidator } from '../../messages/validator/BidValidator';
+import { BidMessage } from '../../messages/action/BidMessage';
+import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 
 export class BidActionService extends BaseActionService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
@@ -68,15 +78,50 @@ export class BidActionService extends BaseActionService {
      * @param params
      */
     public async createMessage(params: BidRequest): Promise<MarketplaceMessage> {
-        return {} as MarketplaceMessage;
+
+        // - recreate ListingItemMessage with factory
+        // - use omp to generate BidMessage
+
+        const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
+            sendParams: {} as MessageSendParams, // not needed, this message is not sent
+            listingItem: params.listingItem
+        } as ListingItemAddRequest);
+
+        const config: BidConfiguration = {
+            cryptocurrency: Cryptocurrency.PART,
+            escrow: params.listingItem.PaymentInformation.Escrow.type,
+            shippingAddress: params.address
+            // objects: KVS[]
+        };
+
+        // use omp to generate BidMessage
+        return await this.ompService.bid(config, listingItemAddMPM.action as ListingItemAddMessage);
+    }
+
+    /**
+     * called before post is executed and message is sent
+     * @param params
+     * @param bidMPM
+     */
+    public async beforePost(params: BidRequest, bidMarketplaceMessage: MarketplaceMessage): Promise<BidRequest> {
+        // generate bidCreateRequest
+        return await this.bidFactory.get(bidMarketplaceMessage.action as BidMessage, {
+                listingItemId: params.listingItem.id,
+                bidder: params.sendParams.fromAddress
+            } as BidCreateParams)
+            .then(async bidCreateRequest => {
+                // save Bid
+                await this.bidService.create(bidCreateRequest);
+                return params;
+            });
     }
 
     /**
      * validate the MarketplaceMessage to which is to be posted to the network
-     * @param message
+     * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return true;
+        return BidValidator.isValid(marketplaceMessage);
     }
 
     /**
@@ -85,7 +130,7 @@ export class BidActionService extends BaseActionService {
      * @param params
      */
     @validate()
-    public async post(@request(ListingItemAddRequest) params: ListingItemAddRequest): Promise<SmsgSendResponse> {
+    public async post(@request(BidRequest) params: BidRequest): Promise<SmsgSendResponse> {
         this.log.debug('post(): ', JSON.stringify(params, null, 2));
         return super.post(params);
     }

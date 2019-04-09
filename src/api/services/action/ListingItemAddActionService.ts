@@ -23,7 +23,6 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { ListingItemAddValidator } from '../../messages/validators/ListingItemAddValidator';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
@@ -32,6 +31,7 @@ import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
+import {ListingItemAddValidator} from '../../messages/validator/ListingItemAddValidator';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -61,14 +61,10 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param params
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
-        return await this.listingItemTemplateService.findOne(params.listingItemTemplateId, true)
-            .then(async templateModel => {
-                const listingItemTemplate: resources.ListingItemTemplate = templateModel.toJSON();
-                return await this.marketplaceMessageFactory.get(
-                    MPAction.MPA_LISTING_ADD, {
-                        template: listingItemTemplate
-                    } as ListingItemAddMessageCreateParams);
-            });
+        return await this.marketplaceMessageFactory.get(
+            MPAction.MPA_LISTING_ADD, {
+                listingItem: params.listingItem
+            } as ListingItemAddMessageCreateParams);
     }
 
     /**

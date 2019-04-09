@@ -14,7 +14,6 @@ import { BidService } from '../../src/api/services/model/BidService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { BidDataService } from '../../src/api/services/model/BidDataService';
-import { Bid } from '../../src/api/models/Bid';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';

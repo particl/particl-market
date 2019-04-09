@@ -10,7 +10,7 @@ export interface MessageCreateParams {
 }
 
 export interface ListingItemAddMessageCreateParams extends MessageCreateParams {
-    template: resources.ListingItemTemplate;
+    listingItem: resources.ListingItem | resources.ListingItemTemplate;
 }
 
 export interface BidMessageCreateParams extends MessageCreateParams {

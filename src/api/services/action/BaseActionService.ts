@@ -96,8 +96,10 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                     if (params.sendParams.estimateFee) {
                         return await this.estimateFee(marketplaceMessage, params.sendParams);
                     } else {
+                        params = await this.beforePost(params, marketplaceMessage);
                         return await this.sendMessage(marketplaceMessage, params.sendParams)
                             .then(async smsgSendResponse => {
+                                smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgSendResponse);
                                 // todo: get rid of this if, its only here because smsgSendResponse.msgid is optional
                                 // because in one special case we return msgids, so they're both optional
                                 if (smsgSendResponse.msgid) {
@@ -113,6 +115,25 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                     throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
                 }
             });
+    }
+
+    /**
+     * called before post is executed and message is sent
+     * @param params
+     * @param message
+     */
+    public async beforePost(params: PostRequestInterface, message: MarketplaceMessage): Promise<PostRequestInterface> {
+        return params;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     * @param params
+     * @param message
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: PostRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        return smsgSendResponse;
     }
 
     /**

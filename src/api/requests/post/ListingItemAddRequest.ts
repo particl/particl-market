@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { PostRequestInterface } from './PostRequestInterface';
@@ -14,6 +15,8 @@ export class ListingItemAddRequest extends RequestBody implements PostRequestInt
     public sendParams: MessageSendParams;   // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public listingItemTemplateId: number;   // which ListingItemTemplate to post
+    // we cannot use the listingItemTemplateId to fetch the data to create the message since only the seller
+    // has the template
+    public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 }
 // tslint:enable:variable-name

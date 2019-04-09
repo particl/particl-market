@@ -23,6 +23,8 @@ import { BidDataValue } from '../../enums/BidDataValue';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { BidRequest } from '../../requests/post/BidRequest';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -120,7 +122,21 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        return {} as SmsgSendResponse; // this.bidActionService.send(listingItem, profile, address/*, additionalParams */);
+        const fromAddress = profile.address;
+        const toAddress = listingItem.seller;
+        // TODO: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
+
+        const postRequest = {
+            sendParams: new MessageSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            listingItem,
+            address
+        } as BidRequest;
+
+        const response: SmsgSendResponse = await this.bidActionService.post(postRequest);
+        return response;
+
     }
 
     /**

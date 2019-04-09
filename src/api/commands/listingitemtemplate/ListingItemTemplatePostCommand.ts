@@ -55,6 +55,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const marketId = data.params[2] || undefined;
         const estimateFee: boolean = typeof data.params[3] === 'boolean' ? data.params[3] : false;
 
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId, true)
+            .then(async templateModel => {
+                return templateModel.toJSON();
+            });
+
         const fromAddress = await this.listingItemTemplateService.findOne(listingItemTemplateId)
             .then(value => {
                 const template: resources.ListingItemTemplate = value.toJSON();
@@ -69,10 +74,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         const postRequest = {
             sendParams: new MessageSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
-            listingItemTemplateId
+            listingItem: listingItemTemplate
         } as ListingItemAddRequest;
 
-        const response = await this.listingItemAddActionService.post(postRequest);
+        const response: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
         return response;
     }
 

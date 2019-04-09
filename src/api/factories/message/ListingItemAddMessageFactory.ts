@@ -19,11 +19,10 @@ import {
     MessagingInfo,
     MessagingOption,
     MPA,
-    MPA_LISTING_ADD,
     PaymentInfo,
     PaymentInfoEscrow, PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
-import {EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
@@ -54,10 +53,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
      */
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
-        const information = await this.getMessageItemInfo(params.template.ItemInformation);
-        const payment = await this.getMessagePayment(params.template.PaymentInformation);
-        const messaging = await this.getMessageMessaging(params.template.MessagingInformation);
-        const objects = await this.getMessageObjects(params.template.ListingItemObjects);
+        const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
+        const payment = await this.getMessagePayment(params.listingItem.PaymentInformation);
+        const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
+        const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
 
         const item = {
             information,
@@ -69,7 +68,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return {
             type: MPAction.MPA_LISTING_ADD,
             item,
-            hash: params.template.hash
+            hash: params.listingItem.hash
         } as ListingItemAddMessage;
     }
 

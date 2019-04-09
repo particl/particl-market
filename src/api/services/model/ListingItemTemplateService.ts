@@ -355,7 +355,7 @@ export class ListingItemTemplateService {
 
         // convert the template to message
         const action = await this.listingItemAddMessageFactory.get({
-            template: listingItemTemplate
+            listingItem: listingItemTemplate
         } as ListingItemAddMessageCreateParams);
 
         const marketplaceMessage = {

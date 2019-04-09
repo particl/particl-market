@@ -16,7 +16,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
 
     public static isValid(msg: MarketplaceMessage): boolean {
         if (msg.action.type !== MPAction.MPA_LISTING_ADD) {
-            throw new ValidationException('Invalid action type.', ['Accepting only MPAction.MPA_LISTING_ADD']);
+            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LISTING_ADD]);
         }
 
         // omp-lib doesnt support all the ActionMessageTypes the mp supports, so msg needs to be cast to MPM
