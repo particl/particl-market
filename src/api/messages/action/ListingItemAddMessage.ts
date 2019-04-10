@@ -8,8 +8,9 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { Item, MPA_LISTING_ADD } from 'omp-lib/dist/interfaces/omp';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import {KVS} from 'omp-lib/dist/interfaces/common';
+import { HashableMessageInterface } from './HashableMessageInterface';
 
-export class ListingItemAddMessage extends MessageBody implements ActionMessageInterface, MPA_LISTING_ADD {
+export class ListingItemAddMessage extends MessageBody implements ActionMessageInterface, MPA_LISTING_ADD, HashableMessageInterface {
 
     @IsEnum(MPAction)
     @IsNotEmpty()
@@ -25,5 +26,19 @@ export class ListingItemAddMessage extends MessageBody implements ActionMessageI
 
     @IsNotEmpty()
     public generated: number;
+
+    public toHashable(): MPA_LISTING_ADD {
+        const msg = <MPA_LISTING_ADD>{
+            type: this.type,
+            generated: this.generated,
+            item: this.item
+        };
+
+        if (this.objects) {
+            msg.objects = this.objects;
+        }
+        
+        return msg;
+    }
 
 }
