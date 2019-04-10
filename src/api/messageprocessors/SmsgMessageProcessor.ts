@@ -69,8 +69,18 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
                         });
                 }
             })
-            .catch(reason => {
+            .catch(async (reason) => {
                 this.log.error('ERROR: ', reason);
+                if ((smsgMessageCreateRequests.length > 1) && (reason.errno === 19) && String(reason.code).includes('SQLITE_CONSTRAINT')) {
+                    // Parse individual messages if the batch write failed due to a sqlite constrainst error,
+                    // which results in the entire batched write failing
+                    this.log.debug('process(): Parsing individual messages');
+                    for (const smsgMessageCreateRequest of smsgMessageCreateRequests) {
+                        await this.smsgMessageService.create(smsgMessageCreateRequest)
+                            .then(message => this.log.debug(`Created single message ${smsgMessageCreateRequest.msgid}`))
+                            .catch(err => this.log.debug(`Failed processing single message ${smsgMessageCreateRequest.msgid}`));
+                    }
+                }
             });
     }
 
