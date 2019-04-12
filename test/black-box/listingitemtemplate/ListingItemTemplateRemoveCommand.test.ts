@@ -10,8 +10,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
+import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 
@@ -106,7 +106,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
         expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        const generatedTemplateHash = ObjectHashDeprecated.getHash(listingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(listingItemTemplate.hash).toBe(generatedTemplateHash);

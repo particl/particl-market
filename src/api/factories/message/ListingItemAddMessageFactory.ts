@@ -68,7 +68,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return {
             type: MPAction.MPA_LISTING_ADD,
             item,
-            hash: params.listingItem.hash
+            hash: params.listingItem.hash,
+            generated: new Date().getTime()
         } as ListingItemAddMessage;
     }
 
@@ -202,8 +203,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             ratio: {
                 buyer: escrow.Ratio.buyer,
                 seller: escrow.Ratio.seller
-            } as EscrowRatio
-        };
+            } as EscrowRatio,
+            secondsToLock: escrow.secondsToLock
+        } as EscrowConfig;
     }
 
     // todo: missing support for multiple payment currencies

@@ -9,8 +9,8 @@ import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/List
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
+import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -70,7 +70,7 @@ describe('ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHashDeprecated.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         // create item template
         const res: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const result: any = res;
@@ -144,7 +144,7 @@ describe('ItemLocationUpdateCommand', () => {
 
         // set hash
         testDataListingItemTemplate.itemInformation.title = 'New title';
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHashDeprecated.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
 
         // create new item template
         const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

@@ -66,13 +66,14 @@ export class EscrowService {
     @validate()
     public async update(id: number, @request(EscrowUpdateRequest) data: EscrowUpdateRequest): Promise<Escrow> {
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: EscrowUpdateRequest = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const escrow = await this.findOne(id, false);
 
         // set new values
         escrow.Type = body.type;
+        escrow.SecondsToLock = body.secondsToLock;
 
         // update escrow record
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());

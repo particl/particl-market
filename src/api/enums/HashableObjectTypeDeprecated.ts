@@ -7,7 +7,7 @@
  *
  */
 
-export enum HashableObjectType {
+export enum HashableObjectTypeDeprecated {
 
     LISTINGITEM_CREATEREQUEST = 'ListingItemCreateRequest',
     LISTINGITEMTEMPLATE_CREATEREQUEST = 'ListingItemTemplateCreateRequest',
@@ -25,5 +25,4 @@ export enum HashableObjectType {
 
     ITEMIMAGE = 'ItemImage',
     DEFAULT = 'Default'
-
 }

@@ -18,6 +18,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -46,11 +47,13 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItemModel = await this.orderItemService.findOne(data.params[0]);
         const orderItem = orderItemModel.toJSON();
 
-        return this.escrowActionService.release({
-            type: MPAction.MPA_RELEASE,
-            orderItem,
-            memo: data.params[1]
-        } as EscrowRequest);
+        // todo: release messaging need to be reimplemented, omp-lib doesnt provide msg for this
+        return {} as EscrowRequest;
+        // return this.escrowActionService.release({
+        //    type: MPActionExtended.MPA_RELEASE,
+        //    orderItem,
+        //    memo: data.params[1]
+        // } as EscrowRequest);
     }
 
     /**

@@ -6,7 +6,7 @@
  * core.api.HashableProposalOption
  *
  */
-import { ProposalOptionCreateRequest } from '../../api/requests/ProposalOptionCreateRequest';
+import { ProposalOptionCreateRequest } from '../../requests/ProposalOptionCreateRequest';
 
 export class HashableProposalOption {
 

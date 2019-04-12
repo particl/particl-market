@@ -29,6 +29,7 @@ import { EscrowRefundMessageFactory } from './EscrowRefundMessageFactory';
 import { EscrowReleaseMessageFactory } from './EscrowReleaseMessageFactory';
 import { VoteMessageFactory } from './VoteMessageFactory';
 import { ProposalAddMessageFactory } from './ProposalAddMessageFactory';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 export class MarketplaceMessageFactory {
 
@@ -75,10 +76,10 @@ export class MarketplaceMessageFactory {
             case MPAction.MPA_LOCK:
                 marketplaceMessage.action = await this.escrowLockMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
-            case MPAction.MPA_REFUND:
+            case MPActionExtended.MPA_REFUND:
                 marketplaceMessage.action = await this.escrowRefundMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
-            case MPAction.MPA_RELEASE:
+            case MPActionExtended.MPA_RELEASE:
                 marketplaceMessage.action = await this.escrowReleaseMessageFactory.get(parameters as EscrowMessageCreateParams);
                 break;
             case GovernanceAction.MPA_PROPOSAL_ADD:

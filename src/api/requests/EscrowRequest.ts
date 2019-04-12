@@ -6,6 +6,7 @@ import * as resources from 'resources';
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {MPActionExtended} from '../enums/MPActionExtended';
 
 // tslint:disable:variable-name
 export class EscrowRequest extends RequestBody {

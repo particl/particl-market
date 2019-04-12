@@ -24,6 +24,7 @@ import { ListingItemAddValidator } from '../../messages/validator/ListingItemAdd
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export abstract class BaseActionService implements ActionServiceInterface, ActionProcessorInterface {
 
@@ -37,8 +38,8 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
             case MPAction.MPA_REJECT:
             case MPAction.MPA_CANCEL:
             case MPAction.MPA_LOCK:
-            case MPAction.MPA_REFUND:
-            case MPAction.MPA_RELEASE:
+            case MPActionExtended.MPA_REFUND:
+            case MPActionExtended.MPA_RELEASE:
             case GovernanceAction.MPA_PROPOSAL_ADD:
             case GovernanceAction.MPA_VOTE:
             default:

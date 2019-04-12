@@ -6,14 +6,15 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { BuyerData, MPA_REFUND} from 'omp-lib/dist/interfaces/omp';
+import { BuyerData } from 'omp-lib/dist/interfaces/omp';
 import { KVS } from 'omp-lib/dist/interfaces/common';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
-export class EscrowRefundMessage extends MessageBody implements ActionMessageInterface, MPA_REFUND {
+export class EscrowRefundMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(MPAction)
-    public type: MPAction.MPA_REFUND;
+    public type: MPActionExtended.MPA_REFUND;
 
     @IsNotEmpty()
     public bid: string;

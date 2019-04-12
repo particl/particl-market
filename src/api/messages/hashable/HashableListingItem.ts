@@ -2,11 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-/**
- * core.api.HashableListingItem
- *
- */
-import { HashableTypes } from './HashableTypes';
+import {HashableListingTypes} from './HashableListingTypes';
 
 export class HashableListingItem {
 
@@ -20,7 +16,7 @@ export class HashableListingItem {
     public nullItemTimestamp: Date;
 
     // TODO: refactor
-    constructor(hashThis: HashableTypes, timestampedHash: boolean = false ) {
+    constructor(hashThis: HashableListingTypes, timestampedHash: boolean = false ) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {

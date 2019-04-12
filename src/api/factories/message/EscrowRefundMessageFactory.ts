@@ -10,6 +10,7 @@ import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BuyerData } from 'omp-lib/dist/interfaces/omp';
 import { EscrowMessageCreateParams } from './MessageCreateParams';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 
@@ -30,7 +31,7 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
     public async get(params: EscrowMessageCreateParams): Promise<EscrowRefundMessage> {
 
         const message = {
-            type: MPAction.MPA_REFUND,
+            type: MPActionExtended.MPA_REFUND,
             bid: params.bidHash,
             buyer: {
                 //

@@ -87,7 +87,7 @@ describe('MessageProcessor', () => {
 
         // prepare the message to be processed
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
-            template: listingItemTemplate
+            listingItem: listingItemTemplate
         } as ListingItemAddMessageCreateParams);
 
         const marketplaceMessage: MarketplaceMessage = {

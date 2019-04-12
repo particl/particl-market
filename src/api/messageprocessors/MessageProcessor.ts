@@ -20,6 +20,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { GovernanceAction } from '../enums/GovernanceAction';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import {MPActionExtended} from '../enums/MPActionExtended';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -32,7 +33,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
     private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
-    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPAction.MPA_RELEASE, MPAction.MPA_REFUND];
+    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND];
     private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
     private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
 

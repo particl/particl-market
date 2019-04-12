@@ -24,8 +24,8 @@ import { MessagingInformationCreateRequest } from '../../requests/MessagingInfor
 import { MessagingInformationUpdateRequest } from '../../requests/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/ListingItemObjectUpdateRequest';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../../enums/HashableObjectType';
+import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../../requests/ItemImageDataCreateRequest';
@@ -119,7 +119,7 @@ export class ListingItemTemplateService {
         // TODO: need to add transactions and rollback in case of failure
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, [timestampedHash]);
+        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST, [timestampedHash]);
 
         // this.log.debug('create template, body:', JSON.stringify(body, null, 2));
 
@@ -174,7 +174,7 @@ export class ListingItemTemplateService {
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
+        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
 
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);

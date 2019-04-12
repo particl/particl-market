@@ -9,8 +9,8 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ProposalCategory } from '../../enums/ProposalCategory';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../../enums/HashableObjectType';
+import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ProposalAddMessageCreateParams } from './MessageCreateParams';
 import { BidMessage } from '../../messages/action/BidMessage';
@@ -51,12 +51,12 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             item: params.itemHash
         } as ProposalAddMessage;
 
-        message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL_MESSAGE);
+        message.hash = ObjectHashDeprecated.getHash(message, HashableObjectTypeDeprecated.PROPOSAL_MESSAGE);
 
         // add hashes for the options too
         for (const option of message.options) {
             option.proposalHash = message.hash;
-            option.hash = ObjectHash.getHash(option, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
+            option.hash = ObjectHashDeprecated.getHash(option, HashableObjectTypeDeprecated.PROPOSALOPTION_CREATEREQUEST);
         }
         return message;
     }

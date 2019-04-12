@@ -20,8 +20,8 @@ import { ItemImageDataService } from './ItemImageDataService';
 import { ImageFactory } from '../../factories/ImageFactory';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
-import { HashableObjectType } from '../../enums/HashableObjectType';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
+import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
 import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
@@ -110,7 +110,7 @@ export class ItemImageService {
         if (itemImageDataOriginal) { // the original should always exist, its used to create the other versions
 
             // use the original image version to create a hash for the ItemImage
-            body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+            body.hash = ObjectHashDeprecated.getHash(itemImageDataOriginal, HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
             // get all protocols
             const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
@@ -172,7 +172,7 @@ export class ItemImageService {
         if (itemImageDataOriginal) {
 
             // use the original image version to create a hash for the ItemImage
-            body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+            body.hash = ObjectHashDeprecated.getHash(itemImageDataOriginal, HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
             // get all protocols
             const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));

@@ -13,8 +13,8 @@ import { ProposalRepository } from '../../repositories/ProposalRepository';
 import { Proposal } from '../../models/Proposal';
 import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../../requests/ProposalUpdateRequest';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../../enums/HashableObjectType';
+import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { ProposalOptionResultUpdateRequest } from '../../requests/ProposalOptionResultUpdateRequest';
@@ -86,7 +86,7 @@ export class ProposalService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
+        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
 
         // extract and remove related models from request
         const options = body.options || [];
@@ -120,7 +120,7 @@ export class ProposalService {
     public async update(id: number, @request(ProposalUpdateRequest) data: ProposalUpdateRequest): Promise<Proposal> {
 
         const body = JSON.parse(JSON.stringify(data));
-        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
+        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
 
         // find the existing one without related
         const proposal = await this.findOne(id, false);

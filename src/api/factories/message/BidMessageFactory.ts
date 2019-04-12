@@ -9,8 +9,10 @@ import { BidMessage } from '../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessageCreateParams } from './MessageCreateParams';
-import { BuyerData } from 'omp-lib/dist/interfaces/omp';
-import { hash } from 'omp-lib/dist/hasher/hash';
+import {BuyerData, PaymentData} from 'omp-lib/dist/interfaces/omp';
+
+import { HashableBidMessageConfig } from 'omp-lib/dist/hasher/config/bid';
+import {Hasher} from 'omp-lib/dist/hasher/hash';
 
 export class BidMessageFactory implements MessageFactoryInterface {
 
@@ -23,6 +25,10 @@ export class BidMessageFactory implements MessageFactoryInterface {
     }
 
     /**
+     * NOTE! even if its basicly possible, this should not be used to generate new BidMessages,
+     * but to regenarate the already received ones.
+     * todo: we could actually also just get the already received and stored smsgmessage and use that,
+     * todo: but before we do that, we should move (some of) the factories to omp-lib
      *
      * @param params
      *      config: BidConfiguration
@@ -31,7 +37,7 @@ export class BidMessageFactory implements MessageFactoryInterface {
      *          escrow: EscrowType
      *          objects?: KVS[]
      *      itemHash: string
-     *      generated?: number
+     *      generated: number
      * @returns {Promise<BidMessage>}
      */
     public async get(params: BidMessageCreateParams): Promise<BidMessage> {
@@ -41,18 +47,20 @@ export class BidMessageFactory implements MessageFactoryInterface {
 
         const message = {
             type: MPAction.MPA_BID,
-            generated,                          // timestamp, when the bidder generated this bid !implementation !protocol
+            generated,                          // timestamp, when the bidder generated this bid
             item: params.itemHash,              // item hash
             buyer: {
                 shippingAddress: params.config.shippingAddress
-                // payment                      // payment data will be added later by the omp transactionbuilder
+                payment: {
+                    todo
+                } as PaymentData                     // payment data will be added later by the omp transactionbuilder
             } as BuyerData,                     // buyer payment and other purchase details like shipping address
-            objects: params.config.objects
+
+            objects: params.config.objects,
+            hash: 'replace'
         } as BidMessage;
 
-        // TODO: implement HashableBid
-        message.hash = hash(message);           // bid hash, used to verify on the receiving end
-
+        message.hash = Hasher.hash(message, new HashableBidMessageConfig());
         return message;
     }
 

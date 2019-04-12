@@ -21,8 +21,8 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
+import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
@@ -187,7 +187,7 @@ describe('Order', () => {
         order = await orderService.create(testData).then(value => value.toJSON());
 
         // test the result
-        expect(order.hash).toBe(ObjectHash.getHash(testData, HashableObjectType.ORDER_CREATEREQUEST));
+        expect(order.hash).toBe(ObjectHashDeprecated.getHash(testData, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST));
 
     }, 600000);
 

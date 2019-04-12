@@ -27,12 +27,25 @@ import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemOb
 import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { ItemInfo, ItemObject, Location, LocationMarker } from 'omp-lib/dist/interfaces/omp';
+import {
+    EscrowConfig,
+    EscrowRatio,
+    ItemInfo,
+    ItemObject,
+    Location,
+    LocationMarker, MessagingInfo,
+    PaymentInfo,
+    PaymentInfoEscrow,
+    PaymentOption, ShippingPrice
+} from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ListingItemCreateParams } from './ModelCreateParams';
+import {CryptoAddress, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {MessageException} from '../../exceptions/MessageException';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class ListingItemFactory implements ModelFactoryInterface {
 
@@ -59,7 +72,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
 
         const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
-        const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
+        // todo: only handles escrows for now
+        const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment as PaymentInfoEscrow);
         const messagingInformation = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
 
         let listingItemObjects;
@@ -86,10 +100,10 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const objectArray: ListingItemObjectCreateRequest[] = [];
         for (const object of objects) {
             let objectData;
-            if ('TABLE' === object.type) {
-                objectData = await this.getModelObjectDataForTypeTable(object['table']);
-            } else if ('DROPDOWN' === object.type) {
-                objectData = await this.getModelObjectDataForTypeDropDown(object['options']);
+            if (object.table && 'TABLE' === object.type) {
+                objectData = await this.getModelObjectDatas(object.table);
+            } else if (object.options && 'DROPDOWN' === object.type) {
+                objectData = await this.getModelObjectDatas(object.options);
             }
             objectArray.push({
                 type: object.type,
@@ -100,7 +114,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return objectArray;
     }
 
-    private async getModelObjectDataForTypeTable(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
+    private async getModelObjectDatas(objectDatas: KVS[]): Promise<ListingItemObjectDataCreateRequest[]> {
         const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
         for (const objectData of objectDatas) {
             objectDataArray.push({
@@ -111,31 +125,21 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return objectDataArray;
     }
 
-    private async getModelObjectDataForTypeDropDown(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
-        const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
-        for (const objectData of objectDatas) {
-            objectDataArray.push({
-                key: objectData.name,
-                value: objectData.value
-            } as ListingItemObjectDataCreateRequest);
-        }
-        return objectDataArray;
-    }
-
-    private async getModelMessagingInformation(messaging: any): Promise<MessagingInformationCreateRequest[]> {
+    private async getModelMessagingInformation(messaging: MessagingInfo): Promise<MessagingInformationCreateRequest[]> {
         const messagingArray: MessagingInformationCreateRequest[] = [];
-        for (const messagingData of messaging) {
+        for (const messagingData of messaging.options) {
             messagingArray.push({
                 protocol: MessagingProtocol[messagingData.protocol],
-                publicKey: messagingData.public_key
+                publicKey: messagingData.publicKey
             } as MessagingInformationCreateRequest);
         }
         return messagingArray;
     }
 
-    private async getModelPaymentInformation(payment: any): Promise<PaymentInformationCreateRequest> {
-        const escrow = await this.getModelEscrow(payment.escrow);
-        const itemPrice = await this.getModelItemPrice(payment.cryptocurrency);
+    private async getModelPaymentInformation(payment: PaymentInfoEscrow): Promise<PaymentInformationCreateRequest> {
+
+        const escrow = payment.escrow ? await this.getModelEscrow(payment.escrow) : undefined;
+        const itemPrice = await this.getModelItemPrice(payment.options);
 
         return {
             type: payment.type,
@@ -144,43 +148,51 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as PaymentInformationCreateRequest;
     }
 
-    private async getModelItemPrice(cryptocurrency: any): Promise<ItemPriceCreateRequest> {
-        const shippingPrice = await this.getModelShippingPrice(cryptocurrency[0].shipping_price);
-        let cryptocurrencyAddress;
-        if (!_.isEmpty(cryptocurrency[0].address)) {
-            cryptocurrencyAddress = await this.getModelCryptocurrencyAddress(cryptocurrency[0].address);
+    private async getModelItemPrice(paymentOptions: PaymentOption[]): Promise<ItemPriceCreateRequest> {
+        // todo: this needs to be refactored
+        const paymentOption: PaymentOption | undefined = _.find(paymentOptions, (option: PaymentOption) => {
+            return option.currency === Cryptocurrency.PART;
+        });
+
+        if (!paymentOption) {
+            throw new MessageException('There needs to be a PaymentOption for PART');
         }
+
+        const shippingPrice = await this.getModelShippingPrice(paymentOption.shippingPrice);
+        const cryptocurrencyAddress = await this.getModelCryptocurrencyAddress(paymentOption.address);
+
         return {
-            currency: cryptocurrency[0].currency,
-            basePrice: cryptocurrency[0].base_price,
+            currency: paymentOption.currency,
+            basePrice: paymentOption.basePrice,
             shippingPrice,
             cryptocurrencyAddress
         } as ItemPriceCreateRequest;
     }
 
-    private async getModelShippingPrice(shippingPrice: any): Promise<ShippingPriceCreateRequest> {
+    private async getModelShippingPrice(shippingPrice: ShippingPrice): Promise<ShippingPriceCreateRequest> {
         return {
             domestic: shippingPrice.domestic,
             international: shippingPrice.international
         } as ShippingPriceCreateRequest;
     }
 
-    private async getModelCryptocurrencyAddress(cryptocurrencyAddress: any): Promise<CryptocurrencyAddressCreateRequest> {
+    private async getModelCryptocurrencyAddress(cryptocurrencyAddress: CryptoAddress): Promise<CryptocurrencyAddressCreateRequest> {
         return {
             type: cryptocurrencyAddress.type,
             address: cryptocurrencyAddress.address
         } as CryptocurrencyAddressCreateRequest;
     }
 
-    private async getModelEscrow(escrow: any): Promise<EscrowCreateRequest> {
+    private async getModelEscrow(escrow: EscrowConfig): Promise<EscrowCreateRequest> {
         const ratio = await this.getModelEscrowRatio(escrow.ratio);
         return {
             type: escrow.type,
-            ratio
+            ratio,
+            secondsToLock: escrow.secondsToLock
         } as EscrowCreateRequest;
     }
 
-    private async getModelEscrowRatio(ratio: any): Promise<EscrowRatioCreateRequest> {
+    private async getModelEscrowRatio(ratio: EscrowRatio): Promise<EscrowRatioCreateRequest> {
         return {
             buyer: ratio.buyer,
             seller: ratio.seller

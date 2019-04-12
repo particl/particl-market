@@ -9,6 +9,7 @@ declare module 'resources' {
     interface Escrow {
         id: number;
         type: EscrowType;
+        secondsToLock: number;
         createdAt: Date;
         updatedAt: Date;
         Ratio: EscrowRatio;

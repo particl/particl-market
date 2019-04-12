@@ -35,6 +35,7 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { BidService } from '../model/BidService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 export class EscrowActionService {
 
@@ -456,7 +457,7 @@ export class EscrowActionService {
                 this.log.debug('createRawTx(), response:', JSON.stringify(response, null, 2));
                 return response;
 
-            case MPAction.MPA_RELEASE:
+            case MPActionExtended.MPA_RELEASE:
 
                 if (OrderItemStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderItemStatus.ESCROW_LOCKED
@@ -672,7 +673,7 @@ export class EscrowActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(MPAction.MPA_RELEASE, async (event) => {
+        this.eventEmitter.on(MPActionExtended.MPA_RELEASE, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processEscrowReleaseReceivedEvent(event)
                 .then(async status => {
@@ -683,7 +684,7 @@ export class EscrowActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         });
-        this.eventEmitter.on(MPAction.MPA_REFUND, async (event) => {
+        this.eventEmitter.on(MPActionExtended.MPA_REFUND, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processEscrowRefundReceivedEvent(event)
                 .then(async status => {

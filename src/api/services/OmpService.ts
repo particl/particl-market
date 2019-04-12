@@ -11,8 +11,6 @@ import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage'
 import { BidMessage } from '../messages/action/BidMessage';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
-import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
-import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
@@ -71,50 +69,43 @@ export class OmpService {
      *
      * @param listingItemAddMessage
      * @param bidMessage
-     * @param escrowLockMessage
+     * @param bidAcceptMessage
      */
-    public async lock(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, escrowLockMessage: EscrowLockMessage): Promise<MarketplaceMessage> {
+    public async lock(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage): Promise<MarketplaceMessage> {
         return await this.omp.lock(
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
-            OmpService.getMPM(escrowLockMessage)
+            OmpService.getMPM(bidAcceptMessage)
         ) as MarketplaceMessage;
     }
 
-    /**
-     * Refund the Bid
-     *
-     * @param listingItemAddMessage
-     * @param bidMessage
-     * @param bidAcceptMessage
-     * @param escrowRefundMessage
-     */
-    public async refund(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage,
-                        escrowRefundMessage?: EscrowRefundMessage): Promise<MarketplaceMessage> {
-        return await this.omp.refund(
+    public async complete(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage,
+                          escrowLockMessage: EscrowLockMessage): Promise<string> {
+        return await this.omp.complete(
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
             OmpService.getMPM(bidAcceptMessage),
-            escrowRefundMessage ? OmpService.getMPM(escrowRefundMessage) : undefined
-        ) as MarketplaceMessage;
+            OmpService.getMPM(escrowLockMessage)
+        );
     }
 
-    /**
-     * Release the Bid from Escrow
-     *
-     * @param listingItemAddMessage
-     * @param bidMessage
-     * @param bidAcceptMessage
-     * @param escrowReleaseMessage
-     */
-    public async release(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage,
-                         escrowReleaseMessage?: EscrowReleaseMessage): Promise<MarketplaceMessage> {
+    public async release(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage): Promise<string> {
         return await this.omp.release(
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
-            OmpService.getMPM(bidAcceptMessage),
-            escrowReleaseMessage ? OmpService.getMPM(escrowReleaseMessage) : undefined
-        ) as MarketplaceMessage;
+            OmpService.getMPM(bidAcceptMessage)
+        );
     }
+
+    public async refund(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage, bidAcceptMessage: BidAcceptMessage,
+                        escrowLockMessage: EscrowLockMessage): Promise<string> {
+        return await this.omp.complete(
+            OmpService.getMPM(listingItemAddMessage),
+            OmpService.getMPM(bidMessage),
+            OmpService.getMPM(bidAcceptMessage),
+            OmpService.getMPM(escrowLockMessage)
+        );
+    }
+
 
 }

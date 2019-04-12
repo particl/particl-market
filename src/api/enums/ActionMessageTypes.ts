@@ -4,5 +4,6 @@
 
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { GovernanceAction } from './GovernanceAction';
+import { MPActionExtended } from './MPActionExtended';
 
-export type ActionMessageTypes = MPAction | GovernanceAction;
+export type ActionMessageTypes = MPAction | MPActionExtended | GovernanceAction;

@@ -15,8 +15,8 @@ import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectDat
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
+import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
@@ -75,7 +75,7 @@ describe('ListingItemObjectData', () => {
         defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = ObjectHash.getHash(templateData, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
+        templateData.hash = ObjectHashDeprecated.getHash(templateData, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
         templateData.profile_id = defaultProfile.Id;
 
         // generate template

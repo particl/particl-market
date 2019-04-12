@@ -9,8 +9,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
 import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
@@ -86,7 +86,7 @@ describe('BidSendCommand', () => {
         expect(listingItemTemplates[0].ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplates[0], HashableObjectType.LISTINGITEMTEMPLATE);
+        const generatedTemplateHash = ObjectHashDeprecated.getHash(listingItemTemplates[0], HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         expect(listingItemTemplates[0].hash).toBe(generatedTemplateHash);
 
         // expect the item hash generated at the same time as template, matches with the templates one

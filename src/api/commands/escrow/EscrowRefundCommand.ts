@@ -19,6 +19,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -83,12 +84,15 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('EscrowRatio not found!');
         }
 
-        return this.escrowActionService.refund({
-            type: MPAction.MPA_REFUND,
-            orderItem,
-            accepted: data.params[1],
-            memo: data.params[2]
-        } as EscrowRequest);
+        return {} as EscrowRequest;
+
+        // todo: refund messaging need to be reimplemented, omp-lib doesnt provide msg for this
+        // return this.escrowActionService.refund({
+        //    type: MPActionExtended.MPA_REFUND,
+        //    orderItem,
+        //    accepted: data.params[1],
+        //    memo: data.params[2]
+        // } as EscrowRequest);
     }
 
     /**

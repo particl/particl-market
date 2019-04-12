@@ -26,8 +26,8 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderCreateRequest } from '../../requests/OrderCreateRequest';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../../enums/HashableObjectType';
+import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { AddressType } from '../../enums/AddressType';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemObjectCreateRequest } from '../../requests/OrderItemObjectCreateRequest';
@@ -246,7 +246,7 @@ export class BidService {
         } as OrderCreateRequest;
 
         // can we move this hashing to service level
-        orderCreateRequest.hash = ObjectHash.getHash(orderCreateRequest, HashableObjectType.ORDER_CREATEREQUEST);
+        orderCreateRequest.hash = ObjectHashDeprecated.getHash(orderCreateRequest, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST);
         return orderCreateRequest;
 
     }

@@ -46,7 +46,8 @@ describe('Escrow', () => {
         ratio: {
             buyer: 50,
             seller: 50
-        }
+        },
+        secondsToLock: 2
     } as EscrowCreateRequest;
 
     const testDataUpdated = {
@@ -54,7 +55,8 @@ describe('Escrow', () => {
         ratio: {
             buyer: 100,
             seller: 100
-        }
+        },
+        secondsToLock: 2
     } as EscrowUpdateRequest;
 
     beforeAll(async () => {
@@ -125,6 +127,7 @@ describe('Escrow', () => {
         const result = createdEscrow;
 
         expect(result.type).toBe(testData.type);
+        expect(result.secondsToLock).toBe(testData.secondsToLock);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
 
@@ -145,6 +148,7 @@ describe('Escrow', () => {
         const result = escrow[0];
 
         expect(result.type).toBe(testData.type);
+        expect(result.secondsToLock).toBe(testData.secondsToLock);
         expect(result.Ratio).toBe(undefined); // doesnt fetch related
     });
 
@@ -153,6 +157,7 @@ describe('Escrow', () => {
             .then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
+        expect(result.secondsToLock).toBe(testData.secondsToLock);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
@@ -176,6 +181,7 @@ describe('Escrow', () => {
             .then(value => value.toJSON());
 
         expect(result.type).toBe(testDataUpdated.type);
+        expect(result.secondsToLock).toBe(testDataUpdated.secondsToLock);
         expect(result.Ratio.buyer).toBe(testDataUpdated.ratio.buyer);
         expect(result.Ratio.seller).toBe(testDataUpdated.ratio.seller);
     });

@@ -17,6 +17,8 @@ export class EscrowUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public type: EscrowType;
 
+    public secondsToLock: number;
+
     public ratio: EscrowRatioUpdateRequest;
 
 }

@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -11,8 +12,6 @@ import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { ListingItem } from '../../src/api/models/ListingItem';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
@@ -41,16 +40,14 @@ import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createreque
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
-import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
-import {ListingItemCreateRequest} from '../../src/api/requests/ListingItemCreateRequest';
+import { ObjectHashDeprecated } from '../../src/api/messages/hashable/ObjectHashDeprecated';
+import { HashableObjectTypeDeprecated } from '../../src/api/enums/HashableObjectTypeDeprecated';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -103,7 +100,7 @@ describe('ListingItemTemplate', async () => {
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
 
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
@@ -424,7 +421,7 @@ describe('ListingItemTemplate', async () => {
             }
 
             // expect template hash created on the server matches what we create here
-            const generatedTemplateHash = ObjectHash.getHash(generatedListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+            const generatedTemplateHash = ObjectHashDeprecated.getHash(generatedListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
             // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
             // log.debug('generatedTemplateHash:', generatedTemplateHash);
             expect(generatedListingItemTemplate.hash).toBe(generatedTemplateHash);

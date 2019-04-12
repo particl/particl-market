@@ -6,11 +6,10 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { LockInfo, MPA_LOCK, PaymentDataLock, MPA_CANCEL } from 'omp-lib/dist/interfaces/omp';
-import {KVS} from 'omp-lib/dist/interfaces/common';
-import { HashableMessageInterface } from './HashableMessageInterface';
+import { BuyerData, LockInfo, MPA_LOCK } from 'omp-lib/dist/interfaces/omp';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
-export class EscrowLockMessage extends MessageBody implements ActionMessageInterface, MPA_LOCK, HashableMessageInterface {
+export class EscrowLockMessage extends MessageBody implements ActionMessageInterface, MPA_LOCK {
 
     @IsNotEmpty()
     @IsEnum(MPAction)
@@ -20,9 +19,7 @@ export class EscrowLockMessage extends MessageBody implements ActionMessageInter
     public bid: string;
 
     @IsNotEmpty()
-    public buyer: {
-        payment: PaymentDataLock;
-    };
+    public buyer: BuyerData;
 
     @IsNotEmpty()
     public info: LockInfo;
@@ -34,19 +31,4 @@ export class EscrowLockMessage extends MessageBody implements ActionMessageInter
     @IsNotEmpty()
     public hash: string;
 
-    public toHashable(): MPA_LOCK {
-        const msg = <MPA_LOCK>{
-            type: this.type,
-            generated: this.generated,
-            bid: this.bid,
-            buyer: this.buyer,
-            info: this.info
-        };
-
-        if (this.objects) {
-            msg.objects = this.objects;
-        }
-        
-        return msg;
-    }
 }

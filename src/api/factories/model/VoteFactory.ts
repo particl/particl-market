@@ -11,11 +11,9 @@ import { VoteMessage } from '../../messages/action/VoteMessage';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
 import { ProposalOptionService } from '../../services/model/ProposalOptionService';
-import { GovernanceAction } from '../../enums/GovernanceAction';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
-import {ProposalCreateParams, VoteCreateParams} from './ModelCreateParams';
-import {ProposalCreateRequest} from '../../requests/ProposalCreateRequest';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { VoteCreateParams } from './ModelCreateParams';
+import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
 
 export class VoteFactory implements ModelFactoryInterface {
 

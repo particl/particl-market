@@ -21,8 +21,8 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
+import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
@@ -118,7 +118,7 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHashDeprecated.getHash(testData.data[0], HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
         const result: resources.ItemImage = await itemImageService.create(testData)
             .then(value => value.toJSON());
@@ -150,7 +150,7 @@ describe('ItemImage', () => {
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
 
-        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHashDeprecated.getHash(testData.data[0], HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
         const result = itemImage[0];
         expect(result.hash).toBe(imageHash);
@@ -165,7 +165,7 @@ describe('ItemImage', () => {
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
             + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
-        const imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        const imageHash = ObjectHashDeprecated.getHash(testData.data[0], HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
         expect(result.hash).toBe(imageHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
@@ -185,7 +185,7 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+        testDataUpdated.hash = ObjectHashDeprecated.getHash(testDataUpdated.data[0], HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

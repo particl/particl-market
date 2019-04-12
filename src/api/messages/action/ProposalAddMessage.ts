@@ -7,11 +7,9 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {KVS} from 'omp-lib/dist/interfaces/common';
-import { HashableMessageInterface } from './HashableMessageInterface';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
-export class ProposalAddMessage extends MessageBody implements ActionMessageInterface, HashableMessageInterface {
+export class ProposalAddMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(GovernanceAction)
@@ -34,28 +32,5 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
 
     @IsNotEmpty()
     public generated: number;
-
-    // TODO: requires an interface
-    public toHashable(): any {
-        const msg: any = {
-            type: this.type,
-            generated: this.generated,
-            submitter: this.submitter, // I'm pretty sure this field is untrusted! Do not rely on it, use sender of message instead.
-            title: this.title,
-            description: this.description,
-            options: this.options,
-            category: this.category,
-        };
-
-        if (this.item) {
-            msg.item = this.item;
-        }
-
-        if (this.objects) {
-            msg.objects = this.objects;
-        }
-
-        return msg;
-    }
 
 }

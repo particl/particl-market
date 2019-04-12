@@ -7,7 +7,7 @@
  *
  */
 import { OrderCreateRequest } from '../../api/requests/OrderCreateRequest';
-import {OrderItemCreateRequest} from '../../api/requests/OrderItemCreateRequest';
+import { OrderItemCreateRequest } from '../../api/requests/OrderItemCreateRequest';
 
 export class HashableOrder {
 
