@@ -20,8 +20,6 @@ export class OrderItemCreateRequest extends RequestBody {
     @IsNotEmpty()
     public status: OrderItemStatus;
 
-    public orderItemObjects: OrderItemObjectCreateRequest[];
-
     @IsNotEmpty()
     public bid_id: number;
 

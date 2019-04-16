@@ -31,7 +31,7 @@ export class ProposalFactory implements ModelFactoryInterface {
      * @param params
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(proposalMessage: ProposalAddMessage, params?: ProposalCreateParams, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
+    public async get(params: ProposalCreateParams, proposalMessage?: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
 
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,

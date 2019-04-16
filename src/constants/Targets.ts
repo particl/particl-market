@@ -361,6 +361,7 @@ export const Targets = {
             ListingItemFactory: 'ListingItemFactory',
             ModelCreateParams: 'ModelCreateParams',
             ModelFactoryInterface: 'ModelFactoryInterface',
+            OrderFactory: 'OrderFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'

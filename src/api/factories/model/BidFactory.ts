@@ -10,21 +10,16 @@ import { Types, Core, Targets } from '../../../constants';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidCreateRequest } from '../../requests/BidCreateRequest';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
-import { BidDataValue } from '../../enums/BidDataValue';
-import {HashableBidField, MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import { HashableBidField, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { BidCreateParams } from './ModelCreateParams';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableBidMessageConfig} from 'omp-lib/dist/hasher/config/bid';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
-import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
-import {AddressType} from '../../enums/AddressType';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { HashableBidCreateRequestConfig } from '../../messages/hashable/config/HashableBidCreateRequestConfig';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
 
@@ -47,7 +42,7 @@ export class BidFactory implements ModelFactoryInterface {
      * @param smsgMessage
      * @param params
      */
-    public async get(bidMessage: BidMessageTypes, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
+    public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, params.parentBid)) {

@@ -42,12 +42,13 @@ import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
 import {BidValidator} from '../../messages/validator/BidValidator';
 import {BidMessage} from '../../messages/action/BidMessage';
-import {BidCreateParams} from '../../factories/model/ModelCreateParams';
+import {BidCreateParams, OrderCreateParams} from '../../factories/model/ModelCreateParams';
 import {MessageException} from '../../exceptions/MessageException';
 import {BidCreateRequest} from '../../requests/BidCreateRequest';
 import {AddressType} from '../../enums/AddressType';
 import {ShippingAddress} from 'omp-lib/dist/interfaces/omp';
 import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
+import {OrderFactory} from '../../factories/model/OrderFactory';
 
 export class BidActionService extends BaseActionService {
 
@@ -71,6 +72,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -135,7 +137,7 @@ export class BidActionService extends BaseActionService {
 
         // TODO: should we set the latestBid in the case the previous Bid was cancelled or rejected?
 
-        return await this.bidFactory.get(bidMarketplaceMessage.action as BidMessage, bidCreateParams)
+        return await this.bidFactory.get(bidCreateParams, bidMarketplaceMessage.action as BidMessage)
             .then(async bidCreateRequest => {
                 return await this.createBid(bidMarketplaceMessage.action as BidMessage, bidCreateRequest)
                     .then(value => {
@@ -195,7 +197,7 @@ export class BidActionService extends BaseActionService {
                 } as BidCreateParams;
 
                 // note: factory makes sure the hashes match
-                return await this.bidFactory.get(actionMessage as BidMessage, bidCreateParams)
+                return await this.bidFactory.get(bidCreateParams, actionMessage as BidMessage)
                     .then(async bidCreateRequest => {
                         return await this.createBid(actionMessage as BidMessage, bidCreateRequest)
                             .then(value => {
@@ -214,21 +216,37 @@ export class BidActionService extends BaseActionService {
             });
     }
 
-    // TODO: move elsewhere, can be used by other ActionServices
     /**
      * - create the Bid (+BidDatas)
-     * - ...and Order?
+     * - create orderCreateParams for creating Order+OrderItems
+     * - create the Order with OrderItems
      *
      * @param bidMessage
      * @param bidCreateRequest
      */
     private async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
+        // TODO: needs to be refactored to support multiple OrderItems per Order
+        return await this.bidService.create(bidCreateRequest)
+            .then(async value => {
+                const bid: resources.Bid = value.toJSON();
 
-        // TODO: create Order?
-        ORDER!?!?!
-            
-        return bid;
+                const orderCreateParams = {
+                    bids: [bid],
+                    addressId: bid.ShippingAddress.id,
+                    buyer: bid.bidder,
+                    seller: bid.ListingItem.seller
+                } as OrderCreateParams;
+
+                return await this.orderFactory.get(orderCreateParams, bidMessage)
+                    .then(async orderCreateRequest => {
+                        return await this.orderService.create(orderCreateRequest)
+                            .then(async orderModel => {
+                                const order: resources.Order = orderModel.toJSON();
+                                // this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+                                return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
+                            });
+                    });
+            });
     }
 }

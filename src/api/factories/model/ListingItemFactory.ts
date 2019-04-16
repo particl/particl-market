@@ -68,8 +68,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
      * @param smsgMessage
      * @param params
      */
-    public async get(listingItemAddMessage: ListingItemAddMessage,
-                     params: ListingItemCreateParams,
+    public async get(params: ListingItemCreateParams,
+                     listingItemAddMessage: ListingItemAddMessage,
                      smsgMessage: resources.SmsgMessage): Promise<ListingItemCreateRequest> {
 
 

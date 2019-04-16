@@ -11,7 +11,6 @@ import {AddressCreateRequest} from './AddressCreateRequest';
 export class OrderCreateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public address: AddressCreateRequest;
     public address_id: number;
 
     @IsNotEmpty()

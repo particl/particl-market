@@ -46,7 +46,7 @@ export class HashableListingItemTemplateCreateRequestConfig extends BaseHashable
         to: HashableItemField.PAYMENT_SHIPPING_PRICE_INTL
     }] as HashableFieldConfig[];
 
-    constructor(values: HashableFieldValueConfig[]) {
+    constructor(values?: HashableFieldValueConfig[]) {
         super(values);
     }
 }

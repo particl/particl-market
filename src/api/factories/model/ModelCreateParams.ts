@@ -22,6 +22,13 @@ export interface BidCreateParams extends ModelCreateParams {
     parentBid?: resources.Bid;  // the bid that happened before this
 }
 
+export interface OrderCreateParams extends ModelCreateParams {
+    bids: resources.Bid[];
+    addressId: number;
+    buyer: string;
+    seller: string;
+}
+
 export interface ProposalCreateParams extends ModelCreateParams {
 }
 
