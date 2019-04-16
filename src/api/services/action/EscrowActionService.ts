@@ -15,16 +15,13 @@ import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { OrderService } from '../model/OrderService';
 import { SmsgService } from '../SmsgService';
-import {CoreRpcService, Output} from '../CoreRpcService';
+import { CoreRpcService, Output } from '../CoreRpcService';
 import { EscrowRequest } from '../../requests/EscrowRequest';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { OrderItemObjectService } from '../model/OrderItemObjectService';
-import { OrderItemObjectUpdateRequest } from '../../requests/OrderItemObjectUpdateRequest';
 import { OrderItemUpdateRequest } from '../../requests/OrderItemUpdateRequest';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderSearchParams } from '../../requests/OrderSearchParams';
-import { LockedOutputService } from '../model/LockedOutputService';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
@@ -35,7 +32,7 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { BidService } from '../model/BidService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
-import {MPActionExtended} from '../../enums/MPActionExtended';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export class EscrowActionService {
 
@@ -48,9 +45,7 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService,
-        @inject(Types.Service) @named(Targets.Service.model.OrderItemObjectService) private orderItemObjectService: OrderItemObjectService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.model.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
@@ -601,21 +596,7 @@ export class EscrowActionService {
 */
     }
 
-    /**
-     *
-     * @param {string} key
-     * @param {module:resources.OrderItemObject[]} orderItemObjects
-     * @returns {any}
-     */
-    private getValueFromOrderItemObjects(key: string, orderItemObjects: resources.OrderItemObject[]): any {
-        const value = orderItemObjects.find(kv => kv.key === key);
-        if (value) {
-            return value.value[0] === '[' ? JSON.parse(value.value) : value.value;
-        } else {
-            this.log.error('Missing OrderItemObject value for key: ' + key);
-            throw new MessageException('Missing OrderItemObject value for key: ' + key);
-        }
-    }
+
 
     /**
      * updates rawtx

@@ -12,7 +12,7 @@ export class ItemCategoryCreateRequest extends RequestBody {
     public parent_item_category_id: number;
 
     public key: string;
-    public id: string;
+    // public id: string; // TODO: wtf?!
 
     @IsNotEmpty()
     public name: string;

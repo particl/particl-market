@@ -4,51 +4,51 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {ompVersion} from 'omp-lib';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {MarketplaceMessageEvent} from '../../messages/MarketplaceMessageEvent';
-import {EventEmitter} from 'events';
-import {BidService} from '../model/BidService';
-import {ProfileService} from '../model/ProfileService';
-import {MarketService} from '../model/MarketService';
-import {BidFactory} from '../../factories/model/BidFactory';
-import {SmsgService} from '../SmsgService';
-import {CoreRpcService} from '../CoreRpcService';
-import {ListingItemService} from '../model/ListingItemService';
-import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
-import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
-import {OrderService} from '../model/OrderService';
-import {BidDataService} from '../model/BidDataService';
-import {LockedOutputService} from '../model/LockedOutputService';
-import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
-import {SmsgMessageService} from '../model/SmsgMessageService';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {BidAcceptMessageFactory} from '../../factories/message/BidAcceptMessageFactory';
-import {BidRejectMessageFactory} from '../../factories/message/BidRejectMessageFactory';
-import {BidCancelMessageFactory} from '../../factories/message/BidCancelMessageFactory';
-import {BidMessageFactory} from '../../factories/message/BidMessageFactory';
-import {BaseActionService} from './BaseActionService';
-import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
-import {BidRequest} from '../../requests/post/BidRequest';
-import {request, validate} from '../../../core/api/Validate';
-import {ListingItemAddRequest} from '../../requests/post/ListingItemAddRequest';
-import {ListingItemAddActionService} from './ListingItemAddActionService';
-import {MessageSendParams} from '../../requests/params/MessageSendParams';
-import {OmpService} from '../OmpService';
-import {BidConfiguration} from 'omp-lib/dist/interfaces/configs';
-import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
-import {BidValidator} from '../../messages/validator/BidValidator';
-import {BidMessage} from '../../messages/action/BidMessage';
-import {BidCreateParams, OrderCreateParams} from '../../factories/model/ModelCreateParams';
-import {MessageException} from '../../exceptions/MessageException';
-import {BidCreateRequest} from '../../requests/BidCreateRequest';
-import {AddressType} from '../../enums/AddressType';
-import {ShippingAddress} from 'omp-lib/dist/interfaces/omp';
-import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
-import {OrderFactory} from '../../factories/model/OrderFactory';
+import { inject, named } from 'inversify';
+import { ompVersion } from 'omp-lib';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
+import { EventEmitter } from 'events';
+import { BidService } from '../model/BidService';
+import { ProfileService } from '../model/ProfileService';
+import { MarketService } from '../model/MarketService';
+import { BidFactory } from '../../factories/model/BidFactory';
+import { SmsgService } from '../SmsgService';
+import { CoreRpcService } from '../CoreRpcService';
+import { ListingItemService } from '../model/ListingItemService';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { OrderService } from '../model/OrderService';
+import { BidDataService } from '../model/BidDataService';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { SmsgMessageService } from '../model/SmsgMessageService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
+import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
+import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
+import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
+import { BaseActionService } from './BaseActionService';
+import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import { BidRequest } from '../../requests/post/BidRequest';
+import { request, validate } from '../../../core/api/Validate';
+import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
+import { ListingItemAddActionService } from './ListingItemAddActionService';
+import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { OmpService } from '../OmpService';
+import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
+import { BidValidator } from '../../messages/validator/BidValidator';
+import { BidMessage } from '../../messages/action/BidMessage';
+import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
+import { MessageException } from '../../exceptions/MessageException';
+import { BidCreateRequest } from '../../requests/BidCreateRequest';
+import { AddressType } from '../../enums/AddressType';
+import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
+import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { OrderFactory } from '../../factories/model/OrderFactory';
+
 
 export class BidActionService extends BaseActionService {
 
@@ -65,7 +65,6 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.model.LockedOutputService) public lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) public bidMessageFactory: BidMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public bidAcceptMessageFactory: BidAcceptMessageFactory,

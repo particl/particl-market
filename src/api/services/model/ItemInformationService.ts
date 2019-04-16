@@ -21,6 +21,7 @@ import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
+import {ItemCategoryCreateRequest} from '../../requests/ItemCategoryCreateRequest';
 
 export class ItemInformationService {
 
@@ -189,7 +190,7 @@ export class ItemInformationService {
         } else if (itemCategory.id) {
             result = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
-            result = await this.itemCategoryService.create(itemCategory);
+            result = await this.itemCategoryService.create(itemCategory as ItemCategoryCreateRequest);
         }
 
         return result;

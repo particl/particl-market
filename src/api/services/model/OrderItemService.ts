@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -13,14 +14,12 @@ import { OrderItemRepository } from '../../repositories/OrderItemRepository';
 import { OrderItem } from '../../models/OrderItem';
 import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../requests/OrderItemUpdateRequest';
-import { OrderItemObjectService } from './OrderItemObjectService';
 
 export class OrderItemService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.OrderItemObjectService) public orderItemObjectService: OrderItemObjectService,
         @inject(Types.Repository) @named(Targets.Repository.OrderItemRepository) public orderItemRepo: OrderItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -43,26 +42,15 @@ export class OrderItemService {
     @validate()
     public async create( @request(OrderItemCreateRequest) data: OrderItemCreateRequest): Promise<OrderItem> {
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: OrderItemCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('OrderItemCreateRequest: ', JSON.stringify(body, null, 2));
-
-        const orderItemObjects = body.orderItemObjects || [];
-        delete body.orderItemObjects;
 
         // this.log.debug('create OrderItem, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the orderItem
-        const orderItemModel = await this.orderItemRepo.create(body);
-        const orderItem = orderItemModel.toJSON();
+        const orderItem: resources.Order = await this.orderItemRepo.create(body).then(value => value.toJSON());
 
         // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
-
-        for (const orderItemObject of orderItemObjects) {
-            orderItemObject.order_item_id = orderItem.id;
-            // stringify unless string
-            orderItemObject.dataValue = typeof (orderItemObject.dataValue) === 'string' ? orderItemObject.dataValue : JSON.stringify(orderItemObject.dataValue);
-            await this.orderItemObjectService.create(orderItemObject);
-        }
 
         // finally find and return the created orderItem
         const newOrderItem = await this.findOne(orderItem.id);
@@ -88,15 +76,6 @@ export class OrderItemService {
     }
 
     public async destroy(id: number): Promise<void> {
-
-        const orderItemModel = await this.findOne(id);
-        const orderItem = orderItemModel.toJSON();
-
-        // then remove the OrderItemObjects
-        for (const orderItemObject of orderItem.OrderItemObjects) {
-            await this.orderItemObjectService.destroy(orderItemObject.id);
-        }
-
         await this.orderItemRepo.destroy(id);
     }
 

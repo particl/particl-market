@@ -23,14 +23,6 @@ import { ListingItemService } from './ListingItemService';
 import { AddressService } from './AddressService';
 import { ProfileService } from './ProfileService';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { OrderCreateRequest } from '../../requests/OrderCreateRequest';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
-import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
-import { AddressType } from '../../enums/AddressType';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { OrderItemObjectCreateRequest } from '../../requests/OrderItemObjectCreateRequest';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageException } from '../../exceptions/MessageException';
 
@@ -219,77 +211,4 @@ export class BidService {
     public async destroy(id: number): Promise<void> {
         await this.bidRepo.destroy(id);
     }
-
-    // TODO: refactor and move this!!!
-    // TODO: also seems to be used only when creating test data
-    /**
-     * create a OrderCreateRequest
-     *
-     * @param {"resources".Bid} bid
-     * @returns {Promise<OrderCreateRequest>}
-     */
-    public async getOrderFromBid(bid: resources.Bid): Promise<OrderCreateRequest> {
-
-        const address: AddressCreateRequest = this.getShippingAddress(bid);
-        const orderItems: OrderItemCreateRequest[] = this.getOrderItems(bid);
-        const buyer: string = bid.bidder;
-        const seller: string = bid.ListingItem.seller;
-
-        const orderCreateRequest = {
-            address,
-            orderItems,
-            buyer,
-            seller
-        } as OrderCreateRequest;
-
-        // can we move this hashing to service level
-        orderCreateRequest.hash = ObjectHashDeprecated.getHash(orderCreateRequest, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST);
-        return orderCreateRequest;
-
-    }
-
-    private getShippingAddress(bid: resources.Bid): AddressCreateRequest {
-        return {
-            profile_id: bid.ShippingAddress.Profile.id,
-            firstName: bid.ShippingAddress.firstName,
-            lastName: bid.ShippingAddress.lastName,
-            addressLine1: bid.ShippingAddress.addressLine1,
-            addressLine2: bid.ShippingAddress.addressLine2,
-            city: bid.ShippingAddress.city,
-            state: bid.ShippingAddress.state,
-            zipCode: bid.ShippingAddress.zipCode,
-            country: bid.ShippingAddress.country,
-            type: AddressType.SHIPPING_ORDER
-        } as AddressCreateRequest;
-    }
-
-    private getOrderItems(bid: resources.Bid): OrderItemCreateRequest[] {
-
-        const orderItemCreateRequests: OrderItemCreateRequest[] = [];
-        const orderItemObjects = this.getOrderItemObjects(bid.BidDatas);
-
-        const orderItemCreateRequest = {
-            bid_id: bid.id,
-            itemHash: bid.ListingItem.hash,
-            status: OrderItemStatus.AWAITING_ESCROW,
-            orderItemObjects
-        } as OrderItemCreateRequest;
-
-        // in alpha 1 order contains 1 orderItem
-        orderItemCreateRequests.push(orderItemCreateRequest);
-        return orderItemCreateRequests;
-    }
-
-    private getOrderItemObjects(bidDatas: resources.BidData[]): OrderItemObjectCreateRequest[] {
-        const orderItemObjectCreateRequests: OrderItemObjectCreateRequest[] = [];
-        for (const bidData of bidDatas) {
-            const orderItemObjectCreateRequest = {
-                key: bidData.key,
-                value: bidData.value
-            } as OrderItemObjectCreateRequest;
-            orderItemObjectCreateRequests.push(orderItemObjectCreateRequest);
-        }
-        return orderItemObjectCreateRequests;
-    }
-
 }

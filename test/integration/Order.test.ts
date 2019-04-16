@@ -21,15 +21,11 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
-import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
-import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
-import { OrderItemObjectService } from '../../src/api/services/model/OrderItemObjectService';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { OrderItemObjectCreateRequest } from '../../src/api/requests/OrderItemObjectCreateRequest';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 
 describe('Order', () => {
@@ -41,7 +37,6 @@ describe('Order', () => {
     let testDataService: TestDataService;
     let orderService: OrderService;
     let orderItemService: OrderItemService;
-    let orderItemObjectService: OrderItemObjectService;
     let bidService: BidService;
     let marketService: MarketService;
     let profileService: ProfileService;
@@ -64,7 +59,6 @@ describe('Order', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.model.OrderService);
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
-        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.model.OrderItemObjectService);
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
@@ -158,13 +152,6 @@ describe('Order', () => {
         testData.seller = listingItem1.seller;
         testData.orderItems[0].itemHash = listingItem1.hash;
         testData.orderItems[0].bid_id = bid.id;
-        testData.orderItems[0].orderItemObjects = [{
-            key: bid.BidDatas[0].key,
-            value: bid.BidDatas[0].value
-        }, {
-            key: bid.BidDatas[1].key,
-            value: bid.BidDatas[1].value
-        }] as OrderItemObjectCreateRequest[];
 
         // copy the address from bid to order
         testData.address = {

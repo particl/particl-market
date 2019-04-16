@@ -4,7 +4,6 @@
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { OrderItemObjectCreateRequest } from './OrderItemObjectCreateRequest';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 
 // tslint:disable:variable-name
