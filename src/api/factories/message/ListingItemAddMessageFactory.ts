@@ -32,6 +32,9 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
@@ -65,12 +68,20 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             objects
         } as Item;
 
-        return {
+        const message = {
             type: MPAction.MPA_LISTING_ADD,
+            generated: params.listingItem.generatedAt, // generated needs to come from the template as its used in hash generation, so that we can match them
             item,
-            hash: params.listingItem.hash,
-            generated: new Date().getTime()     // generated hash needs to come from the template, so that we can match them
+            hash: 'recalculateandvalidate'
         } as ListingItemAddMessage;
+
+        message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
+
+        // the ListingItemTemplate.hash should have a matching hash with the outgoing message
+        if (params.listingItem.hash !== message.hash) {
+            throw new HashMismatchException('ListingItemAddMessage');
+        }
+        return message;
     }
 
     private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {

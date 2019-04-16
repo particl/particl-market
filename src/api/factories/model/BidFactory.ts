@@ -19,6 +19,11 @@ import { BidCreateParams } from './ModelCreateParams';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableBidMessageConfig} from 'omp-lib/dist/hasher/config/bid';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
+import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
 
@@ -35,6 +40,7 @@ export class BidFactory implements ModelFactoryInterface {
 
     /**
      * create a BidCreateRequest
+     * todo: implement part address validator and validate
      *
      * @param bidMessage
      * @param smsgMessage
@@ -42,19 +48,11 @@ export class BidFactory implements ModelFactoryInterface {
      */
     public async get(bidMessage: BidMessageTypes, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
-        if (!params.listingItemId) {
-            throw new MessageException('Invalid listingItemId.');
-        }
-
-        // todo: implement part address validator and validate
-        if (!params.bidder && typeof params.bidder !== 'string') {
-            throw new MessageException('Invalid bidder.');
-        }
-
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, params.latestBid)) {
             const bidDataValues = {};
 
+            // TODO: get rid of this, afaik bidDatas are not currently supported
             // copy the existing key-value pairs from latestBid.BidDatas
             if (params.latestBid && params.latestBid.BidDatas) {
                 for (const bidData of params.latestBid.BidDatas) {
@@ -101,16 +99,26 @@ export class BidFactory implements ModelFactoryInterface {
             }
 
             // create and return the request that can be used to create the bid
-            const bidCreateRequest = {
+            const createRequest = {
+                generatedAt: bidMessage.generated,
                 type: bidMessage.type,
-                hash,
                 address,
                 listing_item_id: params.listingItemId,
                 bidder: params.bidder,
-                bidDatas
+                bidDatas,
+                hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 
-            return bidCreateRequest;
+            // TODO: PROBLEM -> no item hash in createrequest!
+            // TODO: add extdata to config to pass the needed
+            createRequest.hash = ConfigurableHasher.hash(bidMessage, new HashableBidCreateRequestConfig());
+
+            // the createRequest.hash should have a matching hash with the incoming message
+            if (bidMessage.hash !== createRequest.hash) {
+                throw new HashMismatchException('ListingItemCreateRequest');
+            }
+
+            return createRequest;
 
         } else {
             throw new MessageException('Invalid MPAction.');
@@ -125,24 +133,25 @@ export class BidFactory implements ModelFactoryInterface {
      * @returns {boolean}
      */
     private checkBidMessageActionValidity(bidMessage: BidMessageTypes, latestBid?: resources.Bid): boolean {
+
         if (latestBid) {
             switch (latestBid.type) {
-                case MPAction.MPA_BID.toString():
-                    // if the latest bid was allready bidded on, then the message needs to be something else
-                    return bidMessage.type !== MPAction.MPA_BID.toString();
-                case MPAction.MPA_ACCEPT.toString():
-                    // latest bid was allready accepted, any bid is invalid
+                case MPAction.MPA_BID:
+                    // if the latest bid was already bidded on, then the message needs to be something else
+                    return bidMessage.type !== MPAction.MPA_BID;
+                case MPAction.MPA_ACCEPT:
+                    // latest bid was already accepted, any bid is invalid
                     return false;
-                case MPAction.MPA_CANCEL.toString():
+                case MPAction.MPA_CANCEL:
                     // latest bid was cancelled, so we allow only new bids
-                    return bidMessage.type === MPAction.MPA_BID.toString();
-                case MPAction.MPA_REJECT.toString():
+                    return bidMessage.type === MPAction.MPA_BID;
+                case MPAction.MPA_REJECT:
                     // latest bid was rejected, so we allow only new bids
-                    return bidMessage.type === MPAction.MPA_BID.toString();
+                    return bidMessage.type === MPAction.MPA_BID;
                 default:
                     throw new MessageException('Unknown BidMessage.type');
             }
-        } else if (bidMessage.type === MPAction.MPA_BID.toString()) {
+        } else if (bidMessage.type === MPAction.MPA_BID) {
             // if no existing bid and message is MPA_BID -> true
             return true;
         }

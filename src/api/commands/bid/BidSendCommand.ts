@@ -64,26 +64,18 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * Posts a Bid to the network
+     * TODO: add daysRetention to the parameters
+     * TODO: add estimateFee to the paramaters
      *
      * data.params[]:
-     * [0]: itemhash, string
-     * [1]: profileId, number
-     * [2]: addressId (from profile shipping addresses), number|false
-     *                         if false, the address must be passed as bidData id/value pairs
-     *                         in following format:
-     *                         'shippingAddress.firstName',
-     *                         'shippingAddress.lastName',
-     *                         'shippingAddress.addressLine1',
-     *                         'shippingAddress.addressLine2', (not required)
-     *                         'shippingAddress.city',
-     *                         'shippingAddress.state',
-     *                         'shippingAddress.country'
-     *                         'shippingAddress.zipCode',
+     * [0]: listingItem, resources.ListingItem
+     * [1]: profile, resources.Profile
+     * [2]: address, resources.Address
      * [3]: bidDataId, string
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
      * [6]: bidDataValue, string
-     * ......
+     *      ...
      *
      * @param {RpcRequest} data
      * @returns {Promise<SmsgSendResponse>}
@@ -91,40 +83,19 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const listingItemHash = data.params.shift();
-        const profileId = data.params.shift();
-        const addressId = data.params.shift();
-
-        // get the listingitem we are bidding for
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
-            .then(value => {
-                return value.toJSON();
-            });
-
-        if (new Date().getTime() > listingItem.expiredAt) {
-            this.log.warn(`ListingItem has expired!`);
-            throw new MessageException('The ListingItem being bidded for has expired!');
-        }
-
-        // profile that is doing the bidding
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        const address: resources.Address = this.getAddress(profile, addressId, data);
+        const listingItem: resources.ListingItem = data.params.shift();
+        const profile: resources.Profile = data.params.shift();
+        const address: resources.Address = data.params.shift();
 
         // TODO: support for passing custom BidDatas seems to have been removed
         // TODO: the allowed custom BidDatas for a Bid should be defined in the ListingItem
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        const fromAddress = profile.address;
-        const toAddress = listingItem.seller;
-        // TODO: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const fromAddress = profile.address;    // send from the given profiles address
+        const toAddress = listingItem.seller;   // send to listingItem sellers address
+
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
         const daysRetention = 2;
         const estimateFee = false;
 
@@ -141,10 +112,10 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * data.params[]:
-     * [0]: itemhash, string
+     * [0]: listingItemHash, string
      * [1]: profileId, number
      * [2]: addressId (from profile shipping addresses), number|false
-     *                         if false, the address must be passed as bidData id/value pairs
+     *                if false, the address must be passed as bidData id/value pairs
      *                         in following format:
      *                         'shippingAddress.firstName',
      *                         'shippingAddress.lastName',
@@ -165,6 +136,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('hash');
         } else if (data.params.length < 2) {
@@ -173,6 +145,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             throw new MissingParamException('address or addressId');
         }
 
+        // make sure the params are of correct type
         if (typeof data.params[0] !== 'string') {
             throw new InvalidParamException('hash');
         }
@@ -192,11 +165,36 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             throw new InvalidParamException('addressId');
         }
 
-        // make sure listingitem exists
-        await this.listingItemService.findOneByHash(data.params[0])
+        // make sure required data exists and fetch it
+        const listingItemId = data.params.shift();
+        const profileId = data.params.shift();
+        const addressId = data.params.shift();
+
+        // now the rest of data.params are either address values or biddatas
+
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemId)
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
             });
+
+        // profile that is doing the bidding
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+
+        const address: resources.Address = this.getAddress(profile, addressId, data);
+
+        // unshift the needed data back to the params array
+        data.params.unshift(listingItem, profile, address);
+
+        // make some other validations
+        if (new Date().getTime() > listingItem.expiredAt) {
+            this.log.warn(`ListingItem has expired!`);
+            throw new MessageException('The ListingItem being bidded for has expired!');
+        }
 
         return data;
     }
@@ -207,7 +205,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
+            + '    <listingItemHash>        - String - The hash of the item we want to send bids for. \n'
             + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
             + '    <addressId>              - Numeric - The id of the address we want to associated with the bid. \n'
             + '    <bidDataKey>             - [optional] String - The key for additional data for the bid we want to send. \n'

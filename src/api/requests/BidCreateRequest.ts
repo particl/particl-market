@@ -14,7 +14,6 @@ export class BidCreateRequest extends RequestBody {
     @IsNotEmpty()
     public listing_item_id: number;
 
-    // TODO: rename to type?
     @IsEnum(MPAction)
     @IsNotEmpty()
     public type: MPAction;

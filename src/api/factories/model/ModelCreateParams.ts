@@ -17,7 +17,8 @@ export interface ListingItemCreateParams extends ModelCreateParams {
 export interface BidCreateParams extends ModelCreateParams {
     listingItemId: number;
     bidder: string;
-    latestBid?: resources.Bid;
+    latestBid?: resources.Bid;  // todo: rename this to parentBid or something,
+                                // it should be the bid that happened before this
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {

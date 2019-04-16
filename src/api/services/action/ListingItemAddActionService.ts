@@ -23,7 +23,7 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
+import {BidCreateParams, ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -32,7 +32,10 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
-import {PostRequestInterface} from '../../requests/post/PostRequestInterface';
+import {BidRequest} from '../../requests/post/BidRequest';
+import {BidMessage} from '../../messages/action/BidMessage';
+import {MessageException} from '../../exceptions/MessageException';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -64,7 +67,7 @@ export class ListingItemAddActionService extends BaseActionService {
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
         return await this.marketplaceMessageFactory.get(
             MPAction.MPA_LISTING_ADD, {
-                listingItem: params.listingItem
+                listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
             } as ListingItemAddMessageCreateParams);
     }
 

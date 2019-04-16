@@ -34,7 +34,6 @@ import {
     ItemObject,
     Location,
     LocationMarker, MessagingInfo,
-    PaymentInfo,
     PaymentInfoEscrow,
     PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
@@ -43,9 +42,12 @@ import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ListingItemCreateParams } from './ModelCreateParams';
-import {CryptoAddress, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {MessageException} from '../../exceptions/MessageException';
-import {KVS} from 'omp-lib/dist/interfaces/common';
+import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { MessageException } from '../../exceptions/MessageException';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
 
 export class ListingItemFactory implements ModelFactoryInterface {
 
@@ -81,19 +83,29 @@ export class ListingItemFactory implements ModelFactoryInterface {
             listingItemObjects = await this.getModelListingItemObjects(listingItemAddMessage.item.objects);
         }
 
-        return {
-            hash: listingItemAddMessage.hash,
+        const createRequest = {
             seller: smsgMessage.from,
             market_id: params.marketId,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,
             expiredAt: smsgMessage.expiration,
             receivedAt: smsgMessage.received,
+            generatedAt: listingItemAddMessage.generated,
             itemInformation,
             paymentInformation,
             messagingInformation,
-            listingItemObjects
+            listingItemObjects,
+            hash: 'recalculateandvalidate'
         } as ListingItemCreateRequest;
+
+        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
+
+        // the createRequest.hash should have a matching hash with the incoming message
+        if (listingItemAddMessage.hash !== createRequest.hash) {
+            throw new HashMismatchException('ListingItemCreateRequest');
+        }
+
+        return createRequest;
     }
 
     private async getModelListingItemObjects(objects: ItemObject[]): Promise<ListingItemObjectCreateRequest[]> {

@@ -9,10 +9,9 @@ import { BidMessage } from '../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessageCreateParams } from './MessageCreateParams';
-import {BuyerData, PaymentData} from 'omp-lib/dist/interfaces/omp';
-
+import { BuyerData, PaymentData } from 'omp-lib/dist/interfaces/omp';
 import { HashableBidMessageConfig } from 'omp-lib/dist/hasher/config/bid';
-import {Hasher} from 'omp-lib/dist/hasher/hash';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 
 export class BidMessageFactory implements MessageFactoryInterface {
 
@@ -50,17 +49,17 @@ export class BidMessageFactory implements MessageFactoryInterface {
             generated,                          // timestamp, when the bidder generated this bid
             item: params.itemHash,              // item hash
             buyer: {
-                shippingAddress: params.config.shippingAddress
+                shippingAddress: params.config.shippingAddress,
                 payment: {
-                    todo
+                    // todo
                 } as PaymentData                     // payment data will be added later by the omp transactionbuilder
             } as BuyerData,                     // buyer payment and other purchase details like shipping address
 
             objects: params.config.objects,
-            hash: 'replace'
+            hash: 'recalculateandvalidate'
         } as BidMessage;
 
-        message.hash = Hasher.hash(message, new HashableBidMessageConfig());
+        message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;
     }
 

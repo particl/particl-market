@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -42,6 +43,8 @@ import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessa
 import { BidValidator } from '../../messages/validator/BidValidator';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
+import { MessageException } from '../../exceptions/MessageException';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
 
 export class BidActionService extends BaseActionService {
 
@@ -87,11 +90,13 @@ export class BidActionService extends BaseActionService {
             listingItem: params.listingItem
         } as ListingItemAddRequest);
 
+        // todo: validate listingItemAddMPM hash?
+
         const config: BidConfiguration = {
             cryptocurrency: Cryptocurrency.PART,
             escrow: params.listingItem.PaymentInformation.Escrow.type,
             shippingAddress: params.address
-            // objects: KVS[]
+            // objects: KVS[] // product variations etc bid related params
         };
 
         // use omp to generate BidMessage
@@ -99,19 +104,32 @@ export class BidActionService extends BaseActionService {
     }
 
     /**
-     * called before post is executed and message is sent
+     * called after createMessage and before post is executed and message is sent
+     * - save the Bid in the Database
+     * - make sure the saved Bid.hash and messages hash match
+     * TODO: create the Order too
+     *
      * @param params
-     * @param bidMPM
+     * @param bidMarketplaceMessage
      */
     public async beforePost(params: BidRequest, bidMarketplaceMessage: MarketplaceMessage): Promise<BidRequest> {
-        // generate bidCreateRequest
+
+        // todo: should we set the latestBid in the case the previous Bid was cancelled or rejected?
+
         return await this.bidFactory.get(bidMarketplaceMessage.action as BidMessage, {
                 listingItemId: params.listingItem.id,
                 bidder: params.sendParams.fromAddress
+                // latestBid: undefined
             } as BidCreateParams)
             .then(async bidCreateRequest => {
-                // save Bid
-                await this.bidService.create(bidCreateRequest);
+                const bid: resources.Bid = await this.bidService.create(bidCreateRequest)
+                    .then(value => value.toJSON());
+
+                // the saved Bid.hash should match with the hash in outgoing message
+                if (bid.hash !== bidMarketplaceMessage.action.hash) {
+                    throw new HashMismatchException('BidMessage');
+                }
+
                 return params;
             });
     }

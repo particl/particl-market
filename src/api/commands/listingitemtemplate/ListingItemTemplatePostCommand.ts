@@ -42,7 +42,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
-     *  [2]: marketId
+     *  [2]: market: resources.Market
      *  [3]: estimateFee
      *
      * @param data
@@ -73,7 +73,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplateId // todo: change to hash?
      *  [1]: daysRetention
      *  [2]: marketId
      *  [3]: estimateFee (optional, default: false)
