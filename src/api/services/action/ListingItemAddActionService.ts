@@ -31,7 +31,8 @@ import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
-import {ListingItemAddValidator} from '../../messages/validator/ListingItemAddValidator';
+import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
+import {PostRequestInterface} from '../../requests/post/PostRequestInterface';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -100,7 +101,7 @@ export class ListingItemAddActionService extends BaseActionService {
         // - first get the Market, fail if it doesn't exist
         // - if ListingItem contains a custom category, create them
         // - fetch the root category with related to create the listingItemCreateRequest
-        // - create the ListingItem with the listingItemCreateRequest
+        // - create the ListingItem locally with the listingItemCreateRequest
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 

@@ -69,7 +69,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             type: MPAction.MPA_LISTING_ADD,
             item,
             hash: params.listingItem.hash,
-            generated: new Date().getTime()
+            generated: new Date().getTime()     // generated hash needs to come from the template, so that we can match them
         } as ListingItemAddMessage;
     }
 

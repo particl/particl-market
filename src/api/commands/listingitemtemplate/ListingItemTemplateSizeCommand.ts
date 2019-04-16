@@ -14,6 +14,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -53,6 +54,10 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 
         return data;

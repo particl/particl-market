@@ -43,12 +43,12 @@ import { ItemImageService } from './ItemImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
+import { Hasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
 
 export class ListingItemTemplateService {
 
     public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
-    private static OVERHEAD_PER_SMSG = 0;
-    private static OVERHEAD_PER_IMAGE = 0;
 
     private static IMG_BOUNDING_WIDTH = 600;
     private static IMG_BOUNDING_HEIGHT = 600;
@@ -116,12 +116,10 @@ export class ListingItemTemplateService {
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest,
                          timestampedHash: boolean = false): Promise<ListingItemTemplate> {
 
-        // TODO: need to add transactions and rollback in case of failure
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST, [timestampedHash]);
-
-        // this.log.debug('create template, body:', JSON.stringify(body, null, 2));
+        // create the hash
+        body.hash = Hasher.hash(body, new HashableListingItemTemplateCreateRequestConfig());
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -133,7 +131,7 @@ export class ListingItemTemplateService {
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
-        // If the request body was valid we will create the listingItemTemplate
+        // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body)
             .then(value => value.toJSON());
 
@@ -184,8 +182,7 @@ export class ListingItemTemplateService {
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
-        // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
-        // Item-information
+        // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         let itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON() || {};
 
         if (!_.isEmpty(body.itemInformation)) {

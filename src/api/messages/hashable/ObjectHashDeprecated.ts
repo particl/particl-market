@@ -4,13 +4,13 @@
 
 import * as crypto from 'crypto-js';
 import * as _ from 'lodash';
+import { Logger as LoggerType } from '../../../core/Logger';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
 import { HashableProposal } from './HashableProposal';
 import { HashableProposalOption } from './HashableProposalOption';
-import { Logger as LoggerType } from '../../../core/Logger';
 import { HashableBid } from './HashableBid';
 
 export class ObjectHashDeprecated {

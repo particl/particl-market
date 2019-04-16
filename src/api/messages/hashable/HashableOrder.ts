@@ -2,12 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { OrderCreateRequest } from '../../requests/OrderCreateRequest';
+import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
+
 /**
  * core.api.HashableOrder
  *
  */
-import { OrderCreateRequest } from '../../api/requests/OrderCreateRequest';
-import { OrderItemCreateRequest } from '../../api/requests/OrderItemCreateRequest';
 
 export class HashableOrder {
 

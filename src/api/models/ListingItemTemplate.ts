@@ -147,6 +147,9 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

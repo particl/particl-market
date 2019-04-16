@@ -20,6 +20,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -39,7 +40,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * posts a ListingItem to the network based on ListingItemTemplate
      *
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: marketId
      *  [3]: estimateFee
@@ -50,27 +51,16 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const listingItemTemplateId: number = data.params[0];
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-        const marketId = data.params[2] || undefined;
-        const estimateFee: boolean = typeof data.params[3] === 'boolean' ? data.params[3] : false;
+        const market: resources.Market = data.params[2];
+        const estimateFee: boolean = data.params[3] ? data.params[3] : false;
 
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId, true)
-            .then(async templateModel => {
-                return templateModel.toJSON();
-            });
+        // send from the template profiles address
+        const fromAddress = listingItemTemplate.Profile.address;
 
-        const fromAddress = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => {
-                const template: resources.ListingItemTemplate = value.toJSON();
-                return template.Profile.address;
-            });
-
-        const toAddress = await this.marketService.findOne(marketId)
-            .then(value => {
-                const market: resources.Market = value.toJSON();
-                return market.address;
-            });
+        // send to given market address
+        const toAddress = market.address;
 
         const postRequest = {
             sendParams: new MessageSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
@@ -86,68 +76,69 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
-     *  [3]: estimateFee
+     *  [3]: estimateFee (optional, default: false)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // TODO: use InvalidParamException and MissingParamException
+
+        // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MessageException('Missing listingItemTemplateId.');
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('daysRetention');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('marketId');
         }
 
-        if (data.params.length < 2) {
-            throw new MessageException('Missing daysRetention.');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('daysRetention', 'number');
+        } else if (typeof data.params[2] !== 'number') {
+            throw new InvalidParamException('marketId', 'number');
         }
 
-        if (data.params.length < 3) {
-            throw new MessageException('Missing marketId.');
+        if (data.params[3] && typeof data.params[3] !== 'boolean') {
+            throw new InvalidParamException('estimateFee', 'boolean');
+        } else if (!data.params[3]) {
+            data.params[3] = false;
         }
 
+        // make sure required data exists and fetch it
         const listingItemTemplateId = data.params[0];
         const daysRetention = data.params[1];
         const marketId = data.params[2];
 
-        if (listingItemTemplateId && typeof listingItemTemplateId !== 'number') {
-            throw new MessageException('listingItemTemplateId should be a number.');
-        } else {
-            // make sure template with the id exists
-            const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-                .then(value => value.toJSON());   // throws if not found
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+            .then(value => value.toJSON()); // throws if not found
+        data.params[0] = listingItemTemplate;
 
-            const itemPrice: resources.ItemPrice = listingItemTemplate.PaymentInformation.ItemPrice;
+        const market: resources.Market = await this.marketService.findOne(marketId)
+            .then(value => value.toJSON()); // throws if not found
+        data.params[2] = market;
 
-            // validate price
-            if ( !(_.isNumber(itemPrice.basePrice) && itemPrice.basePrice >= 0)) {
-                throw new MessageException('Invalid ItemPrice');
-            }
-            if (itemPrice.ShippingPrice) {
-                if (!itemPrice.ShippingPrice.domestic || !itemPrice.ShippingPrice.international) {
+        // make some other validations
+        const itemPrice: resources.ItemPrice = listingItemTemplate.PaymentInformation.ItemPrice;
+        if ( !(_.isNumber(itemPrice.basePrice) && itemPrice.basePrice >= 0)) {
+            throw new InvalidParamException('itemPrice');
+        }
+        if (itemPrice.ShippingPrice) {
+            if (!itemPrice.ShippingPrice.domestic || !itemPrice.ShippingPrice.international) {
+                throw new InvalidParamException('shippingPrice');
+            } else {
+                if (itemPrice.ShippingPrice.domestic < 0 || itemPrice.ShippingPrice.international < 0 ) {
                     throw new InvalidParamException('shippingPrice');
-                } else {
-                    if (itemPrice.ShippingPrice.domestic < 0 || itemPrice.ShippingPrice.international < 0 ) {
-                        throw new InvalidParamException('shippingPrice');
-                    }
                 }
             }
-
-            // check size limit
-            const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
-            if (!templateMessageDataSize.fits) {
-                throw new MessageException('Template details exceed message size limitations');
-            }
         }
 
-        if (daysRetention && typeof daysRetention !== 'number') {
-            throw new MessageException('daysRetention should be a number.');
-        }
-
-        if (marketId && typeof marketId !== 'number') {
-            throw new MessageException('marketId should be a number.');
-        } else {
-            // make sure market with the id exists
-            await this.marketService.findOne(marketId);   // throws if not found
+        // check size limit
+        const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
+        if (!templateMessageDataSize.fits) {
+            throw new MessageException('ListingItemTemplate information exceeds message size limitations');
         }
 
         return data;

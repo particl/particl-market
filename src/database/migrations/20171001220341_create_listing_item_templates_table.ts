@@ -11,10 +11,15 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('hash').nullable().unique();
+            table.integer('generated_at').unsigned().notNullable();
 
             table.integer('profile_id').notNullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('RESTRICT');
+
+            table.integer('parent_listing_item_template_id').unsigned().nullable();
+            table.foreign('parent_listing_item_template_id').references('id')
+                .inTable('listing_item_templates').onDelete('cascade');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

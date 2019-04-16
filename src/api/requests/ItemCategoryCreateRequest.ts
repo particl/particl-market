@@ -8,10 +8,11 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class ItemCategoryCreateRequest extends RequestBody {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public parent_item_category_id: number;
 
     public key: string;
+    public id: string;
 
     @IsNotEmpty()
     public name: string;

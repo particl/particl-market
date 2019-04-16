@@ -14,6 +14,10 @@ export class ListingItemTemplateCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public profile_id: number;
+    public parent_listing_item_template_id: number;
+
+    @IsNotEmpty()
+    public generatedAt: number;
 
     public hash: string;
     public itemInformation: ItemInformationCreateRequest;

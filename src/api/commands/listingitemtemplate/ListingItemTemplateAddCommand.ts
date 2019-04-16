@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,8 +14,17 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import { PaymentInformationCreateRequest } from '../../requests/PaymentInformationCreateRequest';
+import { ItemPriceCreateRequest } from '../../requests/ItemPriceCreateRequest';
+import { ShippingPriceCreateRequest } from '../../requests/ShippingPriceCreateRequest';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {CryptocurrencyAddressCreateRequest} from '../../requests/CryptocurrencyAddressCreateRequest';
+import {ItemInformationCreateRequest} from '../../requests/ItemInformationCreateRequest';
+import {ItemCategoryCreateRequest} from '../../requests/ItemCategoryCreateRequest';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -34,68 +44,163 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *
      *  itemInformation
      *  [1]: title
-     *  [2]: short description
-     *  [3]: long description
-     *  [4]: category id
+     *  [2]: shortDescription
+     *  [3]: longDescription
+     *  [4]: categoryId
      *
      *  paymentInformation
-     *  [5]: payment type
+     *  [5]: paymentType
      *  [6]: currency
-     *  [7]: base price
-     *  [8]: domestic shipping price
-     *  [9]: international shipping price
-     *  [10]: payment address (optional)
+     *  [7]: basePrice
+     *  [8]: domesticShippingPrice
+     *  [9]: internationalShippingPrice
+     *  [10]: paymentAddress (optional)
+     *  [11]: parent_listing_item_template_id (optional)
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
+        // TODO: support for custom categories
+        // TODO: support for other than CryptoAddressType.NORMAL
+        // TODO: create a factory, and reuse the same functions from ListingItemFactory
 
-        if (data.params.length >= 9) {
+        const body = {
+            profile_id: data.params[0],
+            generatedAt: new Date().getTime(),
+            itemInformation: {
+                title: data.params[1],
+                shortDescription: data.params[2],
+                longDescription: data.params[3],
+                itemCategory: {
+                    id: data.params[4]
+                } as ItemCategoryCreateRequest
+            } as ItemInformationCreateRequest,
+            paymentInformation: {
+                type: data.params[5],
+                itemPrice: {
+                    currency: data.params[6],
+                    basePrice: data.params[7],
+                    shippingPrice: {
+                        domestic: data.params[8],
+                        international: data.params[9]
+                    } as ShippingPriceCreateRequest
+                } as ItemPriceCreateRequest
+            } as PaymentInformationCreateRequest
+        } as ListingItemTemplateCreateRequest;
 
-            let cryptocurrencyAddress;
-
-            if (data.params[10]) {
-                cryptocurrencyAddress = {
-                    type: CryptoAddressType.NORMAL,
-                    address: data.params[10]
-                };
-            }
-
-            const body = {
-                profile_id: data.params[0],
-                itemInformation: {
-                    title: data.params[1],
-                    shortDescription: data.params[2],
-                    longDescription: data.params[3],
-                    itemCategory: {
-                        id: data.params[4]
-                    }
-                },
-                paymentInformation: {
-                    type: data.params[5],
-                    itemPrice: {
-                        currency: data.params[6],
-                        basePrice: data.params[7],
-                        shippingPrice: {
-                            domestic: data.params[8],
-                            international: data.params[9]
-                        },
-                        cryptocurrencyAddress
-                    }
-                }
-            } as ListingItemTemplateCreateRequest;
-
-            return await this.listingItemTemplateService.create(body);
-        } else {
-            throw new MessageException('Not enough params.');
+        if (data.params[10]) {
+            body.paymentInformation.itemPrice.cryptocurrencyAddress = {
+                type: CryptoAddressType.NORMAL,
+                address: data.params[10]
+            } as CryptocurrencyAddressCreateRequest;
         }
+
+        if (data.params[11]) {
+            body.parent_listing_item_template_id = data.params[11];
+        }
+
+        return await this.listingItemTemplateService.create(body);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: profile_id
+     *
+     *  itemInformation
+     *  [1]: title
+     *  [2]: shortDescription
+     *  [3]: longDescription
+     *  [4]: categoryId
+     *
+     *  paymentInformation
+     *  [5]: paymentType
+     *  [6]: currency
+     *  [7]: basePrice
+     *  [8]: domesticShippingPrice
+     *  [9]: internationalShippingPrice
+     *  [10]: paymentAddress (optional)
+     *  [11]: parentListingItemTemplateHash (optional) (missing from help!)
+     *
+     * @param data
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('profile_id');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('title');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('shortDescription');
+        } else if (data.params.length < 4) {
+            throw new MissingParamException('longDescription');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('categoryId');
+        } else if (data.params.length < 6) {
+            throw new MissingParamException('paymentType');
+        } else if (data.params.length < 7) {
+            throw new MissingParamException('currency');
+        } else if (data.params.length < 8) {
+            throw new MissingParamException('basePrice');
+        } else if (data.params.length < 9) {
+            throw new MissingParamException('domesticShippingPrice');
+        } else if (data.params.length < 10) {
+            throw new MissingParamException('internationalShippingPrice');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profile_id', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('title', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('shortDescription', 'string');
+        } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('longDescription', 'string');
+        } else if (typeof data.params[4] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        } else if (typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('paymentType', 'string');
+        } else if (typeof data.params[6] !== 'string') {
+            throw new InvalidParamException('currency', 'string');
+        } else if (typeof data.params[7] !== 'number') {
+            throw new InvalidParamException('basePrice', 'number');
+        } else if (typeof data.params[8] !== 'number') {
+            throw new InvalidParamException('domesticShippingPrice', 'number');
+        } else if (typeof data.params[9] !== 'number') {
+            throw new InvalidParamException('internationalShippingPrice', 'number');
+        }
+
+        // override the needed params
+        // TODO: validate that category exists
+        // TODO: add support for custom categories
+        // TODO: we only support SaleType.SALE for now
+        // TODO: add support for multiple SaleTypes
+        // TODO: missing support for STEALTH ADDRESS
+
+        data.params[5] = SaleType.SALE;
+
+        if (data.params[11]) { // parentListingItemTemplateHash was given, make sure its valid and exists
+            if (typeof data.params[11] !== 'string') {
+                throw new InvalidParamException('parentListingItemTemplateHash', 'string');
+            }
+            const listingItemTemplateModel = await this.listingItemTemplateService.findOneByHash(data.params[11])
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItemTemplate');
+                });
+            const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+            data.params[11] = listingItemTemplate.id;
+        }
+
+        return data;
     }
 
     public usage(): string {
         return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryId>'
-            + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> [<paymentAddress>] ';
+            + ' <saleType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> [<paymentAddress>] ';
     }
 
     public help(): string {
@@ -108,10 +213,10 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '                                     listing item template we are creating. \n'
             + '    <longDescription>             - String - A longer default description for the \n'
             + '                                     listing item template we are creating. \n'
-            + '    <categoryId>                - Numeric - The identifier id of the default \n'
+            + '    <categoryId>                  - Numeric - The identifier id of the default \n'
             + '                                     category we want to use with the item listing \n'
             + '                                     template we\'re creating. \n'
-            + '    <paymentType>                 - String - Whether the item listing template is by \n'
+            + '    <saleType>                    - String - Whether the item listing template is by \n'
             + '                                     default for free items or items for sale. \n'
             + '    <currency>                    - String - The default currency for use with the \n'
             + '                                     item template we\'re creating. \n'

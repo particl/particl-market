@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -74,10 +75,10 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             throw new InvalidParamException('itemImageId', 'number');
         }
 
-        const itemImageModel = await this.itemImageService.findOne(data.params[1]);
-        const itemImage = itemImageModel.toJSON();
+        const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[1])
+            .then(value => value.toJSON());
+        // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
 
-        this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
         // check if item already been posted
         if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
             throw new MessageException(`Can't set featured flag on ItemImage because the ListingItemTemplate has already been posted!`);
