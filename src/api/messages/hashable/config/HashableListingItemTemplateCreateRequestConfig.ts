@@ -1,7 +1,7 @@
-import { HashableConfig, HashableFieldConfig } from 'omp-lib/dist/interfaces/configs';
+import {BaseHashableConfig, HashableConfig, HashableFieldConfig, HashableFieldValueConfig} from 'omp-lib/dist/interfaces/configs';
 import {HashableCommonField, HashableItemField} from 'omp-lib/dist/interfaces/omp-enums';
 
-export class HashableListingItemTemplateCreateRequestConfig implements HashableConfig {
+export class HashableListingItemTemplateCreateRequestConfig extends BaseHashableConfig {
     public fields = [{
         from: 'generatedAt',
         to: HashableCommonField.GENERATED
@@ -45,4 +45,8 @@ export class HashableListingItemTemplateCreateRequestConfig implements HashableC
         from: 'paymentInformation.itemPrice.shippingPrice.international',
         to: HashableItemField.PAYMENT_SHIPPING_PRICE_INTL
     }] as HashableFieldConfig[];
+
+    constructor(values: HashableFieldValueConfig[]) {
+        super(values);
+    }
 }

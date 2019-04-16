@@ -43,7 +43,7 @@ import { ItemImageService } from './ItemImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { Hasher } from 'omp-lib/dist/hasher/hash';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
 
 export class ListingItemTemplateService {
@@ -113,13 +113,12 @@ export class ListingItemTemplateService {
     }
 
     @validate()
-    public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest,
-                         timestampedHash: boolean = false): Promise<ListingItemTemplate> {
+    public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
 
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // create the hash
-        body.hash = Hasher.hash(body, new HashableListingItemTemplateCreateRequestConfig());
+        // NOTE: hashes are created in the factory layer, not here!!!
+        // body.hash = ConfigurableHasher.hash(body, new HashableListingItemTemplateCreateRequestConfig());
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;

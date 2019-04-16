@@ -13,7 +13,7 @@ import { BidCreateRequest } from '../../requests/BidCreateRequest';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
 import { BidDataValue } from '../../enums/BidDataValue';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {HashableBidField, MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { BidCreateParams } from './ModelCreateParams';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
@@ -79,41 +79,42 @@ export class BidFactory implements ModelFactoryInterface {
 
             let address;
             if (bidMessage.type === MPAction.MPA_BID) {
-                const firstName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, bidDatas);
-                const lastName = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_LAST_NAME, bidDatas);
-                const addressLine1 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, bidDatas);
-                const addressLine2 = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, bidDatas);
-                const city = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_CITY, bidDatas);
-                const state = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_STATE, bidDatas);
-                const zipCode = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, bidDatas);
-                const country = this.getValueFromBidDatas(BidDataValue.SHIPPING_ADDRESS_COUNTRY, bidDatas);
-
                 address = {
-                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode, country
+                    firstName: params.address.firstName,
+                    lastName: params.address.lastName,
+                    addressLine1: params.address.addressLine1,
+                    addressLine2: params.address.addressLine2,
+                    city: params.address.city,
+                    state: params.address.state,
+                    zipCode: params.address.zipCode,
+                    country: params.address.country
                 } as AddressCreateRequest;
-            }
-
-            let hash = '';
-            if (bidMessage.type === MPAction.MPA_BID) {
-                hash = bidMessage.hash;
             }
 
             // create and return the request that can be used to create the bid
             const createRequest = {
+                listing_item_id: params.listingItem.id,
                 generatedAt: bidMessage.generated,
                 type: bidMessage.type,
-                address,
-                listing_item_id: params.listingItemId,
                 bidder: params.bidder,
+                address,
                 bidDatas,
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 
-            // TODO: PROBLEM -> no item hash in createrequest!
-            // TODO: add extdata to config to pass the needed
-            createRequest.hash = ConfigurableHasher.hash(bidMessage, new HashableBidCreateRequestConfig());
+            // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
+            createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
+                    value: params.listingItem.hash,
+                    to: HashableBidField.ITEM_HASH
+                }, {
+                    value: params.listingItem.PaymentInformation.Escrow.type,
+                    to: HashableBidField.PAYMENT_ESCROW_TYPE
+                }, {
+                    value: params.listingItem.PaymentInformation.ItemPrice.currency,
+                    to: HashableBidField.PAYMENT_CRYPTO
+                }]));
 
-            // the createRequest.hash should have a matching hash with the incoming message
+            // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
             if (bidMessage.hash !== createRequest.hash) {
                 throw new HashMismatchException('ListingItemCreateRequest');
             }

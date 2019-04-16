@@ -78,13 +78,13 @@ export class BidActionService extends BaseActionService {
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
+     *
+     * - recreate ListingItemMessage with factory
+     * - use omp to generate BidMessage
+     *
      * @param params
      */
     public async createMessage(params: BidRequest): Promise<MarketplaceMessage> {
-
-        // - recreate ListingItemMessage with factory
-        // - use omp to generate BidMessage
-
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
             sendParams: {} as MessageSendParams, // not needed, this message is not sent
             listingItem: params.listingItem
@@ -104,6 +104,15 @@ export class BidActionService extends BaseActionService {
     }
 
     /**
+     * validate the MarketplaceMessage to which is to be posted to the network.
+     * called directly after createMessage to validate the creation.
+     * @param marketplaceMessage
+     */
+    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
+        return BidValidator.isValid(marketplaceMessage);
+    }
+
+    /**
      * called after createMessage and before post is executed and message is sent
      * - save the Bid in the Database
      * - make sure the saved Bid.hash and messages hash match
@@ -117,7 +126,8 @@ export class BidActionService extends BaseActionService {
         // todo: should we set the latestBid in the case the previous Bid was cancelled or rejected?
 
         return await this.bidFactory.get(bidMarketplaceMessage.action as BidMessage, {
-                listingItemId: params.listingItem.id,
+                listingItem: params.listingItem,
+                address: params.address,
                 bidder: params.sendParams.fromAddress
                 // latestBid: undefined
             } as BidCreateParams)
@@ -130,16 +140,10 @@ export class BidActionService extends BaseActionService {
                     throw new HashMismatchException('BidMessage');
                 }
 
+                // TODO: create Order
+
                 return params;
             });
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidValidator.isValid(marketplaceMessage);
     }
 
     /**
@@ -159,7 +163,38 @@ export class BidActionService extends BaseActionService {
      * @param event
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-        return SmsgMessageStatus.PROCESSED;
+
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
+
+        // - first get the ListingItem the Bid is for, fail if it doesn't exist
+
+
+        return await this.listingItemService.findOneByHash(actionMessage.item)
+            .then(async listingItemModel => {
+                const listingItem = listingItemModel.toJSON();
+
+                // make sure the ListingItem belongs to a local Profile
+                if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
+                    throw new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
+                }
+
+                // TODO: should someone be able to bid more than once?
+                // TODO: for that to be possible, we need to be able to identify different bids from one address
+                // -> needs bid.hash
+                // TODO: when testing locally, bid gets created first for the bidder after which it can be found here when receiving the bid
+
+
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                // TODO: user is receiving a Bid for his own ListingItem, so if it not found, something is seriously wrong.
+                // maybe he deleted the db, or for some reason never received his own message?
+                return SmsgMessageStatus.WAITING;
+            });
+
+
     }
 
 
