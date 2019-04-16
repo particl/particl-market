@@ -7,6 +7,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { PostRequestInterface } from './PostRequestInterface';
 import { MessageSendParams } from '../params/MessageSendParams';
+import {AddressCreateRequest} from '../AddressCreateRequest';
 
 // tslint:disable:variable-name
 export class BidRequest extends RequestBody implements PostRequestInterface {
@@ -18,6 +19,6 @@ export class BidRequest extends RequestBody implements PostRequestInterface {
     public listingItem: resources.ListingItem;  // listingItem being bidder for to be used to create the ListingItemAddMessage
 
     @IsNotEmpty()
-    public address: resources.Address;          // bidder delivery address
+    public address: AddressCreateRequest;       // bidder delivery address
 }
 // tslint:enable:variable-name

@@ -13,14 +13,13 @@ export class BidCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public listing_item_id: number;
+    public parent_bid_id: number;
 
     @IsEnum(MPAction)
     @IsNotEmpty()
     public type: MPAction;
 
-    @IsNotEmpty()
     public address: AddressCreateRequest;
-
     public address_id: number;
 
     @IsNotEmpty()

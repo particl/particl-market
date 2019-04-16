@@ -25,6 +25,9 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
 import { BidRequest } from '../../requests/post/BidRequest';
+import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
+import {IsDefined, IsNotEmpty} from 'class-validator';
+import {AddressType} from '../../enums/AddressType';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -85,7 +88,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         const listingItem: resources.ListingItem = data.params.shift();
         const profile: resources.Profile = data.params.shift();
-        const address: resources.Address = data.params.shift();
+        const address: AddressCreateRequest = data.params.shift();
 
         // TODO: support for passing custom BidDatas seems to have been removed
         // TODO: the allowed custom BidDatas for a Bid should be defined in the ListingItem
@@ -185,7 +188,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 throw new ModelNotFoundException('Profile');
             });
 
-        const address: resources.Address = this.getAddress(profile, addressId, data);
+        const address: AddressCreateRequest = this.getAddress(profile, addressId, data);
 
         // unshift the needed data back to the params array
         data.params.unshift(listingItem, profile, address);
@@ -228,7 +231,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * @param addressId
      * @param data
      */
-    private getAddress(profile: resources.Profile, addressId: number | boolean, data: RpcRequest): resources.Address {
+    private getAddress(profile: resources.Profile, addressId: number | boolean, data: RpcRequest): AddressCreateRequest {
 
         if (typeof addressId === 'number') {
             const address = _.find(profile.ShippingAddresses, (addr: resources.Address) => {
@@ -237,14 +240,30 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
             // if address was found
             if (address) {
-                return address;
+                delete address.id;  // we want to use an existing ShippingAddress, but save it separately for the Bid
+                return {
+                    profile_id: profile.id,
+                    // title: address.title,
+                    firstName: address.firstName,
+                    lastName: address.lastName,
+                    addressLine1: address.addressLine1,
+                    addressLine2: address.addressLine2,
+                    city: address.city,
+                    state: address.state,
+                    country: address.country,
+                    zipCode: address.zipCode,
+                    type: AddressType.SHIPPING_BID
+                } as AddressCreateRequest;
             } else {
                 throw new NotFoundException(addressId);
             }
 
         } else { // no addressId, address should have been given as key value params
 
-            const address = {} as resources.Address;
+            const address = {
+                profile_id: profile.id,
+                type: AddressType.SHIPPING_BID
+            } as AddressCreateRequest;
 
             // loop through the data.params values and create the resources.Address
             while (!_.isEmpty(data.params)) {

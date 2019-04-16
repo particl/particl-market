@@ -51,7 +51,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ShippingDestinations',
-        'Profile'
+        'Profile',
+        'ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
+        'ChildListingItemTemplates'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
@@ -180,4 +185,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
+    // ListingItemTemplate can haz a parent ListingItemTemplate
+    public ParentListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    }
+
+    public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
+        return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    }
 }

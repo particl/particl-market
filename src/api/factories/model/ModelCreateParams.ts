@@ -4,6 +4,7 @@
 
 import * as resources from 'resources';
 import { ActionDirection } from '../../enums/ActionDirection';
+import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
 
 export interface ModelCreateParams {
     //
@@ -16,10 +17,9 @@ export interface ListingItemCreateParams extends ModelCreateParams {
 
 export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
-    address: resources.Address;
+    address: AddressCreateRequest;
     bidder: string;
-    latestBid?: resources.Bid;  // todo: rename this to parentBid or something,
-                                // it should be the bid that happened before this
+    parentBid?: resources.Bid;  // the bid that happened before this
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {

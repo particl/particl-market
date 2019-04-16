@@ -31,6 +31,8 @@ import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDepr
 import { AddressType } from '../../enums/AddressType';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemObjectCreateRequest } from '../../requests/OrderItemObjectCreateRequest';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class BidService {
 
@@ -96,7 +98,7 @@ export class BidService {
     }
 
     @validate()
-    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+    public async getLatestBidByBidder(listingItemId: number, bidder: string): Promise<Bid> {
         // return await this.bidRepo.getLatestBid(listingItemId, bidder);
         return await this.search({
             listingItemId,
@@ -108,78 +110,72 @@ export class BidService {
     @validate()
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
-        // TODO: hash generation
-
-        const body = JSON.parse(JSON.stringify(data));
+        const body: BidCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
-        // bid needs is related to listing item
-        if (body.listing_item_id == null) {
-            this.log.error('Request body is not valid, listing_item_id missing');
-            throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
-        }
+        // MPAction.MPA_BID needs to contain shipping address, for other types its optional
+        if (body.type === MPAction.MPA_BID) {
+            if (!body.address && !body.address_id) {
+                this.log.error('Request body is not valid, address missing');
+                throw new ValidationException('Request body is not valid', ['address missing']);
+            } else { // if (!body.address_id) {
+                // no address_id -> create one
+                // NOTE: in both cases, there should not be address_id set, as we want to create a new delivery address for each new bid
 
-        // bid needs to have a bidder
-        if (body.bidder == null) {
-            this.log.error('Request body is not valid, bidder missing');
-            throw new ValidationException('Request body is not valid', ['bidder missing']);
-        }
+                const addressCreateRequest = body.address;
+                delete body.address;
 
-        // shipping address
-        if (body.address == null) {
-            this.log.error('Request body is not valid, address missing');
-            throw new ValidationException('Request body is not valid', ['address missing']);
-        }
+                // no profile_id set -> figure it out
+                if (!addressCreateRequest.profile_id) {
 
-        const addressCreateRequest = body.address;
-        delete body.address;
-
-        // in case there's no profile id, figure it out
-        if (!addressCreateRequest.profile_id) {
-            const foundBidderProfile = await this.profileService.findOneByAddress(body.bidder);
-            if (foundBidderProfile) {
-                // we are the bidder
-                addressCreateRequest.profile_id = foundBidderProfile.id;
-            } else {
-                try {
-                    // we are the seller
-                    const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
-                    const listingItem = listingItemModel.toJSON();
-                    addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
-                } catch (e) {
-                    this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
+                    // if local profile is the bidder...
+                    addressCreateRequest.profile_id = await this.profileService.findOneByAddress(body.bidder)
+                        .then(value => {
+                            const bidderProfile: resources.Profile = value.toJSON();
+                            return bidderProfile.id;
+                        })
+                        .catch(async reason => {
+                            // local profile wasn't the bidder, so we must be the seller, fetch the Profile through the ListingItem
+                            return await this.listingItemService.findOne(body.listing_item_id)
+                                .then(value => {
+                                    const listingItem: resources.ListingItem = value.toJSON();
+                                    return listingItem.ListingItemTemplate.Profile.id;
+                                })
+                                .catch(reason1 => {
+                                    this.log.error('Bid doesnt belong to any local Profile');
+                                    throw new MessageException('Bid doesnt belong to any local Profile');
+                                });
+                        });
                 }
+
+                // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
+                const address: resources.Address = await this.addressService.create(addressCreateRequest)
+                    .then(value => value.toJSON());
+                // this.log.debug('created address: ', JSON.stringify(address, null, 2));
+
+                // set the address_id for the bid
+                body.address_id = address.id;
+            }
+
+        } else {
+            // Bid.type !== MPAction.MPA_BID needs to have a parent_bid_id
+            if (!body.parent_bid_id) {
+                this.log.error('Request body is not valid, parent_bid_id missing');
+                throw new ValidationException('Request body is not valid', ['parent_bid_id missing']);
             }
         }
-
-        // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
-        const addressModel = await this.addressService.create(addressCreateRequest);
-        const address = addressModel.toJSON();
-        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
-
-        // set the address_id for bid
-        body.address_id = address.id;
 
         const bidDatas = body.bidDatas || [];
         delete body.bidDatas;
 
-        // this.log.debug('body: ', JSON.stringify(body, null, 2));
-        // If the request body was valid we will create the bid
-        const bid = await this.bidRepo.create(body);
+        const bid: resources.Bid = await this.bidRepo.create(body).then(value => value.toJSON());
 
         for (const dataToSave of bidDatas) {
-            // todo: move to biddataservice?
-            dataToSave.bid_id = bid.Id;
-            // todo: test with different types of dataValue
-            dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
-
-            // this.log.debug('dataToSave: ', JSON.stringify(dataToSave, null, 2));
+            dataToSave.bid_id = bid.id;
             await this.bidDataService.create(dataToSave);
         }
 
-        // finally find and return the created bid
-        const newBid = await this.findOne(bid.Id);
-        return newBid;
+        return await this.findOne(bid.id, true);
     }
 
     @validate()
@@ -199,6 +195,7 @@ export class BidService {
         bid.Hash = body.hash;
         bid.GeneratedAt = body.generatedAt;
 
+        // TODO: not sure if we should even allow updating the related bidDatas
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
@@ -212,7 +209,6 @@ export class BidService {
             // create new BidDatas
             for (const bidData of bidDatas) {
                 bidData.bid_id = id;
-                bidData.value = typeof (bidData.value) === 'string' ? bidData.value : JSON.stringify(bidData.value);
                 await this.bidDataService.create(bidData);
             }
         }
@@ -225,6 +221,7 @@ export class BidService {
     }
 
     // TODO: refactor and move this!!!
+    // TODO: also seems to be used only when creating test data
     /**
      * create a OrderCreateRequest
      *

@@ -24,7 +24,12 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemTemplate',
         'OrderItem',
         'OrderItem.OrderItemObjects',
-        'OrderItem.Order'
+        'OrderItem.Order',
+        'ParentBid',
+        'ParentBid.ParentBid',
+        'ParentBid.ParentBid.ParentBid',
+        'ParentBid.ParentBid.ParentBid.ParentBid',
+        'ChildBid'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
@@ -144,4 +149,12 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
 
+    // ListingItemTemplate can haz a parent ListingItemTemplate
+    public ParentBid(): Bid {
+        return this.belongsTo(Bid, 'parent_bid_id', 'id');
+    }
+
+    public ChildBid(): Bid {
+        return this.hasOne(Bid, 'parent_bid_id', 'id');
+    }
 }

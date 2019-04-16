@@ -8,6 +8,7 @@ declare module 'resources' {
 
     interface Address extends ShippingAddress {
         id: number;
+        title: string;
         firstName: string;
         lastName: string;
         addressLine1: string;

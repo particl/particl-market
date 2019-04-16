@@ -24,6 +24,7 @@ import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
 import {HashableBidMessageConfig} from 'omp-lib/dist/hasher/config/bid';
 import {HashMismatchException} from '../../exceptions/HashMismatchException';
 import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
+import {AddressType} from '../../enums/AddressType';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
 
@@ -49,13 +50,13 @@ export class BidFactory implements ModelFactoryInterface {
     public async get(bidMessage: BidMessageTypes, params: BidCreateParams, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
         // check that the bidAction is valid, throw if not
-        if (this.checkBidMessageActionValidity(bidMessage, params.latestBid)) {
+        if (this.checkBidMessageActionValidity(bidMessage, params.parentBid)) {
             const bidDataValues = {};
 
             // TODO: get rid of this, afaik bidDatas are not currently supported
             // copy the existing key-value pairs from latestBid.BidDatas
-            if (params.latestBid && params.latestBid.BidDatas) {
-                for (const bidData of params.latestBid.BidDatas) {
+            if (params.parentBid && params.parentBid.BidDatas) {
+                for (const bidData of params.parentBid.BidDatas) {
                     bidDataValues[bidData.key] = bidData.value;
                 }
             }
@@ -77,27 +78,13 @@ export class BidFactory implements ModelFactoryInterface {
 
             // this.log.debug('bidDatas:', JSON.stringify(bidDatas, null, 2));
 
-            let address;
-            if (bidMessage.type === MPAction.MPA_BID) {
-                address = {
-                    firstName: params.address.firstName,
-                    lastName: params.address.lastName,
-                    addressLine1: params.address.addressLine1,
-                    addressLine2: params.address.addressLine2,
-                    city: params.address.city,
-                    state: params.address.state,
-                    zipCode: params.address.zipCode,
-                    country: params.address.country
-                } as AddressCreateRequest;
-            }
-
             // create and return the request that can be used to create the bid
             const createRequest = {
                 listing_item_id: params.listingItem.id,
                 generatedAt: bidMessage.generated,
                 type: bidMessage.type,
                 bidder: params.bidder,
-                address,
+                address: params.address,
                 bidDatas,
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
@@ -116,7 +103,7 @@ export class BidFactory implements ModelFactoryInterface {
 
             // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
             if (bidMessage.hash !== createRequest.hash) {
-                throw new HashMismatchException('ListingItemCreateRequest');
+                throw new HashMismatchException('BidCreateRequest');
             }
 
             return createRequest;
@@ -130,24 +117,24 @@ export class BidFactory implements ModelFactoryInterface {
      * Checks if the type in the given BidMessage is valid for the latest bid
      *
      * @param bidMessage
-     * @param latestBid
+     * @param parentBid
      * @returns {boolean}
      */
-    private checkBidMessageActionValidity(bidMessage: BidMessageTypes, latestBid?: resources.Bid): boolean {
+    private checkBidMessageActionValidity(bidMessage: BidMessageTypes, parentBid?: resources.Bid): boolean {
 
-        if (latestBid) {
-            switch (latestBid.type) {
+        if (parentBid) {
+            switch (parentBid.type) {
                 case MPAction.MPA_BID:
-                    // if the latest bid was already bidded on, then the message needs to be something else
+                    // if the parent bid was already bidded on, then the message needs to be something else
                     return bidMessage.type !== MPAction.MPA_BID;
                 case MPAction.MPA_ACCEPT:
-                    // latest bid was already accepted, any bid is invalid
+                    // parent bid was already accepted, any bid is invalid
                     return false;
                 case MPAction.MPA_CANCEL:
-                    // latest bid was cancelled, so we allow only new bids
+                    // parent bid was cancelled, so we allow only new bids
                     return bidMessage.type === MPAction.MPA_BID;
                 case MPAction.MPA_REJECT:
-                    // latest bid was rejected, so we allow only new bids
+                    // parent bid was rejected, so we allow only new bids
                     return bidMessage.type === MPAction.MPA_BID;
                 default:
                     throw new MessageException('Unknown BidMessage.type');
@@ -157,22 +144,6 @@ export class BidFactory implements ModelFactoryInterface {
             return true;
         }
         return false;
-    }
-
-    /**
-     * todo: refactor duplicate code
-     * @param {string} key
-     * @param {"resources".BidData[]} bidDatas
-     * @returns {any}
-     */
-    private getValueFromBidDatas(key: string, bidDatas: BidDataCreateRequest[]): string {
-        const value = bidDatas.find(kv => kv.key === key);
-        if ( value ) {
-            return value.value;
-        } else {
-            this.log.error('Missing BidData value for key: ' + key);
-            throw new MessageException('Missing BidData value for key: ' + key);
-        }
     }
 
 }
