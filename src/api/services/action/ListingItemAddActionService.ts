@@ -31,6 +31,8 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
+import {ompVersion} from 'omp-lib/dist/omp';
+import {ListingItemAddMessageFactory} from '../../factories/message/ListingItemAddMessageFactory';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -47,7 +49,7 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketplaceMessageFactory) public marketplaceMessageFactory: MarketplaceMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -61,10 +63,14 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param params
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
-        return await this.marketplaceMessageFactory.get(
-            MPAction.MPA_LISTING_ADD, {
-                listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
-            } as ListingItemAddMessageCreateParams);
+        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
+        } as ListingItemAddMessageCreateParams);
+
+        return {
+            version: ompVersion(),
+            action: actionMessage
+        } as MarketplaceMessage;
     }
 
     /**

@@ -103,6 +103,7 @@ export const Targets = {
         action: {
             BaseActionService: 'BaseActionService',
             BidActionService: 'BidActionService',
+            BidAcceptActionService: 'BidAcceptActionService',
             EscrowActionService: 'EscrowActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
             ProposalActionService: 'ProposalActionService',

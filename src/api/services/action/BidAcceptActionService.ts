@@ -11,15 +11,23 @@ import { Core, Targets, Types } from '../../../constants';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
+import { ProfileService } from '../model/ProfileService';
+import { MarketService } from '../model/MarketService';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { SmsgService } from '../SmsgService';
+import { CoreRpcService } from '../CoreRpcService';
 import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
+import { BidDataService } from '../model/BidDataService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
+import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
+import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
+import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { BidRequest } from '../../requests/post/BidRequest';
@@ -39,28 +47,37 @@ import { AddressType } from '../../enums/AddressType';
 import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { OrderFactory } from '../../factories/model/OrderFactory';
-import {ListingItemAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
+import {BidAcceptRequest} from '../../requests/post/BidAcceptRequest';
+import {NotImplementedException} from '../../exceptions/NotImplementedException';
 
 
-export class BidActionService extends BaseActionService {
+export class BidAcceptActionService extends BaseActionService {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) public bidMessageFactory: BidMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public bidAcceptMessageFactory: BidAcceptMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
+        super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
     }
 
@@ -68,12 +85,14 @@ export class BidActionService extends BaseActionService {
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * - recreate ListingItemMessage with factory
-     * - generate BidMessage with omp
+     * - recreate BidMessage with omp
+     * - generate BidAcceptMessage with omp
      *
      * @param params
      */
-    public async createMessage(params: BidRequest): Promise<MarketplaceMessage> {
+    public async createMessage(params: BidAcceptRequest): Promise<MarketplaceMessage> {
 
+        // TODO:
         // note: factory checks that the hashes match
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
             sendParams: {} as MessageSendParams, // not needed, this message is not sent
@@ -84,11 +103,13 @@ export class BidActionService extends BaseActionService {
             cryptocurrency: Cryptocurrency.PART,
             escrow: params.listingItem.PaymentInformation.Escrow.type,
             shippingAddress: params.address as ShippingAddress
-            // objects: KVS[] // product variations etc bid related params
+            // objects: KVS[] // product variations etc bid related params go here
         };
 
         // use omp to generate BidMessage
-        return await this.ompService.bid(config, listingItemAddMPM.action as ListingItemAddMessage);
+        const bidMPM: MarketplaceMessage = await this.ompService.bid(config, listingItemAddMPM.action as ListingItemAddMessage);
+
+        throw new NotImplementedException();
     }
 
     /**

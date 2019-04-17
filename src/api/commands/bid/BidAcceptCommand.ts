@@ -14,9 +14,9 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { BidActionService } from '../../services/action/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/model/BidService';
+import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -26,7 +26,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
+        @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) private bidAcceptActionService: BidAcceptActionService
     ) {
         super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
