@@ -2,9 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsNotEmpty } from 'class-validator';
+import {IsEnum, IsNotEmpty} from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import {OrderItemUpdateRequest} from './OrderItemUpdateRequest';
+import {OrderStatus} from '../enums/OrderStatus';
 
 // tslint:disable:variable-name
 export class OrderUpdateRequest extends RequestBody {
@@ -14,6 +15,10 @@ export class OrderUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
     public hash: string;
+
+    @IsEnum(OrderStatus)
+    @IsNotEmpty()
+    public status: OrderStatus;
 
     public orderItems: OrderItemUpdateRequest[];
 

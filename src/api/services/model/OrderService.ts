@@ -81,31 +81,8 @@ export class OrderService {
 
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
-        const addressCreateRequest = body.address;
-        delete body.address;
-
-        // shipping address
-        if (_.isEmpty(addressCreateRequest)) {
-            this.log.error('Request body is not valid, address missing');
-            throw new MessageException('Order does not contain ShippingAddress');
-        }
-
-        // make sure the Orders shipping address has the correct type
-        addressCreateRequest.type = AddressType.SHIPPING_ORDER;
 
         // this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
-        // this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
-
-        // save shipping address
-        const addressModel = await this.addressService.create(addressCreateRequest);
-        const address = addressModel.toJSON();
-
-        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
-
-        // set the address_id for order
-        body.address_id = address.id;
-
-        // this.log.debug('create Order, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the order
         const orderModel = await this.orderRepo.create(body);

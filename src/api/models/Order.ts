@@ -43,6 +43,9 @@ export class Order extends Bookshelf.Model<Order> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Status(): string { return this.get('status'); }
+    public set Status(value: string) { this.set('status', value); }
+
     public get Buyer(): string { return this.get('buyer'); }
     public set Buyer(value: string) { this.set('buyer', value); }
 
