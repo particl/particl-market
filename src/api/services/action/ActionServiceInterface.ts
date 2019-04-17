@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
+import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgService } from '../SmsgService';
@@ -34,14 +34,14 @@ export interface ActionServiceInterface {
      *
      * @param params
      */
-    post(params: PostRequestInterface): Promise<SmsgSendResponse>;
+    post(params: ActionRequestInterface): Promise<SmsgSendResponse>;
 
     /**
      * called before post is executed and message is sent
      * @param params
      * @param message
      */
-    beforePost(params: PostRequestInterface, message: MarketplaceMessage): Promise<PostRequestInterface>;
+    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<ActionRequestInterface>;
 
     /**
      * called after post is executed and message is sent
@@ -49,13 +49,13 @@ export interface ActionServiceInterface {
      * @param message
      * @param smsgSendResponse
      */
-    afterPost(params: PostRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      * @param params
      */
-    createMessage(params: PostRequestInterface): Promise<MarketplaceMessage>;
+    createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
      * validate the MarketplaceMessage to which is to be posted to the network

@@ -17,16 +17,16 @@ import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
-import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
-import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
+import { ItemPriceCreateRequest } from '../../src/api/requests/model/ItemPriceCreateRequest';
+import { ItemPriceUpdateRequest } from '../../src/api/requests/model/ItemPriceUpdateRequest';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { ShippingPriceCreateRequest } from '../../src/api/requests/ShippingPriceCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/CryptocurrencyAddressCreateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { ShippingPriceUpdateRequest } from '../../src/api/requests/ShippingPriceUpdateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/CryptocurrencyAddressUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/ShippingPriceUpdateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/model/CryptocurrencyAddressUpdateRequest';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

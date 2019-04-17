@@ -15,7 +15,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 

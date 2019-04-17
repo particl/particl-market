@@ -13,8 +13,8 @@ import { ItemImageService } from '../../src/api/services/model/ItemImageService'
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
+import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';

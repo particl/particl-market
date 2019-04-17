@@ -14,7 +14,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { Order } from '../../models/Order';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { OrderSearchParams } from '../../requests/OrderSearchParams';
+import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 
 export class OrderSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 

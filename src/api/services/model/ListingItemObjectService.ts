@@ -12,10 +12,10 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../../models/ListingItemObject';
-import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObjectCreateRequest';
-import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemObjectDataCreateRequest';
-import { ListingItemObjectUpdateRequest } from '../../requests/ListingItemObjectUpdateRequest';
-import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
+import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
+import { ListingItemObjectSearchParams } from '../../requests/search/ListingItemObjectSearchParams';
 import { ListingItemObjectDataService } from './ListingItemObjectDataService';
 
 export class ListingItemObjectService {

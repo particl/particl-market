@@ -13,8 +13,8 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Setting } from '../../src/api/models/Setting';
 import { SettingService } from '../../src/api/services/model/SettingService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { SettingCreateRequest } from '../../src/api/requests/SettingCreateRequest';
-import { SettingUpdateRequest } from '../../src/api/requests/SettingUpdateRequest';
+import { SettingCreateRequest } from '../../src/api/requests/model/SettingCreateRequest';
+import { SettingUpdateRequest } from '../../src/api/requests/model/SettingUpdateRequest';
 import * as resources from 'resources';
 
 describe('Setting', () => {

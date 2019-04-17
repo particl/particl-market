@@ -7,24 +7,24 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemCreateRequest } from '../../requests/ListingItemCreateRequest';
+import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
-import { LocationMarkerCreateRequest } from '../../requests/LocationMarkerCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-import { ItemImageDataCreateRequest } from '../../requests/ItemImageDataCreateRequest';
+import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
+import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { PaymentInformationCreateRequest } from '../../requests/PaymentInformationCreateRequest';
-import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
-import { EscrowRatioCreateRequest } from '../../requests/EscrowRatioCreateRequest';
-import { ItemPriceCreateRequest } from '../../requests/ItemPriceCreateRequest';
-import { ShippingPriceCreateRequest } from '../../requests/ShippingPriceCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
-import { MessagingInformationCreateRequest } from '../../requests/MessagingInformationCreateRequest';
-import { ListingItemObjectCreateRequest } from '../../requests/ListingItemObjectCreateRequest';
-import { ListingItemObjectDataCreateRequest } from '../../requests/ListingItemObjectDataCreateRequest';
-import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
+import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
+import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
+import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
+import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
+import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
+import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import {
@@ -37,7 +37,7 @@ import {
     PaymentInfoEscrow,
     PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
-import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';

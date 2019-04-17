@@ -17,14 +17,14 @@ import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { EscrowRatio } from '../../src/api/models/EscrowRatio';
-import { EscrowRatioCreateRequest } from '../../src/api/requests/EscrowRatioCreateRequest';
-import { EscrowRatioUpdateRequest } from '../../src/api/requests/EscrowRatioUpdateRequest';
+import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
+import { EscrowRatioUpdateRequest } from '../../src/api/requests/model/EscrowRatioUpdateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { Escrow } from '../../src/api/models/Escrow';
-import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
+import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('EscrowRatio', () => {

@@ -11,8 +11,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { PriceTickerRepository } from '../../repositories/PriceTickerRepository';
 import { PriceTicker } from '../../models/PriceTicker';
-import { PriceTickerCreateRequest } from '../../requests/PriceTickerCreateRequest';
-import { PriceTickerUpdateRequest } from '../../requests/PriceTickerUpdateRequest';
+import { PriceTickerCreateRequest } from '../../requests/model/PriceTickerCreateRequest';
+import { PriceTickerUpdateRequest } from '../../requests/model/PriceTickerUpdateRequest';
 
 import { MessageException } from '../../exceptions/MessageException';
 

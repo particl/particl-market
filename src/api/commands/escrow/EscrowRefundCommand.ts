@@ -12,7 +12,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowActionService } from '../../services/action/EscrowActionService';
-import { EscrowRequest } from '../../requests/EscrowRequest';
+import { EscrowRequest } from '../../requests/action/EscrowRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';

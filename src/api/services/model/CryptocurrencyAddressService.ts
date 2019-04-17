@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { CryptocurrencyAddressRepository } from '../../repositories/CryptocurrencyAddressRepository';
 import { CryptocurrencyAddress } from '../../models/CryptocurrencyAddress';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../requests/CryptocurrencyAddressUpdateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 
 export class CryptocurrencyAddressService {
 

@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { EscrowRatioRepository } from '../../repositories/EscrowRatioRepository';
 import { EscrowRatio } from '../../models/EscrowRatio';
-import { EscrowRatioCreateRequest } from '../../requests/EscrowRatioCreateRequest';
-import { EscrowRatioUpdateRequest } from '../../requests/EscrowRatioUpdateRequest';
+import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
+import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdateRequest';
 
 export class EscrowRatioService {
 

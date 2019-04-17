@@ -8,7 +8,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
+import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';

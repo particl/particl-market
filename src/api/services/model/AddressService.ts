@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { AddressRepository } from '../../repositories/AddressRepository';
 import { Address } from '../../models/Address';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
-import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
+import { AddressUpdateRequest } from '../../requests/model/AddressUpdateRequest';
 
 export class AddressService {
 

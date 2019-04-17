@@ -22,10 +22,10 @@ import { SmsgMessageService } from '../model/SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { BidRequest } from '../../requests/post/BidRequest';
-import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
+import { BidRequest } from '../../requests/action/BidRequest';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';
-import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
@@ -34,10 +34,10 @@ import { BidValidator } from '../../messages/validator/BidValidator';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidCreateRequest } from '../../requests/BidCreateRequest';
+import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { AddressType } from '../../enums/AddressType';
 import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { OrderFactory } from '../../factories/model/OrderFactory';
 import {ListingItemAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
 
@@ -76,7 +76,7 @@ export class BidActionService extends BaseActionService {
 
         // note: factory checks that the hashes match
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
-            sendParams: {} as MessageSendParams, // not needed, this message is not sent
+            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
             listingItem: params.listingItem
         } as ListingItemAddRequest);
 

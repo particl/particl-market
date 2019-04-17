@@ -12,11 +12,11 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchParams } from '../../requests/search/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SearchOrderField } from '../../enums/SearchOrderField';

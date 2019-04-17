@@ -11,7 +11,7 @@ import { app } from '../../app';
 import { ItemImageService } from '../services/model/ItemImageService';
 import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
+import { ImagePostUploadRequest } from '../requests/action/ImagePostUploadRequest';
 import { MessageException } from '../exceptions/MessageException';
 import { ItemImageDataService } from '../services/model/ItemImageDataService';
 

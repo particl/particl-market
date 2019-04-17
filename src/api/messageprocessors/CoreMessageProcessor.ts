@@ -10,7 +10,7 @@ import { SmsgService } from '../services/SmsgService';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { SmsgMessageService } from '../services/model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
 import { SmsgMessage } from '../models/SmsgMessage';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { ActionDirection } from '../enums/ActionDirection';

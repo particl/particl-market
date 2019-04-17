@@ -13,7 +13,7 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
+import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 

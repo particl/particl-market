@@ -14,14 +14,14 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Vote } from '../../src/api/models/Vote';
 import { VoteService } from '../../src/api/services/model/VoteService';
-import { VoteCreateRequest } from '../../src/api/requests/VoteCreateRequest';
-import { VoteUpdateRequest } from '../../src/api/requests/VoteUpdateRequest';
+import { VoteCreateRequest } from '../../src/api/requests/model/VoteCreateRequest';
+import { VoteUpdateRequest } from '../../src/api/requests/model/VoteUpdateRequest';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('Vote', () => {

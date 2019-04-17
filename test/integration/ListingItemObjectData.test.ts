@@ -18,16 +18,16 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
 import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
-import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
+import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
+import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/model/ListingItemObjectDataUpdateRequest';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
-import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

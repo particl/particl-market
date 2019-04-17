@@ -6,7 +6,7 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {

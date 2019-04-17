@@ -16,7 +16,7 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessage } from '../../models/SmsgMessage';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
-import { SmsgMessageSearchParams } from '../../requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 
 export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 

@@ -12,8 +12,8 @@ import { ItemCategoryService } from '../../src/api/services/model/ItemCategorySe
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemCategory } from '../../src/api/models/ItemCategory';
-import { ItemCategoryCreateRequest } from '../../src/api/requests/ItemCategoryCreateRequest';
-import { ItemCategoryUpdateRequest } from '../../src/api/requests/ItemCategoryUpdateRequest';
+import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCategoryUpdateRequest';
 
 describe('ItemCategory', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

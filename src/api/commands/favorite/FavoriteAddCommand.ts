@@ -12,7 +12,7 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
+import { FavoriteItemCreateRequest } from '../../requests/model/FavoriteItemCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';

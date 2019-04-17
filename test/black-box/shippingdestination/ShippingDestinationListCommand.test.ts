@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ListingItem } from '../../../src/api/models/ListingItem';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';

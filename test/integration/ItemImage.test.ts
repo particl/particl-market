@@ -14,19 +14,19 @@ import { ListingItemService } from '../../src/api/services/model/ListingItemServ
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemImage } from '../../src/api/models/ItemImage';
-import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
-import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
+import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
+import { ItemImageUpdateRequest } from '../../src/api/requests/model/ItemImageUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
 import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
 import { ObjectHashDeprecated } from 'ObjectHashDeprecated.ts';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
+import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

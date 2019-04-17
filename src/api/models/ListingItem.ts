@@ -8,7 +8,7 @@ import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
-import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
+import { ListingItemSearchParams } from '../requests/search/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';

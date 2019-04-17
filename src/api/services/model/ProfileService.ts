@@ -10,17 +10,17 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ProfileRepository } from '../../repositories/ProfileRepository';
 import { Profile } from '../../models/Profile';
-import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
-import { ProfileUpdateRequest } from '../../requests/ProfileUpdateRequest';
+import { ProfileCreateRequest } from '../../requests/model/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../requests/model/ProfileUpdateRequest';
 import { AddressService } from './AddressService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { CoreRpcService } from '../CoreRpcService';
 import { ShoppingCartService } from './ShoppingCartService';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../requests/CryptocurrencyAddressUpdateRequest';
-import { ShoppingCartCreateRequest } from '../../requests/ShoppingCartCreateRequest';
-import { SettingCreateRequest } from '../../requests/SettingCreateRequest';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
+import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
+import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
 
 export class ProfileService {

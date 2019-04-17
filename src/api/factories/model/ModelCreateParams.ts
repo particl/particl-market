@@ -4,7 +4,7 @@
 
 import * as resources from 'resources';
 import { ActionDirection } from '../../enums/ActionDirection';
-import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
+import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
 import {CoreSmsgMessage} from '../../messages/CoreSmsgMessage';
 
 export interface ModelCreateParams {

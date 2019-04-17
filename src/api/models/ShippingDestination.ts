@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationSearchParams } from '../requests/search/ShippingDestinationSearchParams';
 import {ListingItemTemplate} from './ListingItemTemplate';
 import {ItemInformation} from './ItemInformation';
 

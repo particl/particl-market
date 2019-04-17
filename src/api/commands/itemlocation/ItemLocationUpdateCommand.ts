@@ -10,13 +10,14 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemLocationService } from '../../services/model/ItemLocationService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemLocationUpdateRequest } from '../../requests/ItemLocationUpdateRequest';
+import { ItemLocationUpdateRequest } from '../../requests/model/ItemLocationUpdateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {LocationMarkerUpdateRequest} from '../../requests/model/LocationMarkerUpdateRequest';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -71,7 +72,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
                             markerText: data.params[4],
                             lat: data.params[5],
                             lng: data.params[6]
-                    };
+                    } as LocationMarkerUpdateRequest;
                 }
 
                 // update item location

@@ -16,14 +16,14 @@ import { BidService } from '../../src/api/services/model/BidService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
-import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
-import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { BidDataCreateRequest } from '../../src/api/requests/model/BidDataCreateRequest';
+import { BidDataUpdateRequest } from '../../src/api/requests/model/BidDataUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
+import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('BidDatas', () => {

@@ -15,11 +15,11 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
-import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
+import { EscrowUpdateRequest } from '../../src/api/requests/model/EscrowUpdateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 

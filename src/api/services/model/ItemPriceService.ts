@@ -12,14 +12,14 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ItemPriceRepository } from '../../repositories/ItemPriceRepository';
 import { ItemPrice } from '../../models/ItemPrice';
-import { ItemPriceCreateRequest } from '../../requests/ItemPriceCreateRequest';
-import { ItemPriceUpdateRequest } from '../../requests/ItemPriceUpdateRequest';
+import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
+import { ItemPriceUpdateRequest } from '../../requests/model/ItemPriceUpdateRequest';
 import { ShippingPriceService } from './ShippingPriceService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../requests/CryptocurrencyAddressUpdateRequest';
-import { ShippingPriceCreateRequest } from '../../requests/ShippingPriceCreateRequest';
-import { ShippingPriceUpdateRequest } from '../../requests/ShippingPriceUpdateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
+import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
+import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
 
 export class ItemPriceService {
 

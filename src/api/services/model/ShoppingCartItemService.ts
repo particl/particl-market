@@ -11,8 +11,8 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShoppingCartItemRepository } from '../../repositories/ShoppingCartItemRepository';
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
-import { ShoppingCartItemCreateRequest } from '../../requests/ShoppingCartItemCreateRequest';
-import { ShoppingCartItemUpdateRequest } from '../../requests/ShoppingCartItemUpdateRequest';
+import { ShoppingCartItemCreateRequest } from '../../requests/model/ShoppingCartItemCreateRequest';
+import { ShoppingCartItemUpdateRequest } from '../../requests/model/ShoppingCartItemUpdateRequest';
 
 export class ShoppingCartItemService {
 

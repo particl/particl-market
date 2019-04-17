@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
+import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';

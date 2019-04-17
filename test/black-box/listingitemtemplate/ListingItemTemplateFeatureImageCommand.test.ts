@@ -10,10 +10,10 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
-import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
+import {GenerateListingItemParams} from '../../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 

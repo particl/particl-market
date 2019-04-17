@@ -12,9 +12,9 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { CurrencyPriceRepository } from '../../repositories/CurrencyPriceRepository';
 import { CurrencyPrice } from '../../models/CurrencyPrice';
-import { CurrencyPriceCreateRequest } from '../../requests/CurrencyPriceCreateRequest';
-import { CurrencyPriceUpdateRequest } from '../../requests/CurrencyPriceUpdateRequest';
-import { CurrencyPriceParams } from '../../requests/CurrencyPriceParams';
+import { CurrencyPriceCreateRequest } from '../../requests/model/CurrencyPriceCreateRequest';
+import { CurrencyPriceUpdateRequest } from '../../requests/model/CurrencyPriceUpdateRequest';
+import { CurrencyPriceSearchParams } from '../../requests/search/CurrencyPriceSearchParams';
 import { MessageException } from '../../exceptions/MessageException';
 import { SupportedCurrencies } from '../../enums/SupportedCurrencies';
 
@@ -44,13 +44,13 @@ export class CurrencyPriceService {
     }
 
     /**
-     * searchBy CurrencyPrice using given CurrencyPriceParams
+     * searchBy CurrencyPrice using given CurrencyPriceSearchParams
      *
      * @param options
      * @returns {Promise<CurrencyPrice>}
      */
     @validate()
-    public async search(@request(CurrencyPriceParams) options: CurrencyPriceParams): Promise<CurrencyPrice> {
+    public async search(@request(CurrencyPriceSearchParams) options: CurrencyPriceSearchParams): Promise<CurrencyPrice> {
         return await this.currencyPriceRepo.search(options);
     }
 
@@ -74,7 +74,7 @@ export class CurrencyPriceService {
                 const currencyPriceModel: CurrencyPrice = await this.search({
                     from: fromCurrency,
                     to: toCurrency
-                } as CurrencyPriceParams);
+                } as CurrencyPriceSearchParams);
 
                 const currency = currencyPriceModel && currencyPriceModel.toJSON();
                 this.log.debug('currency:', currency);

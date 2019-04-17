@@ -11,9 +11,9 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { SmsgMessageRepository } from '../../repositories/SmsgMessageRepository';
 import { SmsgMessage } from '../../models/SmsgMessage';
-import { SmsgMessageCreateRequest } from '../../requests/SmsgMessageCreateRequest';
-import { SmsgMessageUpdateRequest } from '../../requests/SmsgMessageUpdateRequest';
-import { SmsgMessageSearchParams } from '../../requests/SmsgMessageSearchParams';
+import { SmsgMessageCreateRequest } from '../../requests/model/SmsgMessageCreateRequest';
+import { SmsgMessageUpdateRequest } from '../../requests/model/SmsgMessageUpdateRequest';
+import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 
 export class SmsgMessageService {

@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
+import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class ItemCategoryFactory {

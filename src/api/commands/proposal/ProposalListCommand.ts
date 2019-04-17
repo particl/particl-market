@@ -15,7 +15,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';

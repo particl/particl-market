@@ -16,14 +16,14 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { FlaggedItemService } from '../../src/api/services/model/FlaggedItemService';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { FlaggedItemCreateRequest } from '../../src/api/requests/FlaggedItemCreateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { FlaggedItemCreateRequest } from '../../src/api/requests/model/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../../src/api/models/FlaggedItem';
-import { FlaggedItemUpdateRequest } from '../../src/api/requests/FlaggedItemUpdateRequest';
+import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedItemUpdateRequest';
 
 describe('FlaggedItem', () => {
 

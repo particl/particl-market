@@ -12,7 +12,7 @@ import { AddressService } from '../../services/model/AddressService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingZips } from '../../../core/helpers/ShippingZips';
 import { Commands } from '../CommandEnumType';

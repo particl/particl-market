@@ -17,9 +17,9 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { LocationMarker } from '../../src/api/models/LocationMarker';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { LocationMarkerCreateRequest } from '../../src/api/requests/LocationMarkerCreateRequest';
-import { LocationMarkerUpdateRequest } from '../../src/api/requests/LocationMarkerUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
+import { LocationMarkerUpdateRequest } from '../../src/api/requests/model/LocationMarkerUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/testdata/TestDataCreateRequest';
 
 describe('LocationMarker', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

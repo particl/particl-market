@@ -7,7 +7,7 @@ import { Collection, Model } from 'bookshelf';
 import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
-import { BidSearchParams } from '../requests/BidSearchParams';
+import { BidSearchParams } from '../requests/search/BidSearchParams';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';

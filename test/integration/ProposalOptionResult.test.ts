@@ -13,18 +13,18 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalOptionResult } from '../../src/api/models/ProposalOptionResult';
 import { ProposalOptionResultService } from '../../src/api/services/model/ProposalOptionResultService';
-import { ProposalOptionResultCreateRequest } from '../../src/api/requests/ProposalOptionResultCreateRequest';
+import { ProposalOptionResultCreateRequest } from '../../src/api/requests/model/ProposalOptionResultCreateRequest';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProposalResultService } from '../../src/api/services/model/ProposalResultService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
+import { ProposalOptionCreateRequest } from '../../src/api/requests/model/ProposalOptionCreateRequest';
 import { ProposalOptionService } from '../../src/api/services/model/ProposalOptionService';
-import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/ProposalOptionResultUpdateRequest';
+import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/model/ProposalOptionResultUpdateRequest';
 
 describe('ProposalOptionResult', () => {
 

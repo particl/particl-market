@@ -10,9 +10,9 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ShippingDestinationRepository } from '../../repositories/ShippingDestinationRepository';
 import { ShippingDestination } from '../../models/ShippingDestination';
-import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
-import { ShippingDestinationUpdateRequest } from '../../requests/ShippingDestinationUpdateRequest';
-import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
+import { ShippingDestinationUpdateRequest } from '../../requests/model/ShippingDestinationUpdateRequest';
+import { ShippingDestinationSearchParams } from '../../requests/search/ShippingDestinationSearchParams';
 
 export class ShippingDestinationService {
 

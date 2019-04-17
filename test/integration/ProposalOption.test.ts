@@ -13,12 +13,12 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalOption } from '../../src/api/models/ProposalOption';
 import { ProposalOptionService } from '../../src/api/services/model/ProposalOptionService';
-import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
+import { ProposalOptionCreateRequest } from '../../src/api/requests/model/ProposalOptionCreateRequest';
+import { ProposalOptionUpdateRequest } from '../../src/api/requests/model/ProposalOptionUpdateRequest';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';

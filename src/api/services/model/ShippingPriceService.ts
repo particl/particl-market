@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ShippingPriceRepository } from '../../repositories/ShippingPriceRepository';
 import { ShippingPrice } from '../../models/ShippingPrice';
-import { ShippingPriceCreateRequest } from '../../requests/ShippingPriceCreateRequest';
-import { ShippingPriceUpdateRequest } from '../../requests/ShippingPriceUpdateRequest';
+import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
+import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
 
 export class ShippingPriceService {
 

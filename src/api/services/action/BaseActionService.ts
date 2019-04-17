@@ -7,8 +7,8 @@ import { ActionServiceInterface } from './ActionServiceInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { PostRequestInterface } from '../../requests/post/PostRequestInterface';
-import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { SmsgService } from '../SmsgService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
@@ -65,7 +65,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * create the MarketplaceMessage to which is to be posted to the network
      * @param params
      */
-    public abstract async createMessage(params: PostRequestInterface): Promise<MarketplaceMessage>;
+    public abstract async createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
      * validate the MarketplaceMessage to which is to be posted to the network
@@ -88,7 +88,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      *
      * @param params
      */
-    public async post(params: PostRequestInterface): Promise<SmsgSendResponse> {
+    public async post(params: ActionRequestInterface): Promise<SmsgSendResponse> {
         return await this.createMessage(params)
             .then(async marketplaceMessage => {
 
@@ -123,7 +123,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param params
      * @param message
      */
-    public abstract async beforePost(params: PostRequestInterface, message: MarketplaceMessage): Promise<PostRequestInterface>;
+    public abstract async beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<ActionRequestInterface>;
 
     /**
      * called after post is executed and message is sent
@@ -131,14 +131,14 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param message
      * @param smsgSendResponse
      */
-    public abstract async afterPost(params: PostRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      *
      * @param marketplaceMessage
      * @param sendParams
      */
-    private async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: MessageSendParams): Promise<SmsgSendResponse> {
+    private async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
         sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
         return await this.sendMessage(marketplaceMessage, sendParams);
     }
@@ -148,7 +148,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param marketplaceMessage
      * @param sendParams
      */
-    private async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: MessageSendParams): Promise<SmsgSendResponse> {
+    private async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
         return await this.smsgService.smsgSend(sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
             sendParams.daysRetention, sendParams.estimateFee);
     }

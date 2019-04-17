@@ -11,7 +11,7 @@ import { ListingItemObjectService } from '../../services/model/ListingItemObject
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemObject } from '../../models/ListingItemObject';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectSearchParams } from '../../requests/search/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';

@@ -12,7 +12,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { TestDataService } from '../../services/TestDataService';
-import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
+import { TestDataCreateRequest } from '../../requests/testdata/TestDataCreateRequest';
 import { MessageException } from '../../exceptions/MessageException';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {

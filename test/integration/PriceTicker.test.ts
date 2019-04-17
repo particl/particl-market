@@ -11,8 +11,8 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { PriceTickerService } from '../../src/api/services/model/PriceTickerService';
-import { PriceTickerCreateRequest } from '../../src/api/requests/PriceTickerCreateRequest';
-import { PriceTickerUpdateRequest } from '../../src/api/requests/PriceTickerUpdateRequest';
+import { PriceTickerCreateRequest } from '../../src/api/requests/model/PriceTickerCreateRequest';
+import { PriceTickerUpdateRequest } from '../../src/api/requests/model/PriceTickerUpdateRequest';
 import { PriceTicker } from '../../src/api/models/PriceTicker';
 
 describe('PriceTicker', () => {

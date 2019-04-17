@@ -8,10 +8,10 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemVote } from '../../src/api/enums/ItemVote';
-import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { SmsgSendResponse } from '../../src/api/responses/SmsgSendResponse';
 // tslint:enable:max-line-length
 

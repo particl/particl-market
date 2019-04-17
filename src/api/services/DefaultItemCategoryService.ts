@@ -6,8 +6,8 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryService } from './model/ItemCategoryService';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
+import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../models/ItemCategory';
 
 export class DefaultItemCategoryService {

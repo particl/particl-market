@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FlaggedItemRepository } from '../../repositories/FlaggedItemRepository';
 import { FlaggedItem } from '../../models/FlaggedItem';
-import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
-import { FlaggedItemUpdateRequest } from '../../requests/FlaggedItemUpdateRequest';
+import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
+import { FlaggedItemUpdateRequest } from '../../requests/model/FlaggedItemUpdateRequest';
 import { ListingItemService } from './ListingItemService';
 
 export class FlaggedItemService {

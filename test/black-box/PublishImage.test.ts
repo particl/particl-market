@@ -9,7 +9,7 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 describe('/publish-image', () => {

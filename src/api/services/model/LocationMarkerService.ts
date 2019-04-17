@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { LocationMarkerRepository } from '../../repositories/LocationMarkerRepository';
 import { LocationMarker } from '../../models/LocationMarker';
-import { LocationMarkerCreateRequest } from '../../requests/LocationMarkerCreateRequest';
-import { LocationMarkerUpdateRequest } from '../../requests/LocationMarkerUpdateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
+import { LocationMarkerUpdateRequest } from '../../requests/model/LocationMarkerUpdateRequest';
 
 export class LocationMarkerService {
 

@@ -5,7 +5,7 @@
 import * from 'jest';
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
-import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';
+import { ItemCategoryCreateRequest } from '../../../../src/api/requests/model/ItemCategoryCreateRequest';
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryWithRelated5levels from '../../../testdata/model/listingItemCategoryWithRelated5levels.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';

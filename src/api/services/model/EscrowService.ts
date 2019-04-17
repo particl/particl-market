@@ -11,8 +11,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { Escrow } from '../../models/Escrow';
 import { EscrowRepository } from '../../repositories/EscrowRepository';
-import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
-import { EscrowUpdateRequest } from '../../requests/EscrowUpdateRequest';
+import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
+import { EscrowUpdateRequest } from '../../requests/model/EscrowUpdateRequest';
 import { EscrowRatioService } from './EscrowRatioService';
 import { AddressService } from './AddressService';
 

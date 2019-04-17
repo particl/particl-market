@@ -12,10 +12,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { SettingUpdateRequest } from '../../requests/SettingUpdateRequest';
+import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 import { SettingService } from '../../services/model/SettingService';
 import { MessageException } from '../../exceptions/MessageException';
-import { SettingCreateRequest } from '../../requests/SettingCreateRequest';
+import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { ProfileService } from '../../services/model/ProfileService';
 
 export class SettingSetCommand extends BaseCommand implements RpcCommandInterface<Setting> {

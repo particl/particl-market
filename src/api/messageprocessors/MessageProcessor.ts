@@ -11,7 +11,7 @@ import { EventEmitter } from '../../core/api/events';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgMessageService } from '../services/model/SmsgMessageService';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
 import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';

@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { SettingRepository } from '../../repositories/SettingRepository';
 import { Setting } from '../../models/Setting';
-import { SettingCreateRequest } from '../../requests/SettingCreateRequest';
-import { SettingUpdateRequest } from '../../requests/SettingUpdateRequest';
+import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
+import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 
 export class SettingService {
 

@@ -14,7 +14,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { SearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchParams } from '../../requests/search/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';

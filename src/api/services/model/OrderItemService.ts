@@ -12,8 +12,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { OrderItemRepository } from '../../repositories/OrderItemRepository';
 import { OrderItem } from '../../models/OrderItem';
-import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
-import { OrderItemUpdateRequest } from '../../requests/OrderItemUpdateRequest';
+import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequest';
+import { OrderItemUpdateRequest } from '../../requests/model/OrderItemUpdateRequest';
 
 export class OrderItemService {
 

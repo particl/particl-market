@@ -13,8 +13,8 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShoppingCart } from '../../src/api/models/ShoppingCart';
 import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { ShoppingCartCreateRequest } from '../../src/api/requests/ShoppingCartCreateRequest';
-import { ShoppingCartUpdateRequest } from '../../src/api/requests/ShoppingCartUpdateRequest';
+import { ShoppingCartCreateRequest } from '../../src/api/requests/model/ShoppingCartCreateRequest';
+import { ShoppingCartUpdateRequest } from '../../src/api/requests/model/ShoppingCartUpdateRequest';
 import * as resources from 'resources';
 
 describe('ShoppingCart', () => {

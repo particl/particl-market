@@ -10,8 +10,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { OrderCreateParams} from './ModelCreateParams';
-import { OrderCreateRequest } from '../../requests/OrderCreateRequest';
-import { OrderItemCreateRequest } from '../../requests/OrderItemCreateRequest';
+import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
+import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequest';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 
 export class OrderFactory implements ModelFactoryInterface {

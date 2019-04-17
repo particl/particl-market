@@ -8,12 +8,12 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { VoteMessage } from '../../messages/action/VoteMessage';
-import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
-import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
+import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
+import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { ProposalOptionService } from '../../services/model/ProposalOptionService';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { VoteCreateParams } from './ModelCreateParams';
-import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
+import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
 
 export class VoteFactory implements ModelFactoryInterface {
 

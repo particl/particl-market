@@ -13,7 +13,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { EscrowUpdateRequest } from '../../requests/EscrowUpdateRequest';
+import { EscrowUpdateRequest } from '../../requests/model/EscrowUpdateRequest';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {

@@ -13,7 +13,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { BidSearchParams } from '../../requests/BidSearchParams';
+import { BidSearchParams } from '../../requests/search/BidSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';

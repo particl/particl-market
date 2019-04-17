@@ -11,7 +11,7 @@ import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
 import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
-import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
 import {Logger as LoggerType} from '../../core/Logger';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {

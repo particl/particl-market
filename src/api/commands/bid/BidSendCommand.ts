@@ -23,9 +23,9 @@ import { BidDataValue } from '../../enums/BidDataValue';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { MessageSendParams } from '../../requests/params/MessageSendParams';
-import { BidRequest } from '../../requests/post/BidRequest';
-import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { BidRequest } from '../../requests/action/BidRequest';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -102,7 +102,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new MessageSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
             listingItem,
             address
         } as BidRequest;

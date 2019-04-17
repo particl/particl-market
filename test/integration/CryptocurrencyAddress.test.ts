@@ -13,8 +13,8 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CryptocurrencyAddress } from '../../src/api/models/CryptocurrencyAddress';
 import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/CryptocurrencyAddressCreateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/CryptocurrencyAddressUpdateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/model/CryptocurrencyAddressUpdateRequest';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 describe('CryptocurrencyAddress', () => {

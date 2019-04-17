@@ -10,7 +10,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartUpdateRequest } from '../../requests/ShoppingCartUpdateRequest';
+import { ShoppingCartUpdateRequest } from '../../requests/model/ShoppingCartUpdateRequest';
 import { ShoppingCart } from '../../models/ShoppingCart';
 import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 

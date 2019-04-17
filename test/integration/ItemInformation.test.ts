@@ -19,9 +19,9 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemInformation } from '../../src/api/models/ItemInformation';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInformationUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { ItemInformationCreateRequest } from '../../src/api/requests/model/ItemInformationCreateRequest';
+import { ItemInformationUpdateRequest } from '../../src/api/requests/model/ItemInformationUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/testdata/TestDataCreateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';

@@ -6,7 +6,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { SmsgMessageCreateRequest } from '../../requests/SmsgMessageCreateRequest';
+import { SmsgMessageCreateRequest } from '../../requests/model/SmsgMessageCreateRequest';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';

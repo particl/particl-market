@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ShoppingCartRepository } from '../../repositories/ShoppingCartRepository';
 import { ShoppingCart } from '../../models/ShoppingCart';
-import { ShoppingCartCreateRequest } from '../../requests/ShoppingCartCreateRequest';
-import { ShoppingCartUpdateRequest } from '../../requests/ShoppingCartUpdateRequest';
+import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
+import { ShoppingCartUpdateRequest } from '../../requests/model/ShoppingCartUpdateRequest';
 
 export class ShoppingCartService {
 

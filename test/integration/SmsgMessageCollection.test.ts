@@ -9,7 +9,7 @@ import {Targets, Types} from '../../src/constants';
 import {TestUtil} from './lib/TestUtil';
 import {TestDataService} from '../../src/api/services/TestDataService';
 import {SmsgMessageService} from '../../src/api/services/model/SmsgMessageService';
-import {SmsgMessageCreateRequest} from '../../src/api/requests/SmsgMessageCreateRequest';
+import {SmsgMessageCreateRequest} from '../../src/api/requests/model/SmsgMessageCreateRequest';
 import {SmsgMessageFactory} from '../../src/api/factories/model/SmsgMessageFactory';
 import {ActionDirection} from '../../src/api/enums/ActionDirection';
 import * from 'jest';

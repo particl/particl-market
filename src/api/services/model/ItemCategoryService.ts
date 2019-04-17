@@ -12,8 +12,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ItemCategoryRepository } from '../../repositories/ItemCategoryRepository';
 import { ItemCategory } from '../../models/ItemCategory';
-import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
-import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
+import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 
 export class ItemCategoryService {
 

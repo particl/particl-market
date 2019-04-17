@@ -11,20 +11,20 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ProposalRepository } from '../../repositories/ProposalRepository';
 import { Proposal } from '../../models/Proposal';
-import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
-import { ProposalUpdateRequest } from '../../requests/ProposalUpdateRequest';
+import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
+import { ProposalUpdateRequest } from '../../requests/model/ProposalUpdateRequest';
 import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalOptionService } from './ProposalOptionService';
-import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
-import { ProposalOptionResultUpdateRequest } from '../../requests/ProposalOptionResultUpdateRequest';
+import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
+import { ProposalOptionResultUpdateRequest } from '../../requests/model/ProposalOptionResultUpdateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
-import { ProposalOptionResultCreateRequest } from '../../requests/ProposalOptionResultCreateRequest';
-import { ProposalResultCreateRequest } from '../../requests/ProposalResultCreateRequest';
+import { ProposalOptionResultCreateRequest } from '../../requests/model/ProposalOptionResultCreateRequest';
+import { ProposalResultCreateRequest } from '../../requests/model/ProposalResultCreateRequest';
 import { VoteService } from './VoteService';
-import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
+import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import {SmsgMessage} from '../../models/SmsgMessage';
 
 export class ProposalService {

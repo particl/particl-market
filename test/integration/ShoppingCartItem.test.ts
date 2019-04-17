@@ -16,11 +16,11 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ShoppingCartItemService } from '../../src/api/services/model/ShoppingCartItemService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
-import { ShoppingCartItemCreateRequest } from '../../src/api/requests/ShoppingCartItemCreateRequest';
+import { ShoppingCartItemCreateRequest } from '../../src/api/requests/model/ShoppingCartItemCreateRequest';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ShoppingCartList', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

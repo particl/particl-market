@@ -16,12 +16,12 @@ import { ListingItemService } from '../../src/api/services/model/ListingItemServ
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
-import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
+import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
+import { FavoriteItemUpdateRequest } from '../../src/api/requests/model/FavoriteItemUpdateRequest';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 
 describe('FavoriteItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

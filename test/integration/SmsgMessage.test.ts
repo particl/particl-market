@@ -14,11 +14,11 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { SmsgMessage } from '../../src/api/models/SmsgMessage';
 import { SmsgMessageService } from '../../src/api/services/model/SmsgMessageService';
-import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
+import { SmsgMessageCreateRequest } from '../../src/api/requests/model/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../src/api/factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../../src/api/enums/SmsgMessageStatus';
 import { CoreSmsgMessage } from '../../src/api/messages/CoreSmsgMessage';
-import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../../src/api/requests/search/SmsgMessageSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';

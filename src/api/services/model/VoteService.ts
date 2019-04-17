@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { VoteRepository } from '../../repositories/VoteRepository';
 import { Vote } from '../../models/Vote';
-import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
-import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
+import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
+import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import {SmsgMessage} from '../../models/SmsgMessage';
 

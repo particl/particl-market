@@ -12,8 +12,8 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { PaymentInformationRepository } from '../../repositories/PaymentInformationRepository';
 import { PaymentInformation } from '../../models/PaymentInformation';
-import { PaymentInformationCreateRequest } from '../../requests/PaymentInformationCreateRequest';
-import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformationUpdateRequest';
+import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../../requests/model/PaymentInformationUpdateRequest';
 import { EscrowService } from './EscrowService';
 import { ItemPriceService } from './ItemPriceService';
 

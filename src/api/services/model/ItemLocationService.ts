@@ -11,8 +11,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ItemLocationRepository } from '../../repositories/ItemLocationRepository';
 import { ItemLocation } from '../../models/ItemLocation';
-import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
-import { ItemLocationUpdateRequest } from '../../requests/ItemLocationUpdateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
+import { ItemLocationUpdateRequest } from '../../requests/model/ItemLocationUpdateRequest';
 import { LocationMarkerService } from './LocationMarkerService';
 
 export class ItemLocationService {

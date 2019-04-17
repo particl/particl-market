@@ -4,7 +4,7 @@
 
 import { Bookshelf as Database, Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 

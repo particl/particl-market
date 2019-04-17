@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteItemRepository } from '../../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../../models/FavoriteItem';
-import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
-import { FavoriteItemUpdateRequest } from '../../requests/FavoriteItemUpdateRequest';
+import { FavoriteItemCreateRequest } from '../../requests/model/FavoriteItemCreateRequest';
+import { FavoriteItemUpdateRequest } from '../../requests/model/FavoriteItemUpdateRequest';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 

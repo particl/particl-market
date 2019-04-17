@@ -9,7 +9,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemInformationService } from '../../services/model/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
+import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';

@@ -11,8 +11,8 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { MessagingInformationRepository } from '../../repositories/MessagingInformationRepository';
 import { MessagingInformation } from '../../models/MessagingInformation';
-import { MessagingInformationCreateRequest } from '../../requests/MessagingInformationCreateRequest';
-import { MessagingInformationUpdateRequest } from '../../requests/MessagingInformationUpdateRequest';
+import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
+import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 
 export class MessagingInformationService {
 

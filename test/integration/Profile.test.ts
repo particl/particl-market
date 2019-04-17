@@ -20,14 +20,14 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Profile } from '../../src/api/models/Profile';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
-import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
-import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
+import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import * as resources from 'resources';
 
 describe('Profile', () => {

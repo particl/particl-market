@@ -19,12 +19,12 @@ import { ItemImageService } from '../../src/api/services/model/ItemImageService'
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
-import { ShippingDestinationCreateRequest } from '../../src/api/requests/ShippingDestinationCreateRequest';
-import { ShippingDestinationUpdateRequest } from '../../src/api/requests/ShippingDestinationUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
+import { ShippingDestinationUpdateRequest } from '../../src/api/requests/model/ShippingDestinationUpdateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import * as resources from 'resources';
 
 describe('ShippingDestination', () => {

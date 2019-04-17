@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { ListingItemFactory } from '../../../../src/api/factories/model/ListingItemFactory';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
-import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
+import { ListingItemCreateRequest } from '../../../../src/api/requests/model/ListingItemCreateRequest';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 import * as listingItemTemplateBasic1 from '../../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../../testdata/model/listingItemTemplateBasic2.json';

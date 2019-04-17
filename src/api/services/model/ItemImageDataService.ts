@@ -14,8 +14,8 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
 import { ItemImageData } from '../../models/ItemImageData';
-import { ItemImageDataCreateRequest } from '../../requests/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../requests/ItemImageDataUpdateRequest';
+import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
+import { ItemImageDataUpdateRequest } from '../../requests/model/ItemImageDataUpdateRequest';
 import { DataDir } from '../../../core/helpers/DataDir';
 import { MessageException } from '../../exceptions/MessageException';
 

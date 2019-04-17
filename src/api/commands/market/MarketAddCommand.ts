@@ -10,7 +10,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
+import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 

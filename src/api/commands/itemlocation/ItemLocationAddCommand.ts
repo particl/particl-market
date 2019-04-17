@@ -10,7 +10,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemLocationService } from '../../services/model/ItemLocationService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -18,7 +18,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { LocationMarkerCreateRequest } from '../../requests/LocationMarkerCreateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 
 export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 

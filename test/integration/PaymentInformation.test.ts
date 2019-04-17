@@ -17,9 +17,9 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { PaymentInformation } from '../../src/api/models/PaymentInformation';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
-import { PaymentInformationUpdateRequest } from '../../src/api/requests/PaymentInformationUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/testdata/TestDataCreateRequest';
+import { PaymentInformationCreateRequest } from '../../src/api/requests/model/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../../src/api/requests/model/PaymentInformationUpdateRequest';
 import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 

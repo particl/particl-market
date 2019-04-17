@@ -16,13 +16,13 @@ import { LocationMarkerService } from '../../src/api/services/model/LocationMark
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ItemLocation } from '../../src/api/models/ItemLocation';
-import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
-import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
+import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
+import { ItemLocationUpdateRequest } from '../../src/api/requests/model/ItemLocationUpdateRequest';
 import * as resources from 'resources';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ItemLocation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

@@ -9,7 +9,7 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 
 
 export class SmsgMessageRepository {

@@ -10,7 +10,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -19,7 +19,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MessageSendParams } from '../../requests/params/MessageSendParams';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -63,7 +63,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const toAddress = market.address;
 
         const postRequest = {
-            sendParams: new MessageSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate
         } as ListingItemAddRequest;
 

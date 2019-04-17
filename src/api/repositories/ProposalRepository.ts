@@ -6,7 +6,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Proposal } from '../models/Proposal';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';

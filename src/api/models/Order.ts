@@ -7,7 +7,7 @@ import { Collection, Model } from 'bookshelf';
 import { OrderItem } from './OrderItem';
 import { Address } from './Address';
 import { SearchOrder } from '../enums/SearchOrder';
-import { OrderSearchParams } from '../requests/OrderSearchParams';
+import { OrderSearchParams } from '../requests/search/OrderSearchParams';
 
 export class Order extends Bookshelf.Model<Order> {
 

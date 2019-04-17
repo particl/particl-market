@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MarketRepository } from '../../repositories/MarketRepository';
 import { Market } from '../../models/Market';
-import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
-import { MarketUpdateRequest } from '../../requests/MarketUpdateRequest';
+import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
+import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
 
 export class MarketService {
 

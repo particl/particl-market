@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ProposalService } from '../services/model/ProposalService';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { ProposalCategory } from '../enums/ProposalCategory';
 import { ProposalResultService } from '../services/model/ProposalResultService';
 import { ListingItemService } from '../services/model/ListingItemService';

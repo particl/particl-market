@@ -28,8 +28,8 @@ import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMe
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
-import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
+import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
 import {ompVersion} from 'omp-lib/dist/omp';
 import {ListingItemAddMessageFactory} from '../../factories/message/ListingItemAddMessageFactory';

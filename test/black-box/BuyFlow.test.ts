@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';

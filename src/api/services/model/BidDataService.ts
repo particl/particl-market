@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { BidDataRepository } from '../../repositories/BidDataRepository';
 import { BidData } from '../../models/BidData';
-import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
-import { BidDataUpdateRequest } from '../../requests/BidDataUpdateRequest';
+import { BidDataCreateRequest } from '../../requests/model/BidDataCreateRequest';
+import { BidDataUpdateRequest } from '../../requests/model/BidDataUpdateRequest';
 
 export class BidDataService {
 

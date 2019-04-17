@@ -9,7 +9,7 @@ import { Types, Core, Targets } from '../../constants';
 import { Profile } from '../models/Profile';
 import { ProfileService } from './model/ProfileService';
 import { CoreRpcService } from './CoreRpcService';
-import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
+import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
 
 export class DefaultProfileService {
 

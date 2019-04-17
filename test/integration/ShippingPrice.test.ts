@@ -18,9 +18,9 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShippingPrice } from '../../src/api/models/ShippingPrice';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { ShippingPriceCreateRequest } from '../../src/api/requests/ShippingPriceCreateRequest';
-import { ShippingPriceUpdateRequest } from '../../src/api/requests/ShippingPriceUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/testdata/TestDataCreateRequest';
+import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
+import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/ShippingPriceUpdateRequest';
 import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 

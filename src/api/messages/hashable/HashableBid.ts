@@ -7,8 +7,8 @@
  *
  */
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { BidCreateRequest } from '../../requests/BidCreateRequest';
-import { BidDataCreateRequest } from '../../requests/BidDataCreateRequest';
+import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
+import { BidDataCreateRequest } from '../../requests/model/BidDataCreateRequest';
 
 export class HashableBid {
 

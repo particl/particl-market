@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
+import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 
 describe('VoteGetCommand', () => {
 

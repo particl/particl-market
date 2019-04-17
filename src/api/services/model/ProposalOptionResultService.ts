@@ -10,8 +10,8 @@ import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ProposalOptionResultRepository } from '../../repositories/ProposalOptionResultRepository';
 import { ProposalOptionResult } from '../../models/ProposalOptionResult';
-import { ProposalOptionResultCreateRequest } from '../../requests/ProposalOptionResultCreateRequest';
-import { ProposalOptionResultUpdateRequest } from '../../requests/ProposalOptionResultUpdateRequest';
+import { ProposalOptionResultCreateRequest } from '../../requests/model/ProposalOptionResultCreateRequest';
+import { ProposalOptionResultUpdateRequest } from '../../requests/model/ProposalOptionResultUpdateRequest';
 
 export class ProposalOptionResultService {
 

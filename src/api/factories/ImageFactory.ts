@@ -9,7 +9,7 @@ import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageVersion } from '../../core/helpers/ImageVersion';
-import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { ItemImageDataCreateRequest } from '../requests/model/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
 

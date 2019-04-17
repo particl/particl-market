@@ -12,7 +12,7 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
 import { CurrencyPriceService } from '../../src/api/services/model/CurrencyPriceService';
-import { CurrencyPriceParams } from '../../src/api/requests/CurrencyPriceParams';
+import { CurrencyPriceSearchParams } from 'CurrencyPriceSearchParams.ts';
 import * as createRequestCurrencyPricePARTINR from '../testdata/createrequest/currencyPricePARTINR.json';
 import * as updateRequestCurrencyPricePARTINR from '../testdata/updaterequest/currencyPricePARTINR.json';
 
@@ -191,7 +191,7 @@ describe('CurrencyPrice', () => {
     });
 
     test('Should searchBy currency price by from PART and to USD currency', async () => {
-        const result = await currencyPriceService.search({from: createdCurrencyPricePARTUSD.from, to: createdCurrencyPricePARTUSD.to} as CurrencyPriceParams);
+        const result = await currencyPriceService.search({from: createdCurrencyPricePARTUSD.from, to: createdCurrencyPricePARTUSD.to} as CurrencyPriceSearchParams);
         expect(result.From).toBe(createdCurrencyPricePARTUSD.from);
         expect(result.To).toBe(createdCurrencyPricePARTUSD.to);
         expect(result.Price).toBe(createdCurrencyPricePARTUSD.price);
@@ -199,17 +199,17 @@ describe('CurrencyPrice', () => {
     });
 
     test('Should return null searchBy result because invalid from currency', async () => {
-        const currencyPriceModel = await currencyPriceService.search({from: 'INR', to: 'USD'} as CurrencyPriceParams);
+        const currencyPriceModel = await currencyPriceService.search({from: 'INR', to: 'USD'} as CurrencyPriceSearchParams);
         expect(currencyPriceModel).toBe(null);
     });
 
     test('Should return null searchBy result because not supported to currency', async () => {
-        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'TEST'} as CurrencyPriceParams);
+        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'TEST'} as CurrencyPriceSearchParams);
         expect(currencyPriceModel).toBe(null);
     });
 
     test('Should return null searchBy result because currency price does not exist in the db for the given to currency', async () => {
-        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'PKR'} as CurrencyPriceParams);
+        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'PKR'} as CurrencyPriceSearchParams);
         expect(currencyPriceModel).toBe(null);
     });
 

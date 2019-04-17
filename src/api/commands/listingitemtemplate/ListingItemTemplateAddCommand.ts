@@ -9,21 +9,21 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemplateCreateRequest';
+import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
-import { PaymentInformationCreateRequest } from '../../requests/PaymentInformationCreateRequest';
-import { ItemPriceCreateRequest } from '../../requests/ItemPriceCreateRequest';
-import { ShippingPriceCreateRequest } from '../../requests/ShippingPriceCreateRequest';
+import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
+import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
+import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
-import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 

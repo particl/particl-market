@@ -13,15 +13,15 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { ItemInformationRepository } from '../../repositories/ItemInformationRepository';
 import { ItemInformation } from '../../models/ItemInformation';
-import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
-import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
+import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
+import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
-import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
-import {ItemCategoryCreateRequest} from '../../requests/ItemCategoryCreateRequest';
+import {ItemCategoryCreateRequest} from '../../requests/model/ItemCategoryCreateRequest';
 
 export class ItemInformationService {
 
@@ -64,7 +64,7 @@ export class ItemInformationService {
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
         const startTime = new Date().getTime();
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ItemInformationCreateRequest = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
 

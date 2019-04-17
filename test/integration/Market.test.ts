@@ -12,8 +12,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Market } from '../../src/api/models/Market';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { MarketCreateRequest } from '../../src/api/requests/MarketCreateRequest';
-import { MarketUpdateRequest } from '../../src/api/requests/MarketUpdateRequest';
+import { MarketCreateRequest } from '../../src/api/requests/model/MarketCreateRequest';
+import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRequest';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

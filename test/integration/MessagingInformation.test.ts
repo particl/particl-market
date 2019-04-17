@@ -15,11 +15,11 @@ import { MessagingInformationService } from '../../src/api/services/model/Messag
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessagingInformation } from '../../src/api/models/MessagingInformation';
-import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
-import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { MessagingInformationCreateRequest } from '../../src/api/requests/model/MessagingInformationCreateRequest';
+import { MessagingInformationUpdateRequest } from '../../src/api/requests/model/MessagingInformationUpdateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 

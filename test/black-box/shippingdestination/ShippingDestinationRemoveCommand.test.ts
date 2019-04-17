@@ -7,7 +7,7 @@ import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailabilit
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import * as countryList from 'iso3166-2-db/countryList/en.json';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';

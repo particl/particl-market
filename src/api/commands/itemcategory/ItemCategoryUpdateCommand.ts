@@ -11,7 +11,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';

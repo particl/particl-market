@@ -9,7 +9,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest';
+import { TestDataGenerateRequest } from '../../requests/testdata/TestDataGenerateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';

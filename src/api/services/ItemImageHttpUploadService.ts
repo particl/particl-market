@@ -10,7 +10,7 @@ import { validate, request } from '../../core/api/Validate';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateService } from './model/ListingItemTemplateService';
 import { ItemImageService } from './model/ItemImageService';
-import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
+import { ImagePostUploadRequest } from '../requests/action/ImagePostUploadRequest';
 
 export class ItemImageHttpUploadService {
 

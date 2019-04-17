@@ -9,7 +9,7 @@ import { Bid } from '../models/Bid';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { BidSearchParams } from '../requests/BidSearchParams';
+import { BidSearchParams } from '../requests/search/BidSearchParams';
 import {ListingItem} from '../models/ListingItem';
 
 export class BidRepository {

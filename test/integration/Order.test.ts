@@ -11,22 +11,22 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { OrderService } from '../../src/api/services/model/OrderService';
-import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
+import { OrderCreateRequest } from '../../src/api/requests/model/OrderCreateRequest';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { BidService } from '../../src/api/services/model/BidService';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
-import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 
 describe('Order', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
