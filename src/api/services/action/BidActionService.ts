@@ -161,6 +161,17 @@ export class BidActionService extends BaseActionService {
     }
 
     /**
+     * called after post is executed and message is sent
+     *
+     * @param params
+     * @param message
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: ListingItemAddRequest, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        return smsgSendResponse;
+    }
+
+    /**
      * handles the received BidMessage and return SmsgMessageStatus as a result
      *
      * @param event

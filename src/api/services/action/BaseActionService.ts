@@ -123,9 +123,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param params
      * @param message
      */
-    public async beforePost(params: PostRequestInterface, message: MarketplaceMessage): Promise<PostRequestInterface> {
-        return params;
-    }
+    public abstract async beforePost(params: PostRequestInterface, message: MarketplaceMessage): Promise<PostRequestInterface>;
 
     /**
      * called after post is executed and message is sent
@@ -133,9 +131,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param message
      * @param smsgSendResponse
      */
-    public async afterPost(params: PostRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        return smsgSendResponse;
-    }
+    public abstract async afterPost(params: PostRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      *

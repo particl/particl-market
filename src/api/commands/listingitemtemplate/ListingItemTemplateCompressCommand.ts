@@ -11,7 +11,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ListingItemTemplate } from 'resources';
+import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -53,7 +53,6 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         }
-
         return data;
     }
 

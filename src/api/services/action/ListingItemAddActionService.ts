@@ -6,7 +6,6 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { request, validate } from '../../../core/api/Validate';
 import { ListingItem } from '../../models/ListingItem';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
@@ -23,7 +22,7 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import {BidCreateParams, ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
+import { ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
 import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -32,20 +31,16 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/post/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
-import {BidRequest} from '../../requests/post/BidRequest';
-import {BidMessage} from '../../messages/action/BidMessage';
-import {MessageException} from '../../exceptions/MessageException';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
 
 export class ListingItemAddActionService extends BaseActionService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
@@ -62,6 +57,7 @@ export class ListingItemAddActionService extends BaseActionService {
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
+     *
      * @param params
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
@@ -73,6 +69,7 @@ export class ListingItemAddActionService extends BaseActionService {
 
     /**
      * validate the MarketplaceMessage to which is to be posted to the network
+     *
      * @param message
      */
     public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
@@ -80,14 +77,24 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * this is implemented in the abstract class, just doing some logging here
+     * called before post is executed and message is sent
      *
      * @param params
+     * @param message
      */
-    @validate()
-    public async post(@request(ListingItemAddRequest) params: ListingItemAddRequest): Promise<SmsgSendResponse> {
-        this.log.debug('post(): ', JSON.stringify(params, null, 2));
-        return super.post(params);
+    public async beforePost(params: ListingItemAddRequest, message: MarketplaceMessage): Promise<ListingItemAddRequest> {
+        return params;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
+     * @param params
+     * @param message
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: ListingItemAddRequest, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        return smsgSendResponse;
     }
 
     /**

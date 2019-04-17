@@ -25,9 +25,8 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
 import { BidRequest } from '../../requests/post/BidRequest';
-import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
-import {IsDefined, IsNotEmpty} from 'class-validator';
-import {AddressType} from '../../enums/AddressType';
+import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { AddressType } from '../../enums/AddressType';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 

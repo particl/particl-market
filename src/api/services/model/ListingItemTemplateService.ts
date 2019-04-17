@@ -295,7 +295,7 @@ export class ListingItemTemplateService {
      * @param {"resources".ListingItemTemplate} itemTemplate
      * @returns {Promise<"resources".ListingItemTemplate>}
      */
-    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
         const startTime = new Date().getTime();
 
         // ItemInformation has ItemImages, which is an array.
@@ -330,13 +330,9 @@ export class ListingItemTemplateService {
             await this.itemImageDataService.create(imageDataCreateRequest);
         }
 
-        const updatedTemplateModel = await this.findOne(itemTemplate.id);
-        const updatedTemplate = updatedTemplateModel.toJSON();
-        // this.log.debug('updatedTemplate: ', JSON.stringify(updatedTemplate, null, 2));
-
         this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
 
-        return updatedTemplate;
+        return await this.findOne(itemTemplate.id);
     }
 
     /**
