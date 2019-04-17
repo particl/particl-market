@@ -178,10 +178,13 @@ export class BidActionService extends BaseActionService {
                 const bidCreateParams = {
                     listingItem,
                     address,
-                    bidder: smsgMessage.from
+                    bidder: smsgMessage.from,
+                    msgid: smsgMessage.msgid
                     // parentBid: undefined
                 } as BidCreateParams;
 
+                // TODO: msgid listingitem creationissa, puuttuu muualta
+                // TODO: after that fetch thee messages
                 // note: factory makes sure the hashes match
                 return await this.bidFactory.get(bidCreateParams, actionMessage)
                     .then(async bidCreateRequest => {

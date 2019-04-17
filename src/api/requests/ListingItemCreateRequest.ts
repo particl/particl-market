@@ -13,6 +13,7 @@ import {ListingItemObjectCreateRequest} from './ListingItemObjectCreateRequest';
 export class ListingItemCreateRequest extends RequestBody {
 
     public hash: string;
+    public msgid: string;
 
     @IsNotEmpty()
     public seller: string;

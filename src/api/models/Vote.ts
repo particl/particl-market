@@ -75,6 +75,16 @@ export class Vote extends Bookshelf.Model<Vote> {
         }
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Vote> {
+        if (withRelated) {
+            return await Vote.where<Vote>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Vote.where<Vote>({ msgid: value }).fetch();
+        }
+    }
+
     public static async fetchByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {
             const vote = Vote.forge<Vote>()
@@ -102,6 +112,9 @@ export class Vote extends Bookshelf.Model<Vote> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
 
     public get Voter(): string { return this.get('voter'); }
     public set Voter(value: string) { this.set('voter', value); }

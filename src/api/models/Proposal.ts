@@ -86,6 +86,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Proposal> {
+        if (withRelated) {
+            return await Proposal.where<Proposal>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Proposal.where<Proposal>({ msgid: value }).fetch();
+        }
+    }
+
     public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
         if (withRelated) {
             return await Proposal.where<Proposal>({ item: value }).fetch({
@@ -101,6 +111,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
 
     public get Submitter(): string { return this.get('submitter'); }
     public set Submitter(value: string) { this.set('submitter', value); }

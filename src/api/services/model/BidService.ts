@@ -25,6 +25,7 @@ import { ProfileService } from './ProfileService';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageException } from '../../exceptions/MessageException';
+import {ListingItem} from '../../models/ListingItem';
 
 export class BidService {
 
@@ -62,6 +63,15 @@ export class BidService {
             throw new NotFoundException(hash);
         }
         return bid;
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Bid> {
+        const smsgMessage = await this.bidRepo.findOneByMsgId(msgId, withRelated);
+        if (smsgMessage === null) {
+            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
+        }
+        return smsgMessage;
     }
 
     public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {

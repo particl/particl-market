@@ -36,6 +36,7 @@ import { EventEmitter } from 'events';
 import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalService } from './ProposalService';
+import {Proposal} from '../../models/Proposal';
 
 export class ListingItemService {
 
@@ -89,6 +90,15 @@ export class ListingItemService {
             throw new NotFoundException(hash);
         }
         return listingItem;
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
+        const smsgMessage = await this.listingItemRepo.findOneByMsgId(msgId, withRelated);
+        if (smsgMessage === null) {
+            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
+        }
+        return smsgMessage;
     }
 
     /**

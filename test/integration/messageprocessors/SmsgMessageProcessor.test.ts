@@ -31,6 +31,7 @@ import { ListingItemAddMessageCreateParams } from '../../../src/api/factories/me
 import { ListingItemAddMessage } from '../../../src/api/messages/action/ListingItemAddMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
+import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 
 
 describe('MessageProcessor', () => {
@@ -112,7 +113,10 @@ describe('MessageProcessor', () => {
             text: JSON.stringify(marketplaceMessage)
         } as CoreSmsgMessage;
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemSmsg);
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            message: listingItemSmsg
+        });
         return await smsgMessageService.create(smsgMessageCreateRequest)
             .then(async smsgMessageModel => {
 

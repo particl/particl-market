@@ -15,8 +15,9 @@ import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { SmsgMessageCreateParams } from './ModelCreateParams';
+import {ModelFactoryInterface} from './ModelFactoryInterface';
 
-export class SmsgMessageFactory {
+export class SmsgMessageFactory implements ModelFactoryInterface {
 
     public log: LoggerType;
 
@@ -26,9 +27,9 @@ export class SmsgMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(message: CoreSmsgMessage, params: SmsgMessageCreateParams): Promise<SmsgMessageCreateRequest> {
+    public async get(params: SmsgMessageCreateParams): Promise<SmsgMessageCreateRequest> {
 
-        return await this.parseJSONSafe(message.text)
+        return await this.parseJSONSafe(params.message.text)
             .then( marketplaceMessage => {
 
                 const type = this.getType(marketplaceMessage);
@@ -38,18 +39,18 @@ export class SmsgMessageFactory {
                     status: SmsgMessageStatus.NEW,
                     direction: params.direction,
                     target: params.target,
-                    msgid: message.msgid,
-                    version: message.version,
-                    read: message.read,
-                    paid: message.paid,
-                    payloadsize: message.payloadsize,
-                    received: message.received * 1000,
-                    sent: message.sent * 1000,
-                    expiration: message.expiration * 1000,
-                    daysretention: message.daysretention,
-                    from: message.from,
-                    to: message.to,
-                    text: message.text,
+                    msgid: params.message.msgid,
+                    version: params.message.version,
+                    read: params.message.read,
+                    paid: params.message.paid,
+                    payloadsize: params.message.payloadsize,
+                    received: params.message.received * 1000,
+                    sent: params.message.sent * 1000,
+                    expiration: params.message.expiration * 1000,
+                    daysretention: params.message.daysretention,
+                    from: params.message.from,
+                    to: params.message.to,
+                    text: params.message.text,
                     // need to set these manually since knex doesn't set these in correct format
                     updated_at: Date.now(),
                     created_at: Date.now()
@@ -64,18 +65,18 @@ export class SmsgMessageFactory {
                     status: SmsgMessageStatus.PARSING_FAILED,
                     direction: ActionDirection.INCOMING,
                     target: '',
-                    msgid: message.msgid,
-                    version: message.version,
-                    read: message.read,
-                    paid: message.paid,
-                    payloadsize: message.payloadsize,
-                    received: message.received * 1000,
-                    sent: message.sent * 1000,
-                    expiration: message.expiration * 1000,
-                    daysretention: message.daysretention,
-                    from: message.from,
-                    to: message.to,
-                    text: message.text,
+                    msgid: params.message.msgid,
+                    version: params.message.version,
+                    read: params.message.read,
+                    paid: params.message.paid,
+                    payloadsize: params.message.payloadsize,
+                    received: params.message.received * 1000,
+                    sent: params.message.sent * 1000,
+                    expiration: params.message.expiration * 1000,
+                    daysretention: params.message.daysretention,
+                    from: params.message.from,
+                    to: params.message.to,
+                    text: params.message.text,
                     updated_at: Date.now(),
                     created_at: Date.now()
                 } as SmsgMessageCreateRequest;

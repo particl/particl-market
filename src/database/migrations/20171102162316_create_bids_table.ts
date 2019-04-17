@@ -9,6 +9,7 @@ exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.createTable('bids', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
+            table.string('msgid'); // .notNullable().unique();
 
             table.string('type').notNullable();
             table.string('bidder').notNullable();

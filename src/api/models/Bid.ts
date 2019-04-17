@@ -52,6 +52,16 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Bid> {
+        if (withRelated) {
+            return await Bid.where<Bid>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Bid.where<Bid>({ msgid: value }).fetch();
+        }
+    }
+
     public static async search(searchParams: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
         searchParams.ordering = searchParams.ordering ? searchParams.ordering : SearchOrder.ASC;
@@ -114,6 +124,9 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
 
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }

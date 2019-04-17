@@ -10,6 +10,7 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import {ListingItem} from '../models/ListingItem';
 
 export class BidRepository {
 
@@ -33,6 +34,10 @@ export class BidRepository {
 
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Bid> {
         return this.BidModel.fetchByHash(hash, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Bid> {
+        return this.BidModel.fetchByMsgId(msgId, withRelated);
     }
 
     /**

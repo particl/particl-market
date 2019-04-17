@@ -25,6 +25,7 @@ import { ProposalOptionResultCreateRequest } from '../../requests/ProposalOption
 import { ProposalResultCreateRequest } from '../../requests/ProposalResultCreateRequest';
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
+import {SmsgMessage} from '../../models/SmsgMessage';
 
 export class ProposalService {
 
@@ -77,6 +78,15 @@ export class ProposalService {
             throw new NotFoundException(listingItemHash);
         }
         return proposal;
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Proposal> {
+        const smsgMessage = await this.proposalRepo.findOneByMsgId(msgId, withRelated);
+        if (smsgMessage === null) {
+            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
+        }
+        return smsgMessage;
     }
 
     @validate()

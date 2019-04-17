@@ -162,8 +162,9 @@ describe('SmsgMessage', () => {
 
         log.debug('listingItemMessage: ', JSON.stringify(listingItemMessage, null, 2));
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemMessage, {
-            direction: ActionDirection.INCOMING
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            message: listingItemMessage
         } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, listingItemMessage);
@@ -176,8 +177,9 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (proposalMessage)', async () => {
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(proposalMessage, {
-            direction: ActionDirection.INCOMING
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            message: proposalMessage
         } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, proposalMessage);
@@ -190,8 +192,9 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (voteMessage)', async () => {
 
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(voteMessage, {
-            direction: ActionDirection.INCOMING
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            message: voteMessage
         } as SmsgMessageCreateParams);
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, voteMessage);

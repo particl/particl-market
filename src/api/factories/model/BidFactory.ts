@@ -81,6 +81,7 @@ export class BidFactory implements ModelFactoryInterface {
                 bidder: params.bidder,
                 address: params.address,
                 bidDatas,
+                // TODO: msgid
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 

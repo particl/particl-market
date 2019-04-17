@@ -220,7 +220,6 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {number} amount
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    // TODO: why types: any[]?
     private async getSmsgMessages(types: ActionMessageTypes[],
                                   status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 

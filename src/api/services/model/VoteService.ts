@@ -13,6 +13,7 @@ import { Vote } from '../../models/Vote';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/VoteUpdateRequest';
 import { CoreRpcService } from '../CoreRpcService';
+import {SmsgMessage} from '../../models/SmsgMessage';
 
 export class VoteService {
 
@@ -54,6 +55,15 @@ export class VoteService {
             throw new NotFoundException(signature);
         }
         return vote;
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Vote> {
+        const smsgMessage = await this.voteRepo.findOneByMsgId(msgId, withRelated);
+        if (smsgMessage === null) {
+            this.log.warn(`Vote with the msgid=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
+        }
+        return smsgMessage;
     }
 
     public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {

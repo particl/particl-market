@@ -76,6 +76,16 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<ListingItem> {
+        if (withRelated) {
+            return await ListingItem.where<ListingItem>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItem.where<ListingItem>({ msgid: value }).fetch();
+        }
+    }
+
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
@@ -217,6 +227,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
 
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }

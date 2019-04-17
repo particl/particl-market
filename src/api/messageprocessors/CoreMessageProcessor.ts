@@ -16,7 +16,7 @@ import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
 
-export class SmsgMessageProcessor implements MessageProcessorInterface {
+export class CoreMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
@@ -46,14 +46,20 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
         this.log.debug('INCOMING messages.length: ', messages.length);
 
-        // create the createrequests
+        // - fetch the CoreSmsgMessage from core
+        // - create the createrequests
+        // - then save the CoreSmsgMessage to the db as SmsgMessages
+
         for (const message of messages) {
             // todo: this is an old problem and should be tested again if we could get rid of this now
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
-            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg, {
-                direction: ActionDirection.INCOMING
+
+            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+                direction: ActionDirection.INCOMING,
+                message: msg
             } as SmsgMessageCreateParams);
+
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
 

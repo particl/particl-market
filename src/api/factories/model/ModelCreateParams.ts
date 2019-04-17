@@ -5,6 +5,7 @@
 import * as resources from 'resources';
 import { ActionDirection } from '../../enums/ActionDirection';
 import {AddressCreateRequest} from '../../requests/AddressCreateRequest';
+import {CoreSmsgMessage} from '../../messages/CoreSmsgMessage';
 
 export interface ModelCreateParams {
     //
@@ -13,12 +14,14 @@ export interface ModelCreateParams {
 export interface ListingItemCreateParams extends ModelCreateParams {
     marketId: number;
     rootCategory: resources.ItemCategory;
+    msgid: string;
 }
 
 export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
     address: AddressCreateRequest;
     bidder: string;
+    msgid: string;
     parentBid?: resources.Bid;  // the bid that happened before this
 }
 
@@ -30,15 +33,18 @@ export interface OrderCreateParams extends ModelCreateParams {
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {
+    msgid: string;
 }
 
 export interface VoteCreateParams extends ModelCreateParams {
     proposalOption: resources.ProposalOption;
     weight: number;
+    msgid: string;
     create: boolean;
 }
 
 export interface SmsgMessageCreateParams extends ModelCreateParams {
+    message: CoreSmsgMessage;
     direction: ActionDirection;
     target?: string;
 }

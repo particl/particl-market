@@ -374,7 +374,7 @@ export const Targets = {
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         ProposalResultProcessor: 'ProposalResultProcessor',
-        SmsgMessageProcessor: 'SmsgMessageProcessor'
+        SmsgMessageProcessor: 'CoreMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

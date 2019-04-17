@@ -162,8 +162,9 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
     private async saveMessage(msgid: string, direction: ActionDirection): Promise<resources.SmsgMessage> {
         return await this.smsgService.smsg(msgid, false, false)
             .then(async coreMessage => {
-                return await this.smsgMessageFactory.get(coreMessage, {
-                    direction: ActionDirection.OUTGOING
+                return await this.smsgMessageFactory.get({
+                    direction: ActionDirection.OUTGOING,
+                    message: coreMessage
                     // todo: add also target here if its known
                 } as SmsgMessageCreateParams)
                     .then(async createRequest => {
@@ -173,6 +174,15 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
             });
     }
 
+    /**
+     * - validate the received MarketplaceMessage
+     *   - on failure: update the SmsgMessage.status to SmsgMessageStatus.VALIDATION_FAILED
+     * - call onEvent to process the message
+     * - if there's no errors, update the SmsgMessage.status
+     * - in case of Exception, also update the SmsgMessage.status to SmsgMessageStatus.PROCESSING_FAILED
+     *
+     * @param eventType
+     */
     private configureEventListener(eventType: ActionMessageTypes): void {
         this.eventEmitter.on(eventType, async (event: MarketplaceMessageEvent) => {
 

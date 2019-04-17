@@ -10,6 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('proposals', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('msgid'); // .notNullable().unique();
+
             table.string('submitter').notNullable();
             table.string('hash').notNullable().unique();
             table.string('item').nullable();   // item hash

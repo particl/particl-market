@@ -7,6 +7,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
 export class VoteCreateRequest extends RequestBody {
+
+    public msgid: string;
+
     @IsNotEmpty()
     public proposal_option_id: number;
 

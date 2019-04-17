@@ -12,6 +12,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ProposalCategory } from '../enums/ProposalCategory';
+import {Vote} from '../models/Vote';
 
 export class ProposalRepository {
 
@@ -50,6 +51,10 @@ export class ProposalRepository {
 
     public async findOneByItemHash(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
         return this.ProposalModel.fetchByItemHash(itemHash, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByMsgId(msgId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {

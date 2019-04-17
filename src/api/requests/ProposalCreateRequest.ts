@@ -13,6 +13,8 @@ export class ProposalCreateRequest extends RequestBody {
     @IsNotEmpty()
     public submitter: string;
 
+    public msgid: string;
+
     @IsNotEmpty()
     @IsEnum(ProposalCategory)
     public category: ProposalCategory;

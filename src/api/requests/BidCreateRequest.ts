@@ -15,6 +15,8 @@ export class BidCreateRequest extends RequestBody {
     public listing_item_id: number;
     public parent_bid_id: number;
 
+    public msgid: string;
+
     @IsEnum(MPAction)
     @IsNotEmpty()
     public type: MPAction;

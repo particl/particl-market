@@ -12,7 +12,7 @@ import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor } from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
-import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
+import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
@@ -31,7 +31,7 @@ export class ServerStartedListener implements interfaces.Listener {
     // tslint:disable:max-line-length
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: SmsgMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: CoreMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
