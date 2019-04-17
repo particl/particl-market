@@ -296,11 +296,12 @@ export class VoteActionService {
                 // Vote was found, update it
                 // when vote is found, we are either receiving our own vote or someone is voting again
                 // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
-                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get(voteMessage, {
+                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
                         proposalOption: votedProposalOption,
                         weight: balance,
                         create: false
                     } as VoteCreateParams,
+                    voteMessage,
                     smsgMessage);
                 this.log.debug('found vote, updating the existing one');
                 this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
@@ -314,11 +315,12 @@ export class VoteActionService {
                 // Vote doesnt exist yet, so we need to create it.
                 // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
                 this.log.debug('did not find vote, creating...');
-                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get(voteMessage, {
+                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
                         proposalOption: votedProposalOption,
                         weight: balance,
                         create: true
                     } as VoteCreateParams,
+                    voteMessage,
                     smsgMessage);
 
                 vote = await this.voteService.create(voteCreateRequest)

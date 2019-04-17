@@ -43,8 +43,6 @@ import { ItemImageService } from './ItemImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
 
 export class ListingItemTemplateService {
 

@@ -61,9 +61,8 @@ export class EscrowActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async lock(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
-
+/*
         this.validateEscrowRequest(escrowRequest);
-
         // unlock and remove the locked outputs from db before sending the rawtx
         const buyerSelectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.BUYER_OUTPUTS, escrowRequest.orderItem.OrderItemObjects);
         await this.lockedOutputService.destroyLockedOutputs(buyerSelectedOutputs);
@@ -81,7 +80,8 @@ export class EscrowActionService {
         } else {
             throw new MessageException('Failed to unlock the locked outputs.');
         }
-
+*/
+        throw new NotImplementedException();
     }
 
 
@@ -107,7 +107,7 @@ export class EscrowActionService {
      * @returns {Promise<SmsgSendResponse>}
      */
     public async release(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
-
+/*
         this.validateEscrowRequest(escrowRequest);
 
         const orderItem = escrowRequest.orderItem;
@@ -123,6 +123,8 @@ export class EscrowActionService {
         await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
         return await this.createAndSendMessage(escrowRequest, rawtx);
+*/
+        throw new NotImplementedException();
     }
 
     private validateEscrowRequest(escrowRequest: EscrowRequest): boolean {
@@ -203,7 +205,7 @@ export class EscrowActionService {
      * @returns {Promise<module:resources.Order>}
      */
     private async processEscrowLockReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
+/*
         // TODO: EscrowLockMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
 
@@ -258,11 +260,13 @@ export class EscrowActionService {
                 // ListingItem not found
                 return SmsgMessageStatus.WAITING;
             });
+*/
+        throw new NotImplementedException();
 
     }
 
     private async processEscrowReleaseReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
+/*
         const message = event.marketplaceMessage;
         if (!message.action) {   // ACTIONEVENT
             throw new MessageException('Missing action.');
@@ -311,6 +315,8 @@ export class EscrowActionService {
                 // ListingItem not found
                 return SmsgMessageStatus.WAITING;
             });
+*/
+        throw new NotImplementedException();
 
     }
 
@@ -392,7 +398,7 @@ export class EscrowActionService {
         // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
         // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
         // The vendor can decide to broadcast it himself.'
-
+/*
         const orderItem: resources.OrderItem = request.orderItem;
         const bid: resources.Bid = orderItem.Bid;
         const isMyListingItem = !_.isEmpty(bid.ListingItem.ListingItemTemplate);
@@ -523,6 +529,8 @@ export class EscrowActionService {
             default:
                 throw new NotImplementedException();
         }
+        */
+        throw new NotImplementedException();
     }
 
     /**
@@ -605,7 +613,8 @@ export class EscrowActionService {
      * @param {string} newRawtx
      * @returns {Promise<any>}
      */
-    private async updateRawTxOrderItemObject(orderItemObjects: resources.OrderItemObject[], newRawtx: string): Promise<any> {
+    private async updateRawTxOrderItemObject(orderItemObjects: any/*resources.OrderItemObject[]*/, newRawtx: string): Promise<any> {
+        /*
         const rawtxObject = orderItemObjects.find(kv => kv.key === 'rawtx');
 
         if (rawtxObject) {
@@ -618,6 +627,9 @@ export class EscrowActionService {
             this.log.error('OrderItemObject for rawtx not found!');
             throw new MessageException('OrderItemObject for rawtx not found!');
         }
+        */
+        throw new NotImplementedException();
+
     }
 
     /**

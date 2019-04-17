@@ -31,6 +31,7 @@ import { ProposalAddMessageCreateParams} from '../../factories/message/MessageCr
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
+import {ProposalCreateParams} from '../../factories/model/ModelCreateParams';
 
 export class ProposalActionService {
 
@@ -201,7 +202,8 @@ export class ProposalActionService {
         // when called from send() we create a ProposalCreateRequest with no smsgMessage data.
         // later, when the smsgMessage for this proposal is received,
         // the relevant smsgMessage data will be updated and included in the request
-        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get(proposalMessage, smsgMessage);
+        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({} as ProposalCreateParams, proposalMessage, smsgMessage);
+
         const proposalModel: Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
             .catch(async reason => {
                 // proposal doesnt exist yet, so we need to create it.
