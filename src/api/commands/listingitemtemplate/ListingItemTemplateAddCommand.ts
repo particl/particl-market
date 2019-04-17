@@ -22,9 +22,9 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {CryptocurrencyAddressCreateRequest} from '../../requests/CryptocurrencyAddressCreateRequest';
-import {ItemInformationCreateRequest} from '../../requests/ItemInformationCreateRequest';
-import {ItemCategoryCreateRequest} from '../../requests/ItemCategoryCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/CryptocurrencyAddressCreateRequest';
+import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
+import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -75,7 +75,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 longDescription: data.params[3],
                 itemCategory: {
                     id: data.params[4]
-                } as ItemCategoryCreateRequest
+                }
             } as ItemInformationCreateRequest,
             paymentInformation: {
                 type: data.params[5],

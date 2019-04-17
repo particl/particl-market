@@ -196,9 +196,9 @@ export class BidActionService extends BaseActionService {
                 } as BidCreateParams;
 
                 // note: factory makes sure the hashes match
-                return await this.bidFactory.get(bidCreateParams, actionMessage as BidMessage)
+                return await this.bidFactory.get(bidCreateParams, actionMessage)
                     .then(async bidCreateRequest => {
-                        return await this.createBid(actionMessage as BidMessage, bidCreateRequest)
+                        return await this.createBid(actionMessage, bidCreateRequest)
                             .then(value => {
                                 return SmsgMessageStatus.PROCESSED;
                             })

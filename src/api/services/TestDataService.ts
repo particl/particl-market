@@ -88,6 +88,8 @@ import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateReque
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
+import {OrderFactory} from '../factories/model/OrderFactory';
+import {OrderCreateParams} from '../factories/model/ModelCreateParams';
 
 export class TestDataService {
 
@@ -108,14 +110,15 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) private proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalActionService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) private proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
-        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -166,9 +169,7 @@ export class TestDataService {
     public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
         switch (body.model) {
             case CreatableModel.LISTINGITEMTEMPLATE: {
-                return await this.listingItemTemplateService.create(
-                    body.data as ListingItemTemplateCreateRequest,
-                    body.timestampedHash);
+                return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest);
             }
             case CreatableModel.LISTINGITEM: {
                 return await this.listingItemService.create(body.data as ListingItemCreateRequest);
@@ -572,7 +573,14 @@ export class TestDataService {
         const bid: resources.Bid = bidModel.toJSON();
 
         // then generate ordercreaterequest with some orderitems and orderitemobjects
-        const orderCreateRequest = await this.bidService.getOrderFromBid(bid);
+        const orderCreateParams = {
+            bids: [bid],
+            addressId: bid.ShippingAddress.id,
+            buyer: bid.bidder,
+            seller: bid.ListingItem.seller
+        } as OrderCreateParams;
+
+        const orderCreateRequest = await this.orderFactory.get(orderCreateParams);
 
         if (!generateParams.generateOrderItem) {
             orderCreateRequest.orderItems = [];

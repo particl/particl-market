@@ -33,7 +33,7 @@ export class VoteFactory implements ModelFactoryInterface {
      * @param params
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(params: VoteCreateParams, voteMessage?: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+    public async get(params: VoteCreateParams, voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
