@@ -316,6 +316,7 @@ export class VoteActionService {
                 // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
                 this.log.debug('did not find vote, creating...');
                 const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
+                        msgid: smsgMessage ? smsgMessage.msgid : '',
                         proposalOption: votedProposalOption,
                         weight: balance,
                         create: true

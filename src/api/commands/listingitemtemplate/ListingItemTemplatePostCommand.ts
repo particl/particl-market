@@ -20,7 +20,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MessageSendParams } from '../../requests/params/MessageSendParams';
-import {MissingParamException} from '../../exceptions/MissingParamException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 

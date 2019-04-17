@@ -29,7 +29,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ParentBid.ParentBid',
         'ParentBid.ParentBid.ParentBid',
         'ParentBid.ParentBid.ParentBid.ParentBid',
-        'ChildBid'
+        'ChildBids'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
@@ -167,7 +167,8 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.belongsTo(Bid, 'parent_bid_id', 'id');
     }
 
-    public ChildBid(): Bid {
-        return this.hasOne(Bid, 'parent_bid_id', 'id');
+    public ChildBids(): Collection<Bid> {
+        return this.hasMany(Bid, 'parent_bid_id', 'id');
     }
+
 }

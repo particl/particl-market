@@ -8,6 +8,8 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class VoteUpdateRequest extends RequestBody {
 
+    public msgid: string;
+
     public proposal_option_id: number;
     public signature: string;
     public voter: string;

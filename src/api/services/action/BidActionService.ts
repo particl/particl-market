@@ -176,10 +176,10 @@ export class BidActionService extends BaseActionService {
                 address.type = AddressType.SHIPPING_BID;
 
                 const bidCreateParams = {
+                    msgid: smsgMessage.msgid,
                     listingItem,
                     address,
-                    bidder: smsgMessage.from,
-                    msgid: smsgMessage.msgid
+                    bidder: smsgMessage.from
                     // parentBid: undefined
                 } as BidCreateParams;
 

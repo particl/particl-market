@@ -370,11 +370,11 @@ export const Targets = {
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
+        CoreMessageProcessor: 'CoreMessageProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
-        ProposalResultProcessor: 'ProposalResultProcessor',
-        SmsgMessageProcessor: 'CoreMessageProcessor'
+        ProposalResultProcessor: 'ProposalResultProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

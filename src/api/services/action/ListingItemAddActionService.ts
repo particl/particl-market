@@ -128,9 +128,9 @@ export class ListingItemAddActionService extends BaseActionService {
                 await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
                 const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
                 const listingItemCreateRequest = await this.listingItemFactory.get({
+                        msgid: smsgMessage.msgid,
                         marketId: market.id,
-                        rootCategory,
-                        msgid: smsgMessage.msgid
+                        rootCategory
                     } as ListingItemCreateParams,
                     actionMessage,
                     smsgMessage);

@@ -48,6 +48,7 @@ export class VoteFactory implements ModelFactoryInterface {
         }
 
         const voteRequest = {
+            msgid: params.msgid,
             signature: voteMessage.signature,
             voter: voteMessage.voter,
             ...smsgData

@@ -37,6 +37,7 @@ export class BidFactory implements ModelFactoryInterface {
     /**
      * create a BidCreateRequest
      * todo: implement part address validator and validate
+     * todo: remove smsgMessage? it's optional and not used
      *
      * @param bidMessage
      * @param smsgMessage
@@ -75,13 +76,13 @@ export class BidFactory implements ModelFactoryInterface {
 
             // create and return the request that can be used to create the bid
             const createRequest = {
+                msgid: params.msgid,
                 listing_item_id: params.listingItem.id,
                 generatedAt: bidMessage.generated,
                 type: bidMessage.type,
                 bidder: params.bidder,
                 address: params.address,
                 bidDatas,
-                // TODO: msgid
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 

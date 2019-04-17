@@ -31,7 +31,7 @@ export class ServerStartedListener implements interfaces.Listener {
     // tslint:disable:max-line-length
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: CoreMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
@@ -101,7 +101,7 @@ export class ServerStartedListener implements interfaces.Listener {
                     this.proposalResultProcessor.scheduleProcess();
 
                     // start message polling, unless we're running tests
-                    this.smsgMessageProcessor.schedulePoll();
+                    this.coreMessageProcessor.schedulePoll();
                     this.messageProcessor.schedulePoll();
                     this.interval = 10000;
                 } else {
