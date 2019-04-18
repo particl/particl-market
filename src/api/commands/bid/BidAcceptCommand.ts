@@ -90,10 +90,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('bidId', 'number');
         }
 
-        const bid: resources.Bid = await this.bidService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            });
+        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
         data.params[0] = bid;
 
         // make sure ListingItem exists

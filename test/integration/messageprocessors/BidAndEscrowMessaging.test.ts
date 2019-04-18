@@ -27,7 +27,7 @@ import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectH
 import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
 import { MarketplaceMessageEvent } from '../../../src/api/messages/MarketplaceMessageEvent';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import { EscrowActionService } from '../../../src/api/services/action/EscrowActionService';
+import { EscrowActionServiceDEPRECATED } from '../../../src/api/services/action/EscrowActionServiceDEPRECATED';
 import { OrderItemService } from '../../../src/api/services/model/OrderItemService';
 import { OrderService } from '../../../src/api/services/model/OrderService';
 import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
@@ -54,7 +54,7 @@ describe('BidAndEscrowMessageProcessing', () => {
     let profileService: ProfileService;
     let addressService: AddressService;
     let bidActionService: BidActionService;
-    let escrowActionService: EscrowActionService;
+    let escrowActionService: EscrowActionServiceDEPRECATED;
     let orderItemService: OrderItemService;
     let orderService: OrderService;
 
@@ -85,7 +85,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
         bidActionService = app.IoC.getNamed<BidActionService>(Types.Service, Targets.Service.BidActionService);
-        escrowActionService = app.IoC.getNamed<EscrowActionService>(Types.Service, Targets.Service.EscrowActionService);
+        escrowActionService = app.IoC.getNamed<EscrowActionServiceDEPRECATED>(Types.Service, Targets.Service.EscrowActionService);
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.model.OrderService);
         bidMessageFactory = app.IoC.getNamed<BidMessageFactory>(Types.Factory, Targets.Factory.message.BidMessageFactory);

@@ -38,7 +38,7 @@ import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 
 
-export class BidAcceptActionService extends BaseActionService {
+export class EscrowLockActionService extends BaseActionService {
 
     public log: LoggerType;
 
@@ -57,7 +57,7 @@ export class BidAcceptActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
+        super(MPAction.MPA_LOCK, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
     }
 
@@ -65,8 +65,9 @@ export class BidAcceptActionService extends BaseActionService {
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * - recreate ListingItemMessage with factory
-     * - find the received BidMessage
-     * - generate BidAcceptMessage with omp using recreated ListingItemMessage and previously stored BidMessage
+     * - find the posted BidMessage
+     * - find the received BidAcceptMessage
+     * - generate EscrowLockMessage with omp using recreated ListingItemMessage and previously stored BidMessage and BidAcceptMessage
      *
      * @param params
      */

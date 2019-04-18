@@ -10,8 +10,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionService } from '../../services/action/EscrowActionService';
-import { EscrowRequest } from '../../requests/action/EscrowRequest';
+import { EscrowActionServiceDEPRECATED } from '../../services/action/EscrowActionServiceDEPRECATED';
+import { EscrowRequestDEPRECATED } from '../../requests/action/EscrowRequestDEPRECATED';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -26,7 +26,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
+//        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionServiceDEPRECATED,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_RELEASE);
@@ -48,12 +48,12 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItem = orderItemModel.toJSON();
 
         // todo: release messaging need to be reimplemented, omp-lib doesnt provide msg for this
-        return {} as EscrowRequest;
+        return {} as EscrowRequestDEPRECATED;
         // return this.escrowActionService.release({
         //    type: MPActionExtended.MPA_RELEASE,
         //    orderItem,
         //    memo: data.params[1]
-        // } as EscrowRequest);
+        // } as EscrowRequestDEPRECATED);
     }
 
     /**

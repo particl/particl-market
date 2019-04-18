@@ -16,7 +16,7 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { OrderService } from '../model/OrderService';
 import { SmsgService } from '../SmsgService';
 import { CoreRpcService, Output } from '../CoreRpcService';
-import { EscrowRequest } from '../../requests/action/EscrowRequest';
+import { EscrowRequestDEPRECATED } from '../../requests/action/EscrowRequestDEPRECATED';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { OrderItemUpdateRequest } from '../../requests/model/OrderItemUpdateRequest';
@@ -34,7 +34,7 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 
-export class EscrowActionService {
+export class EscrowActionServiceDEPRECATED {
 
     public log: LoggerType;
 
@@ -57,10 +57,10 @@ export class EscrowActionService {
     /**
      * Send the lock message for the given OrderItem
      *
-     * @param {EscrowRequest} escrowRequest
+     * @param {EscrowRequestDEPRECATED} escrowRequest
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async lock(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
+    public async lock(escrowRequest: EscrowRequestDEPRECATED): Promise<SmsgSendResponse> {
 /*
         this.validateEscrowRequest(escrowRequest);
         // unlock and remove the locked outputs from db before sending the rawtx
@@ -87,10 +87,10 @@ export class EscrowActionService {
 
     /**
      *
-     * @param {EscrowRequest} escrowRequest
+     * @param {EscrowRequestDEPRECATED} escrowRequest
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
+    public async refund(escrowRequest: EscrowRequestDEPRECATED): Promise<SmsgSendResponse> {
 
         throw new NotImplementedException();
 
@@ -103,10 +103,10 @@ export class EscrowActionService {
      * Seller sends EscrowReleaseMessage (MPA_RELEASE) to the Buyer, indicating that the item has been sent.
      * Buyer sends EscrowReleaseMessage (MPA_RELEASE) to the Seller, indicating that the sent item has been received.
      *
-     * @param {EscrowRequest} escrowRequest
+     * @param {EscrowRequestDEPRECATED} escrowRequest
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async release(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
+    public async release(escrowRequest: EscrowRequestDEPRECATED): Promise<SmsgSendResponse> {
 /*
         this.validateEscrowRequest(escrowRequest);
 
@@ -127,7 +127,7 @@ export class EscrowActionService {
         throw new NotImplementedException();
     }
 
-    private validateEscrowRequest(escrowRequest: EscrowRequest): boolean {
+    private validateEscrowRequest(escrowRequest: EscrowRequestDEPRECATED): boolean {
 
         const orderItem = escrowRequest.orderItem;
         const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
@@ -146,7 +146,7 @@ export class EscrowActionService {
         return true;
     }
 
-    private async createAndSendMessage(escrowRequest: EscrowRequest, rawtx: string): Promise<SmsgSendResponse> {
+    private async createAndSendMessage(escrowRequest: EscrowRequestDEPRECATED, rawtx: string): Promise<SmsgSendResponse> {
 
         // TODO: BROKEN!!!
         //  const marketplaceMessage = await this.marketplaceMessageFactory.get(escrowRequest.type, {
@@ -381,7 +381,7 @@ export class EscrowActionService {
      * @param escrow
      * @returns {string}
      */
-    private async createRawTx(request: EscrowRequest): Promise<string> {
+    private async createRawTx(request: EscrowRequestDEPRECATED): Promise<string> {
 
         // MPA_LOCK:
         //

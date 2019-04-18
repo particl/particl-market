@@ -9,7 +9,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import {MPActionExtended} from '../../enums/MPActionExtended';
 
 // tslint:disable:variable-name
-export class EscrowRequest extends RequestBody {
+export class EscrowRequestDEPRECATED extends RequestBody {
 
     @IsEnum(MPAction)
     @IsNotEmpty()

@@ -11,8 +11,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionService } from '../../services/action/EscrowActionService';
-import { EscrowRequest } from '../../requests/action/EscrowRequest';
+import { EscrowActionServiceDEPRECATED } from '../../services/action/EscrowActionServiceDEPRECATED';
+import { EscrowRequestDEPRECATED } from '../../requests/action/EscrowRequestDEPRECATED';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -27,7 +27,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionService,
+//        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionServiceDEPRECATED,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_REFUND);
@@ -84,7 +84,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('EscrowRatio not found!');
         }
 
-        return {} as EscrowRequest;
+        return {} as EscrowRequestDEPRECATED;
 
         // todo: refund messaging need to be reimplemented, omp-lib doesnt provide msg for this
         // return this.escrowActionService.refund({
@@ -92,7 +92,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         //    orderItem,
         //    accepted: data.params[1],
         //    memo: data.params[2]
-        // } as EscrowRequest);
+        // } as EscrowRequestDEPRECATED);
     }
 
     /**
