@@ -109,7 +109,7 @@ export class EscrowReleaseActionService extends BaseActionService {
 
                                 const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
                                     bidHash: params.bid.hash,
-                                    memo: params.memo,
+                                    memo: params.memo
                                 } as EscrowReleaseMessageCreateParams);
 
                                 // store the releasetx temporarily in the actionMessage

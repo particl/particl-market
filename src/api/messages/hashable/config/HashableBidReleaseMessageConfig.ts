@@ -6,7 +6,7 @@ import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } fro
 import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
 
 export enum HashableBidReleaseField {
-    BID_HASH = 'bidHash',
+    BID_HASH = 'bidHash'
 }
 
 export class HashableBidReleaseMessageConfig extends BaseHashableConfig {

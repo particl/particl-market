@@ -4,6 +4,7 @@
 
 import { MPA } from 'omp-lib/dist/interfaces/omp';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 /**
  * MPAExtension defines how the MPA will be extended
@@ -17,4 +18,5 @@ export interface ActionMessageInterface extends Overwrite<MPA, MPAExtension> {
     type: ActionMessageTypes;
     generated: number;
     hash: string;
+    objects?: KVS[];
 }
