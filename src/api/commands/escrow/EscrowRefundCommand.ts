@@ -36,10 +36,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     * [0]: itemhash
-     * [1]: accepted
-     * [2]: memo
-     * [3]: escrowId
+     * [0]: orderItemId
+     * [1]: memo
      * @param data
      * @returns {Promise<any>}
      */
@@ -108,13 +106,12 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<accepted> [<memo>]]] ';
+        return this.getName() + ' [<orderItemId> [<memo>]]] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <orderItemId>            - String - The id of the OrderItem for which we want to refund the Escrow.\n'
-            + '    <accepted>               - String - The accepted status of the escrow \n'
             + '    <memo>                   - String - The memo of the Escrow ';
     }
 

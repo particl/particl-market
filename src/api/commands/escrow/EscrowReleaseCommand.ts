@@ -146,7 +146,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<memo>]] ';
+        return this.getName() + ' [<orderItemId> [<memo>]] ';
     }
 
     public help(): string {

@@ -131,7 +131,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] ';
+        return this.getName() + ' [<orderItemId>] ';
     }
 
     public help(): string {
