@@ -35,8 +35,9 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
 import { EscrowLockValidator } from '../../messages/validator/EscrowLockValidator';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import {BidAcceptMessage} from '../../messages/action/BidAcceptMessage';
-import {BidCreateRequest} from '../../requests/model/BidCreateRequest';
+import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
+import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
+import { CoreRpcService } from '../CoreRpcService';
 
 
 export class EscrowLockActionService extends BaseActionService {
@@ -56,6 +57,7 @@ export class EscrowLockActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_LOCK, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
@@ -132,7 +134,11 @@ export class EscrowLockActionService extends BaseActionService {
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
             .then(async bidCreateRequest => {
                 return await this.createBid(marketplaceMessage.action as EscrowLockMessage, bidCreateRequest)
-                    .then(value => {
+                    .then(async value => {
+
+                        // send the rawtx
+                        const bidtx = marketplaceMessage.action['_rawbidtx'];
+                        await this.coreRpcService.sendRawTransaction(bidtx);
                         return marketplaceMessage;
                     });
             });

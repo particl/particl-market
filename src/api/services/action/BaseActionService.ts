@@ -25,6 +25,7 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
 import { MPActionExtended } from '../../enums/MPActionExtended';
+import {strip} from 'omp-lib/dist/util';
 
 export abstract class BaseActionService implements ActionServiceInterface, ActionProcessorInterface {
 
@@ -83,6 +84,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * - create the marketplaceMessage, extending class should implement
      * - validate it, extending class should implement
      * - return estimate, if thats what was requested
+     * - strip marketplaceMessage
      * - send marketplaceMessage
      * - save outgoing marketplaceMessage to database
      *
@@ -98,6 +100,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                         return await this.estimateFee(marketplaceMessage, params.sendParams);
                     } else {
                         marketplaceMessage = await this.beforePost(params, marketplaceMessage);
+                        marketplaceMessage = strip(marketplaceMessage);
                         return await this.sendMessage(marketplaceMessage, params.sendParams)
                             .then(async smsgSendResponse => {
                                 smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgSendResponse);
