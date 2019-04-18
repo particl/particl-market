@@ -88,8 +88,8 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param params
      * @param message
      */
-    public async beforePost(params: ListingItemAddRequest, message: MarketplaceMessage): Promise<ListingItemAddRequest> {
-        return params;
+    public async beforePost(params: ListingItemAddRequest, message: MarketplaceMessage): Promise<MarketplaceMessage> {
+        return message;
     }
 
     /**

@@ -4,51 +4,41 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
-import { EventEmitter } from 'events';
-import { BidService } from '../model/BidService';
-import { ProfileService } from '../model/ProfileService';
-import { MarketService } from '../model/MarketService';
-import { BidFactory } from '../../factories/model/BidFactory';
-import { SmsgService } from '../SmsgService';
-import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemService } from '../model/ListingItemService';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { OrderService } from '../model/OrderService';
-import { BidDataService } from '../model/BidDataService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
-import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
-import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
-import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
-import { BaseActionService } from './BaseActionService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { BidRequest } from '../../requests/action/BidRequest';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddActionService } from './ListingItemAddActionService';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { OmpService } from '../OmpService';
-import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
-import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidValidator } from '../../messages/validator/BidValidator';
-import { BidMessage } from '../../messages/action/BidMessage';
-import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
-import { MessageException } from '../../exceptions/MessageException';
-import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
-import { AddressType } from '../../enums/AddressType';
-import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
-import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
-import { OrderFactory } from '../../factories/model/OrderFactory';
+import {inject, named} from 'inversify';
+import {ompVersion} from 'omp-lib';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {MarketplaceMessageEvent} from '../../messages/MarketplaceMessageEvent';
+import {EventEmitter} from 'events';
+import {BidService} from '../model/BidService';
+import {BidFactory} from '../../factories/model/BidFactory';
+import {SmsgService} from '../SmsgService';
+import {ListingItemService} from '../model/ListingItemService';
+import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
+import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
+import {OrderService} from '../model/OrderService';
+import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
+import {SmsgMessageService} from '../model/SmsgMessageService';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {BaseActionService} from './BaseActionService';
+import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
+import {ListingItemAddRequest} from '../../requests/action/ListingItemAddRequest';
+import {ListingItemAddActionService} from './ListingItemAddActionService';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {OmpService} from '../OmpService';
+import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
+import {BidCreateParams, OrderCreateParams} from '../../factories/model/ModelCreateParams';
+import {MessageException} from '../../exceptions/MessageException';
+import {BidCreateRequest} from '../../requests/model/BidCreateRequest';
+import {AddressType} from '../../enums/AddressType';
+import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
 import {BidAcceptRequest} from '../../requests/action/BidAcceptRequest';
-import {NotImplementedException} from '../../exceptions/NotImplementedException';
+import {BidAcceptValidator} from '../../messages/validator/BidAcceptValidator';
+import {BidAcceptMessage} from '../../messages/action/BidAcceptMessage';
+import {OrderStatus} from '../../enums/OrderStatus';
+import {BidMessage} from '../../messages/action/BidMessage';
+import {OrderItemService} from '../model/OrderItemService';
+import {OrderItemStatus} from '../../enums/OrderItemStatus';
 
 
 export class BidAcceptActionService extends BaseActionService {
@@ -56,25 +46,18 @@ export class BidAcceptActionService extends BaseActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+
+        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.model.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) public bidMessageFactory: BidMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public bidAcceptMessageFactory: BidAcceptMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
@@ -85,71 +68,64 @@ export class BidAcceptActionService extends BaseActionService {
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * - recreate ListingItemMessage with factory
-     * - recreate BidMessage with omp
-     * - generate BidAcceptMessage with omp
+     * - find the received BidMessage
+     * - generate BidAcceptMessage with omp using recreated ListingItemMessage and previously stored BidMessage
      *
      * @param params
      */
     public async createMessage(params: BidAcceptRequest): Promise<MarketplaceMessage> {
 
-        // TODO:
         // note: factory checks that the hashes match
-        const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
+        return await this.listingItemAddActionService.createMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: params.listingItem
-        } as ListingItemAddRequest);
+            listingItem: params.bid.ListingItem
+        } as ListingItemAddRequest)
+            .then(async listingItemAddMPM => {
 
-        const config: BidConfiguration = {
-            cryptocurrency: Cryptocurrency.PART,
-            escrow: params.listingItem.PaymentInformation.Escrow.type,
-            shippingAddress: params.address as ShippingAddress
-            // objects: KVS[] // product variations etc bid related params go here
-        };
+                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
+                return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
+                    .then(async value => {
+                        const bidMPM: MarketplaceMessage = value.toJSON();
 
-        // use omp to generate BidMessage
-        const bidMPM: MarketplaceMessage = await this.ompService.bid(config, listingItemAddMPM.action as ListingItemAddMessage);
-
-        throw new NotImplementedException();
+                        // finally use omp to generate BidMessage
+                        return await this.ompService.accept(listingItemAddMPM.action as ListingItemAddMessage, bidMPM.action as BidMessage);
+                    });
+            });
     }
 
     /**
      * validate the MarketplaceMessage to which is to be posted to the network.
      * called directly after createMessage to validate the creation.
+     *
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidValidator.isValid(marketplaceMessage);
+        return BidAcceptValidator.isValid(marketplaceMessage);
     }
 
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * - create the bidCreateRequest to save the Bid in the Database
-     * - call createBid to create the Bid and other related models
+     * - create the bidCreateRequest to save the Bid (MPA_ACCEPT) in the Database
+     *   - the previous Bid should be added as parentBid to create the relation
+     * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
-     * @param marketplaceMessage
+     * @param marketplaceMessage, omp generated MPA_ACCEPT
      */
-    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<BidRequest> {
+    public async beforePost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
         const bidCreateParams = {
-            listingItem: params.listingItem,
-            address: params.address,
-            bidder: params.sendParams.fromAddress
-            // parentBid: undefined
+            listingItem: params.bid.ListingItem,
+            bidder: params.bid.bidder,
+            parentBid: params.bid
         } as BidCreateParams;
 
-        // TODO: should we set the parentBid in the case the previous Bid was cancelled or rejected?
-
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
+        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
+                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
                     .then(value => {
-                        return params;
-                    })
-                    .catch(reason => {
-                        this.log.error('Failed to create Bid');
-                        throw new MessageException('Failed to create Bid');
+                        return marketplaceMessage;
                     });
             });
     }
@@ -161,13 +137,13 @@ export class BidAcceptActionService extends BaseActionService {
      * @param marketplaceMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }
 
     /**
-     * handles the received BidMessage and return SmsgMessageStatus as a result
+     * handles the received BidAcceptMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -177,83 +153,69 @@ export class BidAcceptActionService extends BaseActionService {
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
+        const actionMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
 
-        // - first get the ListingItem the Bid is for, fail if it doesn't exist
-        // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
+        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
+        // - then get the ListingItem the Bid is for, fail if it doesn't exist
+        // - then, save the new Bid (MPA_ACCEPT)
+        // - then, update the OrderItem.status and Order.status
 
-        return await this.listingItemService.findOneByHash(actionMessage.item)
-            .then(async listingItemModel => {
-                const listingItem = listingItemModel.toJSON();
+        return await this.bidService.findOneByHash(actionMessage.bid)
+            .then(async bidModel => {
+                const parentBid: resources.Bid = bidModel.toJSON();
+                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
+                    .then(async listingItemModel => {
+                        const listingItem = listingItemModel.toJSON();
 
-                // make sure the ListingItem belongs to a local Profile
-                if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
-                    throw new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
-                }
+                        const bidCreateParams = {
+                            listingItem,
+                            bidder: smsgMessage.to,
+                            parentBid
+                        } as BidCreateParams;
 
-                // need to add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
-                const address = actionMessage.buyer.shippingAddress as AddressCreateRequest;
-                address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-                address.type = AddressType.SHIPPING_BID;
-
-                const bidCreateParams = {
-                    listingItem,
-                    address,
-                    bidder: smsgMessage.from
-                    // parentBid: undefined
-                } as BidCreateParams;
-
-                // note: factory makes sure the hashes match
-                return await this.bidFactory.get(bidCreateParams, actionMessage)
-                    .then(async bidCreateRequest => {
-                        return await this.createBid(actionMessage, bidCreateRequest)
-                            .then(value => {
-                                return SmsgMessageStatus.PROCESSED;
-                            })
-                            .catch(reason => {
-                                return SmsgMessageStatus.PROCESSING_FAILED;
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
+                            .then(async bidCreateRequest => {
+                                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
+                                    .then(value => {
+                                        return SmsgMessageStatus.PROCESSED;
+                                    })
+                                    .catch(reason => {
+                                        return SmsgMessageStatus.PROCESSING_FAILED;
+                                    });
                             });
+
                     });
+
+
             })
             .catch(reason => {
-                // TODO: user is receiving a Bid for his own ListingItem, so if it not found, something is seriously wrong.
-                // maybe he deleted the db, or for some reason never received his own message?
+                // could not find previous bid
                 this.log.error('ERROR, reason: ', reason);
-                return SmsgMessageStatus.WAITING;
+                return SmsgMessageStatus.PROCESSING_FAILED;
             });
+
+
     }
 
     /**
-     * - create the Bid (+BidDatas)
-     * - create orderCreateParams for creating Order+OrderItems
-     * - create the Order with OrderItems
+     * - create the Bid (MPA_ACCEPT) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
+     * - update OrderItem.status -> AWAITING_ESCROW
+     * - update Order.status
      *
-     * @param bidMessage
+     * @param bidAcceptMessage
      * @param bidCreateRequest
      */
-    private async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    private async createBid(bidAcceptMessage: BidAcceptMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: needs to be refactored to support multiple OrderItems per Order
+        // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                const orderCreateParams = {
-                    bids: [bid],
-                    addressId: bid.ShippingAddress.id,
-                    buyer: bid.bidder,
-                    seller: bid.ListingItem.seller
-                } as OrderCreateParams;
+                await this.orderItemService.updateStatus(bid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
+                await this.orderService.updateStatus(bid.OrderItem.Order.id, OrderStatus.PROCESSING);
 
-                return await this.orderFactory.get(orderCreateParams, bidMessage)
-                    .then(async orderCreateRequest => {
-                        return await this.orderService.create(orderCreateRequest)
-                            .then(async orderModel => {
-                                const order: resources.Order = orderModel.toJSON();
-                                // this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
-                                return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
-                            });
-                    });
+                return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
     }
 }

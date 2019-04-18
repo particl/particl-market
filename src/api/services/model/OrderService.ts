@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
-import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,12 +15,11 @@ import { OrderUpdateRequest } from '../../requests/model/OrderUpdateRequest';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
-import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
-import { AddressType } from '../../enums/AddressType';
 import { ProfileService } from './ProfileService';
+import { OrderStatus } from '../../enums/OrderStatus';
 
 export class OrderService {
 
@@ -99,11 +96,10 @@ export class OrderService {
             // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
         }
 
-        // finally find and return the created order
-        const newOrder = await this.findOne(order.id);
-
         this.log.debug('orderService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
+        // finally find and return the created order
+        const newOrder = await this.findOne(order.id);
         return newOrder;
     }
 
@@ -120,10 +116,6 @@ export class OrderService {
 
         // update order record
         const updatedOrder = await this.orderRepo.update(id, order.toJSON());
-
-        // const newOrder = await this.findOne(id);
-        // return newOrder;
-
         return updatedOrder;
     }
 
@@ -142,6 +134,12 @@ export class OrderService {
 
         this.log.debug('removing order:', id);
         await this.orderRepo.destroy(id);
+    }
+
+    public async updateStatus(id: number, status: OrderStatus): Promise<Order> {
+        const order = await this.findOne(id, false);
+        order.Status = status;
+        return await this.orderRepo.update(id, order.toJSON());
     }
 
 }

@@ -7,20 +7,15 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
-import {AddressCreateRequest} from '../model/AddressCreateRequest';
 
 // tslint:disable:variable-name
 export class BidAcceptRequest extends RequestBody implements ActionRequestInterface {
 
-    // TODO:
+    @IsNotEmpty()
+    public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public sendParams: SmsgSendParams;       // PostRequest always needs to contain the send parameters for the message
+    public bid: resources.Bid;                  // bid which we're accepting
 
-    @IsNotEmpty()
-    public listingItem: resources.ListingItem;  // listingItem being bidder for to be used to create the ListingItemAddMessage
-
-    @IsNotEmpty()
-    public address: AddressCreateRequest;       // bidder delivery address
 }
 // tslint:enable:variable-name

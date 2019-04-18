@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -14,6 +13,7 @@ import { OrderItemRepository } from '../../repositories/OrderItemRepository';
 import { OrderItem } from '../../models/OrderItem';
 import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../requests/model/OrderItemUpdateRequest';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
 
 export class OrderItemService {
 
@@ -77,6 +77,12 @@ export class OrderItemService {
 
     public async destroy(id: number): Promise<void> {
         await this.orderItemRepo.destroy(id);
+    }
+
+    public async updateStatus(id: number, status: OrderItemStatus): Promise<OrderItem> {
+        const orderItem = await this.findOne(id, false);
+        orderItem.Status = status;
+        return await this.orderItemRepo.update(id, orderItem.toJSON());
     }
 
 }

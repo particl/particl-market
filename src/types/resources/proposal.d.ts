@@ -8,6 +8,7 @@ declare module 'resources' {
 
     interface Proposal {
         id: number;
+        msgid: string;
         submitter: string;
         hash: string;
         item: string;

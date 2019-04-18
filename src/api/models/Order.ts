@@ -52,6 +52,9 @@ export class Order extends Bookshelf.Model<Order> {
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
 
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

@@ -28,6 +28,8 @@ export class OrderUpdateRequest extends RequestBody implements ModelRequestInter
 
     @IsNotEmpty()
     public seller: string;
+    public generatedAt: number;
+
 
 }
 // tslint:enable:variable-name

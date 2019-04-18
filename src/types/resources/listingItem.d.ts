@@ -6,6 +6,7 @@ declare module 'resources' {
 
     interface ListingItem {
         id: number;
+        msgid: string;
         hash: string;
         seller: string;
         expiryTime: number;

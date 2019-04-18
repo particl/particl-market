@@ -6,6 +6,7 @@ import * as resources from 'resources';
 import { ActionDirection } from '../../enums/ActionDirection';
 import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
 import {CoreSmsgMessage} from '../../messages/CoreSmsgMessage';
+import {OrderStatus} from '../../enums/OrderStatus';
 
 export interface ModelCreateParams {
     //
@@ -19,7 +20,7 @@ export interface ListingItemCreateParams extends ModelCreateParams {
 
 export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
-    address: AddressCreateRequest;
+    address?: AddressCreateRequest;
     bidder: string;
     msgid: string;
     parentBid?: resources.Bid;  // the bid that happened before this
@@ -28,8 +29,11 @@ export interface BidCreateParams extends ModelCreateParams {
 export interface OrderCreateParams extends ModelCreateParams {
     bids: resources.Bid[];
     addressId: number;
+    status: OrderStatus;
     buyer: string;
     seller: string;
+    generatedAt: number;
+    hash?: string;              // hash exists if we're receiving this message, buyer creates the order and passes the hash to the seller
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {

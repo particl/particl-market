@@ -67,7 +67,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         const body = {
             profile_id: data.params[0],
-            generatedAt: new Date().getTime(),
+            generatedAt: +new Date().getTime(),
             itemInformation: {
                 title: data.params[1],
                 shortDescription: data.params[2],

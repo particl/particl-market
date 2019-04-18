@@ -29,5 +29,8 @@ export class OrderCreateRequest extends RequestBody implements ModelRequestInter
     @IsNotEmpty()
     public seller: string;
 
+    @IsNotEmpty()
+    public generatedAt: number;
+
 }
 // tslint:enable:variable-name

@@ -41,7 +41,7 @@ export interface ActionServiceInterface {
      * @param params
      * @param message
      */
-    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<ActionRequestInterface>;
+    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
 
     /**
      * called after post is executed and message is sent

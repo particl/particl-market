@@ -39,7 +39,9 @@ import { AddressType } from '../../enums/AddressType';
 import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { OrderFactory } from '../../factories/model/OrderFactory';
-import {ListingItemAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
+import { OrderStatus } from '../../enums/OrderStatus';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 
 export class BidActionService extends BaseActionService {
@@ -47,17 +49,18 @@ export class BidActionService extends BaseActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+
+        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_BID, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
@@ -109,7 +112,7 @@ export class BidActionService extends BaseActionService {
      * @param params
      * @param marketplaceMessage
      */
-    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<BidRequest> {
+    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
         const bidCreateParams = {
             listingItem: params.listingItem,
@@ -123,12 +126,17 @@ export class BidActionService extends BaseActionService {
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
             .then(async bidCreateRequest => {
                 return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
-                    .then(value => {
-                        return params;
-                    })
-                    .catch(reason => {
-                        this.log.error('Failed to create Bid');
-                        throw new MessageException('Failed to create Bid');
+                    .then(bid => {
+
+                        // add order.hash to the BidMessage to be sent to the seller
+                        const bidMessage = marketplaceMessage.action as BidMessage;
+                        bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+                        bidMessage.objects.push({
+                            key: ActionMessageObjects.ORDER_HASH,
+                            value: bid.OrderItem.Order.hash
+                        } as KVS);
+
+                        return marketplaceMessage;
                     });
             });
     }
@@ -140,7 +148,7 @@ export class BidActionService extends BaseActionService {
      * @param marketplaceMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }
@@ -163,7 +171,7 @@ export class BidActionService extends BaseActionService {
 
         return await this.listingItemService.findOneByHash(actionMessage.item)
             .then(async listingItemModel => {
-                const listingItem = listingItemModel.toJSON();
+                const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
                 // make sure the ListingItem belongs to a local Profile
                 if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
@@ -183,8 +191,6 @@ export class BidActionService extends BaseActionService {
                     // parentBid: undefined
                 } as BidCreateParams;
 
-                // TODO: msgid listingitem creationissa, puuttuu muualta
-                // TODO: after that fetch thee messages
                 // note: factory makes sure the hashes match
                 return await this.bidFactory.get(bidCreateParams, actionMessage)
                     .then(async bidCreateRequest => {
@@ -207,7 +213,8 @@ export class BidActionService extends BaseActionService {
 
     /**
      * - create the Bid (+BidDatas)
-     * - create orderCreateParams for creating Order+OrderItems
+     * - use the Factory to create OrderCreateRequest for creating Order and OrderItems
+     *   - also creates the hash, which should later be passed also to the seller
      * - create the Order with OrderItems
      *
      * @param bidMessage
@@ -215,24 +222,34 @@ export class BidActionService extends BaseActionService {
      */
     private async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: needs to be refactored to support multiple OrderItems per Order
+        // TODO: supports just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
+                // if we're the seller, we should have received the order hash from the buyer (if we're the buyere, the factory generates it)
+                bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+                const hash = _.find(bidMessage.objects, (kvs: KVS) => {
+                    return kvs.key === ActionMessageObjects.ORDER_HASH;
+                });
+
+                // note: when implementing support for multiple orderItems, we're using generatedAt from the Bid which will then affect the Order.hash
                 const orderCreateParams = {
                     bids: [bid],
                     addressId: bid.ShippingAddress.id,
                     buyer: bid.bidder,
-                    seller: bid.ListingItem.seller
+                    seller: bid.ListingItem.seller,
+                    status: OrderStatus.PROCESSING,
+                    generatedAt: bid.generatedAt,
+                    hash
                 } as OrderCreateParams;
 
-                return await this.orderFactory.get(orderCreateParams, bidMessage)
+                return await this.orderFactory.get(orderCreateParams/*, bidMessage*/)
                     .then(async orderCreateRequest => {
                         return await this.orderService.create(orderCreateRequest)
                             .then(async orderModel => {
                                 const order: resources.Order = orderModel.toJSON();
-                                // this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+                                this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
                                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
                             });
                     });

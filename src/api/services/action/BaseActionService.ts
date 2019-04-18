@@ -97,7 +97,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                     if (params.sendParams.estimateFee) {
                         return await this.estimateFee(marketplaceMessage, params.sendParams);
                     } else {
-                        params = await this.beforePost(params, marketplaceMessage);
+                        marketplaceMessage = await this.beforePost(params, marketplaceMessage);
                         return await this.sendMessage(marketplaceMessage, params.sendParams)
                             .then(async smsgSendResponse => {
                                 smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgSendResponse);
@@ -120,10 +120,12 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
 
     /**
      * called before post is executed and message is sent
+     *
+     * if you need to add something to MarketplaceMessage, this is the place to do it.
      * @param params
      * @param message
      */
-    public abstract async beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<ActionRequestInterface>;
+    public abstract async beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
 
     /**
      * called after post is executed and message is sent

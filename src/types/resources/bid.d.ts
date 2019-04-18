@@ -8,6 +8,7 @@ declare module 'resources' {
 
     interface Bid {
         id: number;
+        msgid: string;
         hash: string;
         bidder: string;
         generatedAt: number;

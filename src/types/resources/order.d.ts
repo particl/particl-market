@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {OrderStatus} from '../../api/enums/OrderStatus';
+import { OrderStatus } from '../../api/enums/OrderStatus';
 
 declare module 'resources' {
 
@@ -12,8 +12,10 @@ declare module 'resources' {
         buyer: string;
         seller: string;
         status: OrderStatus;
+        generatedAt: number;
         OrderItems: OrderItem[];
         ShippingAddress: Address;
+
         createdAt: Date;
         updatedAt: Date;
     }

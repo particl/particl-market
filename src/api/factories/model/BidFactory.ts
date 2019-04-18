@@ -39,9 +39,9 @@ export class BidFactory implements ModelFactoryInterface {
      * todo: implement part address validator and validate
      * todo: remove smsgMessage? it's optional and not used
      *
+     * @param params
      * @param bidMessage
      * @param smsgMessage
-     * @param params
      */
     public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
 
@@ -49,8 +49,7 @@ export class BidFactory implements ModelFactoryInterface {
         if (this.checkBidMessageActionValidity(bidMessage, params.parentBid)) {
             const bidDataValues = {};
 
-            // TODO: get rid of this, afaik bidDatas are not currently supported
-            // copy the existing key-value pairs from latestBid.BidDatas
+            // copy the existing key-value pairs from parentBid.BidDatas
             if (params.parentBid && params.parentBid.BidDatas) {
                 for (const bidData of params.parentBid.BidDatas) {
                     bidDataValues[bidData.key] = bidData.value;
