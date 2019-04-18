@@ -11,7 +11,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
-import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 
@@ -106,7 +106,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
         expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHashDeprecated.getHash(listingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+        const generatedTemplateHash = ObjectHashDEPRECATED.getHash(listingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(listingItemTemplate.hash).toBe(generatedTemplateHash);

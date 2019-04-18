@@ -5,7 +5,7 @@
 import { MessageCreateParamsInterface } from './MessageCreateParamsInterface';
 
 export interface EscrowReleaseMessageCreateParams extends MessageCreateParamsInterface {
-    bidHash: string;                    // bid hash to reject
+    bidHash: string;    // bid hash to reject
     memo?: string;
 }
 

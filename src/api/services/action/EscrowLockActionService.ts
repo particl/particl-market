@@ -220,7 +220,7 @@ export class EscrowLockActionService extends BaseActionService {
     }
 
     /**
-     * - create the Bid (MPA_ACCEPT) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
+     * - create the Bid (MPA_LOCK) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
      * - update OrderItem.status -> AWAITING_ESCROW
      * - update Order.status
      *

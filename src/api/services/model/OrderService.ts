@@ -14,7 +14,7 @@ import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
 import { OrderUpdateRequest } from '../../requests/model/OrderUpdateRequest';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
@@ -74,7 +74,7 @@ export class OrderService {
         // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         // you need at least one order item to create an order
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST);
+        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST);
 
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;

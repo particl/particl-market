@@ -8,7 +8,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
-import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
@@ -74,7 +74,7 @@ describe('ListingItemSearchCommand', () => {
         expect(createdListingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHashDeprecated.getHash(createdListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+        const generatedTemplateHash = ObjectHashDEPRECATED.getHash(createdListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         log.debug('listingItemTemplate.hash:', createdListingItemTemplate.hash);
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(createdListingItemTemplate.hash).toBe(generatedTemplateHash);

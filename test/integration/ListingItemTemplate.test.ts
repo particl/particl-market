@@ -46,7 +46,7 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
-import { ObjectHashDeprecated } from '../../src/api/messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from 'ObjectHashDEPRECATED.ts';
 import { HashableObjectTypeDeprecated } from '../../src/api/enums/HashableObjectTypeDeprecated';
 
 describe('ListingItemTemplate', async () => {
@@ -421,7 +421,7 @@ describe('ListingItemTemplate', async () => {
             }
 
             // expect template hash created on the server matches what we create here
-            const generatedTemplateHash = ObjectHashDeprecated.getHash(generatedListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+            const generatedTemplateHash = ObjectHashDEPRECATED.getHash(generatedListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
             // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
             // log.debug('generatedTemplateHash:', generatedTemplateHash);
             expect(generatedListingItemTemplate.hash).toBe(generatedTemplateHash);

@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
@@ -59,7 +59,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             ...smsgData
         } as ProposalCreateRequest;
 
-        const correctHash = ObjectHashDeprecated.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
+        const correctHash = ObjectHashDEPRECATED.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
         if (correctHash !== proposalCreateRequest.hash) {
             throw new MessageException(`Received proposal hash <${proposalCreateRequest.hash}> doesn't match actual hash <${correctHash}>.`);
         }

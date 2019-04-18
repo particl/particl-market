@@ -33,7 +33,7 @@ import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { EventEmitter } from 'events';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalService } from './ProposalService';
 
@@ -129,7 +129,7 @@ export class ListingItemService {
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
+        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -199,7 +199,7 @@ export class ListingItemService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
+        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);

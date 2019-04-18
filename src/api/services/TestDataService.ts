@@ -73,7 +73,7 @@ import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDestinationCreateRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ObjectHashDeprecated } from '../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../enums/HashableObjectTypeDeprecated';
 import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
@@ -503,7 +503,7 @@ export class TestDataService {
         } as BidCreateRequest;
         // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
 
-        bidCreateRequest.hash = ObjectHashDeprecated.getHash(bidCreateRequest, HashableObjectTypeDeprecated.BID_CREATEREQUEST);
+        bidCreateRequest.hash = ObjectHashDEPRECATED.getHash(bidCreateRequest, HashableObjectTypeDeprecated.BID_CREATEREQUEST);
 
         // if we have a hash, fetch the listingItem and set the relation
         if (generateParams.listingItemHash) {
@@ -751,7 +751,7 @@ export class TestDataService {
             expiredAt: timeEnd
         } as ProposalCreateRequest;
 
-        proposalCreateRequest.hash = ObjectHashDeprecated.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
+        proposalCreateRequest.hash = ObjectHashDEPRECATED.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
 
         const options: ProposalOptionCreateRequest[] = [];
         options.push({

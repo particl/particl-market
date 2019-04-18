@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -10,15 +11,20 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionServiceDEPRECATED } from '../../services/action/EscrowActionServiceDEPRECATED';
-import { EscrowRequestDEPRECATED } from '../../requests/action/EscrowRequestDEPRECATED';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
+import { EscrowReleaseActionService } from '../../services/action/EscrowReleaseActionService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {EscrowLockRequest} from '../../requests/action/EscrowLockRequest';
+import {BidService} from '../../services/model/BidService';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -26,7 +32,8 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-//        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionServiceDEPRECATED,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowReleaseActionService) private escrowReleaseActionService: EscrowReleaseActionService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_RELEASE);
@@ -35,7 +42,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
     /**
      * data.params[]:
-     * [0]: orderItemId
+     * [0]: orderItem, resources.OrderItem
      * [1]: memo
      *
      * @param data
@@ -44,47 +51,71 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
 
-        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
-        const orderItem = orderItemModel.toJSON();
+        const orderItem: resources.OrderItem = data.params[0];
+        // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
-        // todo: release messaging need to be reimplemented, omp-lib doesnt provide msg for this
-        return {} as EscrowRequestDEPRECATED;
-        // return this.escrowActionService.release({
-        //    type: MPActionExtended.MPA_RELEASE,
-        //    orderItem,
-        //    memo: data.params[1]
-        // } as EscrowRequestDEPRECATED);
+        const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
+        const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPAction.MPA_ACCEPT;
+        });
+        if (!childBid) {
+            throw new MessageException('No accepted Bid found.');
+        }
+        const bidAccept = await this.bidService.findOne(childBid.id).then(value => value.toJSON());
+
+        const fromAddress = orderItem.Order.buyer;  // we are the buyer
+        const toAddress = orderItem.Order.seller;
+
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
+
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            bid,
+            bidAccept,
+            memo: data.params[1]
+        } as EscrowReleaseRequest;
+
+        return this.escrowReleaseActionService.post(postRequest);
     }
 
     /**
+     * data.params[]:
+     * [0]: orderItemId
+     * [1]: memo
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('orderItemId');
         }
 
-        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
-        const orderItem = orderItemModel.toJSON();
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('orderItemId', 'number');
+        }
 
-        const validOrderStatuses = [
+        // make sure required data exists and fetch it
+        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0]).then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('OrderItem');
+            });
+        data.params[0] = orderItem;
+
+        const validOrderItemStatuses = [
             OrderItemStatus.ESCROW_LOCKED,
             OrderItemStatus.SHIPPING
         ];
 
         // check if in the right state.
-        if (validOrderStatuses.indexOf(orderItem.status) === -1) {
+        if (validOrderItemStatuses.indexOf(orderItem.status) === -1) {
             this.log.error('Order is in invalid state');
             throw new MessageException('Order is in invalid state');
-        }
-
-        const bid = orderItem.Bid;
-        if (!bid || bid.type !== MPAction.MPA_ACCEPT) {
-            this.log.error('No valid information to finalize escrow');
-            throw new MessageException('No valid information to finalize escrow');
         }
 
         const listingItem = orderItem.Bid.ListingItem;

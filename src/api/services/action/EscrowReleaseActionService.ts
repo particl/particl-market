@@ -40,6 +40,9 @@ import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseMessageFactory } from '../../factories/message/EscrowReleaseMessageFactory';
 import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
+import {EscrowReleaseValidator} from '../../messages/validator/EscrowReleaseValidator';
+import {KVS} from 'omp-lib/dist/interfaces/common';
+import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
 
 
 export class EscrowReleaseActionService extends BaseActionService {
@@ -73,7 +76,9 @@ export class EscrowReleaseActionService extends BaseActionService {
      * - recreate ListingItemMessage with factory
      * - find the posted BidMessage
      * - find the received BidAcceptMessage
-     * - generate EscrowReleaseMessage with omp using recreated ListingItemMessage and previously stored BidMessage and BidAcceptMessage
+     * - generate the releasetx using omp
+     * - post the releasetx
+     * - generate EscrowReleaseMessage and pass the releasetxid forward to inform the seller
      *
      * @param params
      */
@@ -95,7 +100,7 @@ export class EscrowReleaseActionService extends BaseActionService {
                             .then(async bidAccept => {
                                 const bidAcceptMPM: MarketplaceMessage = bidAccept.toJSON();
 
-                                // finally use omp to generate EscrowReleaseMessage
+                                // finally use omp to generate releasetx
                                 const releasetx = await this.ompService.release(
                                     listingItemAddMPM.action as ListingItemAddMessage,
                                     bidMPM.action as BidMessage,
@@ -103,27 +108,17 @@ export class EscrowReleaseActionService extends BaseActionService {
                                 );
 
                                 const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
-                                    listingItem: params.listingItem
+                                    bidHash: params.bid.hash,
+                                    memo: params.memo,
                                 } as EscrowReleaseMessageCreateParams);
+
+                                // store the releasetx temporarily in the actionMessage
+                                actionMessage['_releasetx'] = releasetx;
 
                                 return {
                                     version: ompVersion(),
                                     action: actionMessage
                                 } as MarketplaceMessage;
-
-                                // TODO create new escrow release mpm ...
-                                // add txid to the EscrowLockMessage to be sent to the seller
-                                // const bidMessage = marketplaceMessage.action as BidMessage;
-                                // bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                                // bidMessage.objects.push({
-                                //    key: ActionMessageObjects.TXID_LOCK,
-                                //    value: txid
-                                // } as KVS);
-
-                                // const txid = await this.coreRpcService.sendRawTransaction(bidtx);
-
-                                // TODO: generate a MarketplaceMessage for release
-                                throw new NotImplementedException();
                             });
                     });
             });
@@ -142,14 +137,28 @@ export class EscrowReleaseActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * - create the bidCreateRequest to save the Bid (MPA_ACCEPT) in the Database
+     * - get the releasetx generated using omp-lib from the actionMessage (the temp _values will be removed automatically before message is sent)
+     * - store the txid in the actionMessage
+     * - and then send the rawtx
+     * - create the bidCreateRequest to save the Bid (MPA_RELEASE) in the Database
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
-     * @param marketplaceMessage, omp generated MPA_ACCEPT
+     * @param marketplaceMessage, MPA_RELEASE
      */
     public async beforePost(params: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+
+        // send the release rawtx
+        const releasetx = marketplaceMessage.action['_releasetx'];
+        const txid = await this.coreRpcService.sendRawTransaction(releasetx);
+
+        // add txid to the EscrowReleaseMessage to be sent to the seller
+        marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [] as KVS[];
+        marketplaceMessage.action.objects.push({
+            key: ActionMessageObjects.TXID_RELEASE,
+            value: txid
+        } as KVS);
 
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
@@ -161,10 +170,6 @@ export class EscrowReleaseActionService extends BaseActionService {
             .then(async bidCreateRequest => {
                 return await this.createBid(marketplaceMessage.action as EscrowReleaseMessage, bidCreateRequest)
                     .then(async value => {
-
-                        // send the release rawtx
-                        const releasetx = marketplaceMessage.action['_rawbidtx'];
-                        await this.coreRpcService.sendRawTransaction(releasetx);
                         return marketplaceMessage;
                     });
             });
@@ -197,7 +202,7 @@ export class EscrowReleaseActionService extends BaseActionService {
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_ACCEPT)
+        // - then, save the new Bid (MPA_RELEASE)
         // - then, update the OrderItem.status and Order.status
 
         return await this.bidService.findOneByHash(actionMessage.bid)
@@ -235,11 +240,11 @@ export class EscrowReleaseActionService extends BaseActionService {
     }
 
     /**
-     * - create the Bid (MPA_ACCEPT) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
-     * - update OrderItem.status -> AWAITING_ESCROW
+     * - create the Bid (MPA_RELEASE) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
+     * - update OrderItem.status
      * - update Order.status
      *
-     * @param bidAcceptMessage
+     * @param escrowReleaseMessage
      * @param bidCreateRequest
      */
     private async createBid(escrowReleaseMessage: EscrowReleaseMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
@@ -249,8 +254,8 @@ export class EscrowReleaseActionService extends BaseActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_LOCKED);
-                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.SHIPPING);
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.COMPLETE);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.COMPLETE);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

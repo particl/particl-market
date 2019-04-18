@@ -15,10 +15,11 @@ export class EscrowReleaseRequest extends RequestBody implements ActionRequestIn
     public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public bid: resources.Bid;                  // the original bid, which we're releasing
+    public bid: resources.Bid;                  // the original bid
 
     @IsNotEmpty()
     public bidAccept: resources.Bid;            // the accepted bid
+    public memo: string;                        // todo: memo, is this needed?
 
 }
 // tslint:enable:variable-name

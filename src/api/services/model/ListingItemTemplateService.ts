@@ -24,7 +24,7 @@ import { MessagingInformationCreateRequest } from '../../requests/model/Messagin
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
@@ -169,7 +169,7 @@ export class ListingItemTemplateService {
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
+        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
 
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);

@@ -10,7 +10,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
-import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -70,7 +70,7 @@ describe('ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHashDeprecated.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHashDEPRECATED.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         // create item template
         const res: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const result: any = res;
@@ -144,7 +144,7 @@ describe('ItemLocationUpdateCommand', () => {
 
         // set hash
         testDataListingItemTemplate.itemInformation.title = 'New title';
-        testDataListingItemTemplate.hash = ObjectHashDeprecated.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHashDEPRECATED.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
 
         // create new item template
         const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

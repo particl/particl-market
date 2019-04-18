@@ -13,7 +13,7 @@ import { HashableProposal } from './HashableProposal';
 import { HashableProposalOption } from './HashableProposalOption';
 import { HashableBid } from './HashableBid';
 
-export class ObjectHashDeprecated {
+export class ObjectHashDEPRECATED {
 
     /**
      *

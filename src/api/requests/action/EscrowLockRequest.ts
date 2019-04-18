@@ -15,7 +15,7 @@ export class EscrowLockRequest extends RequestBody implements ActionRequestInter
     public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public bid: resources.Bid;                  // the original bid, which we're accepting
+    public bid: resources.Bid;                  // the original bid
 
     @IsNotEmpty()
     public bidAccept: resources.Bid;            // the accepted bid

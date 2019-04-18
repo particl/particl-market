@@ -23,7 +23,7 @@ import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { ListingItemTemplateService } from '../../../src/api/services/model/ListingItemTemplateService';
-import { ObjectHashDeprecated } from '../../../src/api/messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
 import { MarketplaceMessageEvent } from '../../../src/api/messages/MarketplaceMessageEvent';
 import { AddressType } from '../../../src/api/enums/AddressType';
@@ -160,7 +160,7 @@ describe('BidAndEscrowMessageProcessing', () => {
         expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHashDeprecated.getHash(listingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
+        const generatedTemplateHash = ObjectHashDEPRECATED.getHash(listingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
         log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(listingItemTemplate.hash).toBe(generatedTemplateHash);

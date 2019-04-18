@@ -13,7 +13,7 @@ import { ProposalOptionRepository } from '../../repositories/ProposalOptionRepos
 import { ProposalOption } from '../../models/ProposalOption';
 import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../requests/model/ProposalOptionUpdateRequest';
-import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
+import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
@@ -66,7 +66,7 @@ export class ProposalOptionService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDeprecated.getHash(body, HashableObjectTypeDeprecated.PROPOSALOPTION_CREATEREQUEST);
+        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.PROPOSALOPTION_CREATEREQUEST);
 
         delete body.proposalHash;
 

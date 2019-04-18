@@ -6,10 +6,13 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { SellerData} from 'omp-lib/dist/interfaces/omp';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableBidReleaseField, HashableBidReleaseMessageConfig } from '../../messages/hashable/config/HashableBidReleaseMessageConfig';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
 
@@ -29,14 +32,16 @@ export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
      */
     public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowReleaseMessage> {
 
+
         const message = {
             type: MPActionExtended.MPA_RELEASE,
-            bid: params.bidHash,
-            seller: {
-                //
-            } as SellerData
+            generated: +new Date().getTime(),
+            hash: 'recalculateandvalidate',
+            bid: params.bidHash,                // hash of MPA_BID
+            objects: [] as KVS[]
         } as EscrowReleaseMessage;
 
+        message.hash = ConfigurableHasher.hash(message, new HashableBidReleaseMessageConfig());
         return message;
     }
 
