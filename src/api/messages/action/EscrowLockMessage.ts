@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+// tslint:disable:variable-name
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { MessageBody } from '../../../core/api/MessageBody';
@@ -30,5 +31,5 @@ export class EscrowLockMessage extends MessageBody implements ActionMessageInter
     public generated: number;
     @IsNotEmpty()
     public hash: string;
-
 }
+// tslint:enable:variable-name

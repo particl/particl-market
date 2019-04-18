@@ -3,14 +3,14 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Types } from '../../../constants';
+import { Logger as LoggerType } from '../../../../core/Logger';
+import { Core, Types } from '../../../../constants';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
+import { MessageFactoryInterface } from '../MessageFactoryInterface';
 import { BuyerData } from 'omp-lib/dist/interfaces/omp';
-import { EscrowMessageCreateParams } from './MessageCreateParams';
-import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
-import {MPActionExtended} from '../../enums/MPActionExtended';
+import { EscrowMessageCreateParams } from '../MessageCreateParams';
+import { EscrowRefundMessage } from '../../../messages/action/EscrowRefundMessage';
+import {MPActionExtended} from '../../../enums/MPActionExtended';
 
 export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 

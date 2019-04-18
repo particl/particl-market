@@ -4,5 +4,6 @@
 
 export enum ActionMessageObjects {
 
-    ORDER_HASH = 'order.hash'   // MPA_BID
+    ORDER_HASH = 'order.hash',  // MPA_BID
+    TXID_LOCK = 'txid.lock'     // MPA_LOCK
 }

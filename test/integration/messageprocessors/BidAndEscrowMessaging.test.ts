@@ -33,10 +33,10 @@ import { OrderService } from '../../../src/api/services/model/OrderService';
 import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
-import { BidMessageFactory } from '../../../src/api/factories/message/BidMessageFactory';
+import { BidMessageFactory } from '../../../src/api/factories/message/deprecated/BidMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { EscrowRefundMessageFactory } from '../../../src/api/factories/message/EscrowRefundMessageFactory';
-import { EscrowLockMessageFactory } from '../../../src/api/factories/message/EscrowLockMessageFactory';
+import { EscrowRefundMessageFactory } from '../../../src/api/factories/message/deprecated/EscrowRefundMessageFactory';
+import { EscrowLockMessageFactory } from '../../../src/api/factories/message/deprecated/EscrowLockMessageFactory';
 import { EscrowReleaseMessageFactory } from '../../../src/api/factories/message/EscrowReleaseMessageFactory';
 
 

@@ -3,12 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Types } from '../../../constants';
-import { BidMessage } from '../../messages/action/BidMessage';
+import { Logger as LoggerType } from '../../../../core/Logger';
+import { Core, Types } from '../../../../constants';
+import { BidMessage } from '../../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { BidMessageCreateParams } from './MessageCreateParams';
+import { MessageFactoryInterface } from '../MessageFactoryInterface';
+import { BidMessageCreateParams } from '../MessageCreateParams';
 import { BuyerData, PaymentData } from 'omp-lib/dist/interfaces/omp';
 import { HashableBidMessageConfig } from 'omp-lib/dist/hasher/config/bid';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';

@@ -4,32 +4,32 @@
 
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
+import { Logger as LoggerType } from '../../../../core/Logger';
+import { Core, Targets, Types } from '../../../../constants';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { MarketplaceMessage } from '../../../messages/MarketplaceMessage';
+import { ActionMessageTypes } from '../../../enums/ActionMessageTypes';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { GovernanceAction } from '../../enums/GovernanceAction';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { ListingItemAddMessageFactory } from './ListingItemAddMessageFactory';
+import { GovernanceAction } from '../../../enums/GovernanceAction';
+import { NotImplementedException } from '../../../exceptions/NotImplementedException';
+import { ListingItemAddMessageFactory } from '../ListingItemAddMessageFactory';
 import {
     MessageCreateParams,
     ListingItemAddMessageCreateParams,
     BidMessageCreateParams, BidAcceptMessageCreateParams, BidCancelMessageCreateParams, BidRejectMessageCreateParams,
     EscrowMessageCreateParams,
     ProposalAddMessageCreateParams, VoteMessageCreateParams
-} from './MessageCreateParams';
+} from '../MessageCreateParams';
 import { BidMessageFactory } from './BidMessageFactory';
 import { BidAcceptMessageFactory } from './BidAcceptMessageFactory';
 import { BidCancelMessageFactory } from './BidCancelMessageFactory';
 import { BidRejectMessageFactory } from './BidRejectMessageFactory';
 import { EscrowLockMessageFactory } from './EscrowLockMessageFactory';
 import { EscrowRefundMessageFactory } from './EscrowRefundMessageFactory';
-import { EscrowReleaseMessageFactory } from './EscrowReleaseMessageFactory';
-import { VoteMessageFactory } from './VoteMessageFactory';
-import { ProposalAddMessageFactory } from './ProposalAddMessageFactory';
-import {MPActionExtended} from '../../enums/MPActionExtended';
+import { EscrowReleaseMessageFactory } from '../EscrowReleaseMessageFactory';
+import { VoteMessageFactory } from '../VoteMessageFactory';
+import { ProposalAddMessageFactory } from '../ProposalAddMessageFactory';
+import {MPActionExtended} from '../../../enums/MPActionExtended';
 
 export class MarketplaceMessageFactory {
 

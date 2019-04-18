@@ -24,15 +24,14 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
 import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
-import { MarketplaceMessageFactory } from '../../factories/message/MarketplaceMessageFactory';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
-import {ompVersion} from 'omp-lib/dist/omp';
-import {ListingItemAddMessageFactory} from '../../factories/message/ListingItemAddMessageFactory';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 
 export class ListingItemAddActionService extends BaseActionService {
 
