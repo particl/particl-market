@@ -12,8 +12,8 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ObjectHashDeprecated } from '../../messages/hashable/ObjectHashDeprecated';
 import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { ProposalAddMessageCreateParams } from './MessageCreateParams';
 import { BidMessage } from '../../messages/action/BidMessage';
+import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 

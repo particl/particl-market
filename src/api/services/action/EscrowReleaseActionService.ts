@@ -19,7 +19,6 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
@@ -32,18 +31,15 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
-import { EscrowLockValidator } from '../../messages/validator/EscrowLockValidator';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import {EscrowReleaseRequest} from '../../requests/action/EscrowReleaseRequest';
-import {EscrowReleaseMessage} from '../../messages/action/EscrowReleaseMessage';
-import {MPActionExtended} from '../../enums/MPActionExtended';
-import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
-import {KVS} from 'omp-lib/dist/interfaces/common';
+import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
+import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowReleaseMessageFactory } from '../../factories/message/EscrowReleaseMessageFactory';
+import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 
 
 export class EscrowReleaseActionService extends BaseActionService {
@@ -63,6 +59,7 @@ export class EscrowReleaseActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public escrowReleaseMessageFactory: EscrowReleaseMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -105,7 +102,16 @@ export class EscrowReleaseActionService extends BaseActionService {
                                     bidAcceptMPM.action as BidAcceptMessage
                                 );
 
-                                // TODO create neew escrow release mpm ...
+                                const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
+                                    listingItem: params.listingItem
+                                } as EscrowReleaseMessageCreateParams);
+
+                                return {
+                                    version: ompVersion(),
+                                    action: actionMessage
+                                } as MarketplaceMessage;
+
+                                // TODO create new escrow release mpm ...
                                 // add txid to the EscrowLockMessage to be sent to the seller
                                 // const bidMessage = marketplaceMessage.action as BidMessage;
                                 // bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
@@ -130,7 +136,7 @@ export class EscrowReleaseActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return true; // EscrowReleaseValidator.isValid(marketplaceMessage);
+        return EscrowReleaseValidator.isValid(marketplaceMessage);
     }
 
     /**

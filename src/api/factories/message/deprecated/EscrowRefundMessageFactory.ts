@@ -8,9 +8,9 @@ import { Core, Types } from '../../../../constants';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from '../MessageFactoryInterface';
 import { BuyerData } from 'omp-lib/dist/interfaces/omp';
-import { EscrowMessageCreateParams } from '../MessageCreateParams';
 import { EscrowRefundMessage } from '../../../messages/action/EscrowRefundMessage';
 import { MPActionExtended } from '../../../enums/MPActionExtended';
+import { EscrowReleaseMessageCreateParams } from '../../../requests/message/EscrowReleaseMessageCreateParams';
 
 export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 
@@ -28,7 +28,7 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
      *      bidHash: string
      * @returns {Promise<EscrowRefundMessage>}
      */
-    public async get(params: EscrowMessageCreateParams): Promise<EscrowRefundMessage> {
+    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowRefundMessage> {
 
         const message = {
             type: MPActionExtended.MPA_REFUND,

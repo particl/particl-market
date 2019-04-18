@@ -9,7 +9,7 @@ import { Core, Targets, Types } from '../../../constants';
 import { VoteMessage } from '../../messages/action/VoteMessage';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { VoteMessageCreateParams } from './MessageCreateParams';
+import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
 
 export class VoteMessageFactory implements MessageFactoryInterface {
 

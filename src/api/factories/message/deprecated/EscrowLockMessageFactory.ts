@@ -10,7 +10,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from '../MessageFactoryInterface';
 import { BuyerData, LockInfo } from 'omp-lib/dist/interfaces/omp';
 import { EscrowLockMessage } from '../../../messages/action/EscrowLockMessage';
-import { EscrowMessageCreateParams } from '../MessageCreateParams';
+import { EscrowReleaseMessageCreateParams } from '../../../requests/message/EscrowReleaseMessageCreateParams';
 
 export class EscrowLockMessageFactory implements MessageFactoryInterface {
 
@@ -29,7 +29,7 @@ export class EscrowLockMessageFactory implements MessageFactoryInterface {
      *      memo?: string
      * @returns {Promise<EscrowLockMessage>}
      */
-    public async get(params: EscrowMessageCreateParams): Promise<EscrowLockMessage> {
+    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowLockMessage> {
 
         const message = {
             type: MPAction.MPA_LOCK,

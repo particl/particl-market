@@ -14,12 +14,9 @@ import { GovernanceAction } from '../../../enums/GovernanceAction';
 import { NotImplementedException } from '../../../exceptions/NotImplementedException';
 import { ListingItemAddMessageFactory } from '../ListingItemAddMessageFactory';
 import {
-    MessageCreateParams,
-    ListingItemAddMessageCreateParams,
-    BidMessageCreateParams, BidAcceptMessageCreateParams, BidCancelMessageCreateParams, BidRejectMessageCreateParams,
-    EscrowMessageCreateParams,
-    ProposalAddMessageCreateParams, VoteMessageCreateParams
-} from '../MessageCreateParams';
+    MessageCreateParamsInterface,
+    BidMessageCreateParamsDEPRECATED, BidAcceptMessageCreateParamsDEPRECATED, BidCancelMessageCreateParamsDEPRECATED, BidRejectMessageCreateParamsDEPRECATED
+} from '../../../requests/message/MessageCreateParamsInterface';
 import { BidMessageFactory } from './BidMessageFactory';
 import { BidAcceptMessageFactory } from './BidAcceptMessageFactory';
 import { BidCancelMessageFactory } from './BidCancelMessageFactory';
@@ -30,6 +27,10 @@ import { EscrowReleaseMessageFactory } from '../EscrowReleaseMessageFactory';
 import { VoteMessageFactory } from '../VoteMessageFactory';
 import { ProposalAddMessageFactory } from '../ProposalAddMessageFactory';
 import { MPActionExtended } from '../../../enums/MPActionExtended';
+import {ListingItemAddMessageCreateParams} from '../../../requests/message/ListingItemAddMessageCreateParams';
+import {EscrowReleaseMessageCreateParams} from '../../../requests/message/EscrowReleaseMessageCreateParams';
+import {ProposalAddMessageCreateParams} from '../../../requests/message/ProposalAddMessageCreateParams';
+import {VoteMessageCreateParams} from '../../../requests/message/VoteMessageCreateParams';
 
 export class MarketplaceMessageFactory {
 
@@ -51,7 +52,7 @@ export class MarketplaceMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(type: ActionMessageTypes, parameters: MessageCreateParams): Promise<MarketplaceMessage> {
+    public async get(type: ActionMessageTypes, parameters: MessageCreateParamsInterface): Promise<MarketplaceMessage> {
 
         const marketplaceMessage = {
             version: ompVersion()
@@ -62,25 +63,25 @@ export class MarketplaceMessageFactory {
                 marketplaceMessage.action = await this.listingItemAddMessageFactory.get(parameters as ListingItemAddMessageCreateParams);
                 break;
             case MPAction.MPA_BID:
-                marketplaceMessage.action = await this.bidMessageFactory.get(parameters as BidMessageCreateParams);
+                marketplaceMessage.action = await this.bidMessageFactory.get(parameters as BidMessageCreateParamsDEPRECATED);
                 break;
             case MPAction.MPA_ACCEPT:
-                marketplaceMessage.action = await this.bidAcceptMessageFactory.get(parameters as BidAcceptMessageCreateParams);
+                marketplaceMessage.action = await this.bidAcceptMessageFactory.get(parameters as BidAcceptMessageCreateParamsDEPRECATED);
                 break;
             case MPAction.MPA_CANCEL:
-                marketplaceMessage.action = await this.bidCancelMessageFactory.get(parameters as BidCancelMessageCreateParams);
+                marketplaceMessage.action = await this.bidCancelMessageFactory.get(parameters as BidCancelMessageCreateParamsDEPRECATED);
                 break;
             case MPAction.MPA_REJECT:
-                marketplaceMessage.action = await this.bidRejectMessageFactory.get(parameters as BidRejectMessageCreateParams);
+                marketplaceMessage.action = await this.bidRejectMessageFactory.get(parameters as BidRejectMessageCreateParamsDEPRECATED);
                 break;
             case MPAction.MPA_LOCK:
-                marketplaceMessage.action = await this.escrowLockMessageFactory.get(parameters as EscrowMessageCreateParams);
+                marketplaceMessage.action = await this.escrowLockMessageFactory.get(parameters as EscrowReleaseMessageCreateParams);
                 break;
             case MPActionExtended.MPA_REFUND:
-                marketplaceMessage.action = await this.escrowRefundMessageFactory.get(parameters as EscrowMessageCreateParams);
+                marketplaceMessage.action = await this.escrowRefundMessageFactory.get(parameters as EscrowReleaseMessageCreateParams);
                 break;
             case MPActionExtended.MPA_RELEASE:
-                marketplaceMessage.action = await this.escrowReleaseMessageFactory.get(parameters as EscrowMessageCreateParams);
+                marketplaceMessage.action = await this.escrowReleaseMessageFactory.get(parameters as EscrowReleaseMessageCreateParams);
                 break;
             case GovernanceAction.MPA_PROPOSAL_ADD:
                 marketplaceMessage.action = await this.proposalMessageFactory.get(parameters as ProposalAddMessageCreateParams);

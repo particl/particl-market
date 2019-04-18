@@ -352,7 +352,7 @@ export const Targets = {
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             MarketplaceMessageFactory: 'MarketplaceMessageFactory',
-            MessageCreateParams: 'MessageCreateParams',
+            MessageCreateParams: 'MessageCreateParamsInterface',
             MessageFactoryInterface: 'MessageFactoryInterface',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'

@@ -29,12 +29,12 @@ import { ItemImageDataService } from '../../services/model/ItemImageDataService'
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { ListingItemAddMessageCreateParams } from './MessageCreateParams';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 

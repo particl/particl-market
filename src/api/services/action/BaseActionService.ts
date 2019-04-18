@@ -25,7 +25,7 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import {strip} from 'omp-lib/dist/util';
+import { strip } from 'omp-lib/dist/util';
 
 export abstract class BaseActionService implements ActionServiceInterface, ActionProcessorInterface {
 

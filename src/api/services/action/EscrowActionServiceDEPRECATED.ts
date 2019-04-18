@@ -152,7 +152,7 @@ export class EscrowActionServiceDEPRECATED {
         //  const marketplaceMessage = await this.marketplaceMessageFactory.get(escrowRequest.type, {
         //    bidHash: 'TODO',
         //    memo: escrowRequest.memo
-        // } as EscrowMessageCreateParams);
+        // } as EscrowReleaseMessageCreateParams);
 
 
 

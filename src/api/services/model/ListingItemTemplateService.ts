@@ -36,13 +36,13 @@ import { ItemImage } from '../../models/ItemImage';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
 import { ItemInformationService } from './ItemInformationService';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
+import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 
 export class ListingItemTemplateService {
 

@@ -27,10 +27,10 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ProposalResultService } from '../model/ProposalResultService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
-import { VoteMessageCreateParams} from '../../factories/message/MessageCreateParams';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
+import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for

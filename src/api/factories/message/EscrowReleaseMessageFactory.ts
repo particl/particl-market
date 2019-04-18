@@ -5,12 +5,11 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { SellerData} from 'omp-lib/dist/interfaces/omp';
-import { EscrowMessageCreateParams } from './MessageCreateParams';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 
 export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
 
@@ -28,7 +27,7 @@ export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
      *      bidHash: string
      * @returns {Promise<EscrowReleaseMessage>}
      */
-    public async get(params: EscrowMessageCreateParams): Promise<EscrowReleaseMessage> {
+    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowReleaseMessage> {
 
         const message = {
             type: MPActionExtended.MPA_RELEASE,

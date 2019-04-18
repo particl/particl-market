@@ -8,7 +8,7 @@ import { Core, Types } from '../../../../constants';
 import { BidMessage } from '../../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from '../MessageFactoryInterface';
-import { BidAcceptMessageCreateParams } from '../MessageCreateParams';
+import { BidAcceptMessageCreateParamsDEPRECATED } from '../../../requests/message/MessageCreateParamsInterface';
 import { SellerData } from 'omp-lib/dist/interfaces/omp';
 import { BidAcceptMessage } from '../../../messages/action/BidAcceptMessage';
 
@@ -28,7 +28,7 @@ export class BidAcceptMessageFactory implements MessageFactoryInterface {
      *      bidHash: string
      * @returns {Promise<BidAcceptMessage>}
      */
-    public async get(params: BidAcceptMessageCreateParams): Promise<BidAcceptMessage> {
+    public async get(params: BidAcceptMessageCreateParamsDEPRECATED): Promise<BidAcceptMessage> {
 
         const message = {
             type: MPAction.MPA_ACCEPT,

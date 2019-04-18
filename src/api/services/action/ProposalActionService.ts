@@ -27,11 +27,11 @@ import { FlaggedItem } from '../../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { Proposal } from '../../models/Proposal';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
-import { ProposalAddMessageCreateParams} from '../../factories/message/MessageCreateParams';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import {ProposalCreateParams} from '../../factories/model/ModelCreateParams';
+import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
+import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 
 export class ProposalActionService {
 

@@ -8,7 +8,7 @@ import { Core, Types } from '../../../../constants';
 import { BidMessage } from '../../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageFactoryInterface } from '../MessageFactoryInterface';
-import { BidMessageCreateParams } from '../MessageCreateParams';
+import { BidMessageCreateParamsDEPRECATED } from '../../../requests/message/MessageCreateParamsInterface';
 import { BuyerData, PaymentData } from 'omp-lib/dist/interfaces/omp';
 import { HashableBidMessageConfig } from 'omp-lib/dist/hasher/config/bid';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
@@ -39,7 +39,7 @@ export class BidMessageFactory implements MessageFactoryInterface {
      *      generated: number
      * @returns {Promise<BidMessage>}
      */
-    public async get(params: BidMessageCreateParams): Promise<BidMessage> {
+    public async get(params: BidMessageCreateParamsDEPRECATED): Promise<BidMessage> {
 
         // we need to be able to pass the generated timestamp to be able to recreate messages
         const generated = params.generated ? params.generated : +new Date().getTime();

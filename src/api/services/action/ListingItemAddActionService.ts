@@ -23,7 +23,6 @@ import { SmsgMessageService } from '../model/SmsgMessageService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
-import { ListingItemAddMessageCreateParams } from '../../factories/message/MessageCreateParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
@@ -32,6 +31,7 @@ import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreate
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 
 export class ListingItemAddActionService extends BaseActionService {
 
