@@ -3,13 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Types } from '../../../constants';
-import { BidMessage } from '../../messages/action/BidMessage';
+import { Logger as LoggerType } from '../../../../core/Logger';
+import { Core, Types } from '../../../../constants';
+import { BidMessage } from '../../../messages/action/BidMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { BidRejectMessageCreateParams } from './MessageCreateParams';
-import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
+import { MessageFactoryInterface } from '../MessageFactoryInterface';
+import { BidRejectMessageCreateParams } from '../MessageCreateParams';
+import { BidRejectMessage } from '../../../messages/action/BidRejectMessage';
 
 export class BidRejectMessageFactory implements MessageFactoryInterface {
 

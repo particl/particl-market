@@ -29,7 +29,7 @@ import { EscrowRefundMessageFactory } from './EscrowRefundMessageFactory';
 import { EscrowReleaseMessageFactory } from '../EscrowReleaseMessageFactory';
 import { VoteMessageFactory } from '../VoteMessageFactory';
 import { ProposalAddMessageFactory } from '../ProposalAddMessageFactory';
-import {MPActionExtended} from '../../../enums/MPActionExtended';
+import { MPActionExtended } from '../../../enums/MPActionExtended';
 
 export class MarketplaceMessageFactory {
 

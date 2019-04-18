@@ -107,12 +107,12 @@ export class EscrowReleaseActionService extends BaseActionService {
 
                                 // TODO create neew escrow release mpm ...
                                 // add txid to the EscrowLockMessage to be sent to the seller
-                                const bidMessage = marketplaceMessage.action as BidMessage;
-                                bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                                bidMessage.objects.push({
-                                    key: ActionMessageObjects.TXID_LOCK,
-                                    value: txid
-                                } as KVS);
+                                // const bidMessage = marketplaceMessage.action as BidMessage;
+                                // bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+                                // bidMessage.objects.push({
+                                //    key: ActionMessageObjects.TXID_LOCK,
+                                //    value: txid
+                                // } as KVS);
 
                                 // const txid = await this.coreRpcService.sendRawTransaction(bidtx);
 
@@ -130,7 +130,7 @@ export class EscrowReleaseActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return EscrowReleaseValidator.isValid(marketplaceMessage);
+        return true; // EscrowReleaseValidator.isValid(marketplaceMessage);
     }
 
     /**
