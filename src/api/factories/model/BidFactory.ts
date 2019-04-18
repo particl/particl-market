@@ -20,8 +20,9 @@ import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableBidCreateRequestConfig } from '../../messages/hashable/config/HashableBidCreateRequestConfig';
+import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 
-export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage;
+export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage | EscrowLockMessage;
 
 export class BidFactory implements ModelFactoryInterface {
 

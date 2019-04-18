@@ -28,14 +28,15 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
-import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
-import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
-import { BidAcceptValidator } from '../../messages/validator/BidAcceptValidator';
-import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
+import { EscrowLockValidator } from '../../messages/validator/EscrowLockValidator';
+import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
+import {BidAcceptMessage} from '../../messages/action/BidAcceptMessage';
+import {BidCreateRequest} from '../../requests/model/BidCreateRequest';
 
 
 export class EscrowLockActionService extends BaseActionService {
@@ -71,7 +72,7 @@ export class EscrowLockActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: BidAcceptRequest): Promise<MarketplaceMessage> {
+    public async createMessage(params: EscrowLockRequest): Promise<MarketplaceMessage> {
 
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMessage({
@@ -82,11 +83,20 @@ export class EscrowLockActionService extends BaseActionService {
 
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
-                    .then(async value => {
-                        const bidMPM: MarketplaceMessage = value.toJSON();
+                    .then(async bid => {
+                        const bidMPM: MarketplaceMessage = bid.toJSON();
 
-                        // finally use omp to generate BidMessage
-                        return await this.ompService.accept(listingItemAddMPM.action as ListingItemAddMessage, bidMPM.action as BidMessage);
+                        return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid)
+                            .then(async bidAccept => {
+                                const bidAcceptMPM: MarketplaceMessage = bidAccept.toJSON();
+
+                                // finally use omp to generate EscrowLockMessage
+                                return await this.ompService.lock(
+                                    listingItemAddMPM.action as ListingItemAddMessage,
+                                    bidMPM.action as BidMessage,
+                                    bidAcceptMPM.action as BidAcceptMessage
+                                );
+                            });
                     });
             });
     }
@@ -98,7 +108,7 @@ export class EscrowLockActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidAcceptValidator.isValid(marketplaceMessage);
+        return EscrowLockValidator.isValid(marketplaceMessage);
     }
 
     /**
@@ -111,7 +121,7 @@ export class EscrowLockActionService extends BaseActionService {
      * @param params
      * @param marketplaceMessage, omp generated MPA_ACCEPT
      */
-    public async beforePost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
@@ -119,9 +129,9 @@ export class EscrowLockActionService extends BaseActionService {
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
+        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
+                return await this.createBid(marketplaceMessage.action as EscrowLockMessage, bidCreateRequest)
                     .then(value => {
                         return marketplaceMessage;
                     });
@@ -135,13 +145,13 @@ export class EscrowLockActionService extends BaseActionService {
      * @param marketplaceMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }
 
     /**
-     * handles the received BidAcceptMessage and return SmsgMessageStatus as a result
+     * handles the received EscrowLockMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -151,7 +161,7 @@ export class EscrowLockActionService extends BaseActionService {
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
+        const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
@@ -171,9 +181,9 @@ export class EscrowLockActionService extends BaseActionService {
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
-                            .then(async bidCreateRequest => {
-                                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
+                            .then(async escrowLockRequest => {
+                                return await this.createBid(marketplaceMessage.action as EscrowLockMessage, escrowLockRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })
@@ -181,10 +191,7 @@ export class EscrowLockActionService extends BaseActionService {
                                         return SmsgMessageStatus.PROCESSING_FAILED;
                                     });
                             });
-
                     });
-
-
             })
             .catch(reason => {
                 // could not find previous bid
@@ -203,15 +210,15 @@ export class EscrowLockActionService extends BaseActionService {
      * @param bidAcceptMessage
      * @param bidCreateRequest
      */
-    private async createBid(bidAcceptMessage: BidAcceptMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    private async createBid(escrowLockMessage: EscrowLockMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
-                await this.orderService.updateStatus(bid.OrderItem.Order.id, OrderStatus.PROCESSING);
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_LOCKED);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.SHIPPING);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

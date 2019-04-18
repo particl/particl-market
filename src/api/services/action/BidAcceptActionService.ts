@@ -84,8 +84,11 @@ export class BidAcceptActionService extends BaseActionService {
                     .then(async value => {
                         const bidMPM: MarketplaceMessage = value.toJSON();
 
-                        // finally use omp to generate BidMessage
-                        return await this.ompService.accept(listingItemAddMPM.action as ListingItemAddMessage, bidMPM.action as BidMessage);
+                        // finally use omp to generate BidAcceptMessage
+                        return await this.ompService.accept(
+                            listingItemAddMPM.action as ListingItemAddMessage,
+                            bidMPM.action as BidMessage
+                        );
                     });
             });
     }
@@ -209,8 +212,8 @@ export class BidAcceptActionService extends BaseActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
-                await this.orderService.updateStatus(bid.OrderItem.Order.id, OrderStatus.PROCESSING);
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

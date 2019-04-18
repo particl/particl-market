@@ -4,25 +4,26 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { Escrow } from '../../models/Escrow';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { OrderItemService } from '../../services/model/OrderItemService';
-import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { BidService } from '../../services/model/BidService';
-import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Core, Targets, Types} from '../../../constants';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {Escrow} from '../../models/Escrow';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {OrderItemService} from '../../services/model/OrderItemService';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
+import {OrderItemStatus} from '../../enums/OrderItemStatus';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {EscrowLockActionService} from '../../services/action/EscrowLockActionService';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {BidService} from '../../services/model/BidService';
+import {EscrowLockRequest} from '../../requests/action/EscrowLockRequest';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -52,7 +53,14 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const orderItem: resources.OrderItem = data.params[0];
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
-        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
+        const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
+        const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPAction.MPA_ACCEPT;
+        });
+        if (!childBid) {
+            throw new MessageException('No accepted Bid found.');
+        }
+        const bidAccept = await this.bidService.findOne(childBid.id).then(value => value.toJSON());
 
         const fromAddress = orderItem.Order.buyer;  // we are the buyer
         const toAddress = orderItem.Order.seller;
@@ -63,7 +71,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
-            bid
+            bid,
+            bidAccept
         } as EscrowLockRequest;
 
         return this.escrowLockActionService.post(postRequest);

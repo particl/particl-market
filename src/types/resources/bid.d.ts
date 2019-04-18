@@ -17,6 +17,8 @@ declare module 'resources' {
         ListingItem: ListingItem;
         ShippingAddress: Address;
         OrderItem: OrderItem;
+        ParentBid: Bid;
+        ChildBids: Bid[];
 
         createdAt: Date;
         updatedAt: Date;

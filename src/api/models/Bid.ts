@@ -24,6 +24,8 @@ export class Bid extends Bookshelf.Model<Bid> {
         'OrderItem.OrderItemObjects',
         'OrderItem.Order',
         'ParentBid',
+        'ParentBid.OrderItem',
+        'ParentBid.OrderItem.Order',
         'ParentBid.ParentBid',
         'ParentBid.ParentBid.ParentBid',
         'ParentBid.ParentBid.ParentBid.ParentBid',
