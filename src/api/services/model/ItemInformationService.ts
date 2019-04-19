@@ -190,7 +190,7 @@ export class ItemInformationService {
         } else if (itemCategory.id) {
             result = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
-            result = await this.itemCategoryService.create(itemCategory as ItemCategoryCreateRequest);
+            result = await this.itemCategoryService.create(itemCategory);
         }
 
         return result;

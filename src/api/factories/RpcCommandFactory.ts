@@ -36,7 +36,7 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
-import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
+import { EscrowCompleteCommand } from '../commands/escrow/EscrowCompleteCommand';
 import { EscrowRemoveCommand } from '../commands/escrow/EscrowRemoveCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
 import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
@@ -178,7 +178,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowCompleteCommand) private escrowCompleteCommand: EscrowCompleteCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRemoveCommand) private escrowRemoveCommand: EscrowRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
@@ -327,7 +327,7 @@ export class RpcCommandFactory {
         this.commands.push(dataRootCommand);
 
         this.commands.push(escrowRootCommand);
-        this.commands.push(escrowAddCommand);
+        this.commands.push(escrowCompleteCommand);
         this.commands.push(escrowRemoveCommand);
         this.commands.push(escrowUpdateCommand);
         this.commands.push(escrowLockCommand);
