@@ -23,9 +23,10 @@ import { HashableBidCreateRequestConfig } from '../../messages/hashable/config/H
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
+import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage
-    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage;
+    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage;
 
 export class BidFactory implements ModelFactoryInterface {
 

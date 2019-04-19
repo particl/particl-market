@@ -48,8 +48,8 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const bid: resources.Bid = data.params[0];
 
-        const fromAddress = bid.OrderItem.Order.buyer;  // we are the buyer
-        const toAddress = bid.OrderItem.Order.seller;
+        const fromAddress = bid.OrderItem.Order.seller;  // we are the seller
+        const toAddress = bid.OrderItem.Order.buyer;
 
         // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
         const daysRetention = 2;

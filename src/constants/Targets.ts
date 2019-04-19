@@ -109,6 +109,7 @@ export const Targets = {
             EscrowLockActionService: 'EscrowLockActionService',
             EscrowReleaseActionService: 'EscrowReleaseActionService',
             EscrowRefundActionService: 'EscrowRefundActionService',
+            EscrowCompleteActionService: 'EscrowCompleteActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
             ProposalActionService: 'ProposalActionService',
             VoteActionService: 'VoteActionService'
@@ -202,6 +203,7 @@ export const Targets = {
         },
         escrow: {
             EscrowAddCommand: 'EscrowAddCommand',
+            EscrowCompleteCommand: 'EscrowCompleteCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
@@ -349,6 +351,7 @@ export const Targets = {
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
+            EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',

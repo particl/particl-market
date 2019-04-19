@@ -7,6 +7,7 @@ export enum ActionMessageObjects {
     ORDER_HASH = 'order.hash',      // MPA_BID
     TXID_LOCK = 'txid.lock',        // MPA_LOCK
     TXID_RELEASE = 'txid.release',  // MPA_RELEASE
-    TXID_REFUND = 'txid.refund'     // MPA_REFUND
+    TXID_REFUND = 'txid.refund',    // MPA_REFUND
+    TXID_COMPLETE = 'txid.complete' // MPA_COMPLETE
 
 }

@@ -22,20 +22,20 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidService } from '../../services/model/BidService';
-import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
-import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
+import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
+import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 
-export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
+export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) private escrowRefundActionService: EscrowRefundActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowCompleteActionService) private escrowCompleteActionService: EscrowCompleteActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
-        super(Commands.ESCROW_REFUND);
+        super(Commands.ESCROW_COMPLETE);
         this.log = new Logger(__filename);
     }
 
@@ -82,9 +82,9 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             bidAccept,
             escrowLock,
             memo: data.params[1]
-        } as EscrowRefundRequest;
+        } as EscrowCompleteRequest;
 
-        return this.escrowRefundActionService.post(postRequest);
+        return this.escrowCompleteActionService.post(postRequest);
     }
 
     /**
@@ -137,12 +137,12 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to refund the Escrow.\n'
+            + '    <orderItemId>            - String - The id of the OrderItem for which we want to complete the Escrow.\n'
             + '    <memo>                   - String - The memo of the Escrow ';
     }
 
     public description(): string {
-        return 'Refund an escrow.';
+        return 'Complete an escrow.';
     }
 
 }
