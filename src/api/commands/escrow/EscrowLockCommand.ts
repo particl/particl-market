@@ -24,8 +24,9 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidService } from '../../services/model/BidService';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
-export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
@@ -45,10 +46,10 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
      * [0]: orderItem, resources.OrderItem
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
@@ -126,6 +127,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         if (_.isEmpty(orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio)) {
             throw new ModelNotFoundException('Ratio');
         }
+
+        // TODO: check that we are the buyer
 
         return data;
     }

@@ -8,7 +8,6 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 
-// tslint:disable:variable-name
 export class BidAcceptRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
@@ -18,4 +17,3 @@ export class BidAcceptRequest extends RequestBody implements ActionRequestInterf
     public bid: resources.Bid;                  // bid which we're accepting
 
 }
-// tslint:enable:variable-name

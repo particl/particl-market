@@ -8,7 +8,6 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 
-// tslint:disable:variable-name
 export class ListingItemAddRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
@@ -19,4 +18,3 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     // has the template
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 }
-// tslint:enable:variable-name

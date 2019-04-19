@@ -9,7 +9,6 @@ import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 import {AddressCreateRequest} from '../model/AddressCreateRequest';
 
-// tslint:disable:variable-name
 export class BidRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
@@ -21,4 +20,3 @@ export class BidRequest extends RequestBody implements ActionRequestInterface {
     @IsNotEmpty()
     public address: AddressCreateRequest;       // bidder delivery address
 }
-// tslint:enable:variable-name

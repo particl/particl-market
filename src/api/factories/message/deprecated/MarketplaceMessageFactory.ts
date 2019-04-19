@@ -22,7 +22,6 @@ import { BidAcceptMessageFactory } from './BidAcceptMessageFactory';
 import { BidCancelMessageFactory } from './BidCancelMessageFactory';
 import { BidRejectMessageFactory } from './BidRejectMessageFactory';
 import { EscrowLockMessageFactory } from './EscrowLockMessageFactory';
-import { EscrowRefundMessageFactory } from './EscrowRefundMessageFactory';
 import { EscrowReleaseMessageFactory } from '../EscrowReleaseMessageFactory';
 import { VoteMessageFactory } from '../VoteMessageFactory';
 import { ProposalAddMessageFactory } from '../ProposalAddMessageFactory';
@@ -31,6 +30,7 @@ import {ListingItemAddMessageCreateParams} from '../../../requests/message/Listi
 import {EscrowReleaseMessageCreateParams} from '../../../requests/message/EscrowReleaseMessageCreateParams';
 import {ProposalAddMessageCreateParams} from '../../../requests/message/ProposalAddMessageCreateParams';
 import {VoteMessageCreateParams} from '../../../requests/message/VoteMessageCreateParams';
+import {EscrowRefundMessageFactory} from '../EscrowRefundMessageFactory';
 
 export class MarketplaceMessageFactory {
 

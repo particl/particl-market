@@ -6,14 +6,14 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../../messages/hashable/config/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
+import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 
-export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
+export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
@@ -27,16 +27,16 @@ export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
      *
      * @param params
      *      bidHash: string
-     * @returns {Promise<EscrowReleaseMessage>}
+     * @returns {Promise<EscrowRefundMessage>}
      */
-    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowReleaseMessage> {
+    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowRefundMessage> {
         const message = {
-            type: MPActionExtended.MPA_RELEASE,
+            type: MPActionExtended.MPA_REFUND,
             generated: +new Date().getTime(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]
-        } as EscrowReleaseMessage;
+        } as EscrowRefundMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;

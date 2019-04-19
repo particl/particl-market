@@ -9,25 +9,31 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { EscrowActionServiceDEPRECATED } from '../../services/action/EscrowActionServiceDEPRECATED';
-import { EscrowRequestDEPRECATED } from '../../requests/action/EscrowRequestDEPRECATED';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {MPActionExtended} from '../../enums/MPActionExtended';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
+import { BidService } from '../../services/model/BidService';
+import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
+import {EscrowRefundRequest} from '../../requests/action/EscrowRefundRequest';
 
-export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-//        @inject(Types.Service) @named(Targets.Service.action.EscrowActionService) private escrowActionService: EscrowActionServiceDEPRECATED,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) private escrowRefundActionService: EscrowRefundActionService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_REFUND);
@@ -39,69 +45,90 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
      * [0]: orderItemId
      * [1]: memo
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
-        const orderItem = orderItemModel.toJSON();
+        const orderItem: resources.OrderItem = data.params[0];
+        // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
-        if (orderItem.status !== OrderItemStatus.AWAITING_ESCROW) {
-            this.log.error('Order is in invalid state');
-            throw new MessageException('Order is in invalid state');
+        const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
+        let bidAccept: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPAction.MPA_ACCEPT;
+        });
+        if (!bidAccept) {
+            throw new MessageException('No accepted Bid found.');
         }
+        bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
-        const bid = orderItem.Bid;
-        if (!bid || bid.type !== MPAction.MPA_ACCEPT) {
-            this.log.error('No valid information to finalize escrow');
-            throw new MessageException('No valid information to finalize escrow');
+        let escrowLock: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPAction.MPA_LOCK;
+        });
+        if (!escrowLock) {
+            throw new MessageException('No locked Bid found.');
         }
+        escrowLock = await this.bidService.findOne(escrowLock.id).then(value => value.toJSON());
 
-        const listingItem = orderItem.Bid.ListingItem;
-        if (_.isEmpty(listingItem)) {
-            this.log.error('ListingItem not found!');
-            throw new MessageException('ListingItem not found!');
-        }
+        const fromAddress = orderItem.Order.buyer;  // we are the seller
+        const toAddress = orderItem.Order.seller;
 
-        const paymentInformation = orderItem.Bid.ListingItem.PaymentInformation;
-        if (_.isEmpty(paymentInformation)) {
-            this.log.error('PaymentInformation not found!');
-            throw new MessageException('PaymentInformation not found!');
-        }
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
 
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
-        if (_.isEmpty(escrow)) {
-            this.log.error('Escrow not found!');
-            throw new MessageException('Escrow not found!');
-        }
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            bid,
+            bidAccept,
+            escrowLock,
+            memo: data.params[1]
+        } as EscrowRefundRequest;
 
-        const escrowRatio = orderItem.Bid.ListingItem.PaymentInformation.Escrow.Ratio;
-        if (_.isEmpty(escrowRatio)) {
-            this.log.error('EscrowRatio not found!');
-            throw new MessageException('EscrowRatio not found!');
-        }
-
-        return {} as EscrowRequestDEPRECATED;
-
-        // todo: refund messaging need to be reimplemented, omp-lib doesnt provide msg for this
-        // return this.escrowActionService.refund({
-        //    type: MPActionExtended.MPA_REFUND,
-        //    orderItem,
-        //    accepted: data.params[1],
-        //    memo: data.params[2]
-        // } as EscrowRequestDEPRECATED);
+        return this.escrowRefundActionService.post(postRequest);
     }
 
     /**
      * data.params[]:
-     * [0]:
-     *
-     * @param {RpcRequest} data
-     * @returns {Promise<RpcRequest>}
+     * [0]: orderItemId
+     * [1]: memo
+     * @param data
+     * @returns {Promise<any>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // TODO: IMPLEMENT
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('orderItemId');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('orderItemId', 'number');
+        }
+
+        // make sure required data exists and fetch it
+        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0]).then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('OrderItem');
+            });
+        data.params[0] = orderItem;
+
+        // TODO: check these
+        const validOrderItemStatuses = [
+            OrderItemStatus.ESCROW_LOCKED,
+            OrderItemStatus.SHIPPING
+        ];
+
+        // check if in the right state.
+        if (validOrderItemStatuses.indexOf(orderItem.status) === -1) {
+            this.log.error('OrderItem is in invalid state');
+            throw new MessageException('OrderItem is in invalid state');
+        }
+
+        // TODO: check that we are the seller
+        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
+
         return data;
     }
 

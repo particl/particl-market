@@ -8,7 +8,6 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 
-// tslint:disable:variable-name
 export class EscrowLockRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
@@ -21,4 +20,3 @@ export class EscrowLockRequest extends RequestBody implements ActionRequestInter
     public bidAccept: resources.Bid;            // the accepted bid
 
 }
-// tslint:enable:variable-name

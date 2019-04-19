@@ -86,6 +86,8 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Not your ListingItem.');
         }
 
+        // TODO: check that we are the seller
+
         return data;
     }
 

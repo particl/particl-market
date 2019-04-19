@@ -8,7 +8,6 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import {MPActionExtended} from '../../enums/MPActionExtended';
 
-// tslint:disable:variable-name
 export class EscrowRequestDEPRECATED extends RequestBody {
 
     @IsEnum(MPAction)
@@ -24,4 +23,3 @@ export class EscrowRequestDEPRECATED extends RequestBody {
     public memo?: string;
 
 }
-// tslint:enable:variable-name

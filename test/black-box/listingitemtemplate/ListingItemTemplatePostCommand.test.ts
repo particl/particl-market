@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import * as resources from 'resources';
 import * as fs from 'fs';
@@ -13,7 +12,6 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-// tslint:enable:max-line-length
 
 describe('ListingItemTemplatePostCommand', () => {
 

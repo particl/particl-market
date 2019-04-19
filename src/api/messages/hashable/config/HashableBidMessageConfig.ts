@@ -9,7 +9,10 @@ export enum HashableBidReleaseField {
     BID_HASH = 'bidHash'
 }
 
-export class HashableBidReleaseMessageConfig extends BaseHashableConfig {
+/**
+ * used for MPA_RELEASE and MPA_REFUND
+ */
+export class HashableBidMessageConfig extends BaseHashableConfig {
 
     public fields = [{
         from: 'generated',

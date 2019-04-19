@@ -198,6 +198,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             throw new MessageException('The ListingItem being bidded for has expired!');
         }
 
+        // TODO: check that we are NOT the seller
+
         return data;
     }
 

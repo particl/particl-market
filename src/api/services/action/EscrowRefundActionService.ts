@@ -42,9 +42,15 @@ import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowR
 import { EscrowReleaseValidator } from '../../messages/validator/EscrowReleaseValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import {EscrowRefundMessage} from '../../messages/action/EscrowRefundMessage';
+import {EscrowRefundMessageFactory} from '../../factories/message/EscrowRefundMessageFactory';
+import {EscrowRefundRequest} from '../../requests/action/EscrowRefundRequest';
+import {EscrowLockMessage} from '../../messages/action/EscrowLockMessage';
+import {EscrowRefundMessageCreateParams} from '../../requests/message/EscrowRefundMessageCreateParams';
+import {EscrowRefundValidator} from '../../messages/validator/EscrowRefundValidator';
 
 
-export class EscrowReleaseActionService extends BaseActionService {
+export class EscrowRefundActionService extends BaseActionService {
 
     public log: LoggerType;
 
@@ -61,11 +67,11 @@ export class EscrowReleaseActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public escrowReleaseMessageFactory: EscrowReleaseMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowRefundMessageFactory) public escrowRefundMessageFactory: EscrowRefundMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_RELEASE, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
+        super(MPActionExtended.MPA_REFUND, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
     }
 
@@ -75,13 +81,13 @@ export class EscrowReleaseActionService extends BaseActionService {
      * - recreate ListingItemMessage with factory
      * - find the posted BidMessage
      * - find the received BidAcceptMessage
-     * - generate the releasetx using omp
-     * - post the releasetx
-     * - generate EscrowReleaseMessage and pass the releasetxid forward to inform the seller
+     * - generate the refundtx using omp
+     * - post the refundtx
+     * - generate EscrowRefundMessage and pass the refundtxid forward to inform the seller
      *
      * @param params
      */
-    public async createMessage(params: EscrowReleaseRequest): Promise<MarketplaceMessage> {
+    public async createMessage(params: EscrowRefundRequest): Promise<MarketplaceMessage> {
 
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMessage({
@@ -99,25 +105,31 @@ export class EscrowReleaseActionService extends BaseActionService {
                             .then(async bidAccept => {
                                 const bidAcceptMPM: MarketplaceMessage = bidAccept.toJSON();
 
-                                // finally use omp to generate releasetx
-                                const releasetx = await this.ompService.release(
-                                    listingItemAddMPM.action as ListingItemAddMessage,
-                                    bidMPM.action as BidMessage,
-                                    bidAcceptMPM.action as BidAcceptMessage
-                                );
+                                return this.smsgMessageService.findOneByMsgId(params.escrowLock.msgid)
+                                    .then(async escrowLock => {
+                                        const escrowLockMPM: MarketplaceMessage = escrowLock.toJSON();
 
-                                const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
-                                    bidHash: params.bid.hash,
-                                    memo: params.memo
-                                } as EscrowReleaseMessageCreateParams);
+                                        // finally use omp to generate refundtx
+                                        const refundtx = await this.ompService.refund(
+                                            listingItemAddMPM.action as ListingItemAddMessage,
+                                            bidMPM.action as BidMessage,
+                                            bidAcceptMPM.action as BidAcceptMessage,
+                                            escrowLockMPM.action as EscrowLockMessage
+                                        );
 
-                                // store the releasetx temporarily in the actionMessage
-                                actionMessage['_releasetx'] = releasetx;
+                                        const actionMessage: EscrowRefundMessage = await this.escrowRefundMessageFactory.get({
+                                            bidHash: params.bid.hash,
+                                            memo: params.memo
+                                        } as EscrowRefundMessageCreateParams);
 
-                                return {
-                                    version: ompVersion(),
-                                    action: actionMessage
-                                } as MarketplaceMessage;
+                                        // store the refundtx temporarily in the actionMessage
+                                        actionMessage['_refundtx'] = refundtx;
+
+                                        return {
+                                            version: ompVersion(),
+                                            action: actionMessage
+                                        } as MarketplaceMessage;
+                                    });
                             });
                     });
             });
@@ -130,32 +142,32 @@ export class EscrowReleaseActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return EscrowReleaseValidator.isValid(marketplaceMessage);
+        return EscrowRefundValidator.isValid(marketplaceMessage);
     }
 
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * - get the releasetx generated using omp-lib from the actionMessage (the temp _values will be removed automatically before message is sent)
+     * - get the refundtx generated using omp-lib from the actionMessage (the temp _values will be removed automatically before message is sent)
      * - store the txid in the actionMessage
      * - and then send the rawtx
-     * - create the bidCreateRequest to save the Bid (MPA_RELEASE) in the Database
+     * - create the bidCreateRequest to save the Bid (MPA_REFUND) in the Database
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
-     * @param marketplaceMessage, MPA_RELEASE
+     * @param marketplaceMessage, MPA_REFUND
      */
-    public async beforePost(params: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(params: EscrowRefundRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
-        // send the release rawtx
-        const releasetx = marketplaceMessage.action['_releasetx'];
-        const txid = await this.coreRpcService.sendRawTransaction(releasetx);
+        // send the refund rawtx
+        const refundtx = marketplaceMessage.action['_refundtx'];
+        const txid = await this.coreRpcService.sendRawTransaction(refundtx);
 
-        // add txid to the EscrowReleaseMessage to be sent to the seller
+        // add txid to the EscrowRefundMessage to be sent to the seller
         marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [] as KVS[];
         marketplaceMessage.action.objects.push({
-            key: ActionMessageObjects.TXID_RELEASE,
+            key: ActionMessageObjects.TXID_REFUND,
             value: txid
         } as KVS);
 
@@ -165,9 +177,9 @@ export class EscrowReleaseActionService extends BaseActionService {
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowReleaseMessage)
+        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowRefundMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as EscrowReleaseMessage, bidCreateRequest)
+                return await this.createBid(marketplaceMessage.action as EscrowRefundMessage, bidCreateRequest)
                     .then(async value => {
                         return marketplaceMessage;
                     });
@@ -181,13 +193,13 @@ export class EscrowReleaseActionService extends BaseActionService {
      * @param marketplaceMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: EscrowRefundRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }
 
     /**
-     * handles the received EscrowReleaseMessage and return SmsgMessageStatus as a result
+     * handles the received EscrowRefundMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -197,11 +209,11 @@ export class EscrowReleaseActionService extends BaseActionService {
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: EscrowReleaseMessage = marketplaceMessage.action as EscrowReleaseMessage;
+        const actionMessage: EscrowRefundMessage = marketplaceMessage.action as EscrowRefundMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_RELEASE)
+        // - then, save the new Bid (MPA_REFUND)
         // - then, update the OrderItem.status and Order.status
 
         return await this.bidService.findOneByHash(actionMessage.bid)
@@ -217,9 +229,9 @@ export class EscrowReleaseActionService extends BaseActionService {
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowReleaseMessage)
-                            .then(async escrowReleaseRequest => {
-                                return await this.createBid(marketplaceMessage.action as EscrowReleaseMessage, escrowReleaseRequest)
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowRefundMessage)
+                            .then(async escrowRefundRequest => {
+                                return await this.createBid(marketplaceMessage.action as EscrowRefundMessage, escrowRefundRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })
@@ -239,22 +251,22 @@ export class EscrowReleaseActionService extends BaseActionService {
     }
 
     /**
-     * - create the Bid (MPA_RELEASE) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
+     * - create the Bid (MPA_REFUND) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
      * - update OrderItem.status
      * - update Order.status
      *
-     * @param escrowReleaseMessage
+     * @param escrowRefundMessage
      * @param bidCreateRequest
      */
-    private async createBid(escrowReleaseMessage: EscrowReleaseMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    private async createBid(escrowRefundMessage: EscrowRefundMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.COMPLETE);
-                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.COMPLETE);
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_REFUNDED);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.REFUNDED);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

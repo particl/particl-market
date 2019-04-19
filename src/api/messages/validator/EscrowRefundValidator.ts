@@ -11,7 +11,7 @@ import { MessageException } from '../../exceptions/MessageException';
 /**
  *
  */
-export class EscrowReleaseValidator implements ActionMessageValidatorInterface {
+export class EscrowRefundValidator implements ActionMessageValidatorInterface {
 
     public static isValid(msg: MarketplaceMessage): boolean {
 
@@ -27,8 +27,8 @@ export class EscrowReleaseValidator implements ActionMessageValidatorInterface {
             throw new MessageException('action.type: missing');
         }
 
-        if (msg.action.type !== MPActionExtended.MPA_RELEASE) {
-            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_RELEASE]);
+        if (msg.action.type !== MPActionExtended.MPA_REFUND) {
+            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_REFUND]);
         }
 
         return true;

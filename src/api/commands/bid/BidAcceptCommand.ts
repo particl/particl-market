@@ -105,6 +105,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new ModelNotFoundException('ListingItemTemplate');
         }
 
+        // TODO: check that we are the seller
+
         return data;
     }
 

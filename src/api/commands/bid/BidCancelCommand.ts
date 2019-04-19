@@ -79,6 +79,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('ListingItem not found.');
         }
 
+        // TODO: check that we are the buyer
+
         return data;
     }
 

@@ -22,9 +22,10 @@ import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableBidCreateRequestConfig } from '../../messages/hashable/config/HashableBidCreateRequestConfig';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
+import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage
-    | EscrowLockMessage | EscrowReleaseMessage;
+    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage;
 
 export class BidFactory implements ModelFactoryInterface {
 

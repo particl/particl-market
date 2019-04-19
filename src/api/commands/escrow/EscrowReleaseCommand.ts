@@ -21,12 +21,12 @@ import { EscrowReleaseActionService } from '../../services/action/EscrowReleaseA
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
-import {EscrowLockRequest} from '../../requests/action/EscrowLockRequest';
-import {BidService} from '../../services/model/BidService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { BidService } from '../../services/model/BidService';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
-export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
@@ -46,22 +46,22 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
      * [1]: memo
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
-        const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+        let bidAccept: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
             return child.type === MPAction.MPA_ACCEPT;
         });
-        if (!childBid) {
+        if (!bidAccept) {
             throw new MessageException('No accepted Bid found.');
         }
-        const bidAccept = await this.bidService.findOne(childBid.id).then(value => value.toJSON());
+        bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
         const fromAddress = orderItem.Order.buyer;  // we are the buyer
         const toAddress = orderItem.Order.seller;
@@ -107,6 +107,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             });
         data.params[0] = orderItem;
 
+        // TODO: check these
         const validOrderItemStatuses = [
             OrderItemStatus.ESCROW_LOCKED,
             OrderItemStatus.SHIPPING
@@ -114,8 +115,8 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
         // check if in the right state.
         if (validOrderItemStatuses.indexOf(orderItem.status) === -1) {
-            this.log.error('Order is in invalid state');
-            throw new MessageException('Order is in invalid state');
+            this.log.error('OrderItem is in invalid state');
+            throw new MessageException('OrderItem is in invalid state');
         }
 
         const listingItem = orderItem.Bid.ListingItem;
@@ -141,6 +142,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             this.log.error('EscrowRatio not found!');
             throw new MessageException('EscrowRatio not found!');
         }
+
+        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
+        // TODO: check that we are the buyer
 
         return data;
     }
