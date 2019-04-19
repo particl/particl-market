@@ -9,15 +9,11 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ItemCategoryUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
     public parent_item_category_id: number;
 
     public id: number;
     public key: string;
-
-    @IsNotEmpty()
     public name: string;
-
     public description: string;
 
 }

@@ -202,7 +202,6 @@ export const Targets = {
             DataRootCommand: 'DataRootCommand'
         },
         escrow: {
-            EscrowAddCommand: 'EscrowAddCommand',
             EscrowCompleteCommand: 'EscrowCompleteCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
@@ -361,6 +360,7 @@ export const Targets = {
         model: {
             BidFactory: 'BidFactory',
             ListingItemFactory: 'ListingItemFactory',
+            ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             ModelCreateParams: 'ModelCreateParams',
             ModelFactoryInterface: 'ModelFactoryInterface',
             OrderFactory: 'OrderFactory',

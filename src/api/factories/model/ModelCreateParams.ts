@@ -7,9 +7,31 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
 import {CoreSmsgMessage} from '../../messages/CoreSmsgMessage';
 import {OrderStatus} from '../../enums/OrderStatus';
+import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {AddressType} from '../../enums/AddressType';
 
 export interface ModelCreateParams {
     //
+}
+
+export interface ListingItemTemplateCreateParams extends ModelCreateParams {
+    profileId: number;
+    title: string;
+    shortDescription: string;
+    longDescription: string;
+    categoryId: number;         // TODO: need to add support for custom categories
+    saleType: SaleType;
+    currency: Cryptocurrency;
+    basePrice: number;
+    domesticShippingPrice: number;
+    internationalShippingPrice: number;
+    escrowType: EscrowType;
+    buyerRatio: number;
+    sellerRatio: number;
+    parentListingItemTemplateId: number;
+    paymentAddress: string;
+    paymentAddressType: CryptoAddressType;
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {

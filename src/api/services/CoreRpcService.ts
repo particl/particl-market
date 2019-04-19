@@ -183,11 +183,14 @@ export class CoreRpcService extends Rpc {
      * [2] hardened, (bool, optional) Derive a hardened key.
      * [3] 256bit, (bool, optional) Use 256bit hash.
      *
+     * Result:
+     * "address"                (string) The new particl address
+     *
      * @param {any[]} params
      * @param {boolean} smsgAddress
-     * @returns {Promise<any>}
+     * @returns {Promise<string>}
      */
-    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<any> {
+    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<string> {
         const response = await this.call('getnewaddress', params);
 
         if (smsgAddress) {
@@ -200,6 +203,36 @@ export class CoreRpcService extends Rpc {
             // this.log.debug('localKeyResponse: ', localKeyResponse);
         }
         return response;
+    }
+
+    /**
+     * ﻿Returns a new Particl stealth address for receiving payments.
+     *
+     * params:
+     * ﻿[0] label                (string, optional, default=) If specified the key is added to the address book.
+     * [1] num_prefix_bits      (numeric, optional, default=0)
+     * [2] prefix_num           (numeric, optional, default=) If prefix_num is not specified the prefix will be
+     *                          selected deterministically.
+     *                          prefix_num can be specified in base2, 10 or 16, for base 2 prefix_num must
+     *                          begin with 0b, 0x for base16.
+     *                          A 32bit integer will be created from prefix_num and the least significant num_prefix_bits
+     *                          will become the prefix.
+     *                          A stealth address created without a prefix will scan all incoming stealth transactions,
+     *                          irrespective of transaction prefixes.
+     *                          Stealth addresses with prefixes will scan only incoming stealth transactions with
+     *                          a matching prefix.
+     * [3] bech32               (boolean, optional, default=false) Use Bech32 encoding.
+     * [4] makeV2               (boolean, optional, default=false) Generate an address from the same scheme used
+     *                          for hardware wallets.
+     *
+     * Result:
+     * "address"                (string) The new particl stealth address
+     *
+     * @param {any[]} params
+     * @returns {Promise<string>}
+     */
+    public async getNewStealthAddress(params: any[] = []): Promise<string> {
+        return await this.call('getnewstealthaddress', params);
     }
 
     /**

@@ -70,6 +70,7 @@ export class Profile extends Bookshelf.Model<Profile> {
         return this.hasMany(Address, 'profile_id', 'id');
     }
 
+    // TODO: the use of Address should be replaced with this
     public CryptocurrencyAddresses(): Collection<CryptocurrencyAddress> {
         return this.hasMany(CryptocurrencyAddress, 'profile_id', 'id');
     }

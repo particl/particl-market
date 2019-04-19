@@ -28,8 +28,8 @@ export class Escrow extends Bookshelf.Model<Escrow> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
-    public get SecondsToLock(): number { return this.get('secondsToLock'); }
-    public set SecondsToLock(value: number) { this.set('secondsToLock', value); }
+    public get SecondsToLock(): number { return this.get('seconds_to_lock'); }
+    public set SecondsToLock(value: number) { this.set('seconds_to_lock', value); }
 
     public get PaymentInformationId(): string { return this.get('payment_information_id'); }
     public set PaymentInformationId(value: string) { this.set('payment_information_id', value); }

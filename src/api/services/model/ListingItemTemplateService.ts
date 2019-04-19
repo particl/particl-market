@@ -115,8 +115,7 @@ export class ListingItemTemplateService {
 
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // NOTE: hashes are created in the factory layer, not here!!!
-        // body.hash = ConfigurableHasher.hash(body, new HashableListingItemTemplateCreateRequestConfig());
+        // NOTE: hashes are created in the factory, not here!!!
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -169,10 +168,9 @@ export class ListingItemTemplateService {
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
-
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
+
         // set new values
         listingItemTemplate.Hash = body.hash;
 
@@ -342,6 +340,8 @@ export class ListingItemTemplateService {
      * @param listingItemTemplate
      */
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
+
+        // TODO: why is this method here? sounds like it should be in the actionservice
 
         // convert the template to message
         const action = await this.listingItemAddMessageFactory.get({

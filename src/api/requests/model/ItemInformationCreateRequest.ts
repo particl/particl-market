@@ -9,6 +9,7 @@ import { ItemLocationCreateRequest } from './ItemLocationCreateRequest';
 import { ShippingDestinationCreateRequest } from './ShippingDestinationCreateRequest';
 import { ItemImageCreateRequest } from './ItemImageCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import { ItemCategoryCreateRequest } from './ItemCategoryCreateRequest';
 
 // tslint:disable:variable-name
 export class ItemInformationCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -25,7 +26,7 @@ export class ItemInformationCreateRequest extends RequestBody implements ModelRe
     @IsNotEmpty()
     public longDescription: string;
 
-    public itemCategory: ItemCategoryUpdateRequest;
+    public itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest;
     public item_category_id: number;
 
     public itemLocation: ItemLocationCreateRequest;
