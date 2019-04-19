@@ -110,8 +110,6 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             throw new MessageException('Order is in invalid state');
         }
 
-        // TODO: check that the Bid has a child Bid of type MPA_ACCEPT?
-
         if (_.isEmpty(orderItem.Bid.ListingItem)) {
             throw new ModelNotFoundException('ListingItem');
         }

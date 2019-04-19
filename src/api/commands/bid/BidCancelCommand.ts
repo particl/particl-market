@@ -10,13 +10,18 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemService } from '../../services/model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { BidActionService } from '../../services/action/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/model/BidService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
+import { BidCancelActionService } from '../../services/action/BidCancelActionService';
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -24,9 +29,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
+        @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) private bidCancelActionService: BidCancelActionService
     ) {
         super(Commands.BID_CANCEL);
         this.log = new Logger(__filename);
@@ -34,20 +38,27 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: bidId
+     * [0]: bid, resources.Bid
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-        const bidId = data.params[0];
-        const bid: resources.Bid = await this.bidService.findOne(bidId)
-            .then(value => {
-                return value.toJSON();
-            });
+        const bid: resources.Bid = data.params[0];
 
-        return {} as SmsgSendResponse; // this.bidActionService.cancel(bid);
+        const fromAddress = bid.OrderItem.Order.buyer;  // we are the buyer
+        const toAddress = bid.OrderItem.Order.seller;
+
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
+
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            bid
+        } as BidCancelRequest;
+        return this.bidCancelActionService.post(postRequest);
     }
 
     /**
@@ -59,24 +70,27 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MessageException('Missing bidId.');
+            throw new MissingParamException('bidId');
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('bidId should be a number.');
+            throw new InvalidParamException('bidId', 'number');
         }
 
-        const bidId = data.params[0];
-        const bid: resources.Bid = await this.bidService.findOne(bidId)
-            .then(value => {
-                return value.toJSON();
-            });
+        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[0] = bid;
 
-        // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
-            this.log.error('ListingItem not found.');
-            throw new MessageException('ListingItem not found.');
+            throw new ModelNotFoundException('ListingItem');
+        }
+
+        const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPAction.MPA_ACCEPT;
+        });
+        if (childBid) {
+            throw new MessageException('Bid has already been accepted.');
         }
 
         // TODO: check that we are the buyer

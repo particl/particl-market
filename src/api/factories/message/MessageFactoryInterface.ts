@@ -3,8 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MessageCreateParamsInterface } from '../../requests/message/MessageCreateParamsInterface';
-import { MPA } from 'omp-lib/dist/interfaces/omp';
-import {ActionMessageInterface} from '../../messages/action/ActionMessageInterface';
+import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 
 /**
  * MessageFactoryInterface defines how the Factory classes for the Messages should be implemented

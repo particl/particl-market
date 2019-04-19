@@ -6,14 +6,14 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../../messages/hashable/config/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
-import { EscrowRefundMessageCreateParams } from '../../requests/message/EscrowRefundMessageCreateParams';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
+import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
 
-export class EscrowRefundMessageFactory implements MessageFactoryInterface {
+export class BidCancelMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
@@ -27,16 +27,16 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
      *
      * @param params
      *      bidHash: string
-     * @returns {Promise<EscrowRefundMessage>}
+     * @returns {Promise<BidCancelMessage>}
      */
-    public async get(params: EscrowRefundMessageCreateParams): Promise<EscrowRefundMessage> {
+    public async get(params: BidCancelMessageCreateParams): Promise<BidCancelMessage> {
         const message = {
-            type: MPActionExtended.MPA_REFUND,
+            type: MPAction.MPA_CANCEL,
             generated: +new Date().getTime(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]
-        } as EscrowRefundMessage;
+        } as BidCancelMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;
