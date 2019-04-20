@@ -31,6 +31,7 @@ import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
+import {BaseActionService} from './BaseActionService';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -43,7 +44,7 @@ export interface AddressInfo {
     balance: number;            // in satoshis
 }
 
-export class VoteActionService {
+export class VoteActionService extends BaseActionService {
 
     public log: LoggerType;
 

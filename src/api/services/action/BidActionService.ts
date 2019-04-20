@@ -84,7 +84,7 @@ export class BidActionService extends BaseActionService {
         } as ListingItemAddRequest);
 
         const config: BidConfiguration = {
-            cryptocurrency: Cryptocurrency.PART,
+            cryptocurrency: Cryptocurrency.PART,    // todo: hardcoded PART for now
             escrow: params.listingItem.PaymentInformation.Escrow.type,
             shippingAddress: params.address as ShippingAddress
             // objects: KVS[] // product variations etc bid related params

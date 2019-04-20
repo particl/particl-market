@@ -32,8 +32,9 @@ import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
+import {BaseActionService} from './BaseActionService';
 
-export class ProposalActionService {
+export class ProposalActionService extends BaseActionService {
 
     public log: LoggerType;
 

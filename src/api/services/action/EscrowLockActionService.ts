@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
@@ -19,7 +18,7 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
@@ -38,8 +37,8 @@ import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
-import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
-import {KVS} from 'omp-lib/dist/interfaces/common';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
 
 export class EscrowLockActionService extends BaseActionService {
@@ -138,17 +137,19 @@ export class EscrowLockActionService extends BaseActionService {
                 return await this.createBid(marketplaceMessage.action as EscrowLockMessage, bidCreateRequest)
                     .then(async value => {
 
-                        // send the lock rawtx
-                        const bidtx = marketplaceMessage.action['_rawbidtx'];
-                        const txid = await this.coreRpcService.sendRawTransaction(bidtx);
+                        if (params.bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
+                            // send the lock rawtx
+                            const bidtx = marketplaceMessage.action['_rawbidtx'];
+                            const txid = await this.coreRpcService.sendRawTransaction(bidtx);
 
-                        // add txid to the EscrowLockMessage to be sent to the seller
-                        const bidMessage = marketplaceMessage.action as BidMessage;
-                        bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                        bidMessage.objects.push({
-                            key: ActionMessageObjects.TXID_LOCK,
-                            value: txid
-                        } as KVS);
+                            // add txid to the EscrowLockMessage to be sent to the seller
+                            const bidMessage = marketplaceMessage.action as BidMessage;
+                            bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+                            bidMessage.objects.push({
+                                key: ActionMessageObjects.TXID_LOCK,
+                                value: txid
+                            } as KVS);
+                        }
 
                         return marketplaceMessage;
                     });
