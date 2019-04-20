@@ -13,22 +13,19 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
+import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
+import { BlockchainInfo } from './CoreRpcService';
+import { BlindPrevout, CryptoAddress, CryptoAddressType, Prevout } from 'omp-lib/dist/interfaces/crypto';
+import { fromSatoshis } from 'omp-lib/dist/util';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
 let RPC_REQUEST_ID = 1;
 
-// todo: create interfaces for results, and move them to separate files
-
-export interface Output {
-    txid?: string;
-    vout?: number;
-    amount?: number;
-    data?: string;
-}
-
+// TODO: refactor the omp-lib rpc stuff, this code is painfull to look at!!!
+// TODO: create interfaces for results, and move them to separate files
 export interface BlockchainInfo {
     chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
     blocks: number;                     // the current number of blocks processed in the server
@@ -48,7 +45,7 @@ export interface BlockchainInfo {
 }
 
 decorate(injectable(), Rpc);
-export class CoreRpcService extends Rpc {
+export class CoreRpcService extends CtRpc {
 
     public log: LoggerType;
 
@@ -96,10 +93,16 @@ export class CoreRpcService extends Rpc {
             });
     }
 
+    /**
+     *
+     */
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
     }
 
+    /**
+     *
+     */
     public async getWalletInfo(): Promise<any> {
         return await this.call('getwalletinfo');
     }
@@ -191,18 +194,18 @@ export class CoreRpcService extends Rpc {
      * @returns {Promise<string>}
      */
     public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<string> {
-        const response = await this.call('getnewaddress', params);
+        const address = await this.call('getnewaddress', params);
 
         if (smsgAddress) {
             // call﻿smsgaddlocaladdress, even though I'm not sure if its required
-            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [response]);
+            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address]);
             this.log.debug('addLocalAddressResponse: ', addLocalAddressResponse);
 
             // add address as receive address
             // const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
             // this.log.debug('localKeyResponse: ', localKeyResponse);
         }
-        return response;
+        return address;
     }
 
     /**
@@ -231,8 +234,28 @@ export class CoreRpcService extends Rpc {
      * @param {any[]} params
      * @returns {Promise<string>}
      */
-    public async getNewStealthAddress(params: any[] = []): Promise<string> {
-        return await this.call('getnewstealthaddress', params);
+    public async getNewStealthAddress(params: any[] = []): Promise<CryptoAddress> {
+        const sx = await this.call('getnewstealthaddress', params);
+        return {
+            type: CryptoAddressType.STEALTH,
+            address: sx
+        } as CryptoAddress;
+    }
+
+    public async getBlindPrevouts(satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+        return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
+    }
+
+    /**
+     * Verify value commitment.
+     * note that the amount is satoshis, which differs from the rpc api
+     *
+     * @param commitment
+     * @param blind
+     * @param satoshis
+     */
+    public async verifyCommitment(commitment: string, blind: string, satoshis: number): Promise<boolean> {
+        return (await this.call('verifycommitment', [commitment, blind, fromSatoshis(satoshis)])).result;
     }
 
     /**
@@ -256,7 +279,7 @@ export class CoreRpcService extends Rpc {
      * @param {string} address
      * @returns {Promise<any>}
      */
-    public async getAddressInfo(address: string): Promise<any> {
+    public async getAddressInfo(address: string): Promise<RpcAddressInfo> {
         return await this.call('getaddressinfo', [address]);
     }
 
@@ -310,7 +333,7 @@ export class CoreRpcService extends Rpc {
      * @param outputs
      * @returns {Promise<any>}
      */
-    public async createRawTransaction(inputs: Output[], outputs: any): Promise<any> {
+    public async createRawTransaction(inputs: BlindPrevout[], outputs: any[]): Promise<any> {
         return await this.call('createrawtransaction', [inputs, outputs]);
     }
 
@@ -334,12 +357,12 @@ export class CoreRpcService extends Rpc {
      * Create a signature for a raw transaction for a particular prevout & address (serialized, hex-encoded)
      *
      * @param {string} hex
-     * @param {Output} prevout
+     * @param {RpcUnspentOutput} prevtx
      * @param {string} address
      * @returns {Promise<string>} hex encoded signature
      */
-    public async createSignatureWithWallet(hex: string, prevout: Output, address: string): Promise<string> {
-        return await this.call('createsignaturewithwallet', [hex, prevout, address]);
+    public async createSignatureWithWallet(hex: string, prevtx: RpcUnspentOutput, address: string): Promise<string> {
+        return await this.call('createsignaturewithwallet', [hex, prevtx, address]);
     }
 
     /**
@@ -367,14 +390,25 @@ export class CoreRpcService extends Rpc {
         return await this.call('sendtoaddress', [address, amount, comment]);
     }
 
+
+    /**
+     * Send part to multiple outputs.
+     *
+     * @param typeIn        (string, required) part/blind/anon
+     * @param typeOut       (string, required) part/blind/anon
+     * @param outputs       (json array, required) A json array of json objects
+     */
+    public async sendTypeTo(typeIn: string, typeOut: string, outputs: RpcBlindSendToOutput[]): Promise<string> {
+        return await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+    }
+
     /**
      * ﻿combinerawtransaction ["hexstring",...]
      *
      * Combine multiple partially signed transactions into one transaction.
      * The combined transaction may be another partially signed transaction or a fully signed transaction
      *
-     * @param {string} hexstring
-     * @param {any[]} outputs
+     * @param hexstrings
      * @returns {Promise<any>}
      */
     public async combineRawTransaction(hexstrings: string[]): Promise<any> {
@@ -421,12 +455,13 @@ export class CoreRpcService extends Rpc {
     /**
      * Submits raw transaction (serialized, hex-encoded) to local node and network.
      *
-     * @param {string} hexstring
+     * @param {string} hex the raw transaction in hex format.
+     * @param allowHighFees
      * @returns {Promise<any>}
      */
-    public async sendRawTransaction(hexstring: string, allowHighFees: boolean = false): Promise<any> {
+    public async sendRawTransaction(hex: string, allowHighFees: boolean = false): Promise<string> {
         const params: any[] = [];
-        params.push(hexstring);
+        params.push(hex);
         params.push(allowHighFees);
         return await this.call('sendrawtransaction', params);
     }
@@ -435,6 +470,7 @@ export class CoreRpcService extends Rpc {
      * Return a JSON object representing the serialized, hex-encoded transaction.
      *
      * @param {string} hexstring
+     * @param isWitness
      * @returns {Promise<any>}
      */
     public async decodeRawTransaction(hexstring: string, isWitness?: boolean): Promise<any> {
@@ -450,16 +486,16 @@ export class CoreRpcService extends Rpc {
     /**
      * Return the raw transaction data.
      *
-     * @param {string} hexstring
      * @returns {Promise<any>}
+     * @param txid
+     * @param verbose
+     * @param blockhash
      */
-    public async getRawTransaction(txid: string, verbose?: boolean, blockhash?: string): Promise<any> {
+    public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<any> {
         const params: any[] = [];
         params.push(txid);
+        params.push(verbose);
 
-        if (verbose !== undefined) {
-            params.push(verbose);
-        }
         if (blockhash !== undefined) {
             params.push(blockhash);
         }
@@ -485,19 +521,38 @@ export class CoreRpcService extends Rpc {
         if (!_.isEmpty(queryOptions)) {
             params.push(queryOptions);
         }
-
         return await this.call('listunspent', params);
     }
 
     /**
      *
-     * @param {boolean} unlock
-     * @param {module:resources.Output[]} outputs, [{"txid":"id","vout": n},...]
+     * @param minconf
+     * @param maxconf
+     * @param addresses
+     * @param includeUnsafe
+     * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async lockUnspent(unlock: boolean, outputs: Output[]): Promise<any> {
+    public async listUnspentBlind(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
+                                  queryOptions: any = {}): Promise<RpcUnspentOutput[]> {
 
-        const params: any[] = [unlock, outputs, true];
+        const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
+        if (!_.isEmpty(queryOptions)) {
+            params.push(queryOptions);
+        }
+        return await this.call('listunspentblind', params);
+    }
+
+    /**
+     *
+     * @param {boolean} unlock
+     * @param prevouts
+     * @param permanent
+     * @returns {Promise<any>}
+     */
+    public async lockUnspent(unlock: boolean, prevouts: Prevout[]/*RpcOutput[]*/, permanent: boolean = true): Promise<boolean> {
+
+        const params: any[] = [unlock, prevouts, permanent];
         return await this.call('lockunspent', params);
     }
 
@@ -515,7 +570,6 @@ export class CoreRpcService extends Rpc {
     /**
      * ﻿Get the current block number
      *
-     * @param {string} account
      * @returns {Promise<any>}
      */
     public async getBlockCount(): Promise<number> {
@@ -558,6 +612,13 @@ export class CoreRpcService extends Rpc {
         return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 
+    /**
+     *
+     * @param method
+     * @param params
+     * @param logCall
+     * @returns {Promise<any>}
+     */
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -648,5 +709,6 @@ export class CoreRpcService extends Rpc {
         const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
         return `http://${host}:${port}${wallet}`;
     }
+
 
 }

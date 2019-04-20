@@ -219,18 +219,13 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         } as EscrowConfig;
     }
 
-    // todo: missing support for multiple payment currencies
+    // todo: missing support for multiple payment currencies, the MP currently has just one ItemPrice
     private async getMessagePaymentOptions(itemPrice: resources.ItemPrice): Promise<PaymentOption[]> {
 
-        let address;
-
-        // not using CryptocurrencyAddress in alpha
-        if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
-            address = {
+        const address = {
                 type: itemPrice.CryptocurrencyAddress.type,
                 address: itemPrice.CryptocurrencyAddress.address
             } as CryptoAddress;
-        }
 
         return [{
             currency: itemPrice.currency,
@@ -240,7 +235,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                 international: itemPrice.ShippingPrice.international
             } as ShippingPrice,
             address
-        }];
+        }] as PaymentOption[];
     }
 
     private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<MessagingInfo> {

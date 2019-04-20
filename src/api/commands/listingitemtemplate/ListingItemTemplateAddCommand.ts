@@ -2,26 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { inject, named } from 'inversify';
-import { request, validate } from '../../../core/api/Validate';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
-import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
-import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { CoreRpcService } from '../../services/CoreRpcService';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ListingItemTemplateService} from '../../services/model/ListingItemTemplateService';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {ListingItemTemplateCreateRequest} from '../../requests/model/ListingItemTemplateCreateRequest';
+import {ListingItemTemplate} from '../../models/ListingItemTemplate';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {CryptoAddress, CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {ListingItemTemplateFactory} from '../../factories/model/ListingItemTemplateFactory';
+import {ListingItemTemplateCreateParams} from '../../factories/model/ModelCreateParams';
+import {NotImplementedException} from '../../exceptions/NotImplementedException';
+import {CoreRpcService} from '../../services/CoreRpcService';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -67,17 +67,18 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         // depending on escrowType, create the address for the payment
         const escrowType: EscrowType = data.params[10];
-        let paymentAddress: string;
-        let paymentAddressType: CryptoAddressType;
+        let cryptoAddress: CryptoAddress;
 
         switch (escrowType) {
             case EscrowType.MULTISIG:
-                paymentAddress = await this.coreRpcService.getNewAddress();
-                paymentAddressType = CryptoAddressType.NORMAL;
+                const address = await this.coreRpcService.getNewAddress();
+                cryptoAddress = {
+                    address,
+                    type: CryptoAddressType.NORMAL
+                };
                 break;
             case EscrowType.MAD_CT:
-                paymentAddress = await this.coreRpcService.getNewStealthAddress();
-                paymentAddressType = CryptoAddressType.STEALTH;
+                cryptoAddress = await this.coreRpcService.getNewStealthAddress();
                 break;
             case EscrowType.MAD:
             case EscrowType.FE:
@@ -100,8 +101,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 buyerRatio: data.params[11],
                 sellerRatio: data.params[12],
                 parentListingItemTemplateId: data.params[13],
-                paymentAddress,
-                paymentAddressType
+                paymentAddress: cryptoAddress.address,
+                paymentAddressType: cryptoAddress.type
             } as ListingItemTemplateCreateParams);
 
         return await this.listingItemTemplateService.create(createRequest);
