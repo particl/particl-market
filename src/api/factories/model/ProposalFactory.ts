@@ -98,7 +98,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
             optionsList.push(option);
         }
-        optionsList.sort(((a, b) => { return a.optionId > b.optionId ? 1 : -1; }));
+        optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));
 
         return optionsList;
     }

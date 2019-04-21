@@ -3,21 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Types} from '../../../constants';
-import {BidMessage} from '../../messages/action/BidMessage';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {OrderCreateParams} from './ModelCreateParams';
-import {OrderCreateRequest} from '../../requests/model/OrderCreateRequest';
-import {OrderItemCreateRequest} from '../../requests/model/OrderItemCreateRequest';
-import {OrderItemStatus} from '../../enums/OrderItemStatus';
-import {OrderStatus} from '../../enums/OrderStatus';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableBidCreateRequestConfig} from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
-import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';
-import {HashableOrderCreateRequestConfig, HashableOrderField} from '../hashableconfig/createrequest/HashableOrderCreateRequestConfig';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Types } from '../../../constants';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { OrderCreateParams } from './ModelCreateParams';
+import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
+import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequest';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableOrderCreateRequestConfig } from '../hashableconfig/createrequest/HashableOrderCreateRequestConfig';
 
 export class OrderFactory implements ModelFactoryInterface {
 

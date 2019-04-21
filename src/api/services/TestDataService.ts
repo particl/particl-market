@@ -73,7 +73,7 @@ import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDestinationCreateRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowType, HashableBidField, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
@@ -88,6 +88,10 @@ import { LocationMarkerCreateRequest } from '../requests/model/LocationMarkerCre
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
 import { OrderCreateParams } from '../factories/model/ModelCreateParams';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableBidCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
+import {HashableProposalCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import {HashableProposalAddField} from '../factories/hashableconfig/HashableField';
 
 export class TestDataService {
 
@@ -501,7 +505,17 @@ export class TestDataService {
         } as BidCreateRequest;
         // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
 
-        bidCreateRequest.hash = ObjectHashDEPRECATED.getHash(bidCreateRequest, HashableObjectTypeDeprecated.BID_CREATEREQUEST);
+        // TODO: FIX THIS!! this wont create correct hash
+        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([]/*[{
+            value: generateParams.listingItem.hash,
+            to: HashableBidField.ITEM_HASH
+        }, {
+            value: generateParams.listingItem.PaymentInformation.Escrow.type,
+            to: HashableBidField.PAYMENT_ESCROW_TYPE
+        }, {
+            value: params.listingItem.PaymentInformation.ItemPrice.currency,
+            to: HashableBidField.PAYMENT_CRYPTO
+        }]*/));
 
         // if we have a hash, fetch the listingItem and set the relation
         if (generateParams.listingItemHash) {
@@ -737,33 +751,40 @@ export class TestDataService {
         // this.log.debug('blockStart: ', blockStart);
         // this.log.debug('blockEnd: ', blockEnd);
 
+        const options: ProposalOptionCreateRequest[] = [];
+        options.push({
+            optionId: 0,
+            description: ItemVote.KEEP.toString()
+        } as ProposalOptionCreateRequest);
+        options.push({
+            optionId: 1,
+            description: ItemVote.REMOVE.toString()
+        } as ProposalOptionCreateRequest);
+
         const proposalCreateRequest = {
             submitter,
             category,
             item,
             title,
             description,
+            options,
             timeStart,
             postedAt: timeStart,
             receivedAt: timeStart,
             expiredAt: timeEnd
         } as ProposalCreateRequest;
 
-        proposalCreateRequest.hash = ObjectHashDEPRECATED.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
-
-        const options: ProposalOptionCreateRequest[] = [];
-        options.push({
-            optionId: 0,
-            description: ItemVote.KEEP.toString()
-        } as ProposalOptionCreateRequest);
-
-        options.push({
-            optionId: 1,
-            description: ItemVote.REMOVE.toString()
-        } as ProposalOptionCreateRequest);
-
         // TODO: Generate a random number of proposal options, or a number specified in the generateParams
-        proposalCreateRequest.options = options;
+
+        // hash the proposal
+        let hashableOptions = '';
+        for (const option of proposalCreateRequest.options) {
+            hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
+        }
+        proposalCreateRequest.hash = ConfigurableHasher.hash(proposalCreateRequest, new HashableProposalCreateRequestConfig([{
+            value: hashableOptions,
+            to: HashableProposalAddField.PROPOSAL_OPTIONS
+        }]));
 
         // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;
