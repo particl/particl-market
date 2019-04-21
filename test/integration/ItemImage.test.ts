@@ -21,8 +21,6 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
-import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
-import { ObjectHashDeprecated } from 'ObjectHashDEPRECATED.ts';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';

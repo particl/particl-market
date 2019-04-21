@@ -35,12 +35,7 @@ import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import {response} from 'inversify-express-utils';
-import {ProposalAddValidator} from '../../messages/validator/ProposalAddValidator';
-import {VoteValidator} from '../../messages/validator/VoteValidator';
-import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
-import {ItemVote} from '../../enums/ItemVote';
+import { VoteValidator } from '../../messages/validator/VoteValidator';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for

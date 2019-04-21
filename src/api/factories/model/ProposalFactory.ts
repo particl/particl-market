@@ -15,6 +15,13 @@ import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOption
 import { MessageException } from '../../exceptions/MessageException';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ProposalCreateParams} from './ModelCreateParams';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableListingItemTemplateCreateRequestConfig} from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
+import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
+import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
+import {HashableProposalCreateRequestConfig} from '../../messages/hashable/config/HashableProposalCreateRequestConfig';
+import {HashableProposalAddField, HashableProposalAddMessageConfig} from '../../messages/hashable/config/HashableProposalAddMessageConfig';
 
 export class ProposalFactory implements ModelFactoryInterface {
 
@@ -47,10 +54,9 @@ export class ProposalFactory implements ModelFactoryInterface {
             smsgData.timeStart = smsgMessage.sent;
         }
 
-        const proposalCreateRequest = {
+        const createRequest = {
             // msgid: params.msgid,                 // update this on afterPost()!
             submitter: proposalMessage.submitter,
-            hash: proposalMessage.hash,
             category: proposalMessage.category,
             title: proposalMessage.title,
             description: proposalMessage.description,
@@ -59,12 +65,22 @@ export class ProposalFactory implements ModelFactoryInterface {
             ...smsgData
         } as ProposalCreateRequest;
 
-        const correctHash = ObjectHashDEPRECATED.getHash(proposalCreateRequest, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
-        if (correctHash !== proposalCreateRequest.hash) {
-            throw new MessageException(`Received proposal hash <${proposalCreateRequest.hash}> doesn't match actual hash <${correctHash}>.`);
+        // hash the proposal
+        let hashableOptions = '';
+        for (const option of createRequest.options) {
+            hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
+        }
+        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableProposalCreateRequestConfig([{
+            value: hashableOptions,
+            to: HashableProposalAddField.PROPOSAL_OPTIONS
+        }]));
+
+        // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
+        if (proposalMessage.hash !== createRequest.hash) {
+            throw new HashMismatchException('ProposalCreateRequest');
         }
 
-        return proposalCreateRequest;
+        return createRequest;
     }
 
 }

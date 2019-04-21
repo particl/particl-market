@@ -24,8 +24,6 @@ import { MessagingInformationCreateRequest } from '../../requests/model/Messagin
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';

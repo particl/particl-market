@@ -33,8 +33,6 @@ import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { EventEmitter } from 'events';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalService } from './ProposalService';
 
 export class ListingItemService {

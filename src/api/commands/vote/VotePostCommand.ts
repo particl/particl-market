@@ -21,10 +21,8 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
-import {ProposalCategory} from '../../enums/ProposalCategory';
-import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
-import {VoteRequest} from '../../requests/action/VoteRequest';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { VoteRequest } from '../../requests/action/VoteRequest';
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 

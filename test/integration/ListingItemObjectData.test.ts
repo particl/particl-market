@@ -15,8 +15,6 @@ import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectDat
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
-import { HashableObjectTypeDeprecated } from 'HashableObjectTypeDeprecated.ts';
-import { ObjectHashDeprecated } from 'ObjectHashDEPRECATED.ts';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/model/ListingItemObjectDataUpdateRequest';

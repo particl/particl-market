@@ -46,8 +46,6 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
-import { ObjectHashDEPRECATED } from 'ObjectHashDEPRECATED.ts';
-import { HashableObjectTypeDeprecated } from '../../src/api/enums/HashableObjectTypeDeprecated';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

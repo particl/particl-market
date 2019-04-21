@@ -13,8 +13,6 @@ import { ProposalOptionRepository } from '../../repositories/ProposalOptionRepos
 import { ProposalOption } from '../../models/ProposalOption';
 import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../requests/model/ProposalOptionUpdateRequest';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class ProposalOptionService {
