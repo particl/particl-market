@@ -71,9 +71,6 @@ export class OrderService {
         const body: OrderCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
-        // you need at least one order item to create an order
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.ORDER_CREATEREQUEST);
-
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
 

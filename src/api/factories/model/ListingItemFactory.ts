@@ -46,7 +46,7 @@ import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
+import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 
 export class ListingItemFactory implements ModelFactoryInterface {

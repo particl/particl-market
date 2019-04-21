@@ -14,8 +14,8 @@ import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ProposalCreateParams} from './ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { HashableProposalCreateRequestConfig } from '../../messages/hashable/config/HashableProposalCreateRequestConfig';
-import { HashableProposalAddField } from '../../messages/hashable/config/HashableProposalAddMessageConfig';
+import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import { HashableProposalAddField } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 
 export class ProposalFactory implements ModelFactoryInterface {
 

@@ -127,8 +127,6 @@ export class ListingItemService {
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
-
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
@@ -186,6 +184,7 @@ export class ListingItemService {
     }
 
     /**
+     * TODO: listingitems arent supposed to be updated, remove?
      *
      * @param {number} id
      * @param {ListingItemUpdateRequest} data
@@ -196,8 +195,6 @@ export class ListingItemService {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
-
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.LISTINGITEM_CREATEREQUEST);
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);

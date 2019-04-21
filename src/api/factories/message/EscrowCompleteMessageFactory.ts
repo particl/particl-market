@@ -8,7 +8,7 @@ import { Core, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableBidMessageConfig } from '../../messages/hashable/config/HashableBidMessageConfig';
+import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';

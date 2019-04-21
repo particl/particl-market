@@ -4,10 +4,7 @@
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
-
-export enum HashableBidReleaseField {
-    BID_HASH = 'bidHash'
-}
+import { HashableBidReleaseField } from '../HashableField';
 
 /**
  * used for MPA_RELEASE and MPA_REFUND

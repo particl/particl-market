@@ -46,7 +46,7 @@ import {CryptoAddress, CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/int
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateCreateRequestConfig } from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
+import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import {ListingItemTemplateCreateRequest} from '../../requests/model/ListingItemTemplateCreateRequest';
 import {ItemCategoryCreateRequest} from '../../requests/model/ItemCategoryCreateRequest';

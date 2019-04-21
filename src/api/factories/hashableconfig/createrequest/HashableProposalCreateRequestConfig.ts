@@ -3,16 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
-import {ProposalOptionCreateRequest} from '../../../requests/model/ProposalOptionCreateRequest';
-
-export enum HashableProposalAddField {
-    PROPOSAL_SUBMITTER = 'proposalSubmitter',
-    PROPOSAL_CATEGORY = 'proposalCategory',
-    PROPOSAL_TITLE = 'proposalTitle',
-    PROPOSAL_DESCRIPTION = 'proposalDescription',
-    PROPOSAL_ITEM = 'proposalItem',
-    PROPOSAL_OPTIONS = 'proposalOptions'
-}
+import { HashableProposalAddField } from '../HashableField';
 
 export class HashableProposalCreateRequestConfig extends BaseHashableConfig {
 

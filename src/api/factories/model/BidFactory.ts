@@ -19,7 +19,7 @@ import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { HashableBidCreateRequestConfig } from '../../messages/hashable/config/HashableBidCreateRequestConfig';
+import { HashableBidCreateRequestConfig } from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';

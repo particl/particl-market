@@ -14,9 +14,9 @@ import {OrderItemCreateRequest} from '../../requests/model/OrderItemCreateReques
 import {OrderItemStatus} from '../../enums/OrderItemStatus';
 import {OrderStatus} from '../../enums/OrderStatus';
 import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
+import {HashableBidCreateRequestConfig} from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';
-import {HashableOrderCreateRequestConfig, HashableOrderField} from '../../messages/hashable/config/HashableOrderCreateRequestConfig';
+import {HashableOrderCreateRequestConfig, HashableOrderField} from '../hashableconfig/createrequest/HashableOrderCreateRequestConfig';
 import {HashMismatchException} from '../../exceptions/HashMismatchException';
 
 export class OrderFactory implements ModelFactoryInterface {

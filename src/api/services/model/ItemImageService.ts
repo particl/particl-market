@@ -22,6 +22,9 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableBidMessageConfig} from '../../factories/hashableconfig/message/HashableBidMessageConfig';
+import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
 
 export class ItemImageService {
 
@@ -107,8 +110,9 @@ export class ItemImageService {
 
         if (itemImageDataOriginal) { // the original should always exist, its used to create the other versions
 
+            // TODO: create a factory for the ItemImageCreateRequest and move hashing there
             // use the original image version to create a hash for the ItemImage
-            body.hash = ObjectHashDEPRECATED.getHash(itemImageDataOriginal, HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
+            body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
 
             // get all protocols
             const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
@@ -170,7 +174,7 @@ export class ItemImageService {
         if (itemImageDataOriginal) {
 
             // use the original image version to create a hash for the ItemImage
-            body.hash = ObjectHashDEPRECATED.getHash(itemImageDataOriginal, HashableObjectTypeDeprecated.ITEMIMAGEDATA_CREATEREQUEST);
+            body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
 
             // get all protocols
             const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));

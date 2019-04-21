@@ -12,8 +12,8 @@ import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableProposalAddField, HashableProposalAddMessageConfig } from '../../messages/hashable/config/HashableProposalAddMessageConfig';
-import { HashableProposalOptionMessageConfig } from '../../messages/hashable/config/HashableProposalOptionMessageConfig';
+import { HashableProposalAddField, HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
+import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 

@@ -10,7 +10,7 @@ import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableBidMessageConfig } from '../../messages/hashable/config/HashableBidMessageConfig';
+import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 
 export class EscrowReleaseMessageFactory implements MessageFactoryInterface {

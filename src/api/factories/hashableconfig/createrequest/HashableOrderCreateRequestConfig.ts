@@ -3,20 +3,20 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
+import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
+import { HashableOrderField } from '../HashableField';
 
-export enum HashableProposalOptionField {
-    PROPOSALOPTION_OPTION_ID = 'proposalOptionId',
-    PROPOSALOPTION_DESCRIPTION = 'proposalOptionDescription'
-}
-
-export class HashableProposalOptionMessageConfig extends BaseHashableConfig {
+export class HashableOrderCreateRequestConfig extends BaseHashableConfig {
 
     public fields = [{
-        from: 'optionId',
-        to: HashableProposalOptionField.PROPOSALOPTION_OPTION_ID
+        from: 'generatedAt',
+        to: HashableCommonField.GENERATED
     }, {
-        from: 'description',
-        to: HashableProposalOptionField.PROPOSALOPTION_DESCRIPTION
+        from: 'buyer',
+        to: HashableOrderField.ORDER_BUYER
+    }, {
+        from: 'seller',
+        to: HashableOrderField.ORDER_SELLER
     }] as HashableFieldConfig[];
 
     constructor(values?: HashableFieldValueConfig[]) {
