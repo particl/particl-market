@@ -14,6 +14,7 @@ import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import {SmsgMessage} from '../../models/SmsgMessage';
+import {Proposal} from '../../models/Proposal';
 
 export class VoteService {
 
@@ -114,4 +115,12 @@ export class VoteService {
         await this.voteRepo.destroy(id);
     }
 
+    public async updateMsgId(signature: string, msgid: string): Promise<Vote> {
+        let vote = await this.findOneBySignature(signature, false);
+        vote.Msgid = msgid;
+        vote =  await this.voteRepo.update(vote.Id, vote.toJSON());
+
+        // finally find and return the created proposal
+        return await this.findOne(vote.Id, true);
+    }
 }

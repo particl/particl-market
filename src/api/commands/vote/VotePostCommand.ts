@@ -21,6 +21,10 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {ProposalCategory} from '../../enums/ProposalCategory';
+import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
+import {VoteRequest} from '../../requests/action/VoteRequest';
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -39,9 +43,9 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: profileId
-     *  [1]: proposalHash
-     *  [2]: proposalOptionId
+     *  [0]: profile: resources.Profile
+     *  [1]: proposalHash: resources.Proposal
+     *  [2]: proposalOptionId: resources.ProposalOption
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -50,26 +54,31 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-        const profileId = data.params[0];
-        const proposalHash = data.params[1];
-        // TODO: for now we'll use optionId, but we should propably use the proposalOptionHash
-        const proposalOptionId = data.params[2];
+        const market: resources.Market = data.params[0];
+        const profile: resources.Profile = data.params[1];
+        const proposal: resources.Proposal = data.params[2];
+        const proposalOption: resources.ProposalOption = data.params[3];
 
-        const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => value.toJSON());
+        // send from the template profiles address
+        const fromAddress = profile.address;
 
-        const proposalOption = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-            return o.optionId === proposalOptionId;
-        }) || {} as resources.ProposalOption; // validate() makes sure proposalOption != undefined, this just fixes the TS code validation
+        // send to given market address
+        const toAddress = market.address;
 
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON());
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = Math.ceil((proposal.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        const estimateFee = false;
 
-        // TODO: might want to let users specify this later.
-        const market: resources.Market = await this.marketService.getDefault()
-            .then(value => value.toJSON());
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
+            sender: profile,
+            market,
+            proposal,
+            proposalOption
+        } as VoteRequest;
 
-        return await this.voteActionService.vote(profile, market, proposal, proposalOption);
+        // calling vote instead of post since we're going to send multiple messages
+        return await this.voteActionService.vote(postRequest);
 
     }
 
@@ -78,6 +87,9 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      *  [0]: profileId
      *  [1]: proposalHash
      *  [2]: proposalOptionId
+     *
+     * TODO: let users to specify market
+     * TODO: maybe get rid of the proposalOptionId, replace it with hash
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -99,8 +111,11 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new InvalidParamException('proposalOptionId', 'number');
         }
 
+        // TODO: might want to let users specify this.
+        const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
+
         // make sure Profile with the id exists
-        await this.profileService.findOne(data.params[0])
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
@@ -121,6 +136,11 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         if (!proposalOption) {
             throw new ModelNotFoundException('ProposalOption');
         }
+
+        data.params[0] = market;
+        data.params[1] = profile;
+        data.params[2] = proposal;
+        data.params[3] = proposalOption;
 
         return data;
     }

@@ -107,7 +107,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                with the listing items we want to searchBy for. \n'
             + '    <type>                  -  ENUM{FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL} \n'
             + '                                 FLAGGED = ListingItems you have flagged \n'
-            + '                                 PENDING = ListingItemTemplates posted to marketplace\n'
+            + '                                 PENDING = ListingItemTemplates posted to market\n'
             + '                                           but not yet received as ListingItem \n'
             + '                                 IN_ESCROW = ListingItems that are escrow \n'
             + '                                 SHIPPED = ListingItems that have been shipped \n'

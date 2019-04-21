@@ -19,7 +19,7 @@ export class BidAcceptValidator extends FV_MPA_ACCEPT implements ActionMessageVa
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_ACCEPT]);
         }
 
-        // omp-lib doesnt support all the ActionMessageTypes which the marketplace supports, so msg needs to be cast to MPM
+        // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
         return super.validate(msg as MPM);
     }
 }

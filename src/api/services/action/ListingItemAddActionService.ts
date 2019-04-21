@@ -75,30 +75,31 @@ export class ListingItemAddActionService extends BaseActionService {
     /**
      * validate the MarketplaceMessage to which is to be posted to the network
      *
-     * @param message
+     * @param marketplaceMessage
      */
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
-        return ListingItemAddValidator.isValid(message);
+    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
+        return ListingItemAddValidator.isValid(marketplaceMessage);
     }
 
     /**
      * called before post is executed and message is sent
      *
      * @param params
-     * @param message
+     * @param marketplaceMessage
      */
-    public async beforePost(params: ListingItemAddRequest, message: MarketplaceMessage): Promise<MarketplaceMessage> {
-        return message;
+    public async beforePost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        return marketplaceMessage;
     }
 
     /**
      * called after post is executed and message is sent
      *
      * @param params
-     * @param message
+     * @param marketplaceMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ListingItemAddRequest, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }
 

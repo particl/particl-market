@@ -9,6 +9,7 @@ declare module 'resources' {
         msgid: string;
         voter: string;
         weight: number;
+        signature: string;
 
         postedAt: number;
         receivedAt: number;

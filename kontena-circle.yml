@@ -66,7 +66,7 @@ services:
     command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
-      - APP_NAME=particl-marketplace
+      - APP_NAME=particl-market
       - APP_HOST=http://circle.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3000
@@ -76,7 +76,7 @@ services:
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/database/marketplace.db
+      - DB_CONNECTION=/app/data/database/market.db
       #- KONTENA_LB_MODE=http
       #- KONTENA_LB_BALANCE=roundrobin
       #- KONTENA_LB_INTERNAL_PORT=3000
@@ -123,7 +123,7 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/database/marketplace.db
+      - DB_CONNECTION=/app/data/database/market.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
       - DB_MIGRATION_DIR=/app/src/database/migrations

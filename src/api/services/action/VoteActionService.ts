@@ -31,7 +31,16 @@ import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
-import {BaseActionService} from './BaseActionService';
+import { BaseActionService } from './BaseActionService';
+import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import { VoteRequest } from '../../requests/action/VoteRequest';
+import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
+import {response} from 'inversify-express-utils';
+import {ProposalAddValidator} from '../../messages/validator/ProposalAddValidator';
+import {VoteValidator} from '../../messages/validator/VoteValidator';
+import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
+import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
+import {ItemVote} from '../../enums/ItemVote';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -49,117 +58,120 @@ export class VoteActionService extends BaseActionService {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+
         @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Service) @named(Targets.Service.model.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(GovernanceAction.MPA_VOTE, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
         this.log = new Logger(__filename);
-        this.configureEventListeners();
     }
 
     /**
-     * vote for given Proposal and ProposalOption using given Profiles (wallets) addresses
+     * create the MarketplaceMessage to which is to be posted to the network
      *
-     * - vote( profile, ... ):
-     *   - get all addresses having balance
-     *   - for (voteAddress: addresses):
-     *     - this.send( voteAddress )
-     *
-     * @param profile
-     * @param marketplace
-     * @param proposal
-     * @param proposalOption
+     * @param params
      */
-    public async vote(profile: resources.Profile, marketplace: resources.Market, proposal: resources.Proposal,
-                      proposalOption: resources.ProposalOption): Promise<SmsgSendResponse> {
+    public async createMessage(params: VoteRequest): Promise<MarketplaceMessage> {
 
-        const addressInfos: AddressInfo[] = await this.getProfileAddressInfos(profile);
+        const signature = await this.signVote(params.proposal, params.proposalOption, params.addressInfo.address);
 
-        this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
-        if (_.isEmpty(addressInfos)) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
-        }
-
-        const msgids: string[] = [];
-        for (const addressInfo of addressInfos) {
-            const response: SmsgSendResponse = await this.send(proposal, proposalOption, addressInfo, marketplace);
-            if (response.msgid) {
-                msgids.push(response.msgid);
-            }
-        }
-
-        if (msgids.length === 0) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
-        }
-
-        const result = {
-            result: 'Sent.',
-            msgids
-        } as SmsgSendResponse;
-
-        this.log.debug('vote(), result: ', JSON.stringify(result, null, 2));
-        return result;
-    }
-
-    /**
-     * send a VoteMessage from a single given address
-     *
-     * - send( voteAddress, ... ):
-     *   - create VoteMessage
-     *     - call signmessage "address" "message", address being the address with balance, message being the resources.VoteTicket
-     *     - add resulting signature to voteMessage.signature and voteticket to voteMessage.ticket
-     *   - this.processVote()
-     *   - post VoteMessage, as a free message, from voteAddress
-     *
-     * @param {"resources".Proposal} proposal
-     * @param {"resources".ProposalOption} proposalOption
-     * @param senderAddress
-     * @param {"resources".Market} marketplace
-     * @returns {Promise<SmsgSendResponse>}
-     */
-    public async send(proposal: resources.Proposal, proposalOption: resources.ProposalOption,
-                      senderAddress: AddressInfo, marketplace: resources.Market): Promise<SmsgSendResponse> {
-
-        if (senderAddress.balance > 0) {
-            const signature = await this.signVote(proposal, proposalOption, senderAddress.address);
-
-            const voteMessage: VoteMessage = await this.voteMessageFactory.get({
-                proposalHash: proposal.hash,
-                proposalOptionHash: proposalOption.hash,
-                voter: senderAddress.address,
-                signature
-            } as VoteMessageCreateParams);
-
-            const marketplaceMessage: MarketplaceMessage = {
-                version: ompVersion(),
-                action: voteMessage
-            };
-
-            // processVote "processes" the Vote, creating or updating the Vote.
-            // called from send() and processVoteReceivedEvent()
-            const vote: resources.Vote | undefined = await this.processVote(voteMessage);
-
-            if (vote) {
-                const daysRetention = Math.ceil((proposal.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
-                return this.smsgService.smsgSend(senderAddress.address, marketplace.address, marketplaceMessage, false, daysRetention);
-            }
-        }
+        const actionMessage: VoteMessage = await this.voteMessageFactory.get({
+            proposalHash: params.proposal.hash,
+            proposalOptionHash: params.proposalOption.hash,
+            voter: params.addressInfo.address,
+            signature
+        } as VoteMessageCreateParams);
 
         return {
-            result: 'skipping.',
-            txid: '0',
-            fee: 0,
-            error: 'no balance.'
-        } as SmsgSendResponse;
+            version: ompVersion(),
+            action: actionMessage
+        } as MarketplaceMessage;
+    }
+
+    /**
+     * validate the MarketplaceMessage to which is to be posted to the network
+     *
+     * @param marketplaceMessage
+     */
+    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
+        return VoteValidator.isValid(marketplaceMessage);
+    }
+
+    /**
+     * called before post is executed and message is sent
+     *
+     * @param params
+     * @param marketplaceMessage
+     */
+    public async beforePost(params: VoteRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+
+        if (!params.sendParams.estimateFee) {
+            // processVote "processes" the Vote, creating or updating the Vote.
+            // called from send() and onEvent()
+            await this.processVote(marketplaceMessage.action as VoteMessage);
+        } else {
+            // if we're just estimating the price, dont save the Proposal
+        }
+
+        return marketplaceMessage;
+    }
+
+
+    /**
+     * called after post is executed and message is sent
+     *
+     * @param params
+     * @param marketplaceMessage
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: VoteRequest, marketplaceMessage: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+
+        if (smsgSendResponse.msgid) {
+            await this.voteService.updateMsgId((marketplaceMessage.action as VoteMessage).signature, smsgSendResponse.msgid);
+        } else {
+            throw new MessageException('Failed to set Proposal msgid');
+        }
+
+        return smsgSendResponse;
+    }
+
+    /**
+     * handles the received VoteMessage and returns SmsgMessageStatus as a result
+     *
+     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
+     *
+     * @param event
+     */
+    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
+
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
+
+        // processProposal will create or update the Proposal
+        return await this.processVote(actionMessage, smsgMessage)
+            .then(vote => {
+                if (vote) {
+                    this.log.debug('==> PROCESSED VOTE: ', vote.signature);
+                }
+                this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                this.log.debug('==> VOTE PROCESSING FAILED: ', reason);
+                return SmsgMessageStatus.PROCESSING_FAILED;
+            });
     }
 
     /**
@@ -169,7 +181,8 @@ export class VoteActionService extends BaseActionService {
      */
     public async getCombinedVote(profile: resources.Profile, proposal: resources.Proposal): Promise<resources.Vote> {
 
-        const addressInfos: AddressInfo[] = await this.getProfileAddressInfos(profile);
+        // TODO: move this and getWalletAddressInfos elsewhere, maybe VoteService
+        const addressInfos: AddressInfo[] = await this.getWalletAddressInfos();
         const addresses = addressInfos.map(addressInfo => {
             return addressInfo.address;
         });
@@ -202,38 +215,52 @@ export class VoteActionService extends BaseActionService {
     }
 
     /**
-     * process received VoteMessage
-     * - this.processVote()
-     * - proposalService.recalculateProposalResult(proposal)
+     * vote for given Proposal and ProposalOption using all wallet addresses
      *
-     * @param {MarketplaceMessageEvent} event
-     * @returns {Promise<module:resources.Bid>}
+     * - vote( profile, ... ):
+     *   - get all addresses having balance
+     *   - for (voteAddress: addresses):
+     *     - this.send( voteAddress )
+     *
+     * TODO: add support to Vote using selected wallet/profile
+     *
+     * @param voteRequest
      */
-    public async processVoteReceivedEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const voteMessage: VoteMessage = event.marketplaceMessage.action as VoteMessage;
+    public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
 
-        // processProposal will create or update the Proposal
-        return await this.processVote(voteMessage, smsgMessage)
-            .then(vote => {
-                if (vote) {
-                    this.log.debug('==> PROCESSED VOTE: ', vote.id);
-                    return SmsgMessageStatus.PROCESSED;
-                } else {
-                    this.log.debug('==> IGNORED VOTE: ', 'voter: ' + voteMessage.voter + ', proposal: ' + voteMessage.proposalHash);
-                    return SmsgMessageStatus.IGNORED;
-                }
-            })
-            .catch(reason => {
-                this.log.debug('processing failed: ', JSON.stringify(reason, null, 2));
-                // todo: return different status for different reasons the vote was ignored
-                // todo: some of the errors should set return SmsgMessageStatus.IGNORED
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
+        const addressInfos: AddressInfo[] = await this.getWalletAddressInfos();
 
+        this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
+        if (_.isEmpty(addressInfos)) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
+        }
+
+        const msgids: string[] = [];
+        for (const addressInfo of addressInfos) {
+            if (addressInfo.balance > 0) {
+                // change sender to be the output address, then post the vote
+                voteRequest.sendParams.fromAddress = addressInfo.address;
+                await this.post(voteRequest)
+                    .then(smsgSendResponse => {
+                        if (smsgSendResponse.msgid) {
+                            msgids.push(smsgSendResponse.msgid);
+                        }
+                    });
+            }
+        }
+
+        if (msgids.length === 0) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
+        }
+
+        const result = {
+            result: 'Sent.',
+            msgids
+        } as SmsgSendResponse;
+
+        this.log.debug('vote(), result: ', JSON.stringify(result, null, 2));
+        return result;
     }
-
 
     /**
      * processVote "processes" the Vote, creating or updating the Vote.
@@ -254,6 +281,9 @@ export class VoteActionService extends BaseActionService {
      * @param smsgMessage
      */
     private async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
+
+        // TODO: dont return undefined
+        // TODO: way too long method, needs to be refactored
 
         // get the address balance
         const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter])
@@ -276,7 +306,7 @@ export class VoteActionService extends BaseActionService {
         }
 
         // address needs to have balance for the vote to matter
-        // allready checked in send, but doing it again since we call this also from processVoteReceivedEvent()
+        // already checked in send, but doing it again since we call this also from onEvent()
         if (balance > 0) {
 
             const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
@@ -366,12 +396,11 @@ export class VoteActionService extends BaseActionService {
      *
      * the profile param is not used for anything yet, but included already while we wait and build multiwallet support
      *
-     * @param profile
      * @param addresses
      */
-    private async getProfileAddressInfos(profile: resources.Profile, addresses: string[] = []): Promise<AddressInfo[]> {
+    private async getWalletAddressInfos(addresses: string[] = []): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
-        const outputs: any = await this.coreRpcService.listUnspent(1, 9999999, addresses);
+        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 9999999, addresses);
         // this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
 
         for (const output of outputs) {
@@ -423,25 +452,4 @@ export class VoteActionService extends BaseActionService {
         return await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteTicket);
     }
 
-    private configureEventListeners(): void {
-        this.log.info('Configuring EventListeners ');
-
-        this.eventEmitter.on(GovernanceAction.MPA_VOTE, async (event) => {
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processVoteReceivedEvent(event)
-                .then(async status => {
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status)
-                        .then(value => {
-                            const msg: resources.SmsgMessage = value.toJSON();
-                            if (msg.status !== status) {
-                                throw new MessageException('Failed to set SmsgMessageStatus.');
-                            }
-                        });
-                })
-                .catch(async reason => {
-                    this.log.error('PROCESSING ERROR: ', reason);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PARSING_FAILED);
-                });
-        });
-    }
 }

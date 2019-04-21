@@ -144,7 +144,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     });
 
-    test('Should post ListingItemTemplate to the default marketplace', async () => {
+    test('Should post ListingItemTemplate to the default market', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MPA_LISTING_ADD');
@@ -169,7 +169,7 @@ describe('Happy ListingItem Vote Flow', () => {
         }
         expect(result.result).toEqual('Sent.');
 
-        log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
+        log.debug('==[ post ListingItemTemplate /// seller -> market ]================================');
         log.debug('result.msgid: ' + result.msgid);
         log.debug('item.id: ' + listingItemTemplateNode1.id);
         log.debug('item.hash: ' + listingItemTemplateNode1.hash);

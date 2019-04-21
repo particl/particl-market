@@ -20,7 +20,7 @@ interface MPMExtension {
 interface MPMExtended extends Overwrite<MPM, MPMExtension> {}
 
 /**
- * MarketplaceMessage is the type of message the marketplace listens to
+ * MarketplaceMessage is the type of message the market listens to
  */
 export class MarketplaceMessage implements MPMExtended {
     public version: string;

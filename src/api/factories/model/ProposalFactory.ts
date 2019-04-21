@@ -48,7 +48,7 @@ export class ProposalFactory implements ModelFactoryInterface {
         }
 
         const proposalCreateRequest = {
-            msgid: params.msgid,
+            // msgid: params.msgid,                 // update this on afterPost()!
             submitter: proposalMessage.submitter,
             hash: proposalMessage.hash,
             category: proposalMessage.category,

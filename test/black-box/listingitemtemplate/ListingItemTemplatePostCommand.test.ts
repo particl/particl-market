@@ -63,7 +63,7 @@ describe('ListingItemTemplatePostCommand', () => {
         brokenListingItemTemplate = listingItemTemplates[1];
     });
 
-    test('Should post a ListingItem in to the default marketplace', async () => {
+    test('Should post a ListingItem in to the default market', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();
 

@@ -94,7 +94,7 @@ export class App {
         }
 
         // Perform database migrations
-        // TODO: migrate fails when db is created from the desktop and when run from the marketplace project and vice versa
+        // TODO: migrate fails when db is created from the desktop and when run from the market project and vice versa
         if (Environment.isTruthy(process.env.MIGRATE)) {
             const result = await databaseMigrate.migrate()
                 .catch(reason => {

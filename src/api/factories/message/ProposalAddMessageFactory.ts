@@ -2,18 +2,18 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ProposalCategory } from '../../enums/ProposalCategory';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableProposalAddField, HashableProposalAddMessageConfig } from '../../messages/hashable/config/HashableProposalAddMessageConfig';
+import { HashableProposalOptionMessageConfig } from '../../messages/hashable/config/HashableProposalOptionMessageConfig';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -35,42 +35,53 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
      */
     public async get(params: ProposalAddMessageCreateParams): Promise<ProposalAddMessage> {
 
-        const optionsList: any[] = this.createOptionsList(params.options);
+        const optionsList: resources.ProposalOption[] = this.createOptionsList(params.options);
+        optionsList.sort(((a, b) => {
+            return a.optionId > b.optionId ? 1 : -1;
+        }));
 
-        let proposalCategory = ProposalCategory.PUBLIC_VOTE;
-        if (params.itemHash) {
-            proposalCategory = ProposalCategory.ITEM_VOTE;
+        // add hashes for the options too
+        for (const option of optionsList) {
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
         }
+
+        const category = params.category
+            ? params.category
+            : params.itemHash
+                ? ProposalCategory.ITEM_VOTE
+                : ProposalCategory.PUBLIC_VOTE;
 
         const message: ProposalAddMessage = {
             submitter: params.sender.address,
             title: params.title,
             description: params.description,
             options: optionsList,
-            category: proposalCategory,
+            category,
             item: params.itemHash
         } as ProposalAddMessage;
 
-        message.hash = ObjectHashDEPRECATED.getHash(message, HashableObjectTypeDeprecated.PROPOSAL_MESSAGE);
-
-        // add hashes for the options too
-        for (const option of message.options) {
-            option.proposalHash = message.hash;
-            option.hash = ObjectHashDEPRECATED.getHash(option, HashableObjectTypeDeprecated.PROPOSALOPTION_CREATEREQUEST);
+        // hash the proposal
+        let hashableOptions = '';
+        for (const option of optionsList) {
+            hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
+        message.hash = ConfigurableHasher.hash(message, new HashableProposalAddMessageConfig([{
+            value: hashableOptions,
+            to: HashableProposalAddField.PROPOSAL_OPTIONS
+        }]));
+
         return message;
     }
 
-    // TODO: use KVS[]?
-    private createOptionsList(options: string[]): any[] {
-        const optionsList: any[] = [];
+    private createOptionsList(options: string[]): resources.ProposalOption[] {
+        const optionsList: resources.ProposalOption[] = [];
         let optionId = 0;
 
         for (const description of options) {
             const option = {
                 optionId,
                 description
-            };
+            } as resources.ProposalOption;
             optionsList.push(option);
             optionId++;
         }

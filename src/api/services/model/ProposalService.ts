@@ -26,6 +26,8 @@ import { ProposalResultCreateRequest } from '../../requests/model/ProposalResult
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import {SmsgMessage} from '../../models/SmsgMessage';
+import {OrderStatus} from '../../enums/OrderStatus';
+import {Order} from '../../models/Order';
 
 export class ProposalService {
 
@@ -157,6 +159,14 @@ export class ProposalService {
         await this.proposalRepo.destroy(id);
     }
 
+    public async updateMsgId(hash: string, msgid: string): Promise<Proposal> {
+        let proposal = await this.findOneByHash(hash, false);
+        proposal.Msgid = msgid;
+        proposal =  await this.proposalRepo.update(proposal.Id, proposal.toJSON());
+
+        // finally find and return the created proposal
+        return await this.findOne(proposal.Id, true);
+    }
 
     /**
      * creates empty ProposalResult for the Proposal

@@ -120,7 +120,7 @@ export class ProposalResultService {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
         });
 
-        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+        // Requirements to remove the ListingItem from the testnet market, these should also be configurable:
         // at minimum, 10% of total network weight for removal
         const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const networkSupply = blockchainInfo.moneysupply * 100000000;

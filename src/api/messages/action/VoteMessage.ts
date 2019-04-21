@@ -24,6 +24,7 @@ export class VoteMessage extends MessageBody implements ActionMessageInterface {
 
     public objects?: KVS[];
 
+    // all ActionMessages have these
     @IsNotEmpty()
     public hash: string;
     @IsNotEmpty()
