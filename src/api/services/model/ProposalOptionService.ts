@@ -64,10 +64,6 @@ export class ProposalOptionService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.PROPOSALOPTION_CREATEREQUEST);
-
-        delete body.proposalHash;
-
         // If the request body was valid we will create the proposalOption
         const proposalOption = await this.proposalOptionRepo.create(body);
 

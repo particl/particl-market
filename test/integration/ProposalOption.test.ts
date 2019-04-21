@@ -135,7 +135,7 @@ describe('ProposalOption', () => {
     test('Should create a new ProposalOption', async () => {
 
         testData.proposal_id = createdProposal.id;
-        testData.proposalHash = createdProposal.hash;
+        // testData.proposalHash = createdProposal.hash;
 
         const proposalOptionModel: ProposalOption = await proposalOptionService.create(testData);
         createdProposalOption = proposalOptionModel.toJSON();

@@ -20,6 +20,5 @@ export class ProposalOptionCreateRequest extends RequestBody implements ModelReq
 
     // @IsNotEmpty()
     public hash: string;
-    public proposalHash: string;
 }
 // tslint:enable:variable-name

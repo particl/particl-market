@@ -753,13 +753,11 @@ export class TestDataService {
 
         const options: ProposalOptionCreateRequest[] = [];
         options.push({
-            proposalHash: proposalCreateRequest.hash,
             optionId: 0,
             description: ItemVote.KEEP.toString()
         } as ProposalOptionCreateRequest);
 
         options.push({
-            proposalHash: proposalCreateRequest.hash,
             optionId: 1,
             description: ItemVote.REMOVE.toString()
         } as ProposalOptionCreateRequest);

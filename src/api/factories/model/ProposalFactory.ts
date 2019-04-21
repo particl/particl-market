@@ -15,7 +15,8 @@ import { ProposalCreateParams} from './ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import { HashableProposalAddField } from '../hashableconfig/message/HashableProposalAddMessageConfig';
+import { HashableProposalAddField } from '../hashableconfig/HashableField';
+import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 
 export class ProposalFactory implements ModelFactoryInterface {
 
@@ -48,6 +49,8 @@ export class ProposalFactory implements ModelFactoryInterface {
             smsgData.timeStart = smsgMessage.sent;
         }
 
+        const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
+
         const createRequest = {
             // msgid: params.msgid,                 // update this on afterPost()!
             submitter: proposalMessage.submitter,
@@ -55,7 +58,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             title: proposalMessage.title,
             description: proposalMessage.description,
             item: proposalMessage.item,
-            options: proposalMessage.options as ProposalOptionCreateRequest[],
+            options: optionsList,
             ...smsgData
         } as ProposalCreateRequest;
 
@@ -74,7 +77,29 @@ export class ProposalFactory implements ModelFactoryInterface {
             throw new HashMismatchException('ProposalCreateRequest');
         }
 
+        // add hashes for the options too
+        for (const option of optionsList) {
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+        }
+
         return createRequest;
     }
 
+
+    private getOptionCreateRequests(options: resources.ProposalOption[]): ProposalOptionCreateRequest[] {
+        const optionsList: ProposalOptionCreateRequest[] = [];
+
+        for (const proposalOption of options) {
+            const option = {
+                optionId: proposalOption.optionId,
+                description: proposalOption.description
+            } as ProposalOptionCreateRequest;
+
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+            optionsList.push(option);
+        }
+        optionsList.sort(((a, b) => { return a.optionId > b.optionId ? 1 : -1; }));
+
+        return optionsList;
+    }
 }

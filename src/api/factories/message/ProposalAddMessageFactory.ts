@@ -12,8 +12,9 @@ import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableProposalAddField, HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
+import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
+import {HashableProposalAddField} from '../hashableconfig/HashableField';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -36,14 +37,6 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
     public async get(params: ProposalAddMessageCreateParams): Promise<ProposalAddMessage> {
 
         const optionsList: resources.ProposalOption[] = this.createOptionsList(params.options);
-        optionsList.sort(((a, b) => {
-            return a.optionId > b.optionId ? 1 : -1;
-        }));
-
-        // add hashes for the options too
-        for (const option of optionsList) {
-            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
-        }
 
         const category = params.category
             ? params.category
@@ -70,6 +63,11 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             to: HashableProposalAddField.PROPOSAL_OPTIONS
         }]));
 
+        // add hashes for the options too
+        for (const option of optionsList) {
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+        }
+
         return message;
     }
 
@@ -85,6 +83,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             optionsList.push(option);
             optionId++;
         }
+        optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));
         return optionsList;
     }
 

@@ -93,8 +93,6 @@ export class ProposalService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
-
         // extract and remove related models from request
         const options = body.options || [];
         delete body.options;
@@ -127,7 +125,6 @@ export class ProposalService {
     public async update(id: number, @request(ProposalUpdateRequest) data: ProposalUpdateRequest): Promise<Proposal> {
 
         const body = JSON.parse(JSON.stringify(data));
-        body.hash = ObjectHashDEPRECATED.getHash(body, HashableObjectTypeDeprecated.PROPOSAL_CREATEREQUEST);
 
         // find the existing one without related
         const proposal = await this.findOne(id, false);

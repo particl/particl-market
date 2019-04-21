@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { MessageBody } from '../../../core/api/MessageBody';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { IsEnum, IsNotEmpty } from 'class-validator';
@@ -21,7 +22,7 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
     @IsNotEmpty()
     public description: string;
     @IsNotEmpty()
-    public options: any[];
+    public options: resources.ProposalOption[];
     @IsNotEmpty()
     public category: ProposalCategory;
     @IsNotEmpty()
