@@ -13,8 +13,6 @@ import { Order } from '../../models/Order';
 import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
 import { OrderUpdateRequest } from '../../requests/model/OrderUpdateRequest';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';

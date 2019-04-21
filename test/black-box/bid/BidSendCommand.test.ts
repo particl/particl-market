@@ -9,8 +9,6 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
 import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';

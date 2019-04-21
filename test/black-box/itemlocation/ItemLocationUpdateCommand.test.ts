@@ -9,10 +9,8 @@ import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/mode
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
-import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { PaymentType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('ItemLocationUpdateCommand', () => {
 
@@ -41,7 +39,7 @@ describe('ItemLocationUpdateCommand', () => {
             }
         },
         paymentInformation: {
-            type: PaymentType.SALE
+            type: SaleType.SALE
         }
     } as ListingItemTemplateCreateRequest;
 

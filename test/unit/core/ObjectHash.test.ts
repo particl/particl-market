@@ -6,8 +6,6 @@ import * from 'jest';
 import * as listingItemTemplateBasic1 from '../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../testdata/model/listingItemTemplateBasic2.json';
 import * as listingItemTemplateBasic3 from '../../testdata/model/listingItemTemplateBasic3.json';
-import { HashableObjectTypeDeprecated } from '../../../src/api/enums/HashableObjectTypeDeprecated';
-import { ObjectHashDEPRECATED } from '../../../src/api/messages/hashable/ObjectHashDEPRECATED';
 
 describe('ObjectHashDEPRECATED', () => {
 

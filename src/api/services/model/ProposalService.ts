@@ -13,8 +13,6 @@ import { ProposalRepository } from '../../repositories/ProposalRepository';
 import { Proposal } from '../../models/Proposal';
 import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../../requests/model/ProposalUpdateRequest';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
 import { ProposalOptionResultUpdateRequest } from '../../requests/model/ProposalOptionResultUpdateRequest';
@@ -25,9 +23,6 @@ import { ProposalOptionResultCreateRequest } from '../../requests/model/Proposal
 import { ProposalResultCreateRequest } from '../../requests/model/ProposalResultCreateRequest';
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
-import {SmsgMessage} from '../../models/SmsgMessage';
-import {OrderStatus} from '../../enums/OrderStatus';
-import {Order} from '../../models/Order';
 
 export class ProposalService {
 

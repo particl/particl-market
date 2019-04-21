@@ -73,8 +73,6 @@ import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDestinationCreateRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ObjectHashDEPRECATED } from '../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../enums/HashableObjectTypeDeprecated';
 import { EscrowType, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
@@ -88,8 +86,8 @@ import { ItemImageDataCreateRequest } from '../requests/model/ItemImageDataCreat
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { LocationMarkerCreateRequest } from '../requests/model/LocationMarkerCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
-import {OrderFactory} from '../factories/model/OrderFactory';
-import {OrderCreateParams} from '../factories/model/ModelCreateParams';
+import { OrderFactory } from '../factories/model/OrderFactory';
+import { OrderCreateParams } from '../factories/model/ModelCreateParams';
 
 export class TestDataService {
 

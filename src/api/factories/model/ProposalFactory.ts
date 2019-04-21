@@ -8,20 +8,14 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
 import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
-import { MessageException } from '../../exceptions/MessageException';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ProposalCreateParams} from './ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableListingItemTemplateCreateRequestConfig} from '../../messages/hashable/config/HashableListingItemTemplateCreateRequestConfig';
-import {HashableBidCreateRequestConfig} from '../../messages/hashable/config/HashableBidCreateRequestConfig';
-import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
-import {HashableProposalCreateRequestConfig} from '../../messages/hashable/config/HashableProposalCreateRequestConfig';
-import {HashableProposalAddField, HashableProposalAddMessageConfig} from '../../messages/hashable/config/HashableProposalAddMessageConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { HashableProposalCreateRequestConfig } from '../../messages/hashable/config/HashableProposalCreateRequestConfig';
+import { HashableProposalAddField } from '../../messages/hashable/config/HashableProposalAddMessageConfig';
 
 export class ProposalFactory implements ModelFactoryInterface {
 

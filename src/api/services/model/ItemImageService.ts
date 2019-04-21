@@ -20,8 +20,6 @@ import { ItemImageDataService } from './ItemImageDataService';
 import { ImageFactory } from '../../factories/ImageFactory';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
-import { HashableObjectTypeDeprecated } from '../../enums/HashableObjectTypeDeprecated';
-import { ObjectHashDEPRECATED } from '../../messages/hashable/ObjectHashDEPRECATED';
 import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
