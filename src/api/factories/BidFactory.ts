@@ -39,6 +39,7 @@ export class BidFactory {
             action: bidMessageType,
             item: itemHash,
             objects: idValuePairObjects
+            publish_time: new Date().getTime();
         } as BidMessage;
 
         return message;

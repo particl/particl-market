@@ -112,6 +112,9 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public get PublishTime(): Date { return this.get('publishTime'); }
+    public set PublishTime(): Date { this.set('publishTime', value); }
+
     public BidDatas(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }

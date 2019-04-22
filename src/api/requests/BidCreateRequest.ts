@@ -23,6 +23,8 @@ export class BidCreateRequest extends RequestBody {
 
     public address_id: number;
 
+    public publish_time: Date;
+
     @IsNotEmpty()
     public bidder: string;
 

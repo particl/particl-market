@@ -21,6 +21,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('address_id').references('id')
                 .inTable('addresses');
 
+            table.timestamp('published_at').defaultTo(db.fn.now());
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

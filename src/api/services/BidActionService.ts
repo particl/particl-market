@@ -1117,6 +1117,7 @@ export class BidActionService {
             this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
             bidCreateRequest.address.type = AddressType.SHIPPING_BID;
             bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
+            bidCreateRequest.publish_time = bidMessage.publish_time;
         } else { // local profile is buying
             this.log.debug('listingItem has no template ');
             this.log.debug('bidder: ', bidder);
@@ -1124,6 +1125,7 @@ export class BidActionService {
             const profile = profileModel.toJSON();
             bidCreateRequest.address.type = AddressType.SHIPPING_BID;
             bidCreateRequest.address.profile_id = profile.id;
+            bidCreateRequest.publish_time = bidMessage.publish_time;
         }
 
         const createdBidModel = await this.bidService.create(bidCreateRequest);

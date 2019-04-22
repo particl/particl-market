@@ -16,6 +16,9 @@ export class BidMessage extends MessageBody implements ActionMessageInterface {
     @IsNotEmpty()
     public item: string;
 
+    @IsNotEmpty()
+    public publish_time: Date;
+
     // todo: objects
     public objects?: any[];
 
