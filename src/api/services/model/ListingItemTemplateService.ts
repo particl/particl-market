@@ -110,7 +110,7 @@ export class ListingItemTemplateService {
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
-
+        // this.log.debug('listingItemTemplate, data:', JSON.stringify(data, null, 2));
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
         // NOTE: hashes are created in the factory, not here!!!
@@ -125,26 +125,32 @@ export class ListingItemTemplateService {
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
+        let result;
+
         // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body)
             .then(value => value.toJSON());
 
+        result = listingItemTemplate;
+        // this.log.debug('listingItemTemplate, result:', JSON.stringify(result, null, 2));
+
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
-            await this.itemInformationService.create(itemInformation);
+            result = await this.itemInformationService.create(itemInformation).then(value => value.toJSON());
+            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
-            await this.paymentInformationService.create(paymentInformation);
+            result = await this.paymentInformationService.create(paymentInformation).then(value => value.toJSON());
             // this.log.debug('paymentInformation, result:', JSON.stringify(result, null, 2));
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
-                await this.messagingInformationService.create(msgInfo);
+                result = await this.messagingInformationService.create(msgInfo).then(value => value.toJSON());
                 // this.log.debug('msgInfo, result:', JSON.stringify(result, null, 2));
             }
         }
@@ -152,14 +158,12 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_template_id = listingItemTemplate.id;
-                await this.listingItemObjectService.create(object);
+                result = await this.listingItemObjectService.create(object).then(value => value.toJSON());
                 // this.log.debug('object, result:', JSON.stringify(result, null, 2));
             }
         }
 
-        const result = await this.findOne(listingItemTemplate.id);
-        return result;
-
+        return await this.findOne(listingItemTemplate.id);
     }
 
     @validate()

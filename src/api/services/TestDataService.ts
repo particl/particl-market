@@ -92,6 +92,7 @@ import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
 import {HashableBidCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import {HashableProposalCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
 import {HashableProposalAddField} from '../factories/hashableconfig/HashableField';
+import {HashableListingItemTemplateCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 
 export class TestDataService {
 
@@ -259,11 +260,9 @@ export class TestDataService {
         this.log.debug('ignoreTables: ', this.ignoreTables);
 
         const tablesToClean = [
-            'order_item_objects',
             'order_items',
             'orders',
             'bid_datas',
-            'locked_outputs',
             'bids',
             'location_markers',
             'item_locations',
@@ -325,11 +324,12 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
-            this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
 
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
 
+            // sddfghj
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
@@ -1093,12 +1093,15 @@ export class TestDataService {
             : await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
 
         const listingItemTemplateCreateRequest = {
+            generatedAt: +new Date().getTime(),
             itemInformation,
             paymentInformation,
             messagingInformation,
             listingItemObjects,
             profile_id: profile.id
         } as ListingItemTemplateCreateRequest;
+
+        listingItemTemplateCreateRequest.hash = ConfigurableHasher.hash(listingItemTemplateCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         // this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         return listingItemTemplateCreateRequest;

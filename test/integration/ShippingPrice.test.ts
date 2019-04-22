@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -17,12 +18,12 @@ import { ItemPriceService } from '../../src/api/services/model/ItemPriceService'
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShippingPrice } from '../../src/api/models/ShippingPrice';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { TestDataCreateRequest } from '../../src/api/requests/testdata/TestDataCreateRequest';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/ShippingPriceUpdateRequest';
-import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('ShippingPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,26 +32,26 @@ describe('ShippingPrice', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let shippingPriceService: ShippingPriceService;
     let profileService: ProfileService;
+    let marketService: MarketService;
+    let shippingPriceService: ShippingPriceService;
     let paymentInformationService: PaymentInformationService;
     let listingItemTemplateService: ListingItemTemplateService;
     let escrowService: EscrowService;
     let itemPriceService: ItemPriceService;
 
     let createdId;
-    let itemPriceId;
-    let listingItemTemplate;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     const testData = {
         domestic: 2.12,
         international: 4.2
-    };
+    } as ShippingPriceCreateRequest;
 
     const testDataUpdated = {
         domestic: 1.2,
         international: 3.4
-    };
+    } as ShippingPriceUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -58,7 +59,7 @@ describe('ShippingPrice', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.model.ShippingPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
-
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
@@ -67,24 +68,35 @@ describe('ShippingPrice', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const defaultProfile = await profileService.getDefault();
-        const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
-            model: 'listingitemtemplate',
-            data: {
-                profile_id: defaultProfile.Id,
-                hash: 'itemhash',
-                paymentInformation: {
-                    type: SaleType.FREE,
-                    itemPrice: {
-                        currency: Cryptocurrency.PART,
-                        basePrice: 3.333
-                    }
-                }
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
-        listingItemTemplate = createdListingItemTemplate.toJSON();
-        itemPriceId = listingItemTemplate.PaymentInformation.ItemPrice.id;
+        const defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        const defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+
+
+        const templateGenerateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            false,   // generateItemLocation
+            false,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]);
+
+        const generateParams = templateGenerateParams.toParamsArray();
+        const templates: resources.ListingItemTemplate[] = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
+        } as TestDataGenerateRequest);
+        listingItemTemplate = templates[0];
+
     });
 
     afterAll(async () => {
@@ -98,9 +110,10 @@ describe('ShippingPrice', () => {
         );
     });
 
-    test('Should create a new shipping price', async () => {
-        testData['item_price_id'] = itemPriceId;
-        const shippingPriceModel: ShippingPrice = await shippingPriceService.create(testData as ShippingPriceCreateRequest);
+    test('Should create a new ShippingPrice', async () => {
+        testData['item_price_id'] = listingItemTemplate.PaymentInformation.ItemPrice.id;
+        log.debug('testData:', JSON.stringify(testData, null, 2));
+        const shippingPriceModel: ShippingPrice = await shippingPriceService.create(testData);
         createdId = shippingPriceModel.Id;
 
         const result = shippingPriceModel.toJSON();
@@ -108,25 +121,25 @@ describe('ShippingPrice', () => {
         expect(result.international).toBe(testData.international);
     });
 
-    test('Should throw ValidationException because we want to create a empty shipping price', async () => {
+    test('Should throw ValidationException because we want to create a empty ShippingPrice', async () => {
         expect.assertions(1);
         await shippingPriceService.create({} as ShippingPriceCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list shipping prices with our new create one', async () => {
+    test('Should list ShippingPrices with our new create one', async () => {
         const shippingPriceCollection = await shippingPriceService.findAll();
         const shippingPrice = shippingPriceCollection.toJSON();
-        expect(shippingPrice.length).toBe(1);
+        expect(shippingPrice.length).toBe(2);   // template + new one
 
-        const result = shippingPrice[0];
+        const result = shippingPrice[1];
 
         expect(result.domestic).toBe(testData.domestic);
         expect(result.international).toBe(testData.international);
     });
 
-    test('Should return one shipping price', async () => {
+    test('Should return one ShippingPrice', async () => {
         const shippingPriceModel: ShippingPrice = await shippingPriceService.findOne(createdId);
         const result = shippingPriceModel.toJSON();
 
@@ -141,8 +154,8 @@ describe('ShippingPrice', () => {
         );
     });
 
-    test('Should update the shipping price', async () => {
-        testDataUpdated['item_price_id'] = itemPriceId;
+    test('Should update the ShippingPrice', async () => {
+        testDataUpdated['item_price_id'] = listingItemTemplate.PaymentInformation.ItemPrice.id;
         const shippingPriceModel: ShippingPrice = await shippingPriceService.update(createdId, testDataUpdated as ShippingPriceUpdateRequest);
         const result = shippingPriceModel.toJSON();
 
@@ -150,7 +163,7 @@ describe('ShippingPrice', () => {
         expect(result.international).toBe(testDataUpdated.international);
     });
 
-    test('Should delete the shipping price', async () => {
+    test('Should delete the ShippingPrice', async () => {
         expect.assertions(4);
         await shippingPriceService.destroy(createdId);
         await shippingPriceService.findOne(createdId).catch(e =>
