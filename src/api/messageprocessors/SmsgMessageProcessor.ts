@@ -59,19 +59,29 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
-            .catch(reason => {
+            .then(async (idsProcessed) => {
+                // after messages are stored, remove them
+                for (const msgid of idsProcessed) {
+                    await this.smsgService.smsg(msgid, true, true)
+                        .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
+                        .catch(reason => {
+                            this.log.error('ERROR: ', reason);
+                        });
+                }
+            })
+            .catch(async (reason) => {
                 this.log.error('ERROR: ', reason);
+                if ((smsgMessageCreateRequests.length > 1) && (reason.errno === 19) && String(reason.code).includes('SQLITE_CONSTRAINT')) {
+                    // Parse individual messages if the batch write failed due to a sqlite constrainst error,
+                    // which results in the entire batched write failing
+                    this.log.debug('process(): Parsing individual messages');
+                    for (const smsgMessageCreateRequest of smsgMessageCreateRequests) {
+                        await this.smsgMessageService.create(smsgMessageCreateRequest)
+                            .then(message => this.log.debug(`Created single message ${smsgMessageCreateRequest.msgid}`))
+                            .catch(err => this.log.debug(`Failed processing single message ${smsgMessageCreateRequest.msgid}`));
+                    }
+                }
             });
-
-        // after messages are stored, remove them
-        for (const message of messages) {
-            await this.smsgService.smsg(message.msgid, true, true)
-                .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
-                .catch(reason => {
-                    this.log.error('ERROR: ', reason);
-                });
-        }
-
     }
 
     public stop(): void {
@@ -97,10 +107,11 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        await this.smsgService.smsgInbox('unread')
+        await this.smsgService.smsgInbox('unread', '', {updatestatus: false})
             .then( async messages => {
                 if (messages.result !== '0') {
-                    const smsgMessages: IncomingSmsgMessage[] = messages.messages;
+                    // Process 10 smsg messages at a time for SQLite insert
+                    const smsgMessages: IncomingSmsgMessage[] = messages.messages.splice(0, Math.min(10, messages.messages.length));
                     this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 }
