@@ -15,7 +15,7 @@ export class ItemCategoryCreateRequest extends RequestBody implements ModelReque
     public key: string;
     public id: number;
 
-    // @IsNotEmpty()
+    @IsNotEmpty()
     public name: string;
 
     public description: string;

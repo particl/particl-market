@@ -328,8 +328,8 @@ export class TestDataService {
 
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
+            this.log.debug('created listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
-            // sddfghj
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
@@ -345,6 +345,8 @@ export class TestDataService {
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
                     listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects,
+                    hash: listingItemTemplateCreateRequest.hash,
+                    msgid: '' + new Date().getTime(),
                     expiryTime: 10,
                     postedAt: new Date().getTime(),
                     expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
@@ -913,12 +915,15 @@ export class TestDataService {
             messagingInformation,
             listingItemObjects,
             market_id: defaultMarket.id,
+            msgid: '' + new Date().getTime(),
             expiryTime: 4,
             postedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 100000000,
             receivedAt: new Date().getTime(),
             generatedAt: new Date().getTime()
         } as ListingItemCreateRequest;
+
+        listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 

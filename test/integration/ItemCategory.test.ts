@@ -41,7 +41,7 @@ describe('ItemCategory', () => {
         parent_item_category_id: 0,
         key: 'cat_electronics',
         name: 'Electronics and Technologyyyyyy',
-        description: 'Electronics and Technology descriptionnnnnnn'
+        description: 'description'
     } as ItemCategoryCreateRequest;
 
     const testDataUpdated = {

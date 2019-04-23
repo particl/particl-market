@@ -308,4 +308,5 @@ describe('ItemPrice', () => {
             expect(e).toEqual(new NotFoundException(itemPrice.id))
         );
     });
+
 });
