@@ -18,7 +18,6 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/model/ListingItemObjectDataUpdateRequest';
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
@@ -72,10 +71,6 @@ describe('ListingItemObjectData', () => {
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
-        const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = ObjectHashDeprecated.getHash(templateData, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE_CREATEREQUEST);
-        templateData.profile_id = defaultProfile.Id;
-
         // generate template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -109,8 +104,7 @@ describe('ListingItemObjectData', () => {
             order: 0
         } as ListingItemObjectCreateRequest;
 
-        const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(listingItemObjectCreateRequest);
-        createdListingItemObject = listingItemObjectModel.toJSON();
+        createdListingItemObject = await listingItemObjectService.create(listingItemObjectCreateRequest).then(value => value.toJSON());
 
     });
 
@@ -122,8 +116,7 @@ describe('ListingItemObjectData', () => {
     test('Should create a new ListingItemObjectData', async () => {
 
         testData.listing_item_object_id = createdListingItemObject.id;
-        const listingItemObjectDataModel: ListingItemObjectData = await listingItemObjectDataService.create(testData);
-        createdListingItemObjectData = listingItemObjectDataModel.toJSON();
+        createdListingItemObjectData = await listingItemObjectDataService.create(testData).then(value => value.toJSON());
 
         const result = createdListingItemObjectData;
         expect(result.key).toBe(testData.key);
@@ -139,8 +132,7 @@ describe('ListingItemObjectData', () => {
     });
 
     test('Should list ListingItemObjectDatas with our new create one', async () => {
-        const listingItemObjectDataCollection = await listingItemObjectDataService.findAll();
-        const listingItemObjectDatas = listingItemObjectDataCollection.toJSON();
+        const listingItemObjectDatas: resources.ListingItemObjectData[] = await listingItemObjectDataService.findAll().then(value => value.toJSON());
         expect(listingItemObjectDatas.length).toBe(1);
 
         const result = listingItemObjectDatas[0];
@@ -150,10 +142,9 @@ describe('ListingItemObjectData', () => {
     });
 
     test('Should return one ListingItemObjectData', async () => {
-        const listingItemObjectDataModel: ListingItemObjectData
-            = await listingItemObjectDataService.findOne(createdListingItemObjectData.id);
+        createdListingItemObjectData = await listingItemObjectDataService.findOne(createdListingItemObjectData.id).then(value => value.toJSON());
 
-        const result = listingItemObjectDataModel.toJSON();
+        const result = createdListingItemObjectData;
         expect(result.key).toBe(testData.key);
         expect(result.value).toBe(testData.value);
         expect(result.listingItemObjectId).toBe(testData.listing_item_object_id);
@@ -161,10 +152,10 @@ describe('ListingItemObjectData', () => {
 
     test('Should update the ListingItemObjectData', async () => {
         testDataUpdated.listing_item_object_id = createdListingItemObject.id;
-        const listingItemObjectDataModel: ListingItemObjectData
-            = await listingItemObjectDataService.update(createdListingItemObjectData.id, testDataUpdated);
+        createdListingItemObjectData = await listingItemObjectDataService.update(createdListingItemObjectData.id, testDataUpdated)
+            .then(value => value.toJSON());
 
-        const result = listingItemObjectDataModel.toJSON();
+        const result = createdListingItemObjectData;
         expect(result.key).toBe(testDataUpdated.key);
         expect(result.value).toBe(testDataUpdated.value);
         expect(result.listingItemObjectId).toBe(testDataUpdated.listing_item_object_id);
