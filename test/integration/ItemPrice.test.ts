@@ -272,7 +272,7 @@ describe('ItemPrice', () => {
             shippingPrice: {
                 domestic: 0.123,
                 international: 1.234
-            } as ShippingPriceCreateRequest,
+            } as ShippingPriceCreateRequest
         } as ItemPriceCreateRequest;
 
         const result: resources.ItemPrice = await itemPriceService.create(testData).then(value => value.toJSON());
@@ -288,7 +288,7 @@ describe('ItemPrice', () => {
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001,
+            basePrice: 0.0001
         } as ItemPriceCreateRequest;
 
         const result: resources.ItemPrice = await itemPriceService.create(testData).then(value => value.toJSON());

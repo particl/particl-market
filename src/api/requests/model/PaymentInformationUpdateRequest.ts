@@ -12,10 +12,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class PaymentInformationUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    public id: number;
-    public listing_item_id: number;
-    public listing_item_template_id: number;
-
     @IsEnum(SaleType)
     @IsNotEmpty()
     public type: SaleType;

@@ -11,9 +11,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class EscrowUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
-    public payment_information_id: number;
-
     @IsEnum(EscrowType)
     @IsNotEmpty()
     public type: EscrowType;

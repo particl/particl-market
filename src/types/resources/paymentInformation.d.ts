@@ -9,6 +9,7 @@ declare module 'resources' {
     interface PaymentInformation {
         id: number;
         type: SaleType;
+
         Escrow: Escrow;
         ItemPrice: ItemPrice;
 

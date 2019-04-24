@@ -88,11 +88,6 @@ export class PaymentInformationService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // ItemInformation needs to be related to either one
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
-            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
-        }
-
         // find the existing one without related
         const paymentInformation = await this.findOne(id, false);
         // set new values
