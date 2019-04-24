@@ -93,7 +93,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(result.ParentItemCategory.name).toBe(childCategory2.name);
     });
 
-    test('Should not update ItemCategory, because missing params', async () => {
+    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
             defaultCategory.id,
             'newname',
@@ -102,7 +102,7 @@ describe('ItemCategoryUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing parameters.');
+        expect(res.error.error.message).toBe("Default category can't be updated or deleted.");
     });
 
     test('Should not update ItemCategory, because its a default ItemCategory', async () => {

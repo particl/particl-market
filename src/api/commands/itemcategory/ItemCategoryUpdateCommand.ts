@@ -16,6 +16,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import * as resources from 'resources';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
@@ -47,7 +49,6 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-
         const categoryId = data.params[0];
         const name = data.params[1];
         const description = data.params[2];
@@ -61,7 +62,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     /**
-     * - should have 4 params
+     * - should have 3-4 params
      * - if category has key, it cant be edited
      * - ...
      *
@@ -69,12 +70,31 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<void>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryId');
+        }
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        }
+        if (data.params.length < 2) {
+            throw new MissingParamException('categoryName');
+        }
+        if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('categoryName', 'string');
+        }
+        if (data.params.length < 3) {
+            throw new MissingParamException('description');
+        }
+        if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('description', 'string');
+        }
 
-        if (data.params.length < 4) {
-            throw new MessageException('Missing parameters.');
+        if (data.params.length >= 4 && typeof data.params[3] !== 'number') {
+            throw new InvalidParamException('parentItemCategoryId', 'number');
         }
 
         const categoryId = data.params[0];
+        // Throws NotFoundException
         const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
         const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
 
@@ -82,6 +102,13 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         if (itemCategory.key != null) {
             throw new MessageException(`Default category can't be updated or deleted.`);
         }
+
+        if (data.params.length >= 4) {
+            const parentItemCategoryId = data.params[3];
+            // Throws NotFoundException
+            const parentItemCategoryModel = await this.itemCategoryService.findOne(parentItemCategoryId);
+        }
+
 
         return data;
     }

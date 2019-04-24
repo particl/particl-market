@@ -14,6 +14,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -40,17 +43,52 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        if (data.params[2]) {
-            const parentItemCategory = data.params[2];
-            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
-            return await this.itemCategoryService.create({
-                name: data.params[0],
-                description: data.params[1],
-                parent_item_category_id: parentItemCategoryId
-            } as ItemCategoryCreateRequest);
-        } else {
-            throw new MessageException(`Parent category can't be null or undefined!`);
+        const parentItemCategory = data.params[2];
+        const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
+        return await this.itemCategoryService.create({
+            name: data.params[0],
+            description: data.params[1],
+            parent_item_category_id: parentItemCategoryId
+        } as ItemCategoryCreateRequest);
+    }
+
+    /**
+     * - should have 3 params
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryName');
         }
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('categoryName', 'string');
+        }
+        if (data.params.length < 2) {
+            throw new MissingParamException('description');
+        }
+        if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('description', 'string');
+        }
+        if (data.params.length < 3) {
+            throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
+        }
+
+        let parentItemCategoryId;
+        if (typeof data.params[2] === 'string') {
+            const parentItemCategoryKey = data.params[2];
+            parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategoryKey);
+        } else if (typeof data.params[2] === 'number') {
+            parentItemCategoryId = data.params[2];
+        } else {
+            throw new InvalidParamException('parentItemCategoryId|parentItemCategoryKey', 'number|string');
+        }
+        // Throws NotFoundException
+        const parentItemCategoryModel = await this.itemCategoryService.findOne(parentItemCategoryId);
+
+        return data;
     }
 
     public usage(): string {

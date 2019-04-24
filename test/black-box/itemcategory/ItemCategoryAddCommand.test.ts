@@ -6,6 +6,7 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import {Logger as LoggerType} from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ItemCategoryAddCommand', () => {
 
@@ -77,6 +78,6 @@ describe('ItemCategoryAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Parent category can't be null or undefined!`);
+        expect(res.error.error.message).toBe(new MissingParamException('parentItemCategoryId|parentItemCategoryKey').getMessage());
     });
 });
