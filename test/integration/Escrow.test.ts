@@ -22,6 +22,8 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowRatioCreateRequest} from '../../src/api/requests/model/EscrowRatioCreateRequest';
+import {EscrowRatioUpdateRequest} from '../../src/api/requests/model/EscrowRatioUpdateRequest';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -46,7 +48,7 @@ describe('Escrow', () => {
         ratio: {
             buyer: 50,
             seller: 50
-        },
+        } as EscrowRatioCreateRequest,
         secondsToLock: 2
     } as EscrowCreateRequest;
 
@@ -55,8 +57,8 @@ describe('Escrow', () => {
         ratio: {
             buyer: 100,
             seller: 100
-        },
-        secondsToLock: 2
+        } as EscrowRatioUpdateRequest,
+        secondsToLock: 5
     } as EscrowUpdateRequest;
 
     beforeAll(async () => {
@@ -72,13 +74,8 @@ describe('Escrow', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         // generate ListingItemTemplate without Escrow
         const templateGenerateParams = new GenerateListingItemTemplateParams([
@@ -162,21 +159,7 @@ describe('Escrow', () => {
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 
-    test('Should throw ValidationException because there is no payment_information_id', async () => {
-        expect.assertions(1);
-        await escrowService.update(createdEscrow.id, {
-            type: EscrowType.MULTISIG,
-            ratio: {
-                buyer: 100,
-                seller: 100
-            }
-        } as EscrowUpdateRequest)
-            .catch(e =>
-                expect(e).toEqual(new ValidationException('Request body is not valid', [])));
-    });
-
     test('Should update the Escrow', async () => {
-        testDataUpdated.payment_information_id = listingItemTemplate.PaymentInformation.id;
         const result: resources.Escrow = await escrowService.update(createdEscrow.id, testDataUpdated)
             .then(value => value.toJSON());
 
