@@ -22,8 +22,8 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
-import {EscrowRatioCreateRequest} from '../../src/api/requests/model/EscrowRatioCreateRequest';
-import {EscrowRatioUpdateRequest} from '../../src/api/requests/model/EscrowRatioUpdateRequest';
+import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
+import { EscrowRatioUpdateRequest } from '../../src/api/requests/model/EscrowRatioUpdateRequest';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
