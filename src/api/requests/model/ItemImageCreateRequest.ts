@@ -17,6 +17,6 @@ export class ItemImageCreateRequest extends RequestBody implements ModelRequestI
     public data: ItemImageDataCreateRequest[];
 
     public hash: string;
-
+    public featured: boolean;
 }
 // tslint:enable:variable-name

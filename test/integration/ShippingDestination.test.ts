@@ -138,15 +138,7 @@ describe('ShippingDestination', () => {
         expect(result.ItemInformation.ListingItemTemplate).toBeDefined();
     });
 
-    test('Should fail to update and throw ValidationException because there is no item_information_id', async () => {
-        expect.assertions(1);
-        await shippingDestinationService.update(shippingDestination.id, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should update the ShippingDestination related to ListingItemTemplate', async () => {
-        testDataUpdated.item_information_id = listingItemTemplate.ItemInformation.id;
         shippingDestination = await shippingDestinationService.update(shippingDestination.id, testDataUpdated)
             .then(value => value.toJSON());
         const result = shippingDestination;

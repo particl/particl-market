@@ -22,9 +22,8 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableBidMessageConfig} from '../../factories/hashableconfig/message/HashableBidMessageConfig';
-import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableItemImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
 
 export class ItemImageService {
 
