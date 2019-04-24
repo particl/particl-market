@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -19,10 +20,9 @@ import { LocationMarker } from '../../src/api/models/LocationMarker';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { LocationMarkerUpdateRequest } from '../../src/api/requests/model/LocationMarkerUpdateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import {MarketService} from '../../src/api/services/model/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('LocationMarker', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -39,10 +39,9 @@ describe('LocationMarker', () => {
     let itemLocationService: ItemLocationService;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let locationMarker: resources.LocationMarker;
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
-
-    let createdId;
 
     const testData = {
         markerTitle: 'Helsinki',
@@ -116,10 +115,9 @@ describe('LocationMarker', () => {
 
     test('Should create a new location marker', async () => {
         testData['item_location_id'] = listingItemTemplate.ItemInformation.ItemLocation.id;
-        const locationMarkerModel: LocationMarker = await locationMarkerService.create(testData);
-        createdId = locationMarkerModel.Id;
+        locationMarker = await locationMarkerService.create(testData).then(value => value.toJSON());
+        const result: resources.LocationMarker = locationMarker;
 
-        const result = locationMarkerModel.toJSON();
         expect(result.markerTitle).toBe(testData.markerTitle);
         expect(result.markerText).toBe(testData.markerText);
         expect(result.lat).toBe(testData.lat);
@@ -135,11 +133,10 @@ describe('LocationMarker', () => {
     });
 
     test('Should list location markers with our new create one', async () => {
-        const locationMarkerCollection = await locationMarkerService.findAll();
-        const locationMarker = locationMarkerCollection.toJSON();
-        expect(locationMarker.length).toBe(2);
+        const locationMarkers: resources.LocationMarker[] = await locationMarkerService.findAll().then(value => value.toJSON());
+        expect(locationMarkers.length).toBe(2);
 
-        const result = locationMarker[1];
+        const result = locationMarkers[1];
 
         expect(result.markerTitle).toBe(testData.markerTitle);
         expect(result.markerText).toBe(testData.markerText);
@@ -149,7 +146,7 @@ describe('LocationMarker', () => {
     });
 
     test('Should return one location marker', async () => {
-        const locationMarkerModel: LocationMarker = await locationMarkerService.findOne(createdId);
+        const locationMarkerModel: LocationMarker = await locationMarkerService.findOne(locationMarker.id);
         const result = locationMarkerModel.toJSON();
 
         expect(result.markerTitle).toBe(testData.markerTitle);
@@ -161,7 +158,7 @@ describe('LocationMarker', () => {
 
     test('Should update the location marker', async () => {
         testDataUpdated['item_location_id'] = listingItemTemplate.ItemInformation.ItemLocation.id;
-        const locationMarkerModel: LocationMarker = await locationMarkerService.update(createdId, testDataUpdated);
+        const locationMarkerModel: LocationMarker = await locationMarkerService.update(locationMarker.id, testDataUpdated);
         const result = locationMarkerModel.toJSON();
 
         expect(result.markerTitle).toBe(testDataUpdated.markerTitle);
@@ -173,9 +170,9 @@ describe('LocationMarker', () => {
 
     test('Should delete the location marker', async () => {
         expect.assertions(4);
-        await locationMarkerService.destroy(createdId);
-        await locationMarkerService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await locationMarkerService.destroy(locationMarker.id);
+        await locationMarkerService.findOne(locationMarker.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarker.id))
         );
 
         // listing-item-template

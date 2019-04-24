@@ -11,7 +11,6 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
@@ -22,7 +21,6 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/model/ShippingDestinationUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';

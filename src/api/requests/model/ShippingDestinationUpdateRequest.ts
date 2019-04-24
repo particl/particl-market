@@ -11,9 +11,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ShippingDestinationUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public item_information_id: number;
-
-    @IsNotEmpty()
     public country: string;
 
     @IsEnum(ShippingAvailability)
