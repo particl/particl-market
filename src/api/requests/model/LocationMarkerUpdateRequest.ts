@@ -10,9 +10,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class LocationMarkerUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public item_location_id: number;
-
-    @IsNotEmpty()
     public lat: number;
 
     @IsNotEmpty()
