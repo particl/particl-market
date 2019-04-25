@@ -125,7 +125,7 @@ export class ListingItemService {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;

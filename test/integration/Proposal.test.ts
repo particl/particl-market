@@ -18,10 +18,10 @@ import { ProposalOptionCreateRequest } from '../../src/api/requests/model/Propos
 import { ProposalSearchParams } from '../../src/api/requests/search/ProposalSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableProposalAddMessageConfig} from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
-import {HashableProposalAddField} from '../../src/api/factories/hashableconfig/HashableField';
-import {HashableProposalOptionMessageConfig} from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableProposalAddMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
+import { HashableProposalAddField } from '../../src/api/factories/hashableconfig/HashableField';
+import { HashableProposalOptionMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

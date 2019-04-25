@@ -43,6 +43,7 @@ import * as listingItemCreateRequestExpired from '../testdata/createrequest/list
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as resources from 'resources';
+import {hash} from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -95,7 +96,7 @@ describe('ListingItem', () => {
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
@@ -331,6 +332,7 @@ describe('ListingItem', () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItem1 = await listingItemService.create(testDataToSave)
             .then(value => value.toJSON());
@@ -371,6 +373,7 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem2 = listingItemModel.toJSON();
@@ -409,6 +412,7 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -433,6 +437,7 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItem2 = await listingItemService.create(testDataToSave)
             .then(value => value.toJSON());
@@ -455,10 +460,13 @@ describe('ListingItem', () => {
             itemInformation: testDataToSave.itemInformation,
             paymentInformation: testDataToSave.paymentInformation,
             messagingInformation: testDataToSave.messagingInformation,
-            listingItemObjects: testDataToSave.listingItemObjects
+            listingItemObjects: testDataToSave.listingItemObjects,
+            generatedAt: +new Date().getTime()
         } as ListingItemTemplateCreateRequest;
 
-        // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+        listingItemTemplateCreateRequest.hash = hash(listingItemTemplateCreateRequest);     // TODO: FIX
+
+        log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         const listingItemTemplate: ListingItemTemplate = await listingItemTemplateService.create(listingItemTemplateCreateRequest);
 
         // create ListingItem with relation to ListingItemTemplate
@@ -470,7 +478,9 @@ describe('ListingItem', () => {
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
         testDataToSave.generatedAt = new Date().getTime();
+        testDataToSave.hash = listingItemTemplateCreateRequest.hash;    // TODO: FIX
 
+        log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem3 = listingItemModel.toJSON();
 
@@ -494,6 +504,8 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
+        testDataToSave.generatedAt = +new Date().getTime();
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const expiredListingItem = listingItemModel.toJSON();
