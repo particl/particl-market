@@ -46,6 +46,7 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
+import {hash} from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -444,6 +445,8 @@ describe('ListingItemTemplate', async () => {
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
         createdListingItemTemplate1 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
@@ -477,6 +480,8 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItemTemplate2 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -493,6 +498,8 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -502,6 +509,8 @@ describe('ListingItemTemplate', async () => {
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave)
             .then(value => value.toJSON());
@@ -524,6 +533,8 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -544,6 +555,8 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -570,6 +583,9 @@ describe('ListingItemTemplate', async () => {
             listingItemObjects: testDataToSave.listingItemObjects
         } as ListingItemTemplateCreateRequest;
 
+        listingItemTemplateCreateRequest.generatedAt = +new Date().getTime();
+        listingItemTemplateCreateRequest.hash = hash(listingItemTemplateCreateRequest);     // TODO: FIX
+
         // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         createdListingItemTemplate3 = await listingItemTemplateService.create(listingItemTemplateCreateRequest).then(value => value.toJSON());
 
@@ -582,6 +598,7 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
         testDataToSave.generatedAt = new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -603,6 +620,8 @@ describe('ListingItemTemplate', async () => {
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
 
         testDataToUpdate.profile_id = defaultProfile.id;
+        testDataToUpdate.generatedAt = +new Date().getTime();
+        testDataToUpdate.hash = hash(testDataToUpdate);     // TODO: FIX
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
@@ -736,11 +755,15 @@ describe('ListingItemTemplate', async () => {
         let testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.itemInformation.title = titleToSearchFor + ' 1';
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
         await listingItemTemplateService.create(testDataToSave);
 
         testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.itemInformation.title = titleToSearchFor + ' 2';
+        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
         await listingItemTemplateService.create(testDataToSave);
 
         let searchParams = {
