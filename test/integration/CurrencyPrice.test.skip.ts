@@ -11,11 +11,10 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
 import { CurrencyPriceService } from '../../src/api/services/model/CurrencyPriceService';
 import { CurrencyPriceCreateRequest } from '../../src/api/requests/model/CurrencyPriceCreateRequest';
 import { CurrencyPriceUpdateRequest } from '../../src/api/requests/model/CurrencyPriceUpdateRequest';
-import {CurrencyPriceSearchParams} from '../../src/api/requests/search/CurrencyPriceSearchParams';
+import { CurrencyPriceSearchParams } from '../../src/api/requests/search/CurrencyPriceSearchParams';
 
 describe('CurrencyPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -72,6 +71,7 @@ describe('CurrencyPrice', () => {
     test('Should get CurrencyPrice from db without updating the latest price from external service', async () => {
         currencyPricePARTINR = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
 
+        log.debug('currencyPricePARTINR', JSON.stringify(currencyPricePARTINR, null, 2));
         const result: resources.CurrencyPrice = currencyPricePARTINR;
         expect(result.from).toBe(createRequestCurrencyPricePARTINR.from);
         expect(result.to).toBe(createRequestCurrencyPricePARTINR.to);

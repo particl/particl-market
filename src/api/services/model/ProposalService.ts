@@ -104,7 +104,7 @@ export class ProposalService {
         let optionId = 0;
         for (const optionCreateRequest of options) {
             optionCreateRequest.proposal_id = proposal.id;
-            optionCreateRequest.proposalHash = body.hash;
+            // optionCreateRequest.proposalHash = body.hash; // TODO: skipping this for now, needs some refactoring to add this
             if (!optionCreateRequest.optionId) {
                 optionCreateRequest.optionId = optionId;
                 optionId++;

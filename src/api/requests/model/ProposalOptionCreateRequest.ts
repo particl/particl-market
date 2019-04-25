@@ -9,10 +9,10 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ProposalOptionCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public proposal_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public optionId: number;
 
     @IsNotEmpty()
@@ -20,5 +20,6 @@ export class ProposalOptionCreateRequest extends RequestBody implements ModelReq
 
     // @IsNotEmpty()
     public hash: string;
+
 }
 // tslint:enable:variable-name

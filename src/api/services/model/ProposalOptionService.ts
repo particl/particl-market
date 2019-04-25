@@ -65,15 +65,20 @@ export class ProposalOptionService {
         // this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the proposalOption
-        const proposalOption = await this.proposalOptionRepo.create(body);
+        try {
+            const proposalOption = await this.proposalOptionRepo.create(body);
 
-        // finally find and return the created proposal
-        const result = await this.findOne(proposalOption.id, true);
+            // finally find and return the created proposal
+            const result = await this.findOne(proposalOption.id, true);
 
-        // this.log.debug('ProposalOption.create, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('ProposalOption.create, result:', JSON.stringify(result, null, 2));
 
-        this.log.debug('ProposalOptionService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        return result;
+            this.log.debug('ProposalOptionService.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return result;
+        } catch (e) {
+            this.log.error(e);
+            throw new Error(e);
+        }
     }
 
     @validate()

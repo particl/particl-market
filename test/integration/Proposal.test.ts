@@ -11,7 +11,6 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProposalCreateRequest } from '../../src/api/requests/model/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../../src/api/requests/model/ProposalUpdateRequest';
@@ -19,6 +18,10 @@ import { ProposalOptionCreateRequest } from '../../src/api/requests/model/Propos
 import { ProposalSearchParams } from '../../src/api/requests/search/ProposalSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableProposalAddMessageConfig} from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
+import {HashableProposalAddField} from '../../src/api/factories/hashableconfig/HashableField';
+import {HashableProposalOptionMessageConfig} from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,6 +39,7 @@ describe('Proposal', () => {
     const time = new Date().getTime();
     const testData = {
         submitter: 'partaddress',
+        msgid: 'msgid11111',
         category: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x',
@@ -54,7 +58,7 @@ describe('Proposal', () => {
     }] as ProposalOptionCreateRequest[];
 
     const testDataUpdated = {
-        submitter: 'pqwer',
+        submitter: 'UPDATE',
         category: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y',
@@ -73,6 +77,7 @@ describe('Proposal', () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
+
     });
 
     test('Should throw ValidationException because we want to create a empty Proposal', async () => {
@@ -84,7 +89,8 @@ describe('Proposal', () => {
 
     test('Should create a new Proposal without ProposalOptions', async () => {
 
-        const result: resources.Proposal = await proposalService.create(testData)
+        // TODO: should use ProposalFactory for to generate it
+        const result: resources.Proposal = await proposalService.create(addHash(testData))
             .then(value => value.toJSON());
 
         expect(result.category).toBe(testData.category);
@@ -134,7 +140,7 @@ describe('Proposal', () => {
         testDataUpdated.expiredAt = new Date().getTime() + 100000000;
         testDataUpdated.receivedAt = new Date().getTime();
 
-        const result: resources.Proposal = await proposalService.update(createdId, testDataUpdated)
+        const result: resources.Proposal = await proposalService.update(createdId, addHash(testDataUpdated))
             .then(value => value.toJSON());
 
         expect(result.category).toBe(testDataUpdated.category);
@@ -146,6 +152,7 @@ describe('Proposal', () => {
         expect(result.receivedAt).toBe(testDataUpdated.receivedAt);
         expect(result.expiredAt).toBe(testDataUpdated.expiredAt);
 
+        log.debug('first proposal: ', JSON.stringify(result, null, 2));
     });
 
     test('Should delete the Proposal', async () => {
@@ -165,8 +172,8 @@ describe('Proposal', () => {
 
         testData.options = testDataOptions;
 
-        const result: resources.Proposal = await proposalService.create(testData)
-            .then(value => value.toJSON());
+        createdProposal1 = await proposalService.create(addHash(testData, testDataOptions)).then(value => value.toJSON());
+        const result: resources.Proposal = createdProposal1;
 
         expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
@@ -192,7 +199,7 @@ describe('Proposal', () => {
         testData.receivedAt = time + 110;
         testData.expiredAt = time + 150;
 
-        const result: resources.Proposal = await proposalService.create(testData)
+        const result: resources.Proposal = await proposalService.create(addHash(testData, testDataOptions))
             .then(value => value.toJSON());
 
         expect(result.category).toBe(testData.category);
@@ -284,8 +291,9 @@ describe('Proposal', () => {
     test('Should create another Proposal with category ITEM_VOTE', async () => {
 
         testData.category = ProposalCategory.ITEM_VOTE;
+        testData.title = 'Changing the title again.';
 
-        const result: resources.Proposal = await proposalService.create(testData)
+        const result: resources.Proposal = await proposalService.create(addHash(testData, testDataOptions))
             .then(value => value.toJSON());
         createdId = result.id;
 
@@ -316,4 +324,42 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(1);
     });
 
+    const addHash = (proposalCreateRequest: any, optionsCreateRequests?: ProposalOptionCreateRequest[]) => {
+
+        // hash the proposal
+        let hashableOptions = '';
+        if (optionsCreateRequests) {
+            const optionsList: resources.ProposalOption[] = createOptionsList(optionsCreateRequests);
+            for (const option of optionsList) {
+                hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
+                option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+            }
+            proposalCreateRequest.options = optionsList;
+        }
+        proposalCreateRequest.hash = ConfigurableHasher.hash(proposalCreateRequest, new HashableProposalAddMessageConfig([{
+            value: hashableOptions,
+            to: HashableProposalAddField.PROPOSAL_OPTIONS
+        }]));
+
+        log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+
+        return proposalCreateRequest;
+    };
+
+    const createOptionsList = (options: resources.ProposalOptionCreateRequest[]) => {
+        const optionsList: ProposalOptionCreateRequest[] = [];
+
+        for (const proposalOption of options) {
+            const option = {
+                optionId: proposalOption.optionId,
+                description: proposalOption.description
+            } as ProposalOptionCreateRequest;
+
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+            optionsList.push(option);
+        }
+        optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));
+
+        return optionsList;
+    };
 });
