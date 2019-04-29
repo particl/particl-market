@@ -15,8 +15,8 @@ export class BidSearchParams extends RequestBody {
     public listingItemHash: string; // if hash is given, the service will fetch the id
     public ordering: SearchOrder;
 
-    // order status filtering
-    public status: MPAction | OrderItemStatus;
+    // order type filtering
+    public type: MPAction | OrderItemStatus;
 
     // searchBy by string
     public searchString: string;

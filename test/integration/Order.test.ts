@@ -196,7 +196,7 @@ describe('Order', () => {
         expect(result.hash).toBe(order.hash);
     });
 
-    test('Should delete the Order, related OrderItem and OrderItemObjects', async () => {
+    test('Should delete the Order, related OrderItem', async () => {
         expect.assertions(4);
         await orderService.destroy(order.id);
         await orderService.findOne(order.id).catch(e =>
@@ -204,12 +204,6 @@ describe('Order', () => {
         );
         await orderItemService.findOne(order.OrderItems[0].id).catch(e =>
             expect(e).toEqual(new NotFoundException(order.OrderItems[0].id))
-        );
-        await orderItemObjectService.findOne(order.OrderItems[0].OrderItemObjects[0].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(order.OrderItems[0].OrderItemObjects[0].id))
-        );
-        await orderItemObjectService.findOne(order.OrderItems[0].OrderItemObjects[1].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(order.OrderItems[0].OrderItemObjects[1].id))
         );
     });
 

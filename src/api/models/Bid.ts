@@ -21,7 +21,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ShippingAddress',
         'ShippingAddress.Profile',
         'OrderItem',
-        'OrderItem.OrderItemObjects',
         'OrderItem.Order',
         'ParentBid',
         'ParentBid.OrderItem',
@@ -88,6 +87,8 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public static async search(searchParams: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
+        // TODO: redo the type search
+
         searchParams.ordering = searchParams.ordering ? searchParams.ordering : SearchOrder.ASC;
         searchParams.page = searchParams.page ? searchParams.page : 0;
         searchParams.pageLimit = searchParams.pageLimit ? searchParams.pageLimit : 10;
@@ -99,21 +100,21 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.listing_item_id', '=', searchParams.listingItemId);
                 }
 
-                if (searchParams.status
-                    && (searchParams.status === MPAction.MPA_ACCEPT
-                        || searchParams.status === MPAction.MPA_BID
-                        || searchParams.status === MPAction.MPA_CANCEL
-                        || searchParams.status === MPAction.MPA_REJECT)) {
-                    qb.where('bids.type', '=', searchParams.status);
+                if (searchParams.type
+                    && (searchParams.type === MPAction.MPA_ACCEPT
+                        || searchParams.type === MPAction.MPA_BID
+                        || searchParams.type === MPAction.MPA_CANCEL
+                        || searchParams.type === MPAction.MPA_REJECT)) {
+                    qb.where('bids.type', '=', searchParams.type);
                 }
 
-                if (searchParams.status
-                    && (searchParams.status === OrderItemStatus.AWAITING_ESCROW
-                        || searchParams.status === OrderItemStatus.COMPLETE
-                        || searchParams.status === OrderItemStatus.ESCROW_LOCKED
-                        || searchParams.status === OrderItemStatus.SHIPPING)) {
+                if (searchParams.type
+                    && (searchParams.type === OrderItemStatus.AWAITING_ESCROW
+                        || searchParams.type === OrderItemStatus.COMPLETE
+                        || searchParams.type === OrderItemStatus.ESCROW_LOCKED
+                        || searchParams.type === OrderItemStatus.SHIPPING)) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
-                    qb.where('order_items.status', '=', searchParams.status);
+                    qb.where('order_items.status', '=', searchParams.type);
                 }
 
                 if (searchParams.searchString) {

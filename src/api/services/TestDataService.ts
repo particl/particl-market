@@ -587,7 +587,7 @@ export class TestDataService {
         const bidModel = await this.bidService.findOne(generateParams.bidId);
         const bid: resources.Bid = bidModel.toJSON();
 
-        // then generate ordercreaterequest with some orderitems and orderitemobjects
+        // then generate ordercreaterequest with some orderitems
         const orderCreateParams = {
             bids: [bid],
             addressId: bid.ShippingAddress.id,
@@ -602,19 +602,6 @@ export class TestDataService {
         }
         return orderCreateRequest;
     }
-
-    /*
-    private async generateOrderItemData(bid: resources.Bid): Promise<OrderItemCreateRequest> {
-        const orderItemObjects: OrderItemObjectCreateRequest[] = [];
-        return {
-            order_id: 0,
-            itemHash: bid.ListingItem.hash,
-            bid_id: bid.id,
-            status: OrderItemStatus.AWAITING_ESCROW,
-            orderItemObjects
-        } as OrderItemCreateRequest;
-    }
-    */
 
     // -------------------
     // Proposals

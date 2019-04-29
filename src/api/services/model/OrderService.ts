@@ -18,6 +18,7 @@ import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 import { OrderStatus } from '../../enums/OrderStatus';
+import * as resources from 'resources';
 
 export class OrderService {
 
@@ -77,8 +78,7 @@ export class OrderService {
         // this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the order
-        const orderModel = await this.orderRepo.create(body);
-        const order = orderModel.toJSON();
+        const order: resources.Order = await this.orderRepo.create(body).then(value => value.toJSON());
 
         // this.log.debug('created order: ', JSON.stringify(order, null, 2));
         // this.log.debug('orderItemCreateRequests: ', JSON.stringify(orderItemCreateRequests, null, 2));

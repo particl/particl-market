@@ -15,7 +15,6 @@ export class Order extends Bookshelf.Model<Order> {
         'OrderItems',
         'OrderItems.Bid',
         'OrderItems.Bid.ListingItem',
-        'OrderItems.OrderItemObjects',
         'OrderItems.Bid.ListingItem.ListingItemTemplate',
         'OrderItems.Bid.ListingItem.PaymentInformation',
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow',
