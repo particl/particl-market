@@ -2,10 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 export enum HashableProposalAddField {
     PROPOSAL_SUBMITTER = 'proposalSubmitter',
     PROPOSAL_CATEGORY = 'proposalCategory',
@@ -17,7 +13,8 @@ export enum HashableProposalAddField {
 
 export enum HashableProposalOptionField {
     PROPOSALOPTION_OPTION_ID = 'proposalOptionId',
-    PROPOSALOPTION_DESCRIPTION = 'proposalOptionDescription'
+    PROPOSALOPTION_DESCRIPTION = 'proposalOptionDescription',
+    PROPOSALOPTION_PROPOSAL_HASH = 'proposalOptionProposalHash'
 }
 
 export declare enum HashableOrderField {

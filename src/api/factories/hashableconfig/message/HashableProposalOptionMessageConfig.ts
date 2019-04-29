@@ -15,7 +15,8 @@ export class HashableProposalOptionMessageConfig extends BaseHashableConfig {
         to: HashableProposalOptionField.PROPOSALOPTION_DESCRIPTION
     }] as HashableFieldConfig[];
 
-    constructor(values?: HashableFieldValueConfig[]) {
+    // pass the PROPOSAL_HASH as an extra field
+    constructor(values: HashableFieldValueConfig[]) {
         super(values);
     }
 }

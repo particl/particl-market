@@ -46,7 +46,7 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
-import {hash} from 'omp-lib/dist/hasher/hash';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

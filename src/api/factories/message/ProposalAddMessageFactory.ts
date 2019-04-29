@@ -14,7 +14,7 @@ import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalA
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
-import {HashableProposalAddField} from '../hashableconfig/HashableField';
+import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -65,7 +65,10 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
         // add hashes for the options too
         for (const option of optionsList) {
-            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
+                value: message.hash,
+                to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
+            }]));
         }
 
         return message;

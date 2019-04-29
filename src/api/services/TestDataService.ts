@@ -91,8 +91,9 @@ import { OrderCreateParams } from '../factories/model/ModelCreateParams';
 import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
 import {HashableBidCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import {HashableProposalCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import {HashableProposalAddField} from '../factories/hashableconfig/HashableField';
+import {HashableProposalAddField, HashableProposalOptionField} from '../factories/hashableconfig/HashableField';
 import {HashableListingItemTemplateCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
+import {HashableProposalOptionMessageConfig} from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 
 export class TestDataService {
 
@@ -674,8 +675,9 @@ export class TestDataService {
 
         for (let i = amount; i > 0; i--) {
             const proposalCreateRequest = await this.generateProposalData(generateParams);
-            let proposalModel = await this.proposalService.create(proposalCreateRequest);
-            let proposal: resources.Proposal = proposalModel.toJSON();
+
+            this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+            let proposal: resources.Proposal = await this.proposalService.create(proposalCreateRequest).then(value => value.toJSON());
 
             this.log.debug('generating ' + generateParams.voteCount + ' votes...');
             if (generateParams.voteCount > 0) {
@@ -685,10 +687,9 @@ export class TestDataService {
             // create and update ProposalResult
             let proposalResult = await this.proposalService.createEmptyProposalResult(proposal);
             proposalResult = await this.proposalService.recalculateProposalResult(proposal, true);
-            // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+            this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
-            proposalModel = await this.proposalService.findOne(proposal.id);
-            proposal = proposalModel.toJSON();
+            proposal = await this.proposalService.findOne(proposal.id).then(value => value.toJSON());
             items.push(proposal);
         }
 
@@ -787,6 +788,16 @@ export class TestDataService {
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS
         }]));
+
+        // add hashes for the options too
+        for (const option of proposalCreateRequest.options) {
+            hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
+
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
+                value: proposalCreateRequest.hash,
+                to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
+            }]));
+        }
 
         // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;

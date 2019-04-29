@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -42,8 +43,7 @@ import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listi
 import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as resources from 'resources';
-import {hash} from 'omp-lib/dist/hasher/hash';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -317,6 +317,7 @@ describe('ListingItem', () => {
     };
 
     // TODO: missing searchBy tests
+    // TODO: test with images only on the template tests
 
     // -------------------------------
     // TESTS

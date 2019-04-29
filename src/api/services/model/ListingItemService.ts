@@ -197,24 +197,25 @@ export class ListingItemService {
         // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
-        const listingItem = await this.findOne(id, false);
+        const listingItem: resources.ListingItem = await this.findOne(id, false).then(value => value.toJSON());
 
         // set new values
-        listingItem.Hash = body.hash;
-        listingItem.Seller = body.seller;
-        listingItem.ExpiryTime = body.expiryTime;
-        listingItem.PostedAt = body.postedAt;
-        listingItem.ExpiredAt = body.expiredAt;
-        listingItem.ReceivedAt = body.receivedAt;
-        listingItem.GeneratedAt = body.generatedAt;
+        listingItem.hash = body.hash;
+        listingItem.seller = body.seller;
+        listingItem.expiryTime = body.expiryTime;
+        listingItem.postedAt = body.postedAt;
+        listingItem.expiredAt = body.expiredAt;
+        listingItem.receivedAt = body.receivedAt;
+        listingItem.generatedAt = body.generatedAt;
 
         // and update the ListingItem record
-        const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
+        const updatedListingItem = await this.listingItemRepo.update(id, listingItem);
 
         // update related ItemInformation
-        // if the related one exists allready, then update. if it doesnt exist, create.
+        // if the related one exists already, then update. if it doesnt exist, create.
         // and if the related one is missing, then remove.
         let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
+
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
@@ -231,20 +232,18 @@ export class ListingItemService {
         }
 
         // update related PaymentInformation
-        // if the related one exists allready, then update. if it doesnt exist, create.
+        // if the related one exists already, then update. if it doesnt exist, create.
         // and if the related one is missing, then remove.
-        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() as PaymentInformationUpdateRequest;
+        const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
 
         if (!_.isEmpty(body.paymentInformation)) {
             if (!_.isEmpty(paymentInformation)) {
-                const paymentInformationId = paymentInformation.id;
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_id = id;
-                await this.paymentInformationService.update(paymentInformationId, paymentInformation);
+                const paymentInformationUR = body.paymentInformation as PaymentInformationCreateRequest;
+                await this.paymentInformationService.update(paymentInformation.id, paymentInformationUR);
             } else {
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_id = id;
-                await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+                const paymentInformationCR = body.paymentInformation as PaymentInformationCreateRequest;
+                paymentInformationCR.listing_item_id = id;
+                await this.paymentInformationService.create(paymentInformationCR);
             }
         } else {
             // empty paymentinfo create request

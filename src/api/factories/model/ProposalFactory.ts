@@ -15,7 +15,7 @@ import { ProposalCreateParams} from './ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import { HashableProposalAddField } from '../hashableconfig/HashableField';
+import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 
 export class ProposalFactory implements ModelFactoryInterface {
@@ -79,7 +79,10 @@ export class ProposalFactory implements ModelFactoryInterface {
 
         // add hashes for the options too
         for (const option of optionsList) {
-            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
+                value: createRequest.hash,
+                to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
+            }]));
         }
 
         return createRequest;
@@ -94,8 +97,6 @@ export class ProposalFactory implements ModelFactoryInterface {
                 optionId: proposalOption.optionId,
                 description: proposalOption.description
             } as ProposalOptionCreateRequest;
-
-            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
             optionsList.push(option);
         }
         optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));

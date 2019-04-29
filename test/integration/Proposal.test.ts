@@ -20,7 +20,7 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
-import { HashableProposalAddField } from '../../src/api/factories/hashableconfig/HashableField';
+import { HashableProposalAddField, HashableProposalOptionField } from '../../src/api/factories/hashableconfig/HashableField';
 import { HashableProposalOptionMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 
 describe('Proposal', () => {
@@ -332,7 +332,10 @@ describe('Proposal', () => {
             const optionsList: resources.ProposalOption[] = createOptionsList(optionsCreateRequests);
             for (const option of optionsList) {
                 hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
-                option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
+                option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
+                    value: proposalCreateRequest.hash,
+                    to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
+                }]));
             }
             proposalCreateRequest.options = optionsList;
         }
@@ -354,8 +357,6 @@ describe('Proposal', () => {
                 optionId: proposalOption.optionId,
                 description: proposalOption.description
             } as ProposalOptionCreateRequest;
-
-            option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig());
             optionsList.push(option);
         }
         optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));

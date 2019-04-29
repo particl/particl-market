@@ -17,7 +17,7 @@ import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemIma
 import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 describe('ItemImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -37,15 +37,15 @@ describe('ItemImageData', () => {
     // let createdImageDataId;
 
     const testData = {
+        dataId: '',
         imageVersion: ImageVersions.ORIGINAL.propName,
-        dataId: null,
         protocol: ProtocolDSN.LOCAL,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
     } as ItemImageDataCreateRequest;
 
     const testDataUpdated = {
-        dataId: null,
+        dataId: '',
         protocol: ProtocolDSN.LOCAL,
         imageVersion: ImageVersions.ORIGINAL.propName,
         encoding: 'BASE64',
