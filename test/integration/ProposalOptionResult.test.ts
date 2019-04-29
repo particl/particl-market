@@ -43,6 +43,7 @@ describe('ProposalOptionResult', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
+
     let createdProposal: resources.Proposal;
     let createdProposalResult: resources.ProposalResult;
     let createdListingItem: resources.ListingItem;
@@ -115,8 +116,8 @@ describe('ProposalOptionResult', () => {
 
         // log.debug('proposals: ', JSON.stringify(proposals, null, 2));
 
-        const proposalResultModel = await proposalResultService.findOne(createdProposal.ProposalResults[0].id);
-        createdProposalResult = proposalResultModel.toJSON();
+        createdProposalResult = await proposalResultService.findOne(createdProposal.ProposalResults[0].id).then(value => value.toJSON());
+
     });
 
     test('Should throw ValidationException because there is no related_id', async () => {
@@ -143,13 +144,12 @@ describe('ProposalOptionResult', () => {
         // first add new ProposalOption
         const proposalOptionCreateRequest = {
             proposal_id: createdProposal.id,
-            proposalHash: createdProposal.hash,
             optionId: 2,
-            description: 'REMOVE_MAYBE'
+            description: 'REMOVE_MAYBE',
+            hash: 'hash'
         } as ProposalOptionCreateRequest;
 
-        createdProposalOption = await proposalOptionService.create(proposalOptionCreateRequest)
-            .then(value => value.toJSON());
+        createdProposalOption = await proposalOptionService.create(proposalOptionCreateRequest).then(value => value.toJSON());
 
         // then add new ProposalOptionResult
         const testData = {
@@ -159,8 +159,7 @@ describe('ProposalOptionResult', () => {
             voters: 5
         } as ProposalOptionResultCreateRequest;
 
-        createdProposalOptionResult = await proposalOptionResultService.create(testData)
-            .then(value => value.toJSON());
+        createdProposalOptionResult = await proposalOptionResultService.create(testData).then(value => value.toJSON());
         const result = createdProposalOptionResult;
 
         // test the values
@@ -171,8 +170,7 @@ describe('ProposalOptionResult', () => {
     });
 
     test('Should list ProposalOptionResults with our newly create one', async () => {
-        const proposalOptionResults = await proposalOptionResultService.findAll()
-            .then(value => value.toJSON());
+        const proposalOptionResults = await proposalOptionResultService.findAll().then(value => value.toJSON());
 
         // testDataService.generate creates first 2 empty results, then recalculates and generates 2 more, +1 generated here === 5
         expect(proposalOptionResults.length).toBe(5);
