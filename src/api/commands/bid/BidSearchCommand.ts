@@ -57,7 +57,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const pageLimit = data.params[1];
         const ordering = data.params[2];
         const listingItemHash = data.params[3];
-        const status = data.params[4];
+        const type = data.params[4];
         const searchString = data.params[5];
 
         // TODO: also maybe we should add support for bid expiry at some point
@@ -80,7 +80,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             pageLimit,
             ordering,
             listingItemHash,
-            status,
+            type,
             searchString,
             bidders: data.params
         } as BidSearchParams;

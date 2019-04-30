@@ -75,10 +75,6 @@ export class OrderService {
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
 
-        const addressCreateRequest = body.address;
-        delete body.address;
-
-
         // this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the order

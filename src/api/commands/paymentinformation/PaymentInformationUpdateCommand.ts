@@ -17,6 +17,8 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import {ItemPriceUpdateRequest} from '../../requests/model/ItemPriceUpdateRequest';
+import {ShippingPriceUpdateRequest} from '../../requests/model/ShippingPriceUpdateRequest';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -66,8 +68,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
             };
         }
 
-        return this.paymentInformationService.update(listingItemTemplate.PaymentInformation.id, {
-            listing_item_template_id : data.params[0],
+        const paymentInformationUpdateRequest = {
             type: data.params[1],
             itemPrice: {
                 currency: data.params[2],
@@ -75,10 +76,12 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
                 shippingPrice: {
                     domestic: data.params[4],
                     international: data.params[5]
-                },
+                } as ShippingPriceUpdateRequest,
                 cryptocurrencyAddress
-            }
-        } as PaymentInformationUpdateRequest);
+            } as ItemPriceUpdateRequest
+        } as PaymentInformationUpdateRequest;
+
+        return this.paymentInformationService.update(listingItemTemplate.PaymentInformation.id, paymentInformationUpdateRequest);
     }
 
     public usage(): string {

@@ -60,8 +60,8 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             if (itemInformation.listingItemId) {
                 throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
             } else {
+                // TODO: its not possible to update the description
                 const updateRequest = {
-                    item_information_id: itemInformation.id,
                     country: countryCode,
                     address: data.params[2]
                 } as ItemLocationUpdateRequest;
@@ -82,6 +82,8 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             throw new MessageException('Country code can\'t be blank.');
         }
     }
+
+    // TODO: validate
 
     public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <country> <address> <gpsMarkerTitle>'

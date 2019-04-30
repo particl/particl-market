@@ -15,6 +15,8 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { EscrowUpdateRequest } from '../../requests/model/EscrowUpdateRequest';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import * as resources from 'resources';
+import {EscrowRatioUpdateRequest} from '../../requests/model/EscrowRatioUpdateRequest';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -43,24 +45,26 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
 
         // get the template
         const listingItemTemplateId = data.params[0];
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+            .then(value => value.toJSON());
 
         // template allready has listingitems so for now, it cannot be modified
         if (listingItemTemplate.ListingItems.length > 0) {
             throw new MessageException(`Escrow cannot be updated because ListingItems allready exist for the ListingItemTemplate.`);
         }
 
-        // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-        return this.escrowService.update(listingItemTemplate.PaymentInformation.Escrow.id, {
-            payment_information_id: listingItemTemplate.PaymentInformation.id,
+        const escrowUpdateRequest = {
             type: data.params[1],
             ratio: {
                 buyer: data.params[2],
                 seller: data.params[3]
-            }
-        } as EscrowUpdateRequest);
+            } as EscrowRatioUpdateRequest
+        } as EscrowUpdateRequest;
+
+        return this.escrowService.update(listingItemTemplate.PaymentInformation.Escrow.id, escrowUpdateRequest);
     }
+
+    // TODO: validate
 
     public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> ';
