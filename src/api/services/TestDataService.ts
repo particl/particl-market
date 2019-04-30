@@ -415,9 +415,44 @@ export class TestDataService {
     Promise<resources.Bid[]> {
 
         this.log.debug('generateBids, generateParams: ', generateParams);
-
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
+
+        // TODO: implement listingitem and template generation
+
+        /*
+        const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false,   // generateListingItemObjects
+            false,   // generateObjectDatas
+            generateParams.listingItemSeller, // profileId
+            false,   // generateListingItem
+            0,       // marketId
+            0       // categoryId
+        ]).toParamsArray();
+
+        const listingItemGenerateParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            true,                               // generateItemLocation
+            true,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
+            true,                               // generateMessagingInformation
+            true,                               // generateListingItemObjects
+            false,                              // generateObjectDatas
+            createdListingItemTemplate.hash,    // listingItemTemplateHash
+            sellerProfile.address               // seller
+        ]).toParamsArray();
+*/
 
         let listingItemTemplate: resources.ListingItemTemplate;
         let listingItem: resources.ListingItem;
@@ -475,8 +510,8 @@ export class TestDataService {
         const address = addresses[0];
 
         // TODO: defaultProfile might not be the correct one
-        const defaultProfile = await this.profileService.getDefault();
-        address.profile_id = defaultProfile.Id;
+        const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+        address.profile_id = defaultProfile.id;
 
         const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress();
         const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
