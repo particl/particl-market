@@ -10,7 +10,6 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { BidData } from '../../src/api/models/BidData';
 import { BidDataService } from '../../src/api/services/model/BidDataService';
 import { BidService } from '../../src/api/services/model/BidService';
 import { MarketService } from '../../src/api/services/model/MarketService';
@@ -45,8 +44,7 @@ describe('BidDatas', () => {
 
     let createdListingItem: resources.ListingItem;
     let createdBid: resources.Bid;
-
-    let createdId;
+    let createdBidData: resources.BidData;
 
     const testData = {
         key: 'color',
@@ -140,12 +138,12 @@ describe('BidDatas', () => {
         testData.bid_id = createdBid.id;
 
         log.debug('testData:', JSON.stringify(testData, null, 2));
-        const bidDataModel: BidData = await bidDataService.create(testData);
-        createdId = bidDataModel.Id;
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.create(testData).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
+
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should throw ValidationException because we want to create an empty BidData', async () => {
@@ -156,50 +154,50 @@ describe('BidDatas', () => {
     });
 
     test('Should list BidDatas with our new create one', async () => {
-        const bidDataCollection = await bidDataService.findAll();
-        const bidData = bidDataCollection.toJSON();
+        const bidDatas = await bidDataService.findAll().then(value => value.toJSON());
 
-        log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
-        expect(bidData.length).toBe(18);
-        const result = bidData[17];
+        log.debug('biddatas: ', JSON.stringify(bidDatas, null, 2));
+        expect(bidDatas.length).toBe(3); // generate creates two
+        createdBidData = bidDatas[2];
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should return one bid data', async () => {
-        const bidDataModel: BidData = await bidDataService.findOne(createdId);
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.findOne(createdBidData.id).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should throw ValidationException because we want to update with out bid_id', async () => {
         expect.assertions(1);
-        await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest).catch(e =>
+        await bidDataService.update(createdBidData.id, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should update the bid data', async () => {
         testDataUpdated.bid_id = createdBid.id;
-        const bidDataModel: BidData = await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest);
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.update(createdBidData.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should delete the bid data', async () => {
         expect.assertions(3);
         // delete created bid data
-        await bidDataService.destroy(createdId);
-        await bidDataService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await bidDataService.destroy(createdBidData.id);
+        await bidDataService.findOne(createdBidData.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdBidData.id))
         );
         // delete created bid
         await bidService.destroy(createdBid.id);
