@@ -19,13 +19,11 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/testda
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
-import { AddressType } from '../../src/api/enums/AddressType';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
 import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { OrderItemCreateRequest } from '../../src/api/requests/model/OrderItemCreateRequest';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';

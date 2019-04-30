@@ -102,7 +102,7 @@ describe('OrderItem', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             listingItem.hash,           // listingItemHash
-            MPAction.MPA_ACCEPT,        // type
+            MPAction.MPA_BID,           // type
             buyerProfile.address,       // bidder
             sellerProfile.address       // seller
         ]).toParamsArray();

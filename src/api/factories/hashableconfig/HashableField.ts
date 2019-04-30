@@ -17,7 +17,7 @@ export enum HashableProposalOptionField {
     PROPOSALOPTION_PROPOSAL_HASH = 'proposalOptionProposalHash'
 }
 
-export declare enum HashableOrderField {
+export enum HashableOrderField {
     ORDER_BUYER = 'orderBuyer',
     ORDER_SELLER = 'orderSeller'
 }

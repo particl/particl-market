@@ -13,6 +13,7 @@ import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequ
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableOrderCreateRequestConfig } from '../hashableconfig/createrequest/HashableOrderCreateRequestConfig';
+import {HashableOrderField} from '../hashableconfig/HashableField';
 
 export class OrderFactory implements ModelFactoryInterface {
 
@@ -30,16 +31,20 @@ export class OrderFactory implements ModelFactoryInterface {
      * @param params
      */
     public async get(params: OrderCreateParams/*, bidMessage?: BidMessage, smsgMessage?: resources.SmsgMessage*/): Promise<OrderCreateRequest> {
-        const orderItems: OrderItemCreateRequest[] = this.getOrderItems(params.bids);
+
+        const orderItemCreateRequests: OrderItemCreateRequest[] = this.getOrderItems(params.bids);
+
         const createRequest = {
             address_id: params.addressId,
             buyer: params.buyer,
             seller: params.seller,
-            orderItems,
+            orderItems: orderItemCreateRequests,
             status: params.status,
             generatedAt: params.generatedAt,
             hash: params.hash
         } as OrderCreateRequest;
+
+        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
 
         // if we're the seller, we should receive the order hash from the buyer
         if (!createRequest.hash) {

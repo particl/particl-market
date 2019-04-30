@@ -94,6 +94,9 @@ import {HashableProposalCreateRequestConfig} from '../factories/hashableconfig/c
 import {HashableProposalAddField, HashableProposalOptionField} from '../factories/hashableconfig/HashableField';
 import {HashableListingItemTemplateCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import {HashableProposalOptionMessageConfig} from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
+import {OrderStatus} from '../enums/OrderStatus';
+import {OrderItemStatus} from '../enums/OrderItemStatus';
+import {OrderItemCreateRequest} from '../requests/model/OrderItemCreateRequest';
 
 export class TestDataService {
 
@@ -529,6 +532,8 @@ export class TestDataService {
 
         // generate bid
         if (generateParams.generateBid) {
+            this.log.debug('generating Bid...');
+
             const bidGenerateParams = new GenerateBidParams([
                 generateParams.generateListingItemTemplate,
                 generateParams.generateListingItem,
@@ -544,22 +549,19 @@ export class TestDataService {
             this.log.debug('bids generated:', bids.length);
             this.log.debug('bid.id:', bid.id);
 
-        } else {
-            const bidModel = await this.bidService.findOne(generateParams.bidId);
-            bid = bidModel.toJSON();
-        }
+            // set the bid_id for order generation
+            generateParams.bidId = bid.id;
 
-        // set the bid_id for order generation
-        generateParams.bidId = bid.id;
+        } else {
+            bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
+        }
 
         const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
             const orderCreateRequest = await this.generateOrderData(generateParams);
 
-            // this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
-
-            const savedOrderModel = await this.orderService.create(orderCreateRequest);
-            const result = savedOrderModel.toJSON();
+            this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
+            const result: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
             items.push(result);
         }
 
@@ -568,16 +570,19 @@ export class TestDataService {
 
     private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
 
+        this.log.debug('generateOrderData, generateParams: ', generateParams);
+
         // get the bid
-        const bidModel = await this.bidService.findOne(generateParams.bidId);
-        const bid: resources.Bid = bidModel.toJSON();
+        const bid: resources.Bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
 
         // then generate ordercreaterequest with some orderitems
         const orderCreateParams = {
             bids: [bid],
             addressId: bid.ShippingAddress.id,
+            status: OrderStatus.PROCESSING,
             buyer: bid.bidder,
-            seller: bid.ListingItem.seller
+            seller: bid.ListingItem.seller,
+            generatedAt: +new Date().getTime()
         } as OrderCreateParams;
 
         const orderCreateRequest = await this.orderFactory.get(orderCreateParams);
