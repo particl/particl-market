@@ -70,10 +70,14 @@ export class OrderService {
         const startTime = new Date().getTime();
 
         const body: OrderCreateRequest = JSON.parse(JSON.stringify(data));
-        // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
+        this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
+
+        const addressCreateRequest = body.address;
+        delete body.address;
+
 
         // this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
 
@@ -116,11 +120,7 @@ export class OrderService {
 
     public async destroy(id: number): Promise<void> {
 
-        const orderModel = await this.findOne(id);
-        const order = orderModel.toJSON();
-
-        // first remove the related address
-        await this.addressService.destroy(order.ShippingAddress.id);
+        const order: resources.Order = await this.findOne(id).then(value => value.toJSON());
 
         // then remove the OrderItems
         for (const orderItem of order.OrderItems) {

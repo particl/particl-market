@@ -455,11 +455,13 @@ export class TestDataService {
 
         const items: resources.Bid[] = [];
         for (let i = amount; i > 0; i--) {
-            const bid = await this.generateBidData(generateParams);
-            const savedBidModel = await this.bidService.create(bid);
-            const result = savedBidModel.toJSON();
+            const bidCreateRequest = await this.generateBidData(generateParams);
+            const result: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
             items.push(result);
         }
+
+        // this.log.debug('bids:', JSON.stringify(items, null, 2));
+
         return this.generateResponse(items, withRelated);
     }
 
@@ -479,24 +481,7 @@ export class TestDataService {
         // TODO: generate biddatas
         const bidDatas = [
             {key: 'size', value: 'XL'},
-            {key: 'color', value: 'pink'},
-            {key: BidDataValue.BUYER_OUTPUTS, value: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
-                ',\"vout\":1,\"amount\":1.52497491}]'},
-            {key: BidDataValue.BUYER_PUBKEY, value: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
-            {key: BidDataValue.BUYER_CHANGE_ADDRESS, value: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
-            {key: BidDataValue.BUYER_CHANGE_AMOUNT, value: 96.52477491},
-            {key: BidDataValue.BUYER_RELEASE_ADDRESS, value: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
-            {key: BidDataValue.SELLER_PUBKEY, value: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
-            {key: BidDataValue.SELLER_OUTPUTS, value: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
-                ',\"vout\":1,\"amount\":1.52497491}]'},
-            {key: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: 'asdf'},
-            {key: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: 'asdf'},
-            {key: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: 'asdf'},
-            {key: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: 'asdf'},
-            {key: BidDataValue.SHIPPING_ADDRESS_CITY, value: 'asdf'},
-            {key: BidDataValue.SHIPPING_ADDRESS_STATE, value: ''},
-            {key: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: '1234'},
-            {key: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: 'FI'}
+            {key: 'color', value: 'pink'}
         ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
@@ -504,21 +489,21 @@ export class TestDataService {
             address,
             bidder,
             bidDatas,
-            generatedAt: new Date().getTime()
+            generatedAt: +new Date().getTime(),
+            msgid: Faker.random.uuid()
         } as BidCreateRequest;
         // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
 
-        // TODO: FIX THIS!! this wont create correct hash
-        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([]/*[{
-            value: generateParams.listingItem.hash,
+        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
+            value: generateParams.listingItemHash,
             to: HashableBidField.ITEM_HASH
         }, {
-            value: generateParams.listingItem.PaymentInformation.Escrow.type,
+            value: EscrowType.MAD_CT,
             to: HashableBidField.PAYMENT_ESCROW_TYPE
         }, {
-            value: params.listingItem.PaymentInformation.ItemPrice.currency,
+            value: Cryptocurrency.PART,
             to: HashableBidField.PAYMENT_CRYPTO
-        }]*/));
+        }]));
 
         // if we have a hash, fetch the listingItem and set the relation
         if (generateParams.listingItemHash) {
