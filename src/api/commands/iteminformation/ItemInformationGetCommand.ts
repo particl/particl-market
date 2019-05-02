@@ -35,7 +35,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        return this.itemInformationService.findByItemTemplateId(data.params[0]);
+        return this.itemInformationService.findByListingItemTemplateId(data.params[0]);
     }
 
     /**

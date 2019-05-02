@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemInformationUpdateCommand', () => {
@@ -20,6 +20,9 @@ describe('ItemInformationUpdateCommand', () => {
     const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInfoUpdateSubCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
 
+    let createdListingItemTemplateId: resources.ListingItemTemplate;
+    let createdListingItemTemplateId2: resources.ListingItemTemplate;
+
     const testDataListingItemTemplate = {
         title: 'Item Information',
         shortDescription: 'Item short description',
@@ -29,9 +32,6 @@ describe('ItemInformationUpdateCommand', () => {
         }
     };
 
-    let createdListingItemTemplateId: resources.ListingItemTemplate;
-    let createdListingItemTemplateId2: resources.ListingItemTemplate;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -40,11 +40,11 @@ describe('ItemInformationUpdateCommand', () => {
 
         // get category
         const itemCategoryList: any = await testUtil.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
-        const categories: any = itemCategoryList.getBody()['result'];
-        testDataListingItemTemplate.itemCategory.id = categories.id;
+        const categories: resources.ItemCategory[] = itemCategoryList.getBody()['result'];
+        testDataListingItemTemplate.itemCategory.id = categories[0].id;
 
-        // create listing item
-        const generateListingItemTemplateParams = new GenerateParams([
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
             false,  // generateItemImages

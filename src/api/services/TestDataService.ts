@@ -334,6 +334,8 @@ export class TestDataService {
                 .then(value => value.toJSON());
             this.log.debug('created listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
+            this.log.debug('generateParams.generateListingItem: ', generateParams.generateListingItem);
+
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
@@ -371,7 +373,8 @@ export class TestDataService {
             }
             items.push(listingItemTemplate);
         }
-        return this.generateResponse(items, withRelated);
+        this.log.debug('generated listingItemTemplates');
+        return await this.generateResponse(items, withRelated);
     }
 
     // -------------------

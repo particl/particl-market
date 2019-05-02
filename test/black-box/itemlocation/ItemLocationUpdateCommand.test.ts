@@ -5,12 +5,10 @@
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/model/ListingItemTemplateCreateRequest';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('ItemLocationUpdateCommand', () => {
 
@@ -22,147 +20,99 @@ describe('ItemLocationUpdateCommand', () => {
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        hash: '',
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            listingItemId: null,
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            itemLocation: {
-                country: 'CN',
-                address: 'USA'
-            }
-        },
-        paymentInformation: {
-            type: SaleType.SALE
-        }
-    } as ListingItemTemplateCreateRequest;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    const testDataUpdated = ['CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
-
-    let createdTemplateId;
-    let createdItemInformationId;
-
-    const generateListingItemParams = new GenerateListingItemParams([
-        false,   // generateItemInformation
-        false,   // generateItemLocation
-        false,   // generateShippingDestinations
-        false,   // generateItemImages
-        false,   // generatePaymentInformation
-        false,   // generateEscrow
-        false,   // generateItemPrice
-        false,   // generateMessagingInformation
-        false    // generateListingItemObjects
-    ]).toParamsArray();
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
+        // profile & market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
-        // set hash
-        testDataListingItemTemplate.hash = ObjectHashDEPRECATED.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
-        // create item template
-        const res: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const result: any = res;
-        createdTemplateId = result.id;
-        createdItemInformationId = result.ItemInformation.id;
-        testDataUpdated.unshift(createdTemplateId);
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
+        console.log('asdfasdfasdfasdf');
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
+
+        console.log('listingItemTemplate:', listingItemTemplate);
 
     });
 
-    test('Should update ItemLocation and set null location marker fields', async () => {
-        // update item location
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
-            createdTemplateId,
-            testDataUpdated[1],
-            testDataUpdated[2]]);
+    test('Should update ItemLocation without location marker fields', async () => {
+
+        log.info('defaultProfile: ', defaultProfile);
+        log.info('defaultMarket: ', defaultMarket);
+
+        const testData = [itemLocationUpdateCommand,
+            listingItemTemplate.id,
+            'FI',
+            'Helsinki address'
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        expect(result.country).toBe(testDataUpdated[1]);
-        expect(result.address).toBe(testDataUpdated[2]);
-        expect(result.itemInformationId).toBe(createdItemInformationId);
+        expect(result.country).toBe(testData[2]);
+        expect(result.address).toBe(testData[3]);
     });
 
     test('Should update ItemLocation', async () => {
-        // update item location
-        const testDataUpdated2 = testDataUpdated;
-        testDataUpdated2.unshift(itemLocationUpdateCommand);
-        const res: any = await testUtil.rpc(itemLocationCommand, testDataUpdated2);
+        const testData = [itemLocationUpdateCommand,
+            listingItemTemplate.id,
+            'FI',
+            'Helsinki address',
+            'Marker title', 'Marker desc', 25.7, 22.77
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.country).toBe(testDataUpdated2[2]);
-        expect(result.address).toBe(testDataUpdated2[3]);
-        expect(result.itemInformationId).toBe(createdItemInformationId);
-        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated2[4]);
-        expect(result.LocationMarker.markerText).toBe(testDataUpdated2[5]);
-        expect(result.LocationMarker.lat).toBe(testDataUpdated2[6]);
-        expect(result.LocationMarker.lng).toBe(testDataUpdated2[7]);
+
+        expect(result.country).toBe(testData[2]);
+        expect(result.address).toBe(testData[3]);
+        expect(result.LocationMarker.markerTitle).toBe(testData[4]);
+        expect(result.LocationMarker.markerText).toBe(testData[5]);
+        expect(result.LocationMarker.lat).toBe(testData[6]);
+        expect(result.LocationMarker.lng).toBe(testData[7]);
     });
 
     test('Should fail because we want to update without Country code', async () => {
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId]);
+        const testData = [itemLocationUpdateCommand,
+            listingItemTemplate.id
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, testData]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Country code can\'t be blank.');
-    });
-
-    test('Should fail because we want to update without address not valid', async () => {
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId, 'USA']);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Country code USA was not found!`);
-    });
-
-    // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-    test('Should not update ItemLocation because ItemInformation is related with ListingItem', async () => {
-        // generate listing item
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemParams   // what kind of data to generate
-        ) as ListingItem[];
-
-        const listingItemId = listingItems[0]['id'];
-        // set listing item id in item information
-        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
-
-        // set hash
-        testDataListingItemTemplate.itemInformation.title = 'New title';
-        testDataListingItemTemplate.hash = ObjectHashDEPRECATED.getHash(testDataListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
-
-        // create new item template
-        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const newTemplateId = newListingItemTemplate.id;
-
-        // update item location
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
-            newTemplateId,
-            'China',
-            'TEST ADDRESS',
-            'TEST TITLE',
-            'TEST DESC',
-            55.6,
-            60.8
-        ]);
-
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('ItemLocation cannot be updated because the item has allready been posted!');
     });
 
 });
