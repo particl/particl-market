@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -12,7 +14,10 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -20,7 +25,8 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) private itemInformationService: ItemInformationService
+        @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMINFORMATION_GET);
         this.log = new Logger(__filename);
@@ -28,32 +34,47 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
      *
      * @param data
      * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        return this.itemInformationService.findByListingItemTemplateId(data.params[0]);
+        const listingItemTemplate = data.params[0];
+        return this.itemInformationService.findByListingItemTemplateId(listingItemTemplate.id);
     }
 
     /**
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
+     * data.params[]:
+     *  [0]: listingItemTemplateId
      *
      * @param {RpcRequest} data
      * @returns {Promise<void>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            this.log.error('ListingItemTemplate ID missing.');
-            throw new MessageException('ListingItemTemplate ID missing.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('ListingItemTemplate ID must be numeric.');
-            throw new MessageException('ListingItemTemplate ID must be numeric.');
+            throw new MissingParamException('listingItemTemplateId');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
+
+        data.params[0] = listingItemTemplate;
         return data;
     }
 

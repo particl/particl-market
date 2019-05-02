@@ -20,17 +20,14 @@ describe('ItemLocationUpdateCommand', () => {
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-
     let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // profile & market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
+        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -48,7 +45,6 @@ describe('ItemLocationUpdateCommand', () => {
             false,  // generateListingItem
             defaultMarket.id   // marketId
         ]).toParamsArray();
-        console.log('asdfasdfasdfasdf');
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,
@@ -63,9 +59,6 @@ describe('ItemLocationUpdateCommand', () => {
     });
 
     test('Should update ItemLocation without location marker fields', async () => {
-
-        log.info('defaultProfile: ', defaultProfile);
-        log.info('defaultMarket: ', defaultMarket);
 
         const testData = [itemLocationUpdateCommand,
             listingItemTemplate.id,
