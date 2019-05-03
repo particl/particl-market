@@ -14,6 +14,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {ShippingCountries} from '../../../core/helpers/ShippingCountries';
+import * as resources from "resources";
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {Model} from 'bookshelf';
 
 export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -29,20 +35,50 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
     }
 
     /**
-     *
      * data.params[]:
-     * [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const itemInformation = await this.getItemInformation(data);
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        return this.itemLocationService.destroy(listingItemTemplate.ItemInformation.ItemLocation.id);
+    }
 
-        // ItemLocation cannot be removed if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-        if (itemInformation.listingItemId) {
-            throw new MessageException('ItemLocation cannot be removed because the ListingItem has allready been posted!');
-        } else {
-            return this.itemLocationService.destroy(itemInformation.ItemLocation.id);
+    /**
+     * data.params[]:
+     * [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<ItemLocation>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // can't remove if ItemLocation doesnt exist
+        if (_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) {
+            throw new ModelNotFoundException('ItemLocation');
+        }
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {
@@ -56,24 +92,5 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
 
     public description(): string {
         return 'Remove and destroy an item location associated with listingItemTemplateId.';
-    }
-
-    /*
-     * TODO: NOTE: This function may be duplicated between commands.
-     */
-    private async getItemInformation(data: any): Promise<any> {
-        // find the existing listing item template
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
-
-        // find the related ItemInformation
-        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
-
-        // Through exception if ItemInformation or ItemLocation does not exist
-        if (_.size(itemInformation) === 0 || _.size(itemInformation.ItemLocation) === 0) {
-            this.log.warn(`ItemInformation or ItemLocation with the listingItemTemplateId=${data.params[0]} was not found!`);
-            throw new MessageException(`ItemInformation or ItemLocation with the listingItemTemplateId=${data.params[0]} was not found!`);
-        }
-
-        return itemInformation;
     }
 }
