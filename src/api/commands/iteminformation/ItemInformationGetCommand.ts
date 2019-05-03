@@ -50,7 +50,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      *  [0]: listingItemTemplateId
      *
      * @param {RpcRequest} data
-     * @returns {Promise<void>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
