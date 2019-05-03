@@ -10,8 +10,8 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { OrderItemStatus } from 'OrderItemStatus.ts';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 
 describe('Happy Buy Flow', () => {
 

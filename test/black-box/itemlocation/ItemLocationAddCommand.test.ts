@@ -9,6 +9,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 
 describe('ItemLocationAddCommand', () => {
 
@@ -22,14 +23,7 @@ describe('ItemLocationAddCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-    let createdTemplate: resources.ListingItemTemplate;
-
-    const countryCode = 'CN';
-    const address = 'USA';
-    const markerTitle = 'TITLE';
-    const markerDesc = 'DESCRIPTION';
-    const markerLat = 25.7;
-    const markerLng = 22.77;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -61,56 +55,112 @@ describe('ItemLocationAddCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-        createdTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
 
         expect(listingItemTemplates.length).toBe(1);
 
     });
 
-    test('Should not create ItemLocation without country', async () => {
+    const country = 'FI';
+    const address = 'Mannerheimintie, 00100 Helsinki';
+    const gpsMarkerTitle = 'TITLE';
+    const gpsMarkerDescription = 'DESCRIPTION';
+    const gpsMarkerLatitude = 25.7;
+    const gpsMarkerLongitude = 22.77;
+
+    test('Should fail to add ItemLocation because of missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing params.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
+
+    test('Should fail to add ItemLocation because of missing countryCode', async () => {
+        const testData = [itemLocationAddCommand,
+            listingItemTemplate.id
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
+    });
+
+    test('Should fail to add ItemLocation because of missing gpsMarkerDescription', async () => {
+        const testData = [itemLocationAddCommand,
+            listingItemTemplate.id,
+            country,
+            address,
+            gpsMarkerTitle
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('gpsMarkerDescription').getMessage());
+    });
+
+    test('Should fail to add ItemLocation because of missing gpsMarkerLatitude', async () => {
+        const testData = [itemLocationAddCommand,
+            listingItemTemplate.id,
+            country,
+            address,
+            gpsMarkerTitle,
+            gpsMarkerDescription
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('gpsMarkerLatitude').getMessage());
+    });
+
+    test('Should fail to add ItemLocation because of missing gpsMarkerLongitude', async () => {
+        const testData = [itemLocationAddCommand,
+            listingItemTemplate.id,
+            country,
+            address,
+            gpsMarkerTitle,
+            gpsMarkerDescription,
+            gpsMarkerLatitude
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('gpsMarkerLongitude').getMessage());
+    });
+
+    // TODO: should not create because invalid params...
+
+    // TODO: should not create because ListingItemTemplate doesnt exist
+    // TODO: should not create because ItemLocation already exists
 
     test('Should create ItemLocation', async () => {
 
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand,
-            createdTemplate.id,
-            countryCode,
+        const testData = [itemLocationAddCommand,
+            listingItemTemplate.id,
+            country,
             address,
-            markerTitle,
-            markerDesc,
-            markerLat,
-            markerLng
-        ]);
+            gpsMarkerTitle,
+            gpsMarkerDescription,
+            gpsMarkerLatitude,
+            gpsMarkerLongitude
+        ];
+
+        const res: any = await testUtil.rpc(itemLocationCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         expect(result.LocationMarker).toBeDefined();
-        expect(result.country).toBe(countryCode);
+        expect(result.country).toBe(country);
         expect(result.address).toBe(address);
-        expect(result.LocationMarker.markerTitle).toBe(markerTitle);
-        expect(result.LocationMarker.markerText).toBe(markerDesc);
-        expect(result.LocationMarker.lat).toBe(markerLat);
-        expect(result.LocationMarker.lng).toBe(markerLng);
+        expect(result.LocationMarker.markerTitle).toBe(gpsMarkerTitle);
+        expect(result.LocationMarker.markerText).toBe(gpsMarkerDescription);
+        expect(result.LocationMarker.lat).toBe(gpsMarkerLatitude);
+        expect(result.LocationMarker.lng).toBe(gpsMarkerLongitude);
     });
 
-    test('Should create ItemLocation if ItemLocation already exist for listingItemtemplate', async () => {
-        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand,
-            createdTemplate.id,
-            countryCode,
-            address,
-            markerTitle,
-            markerDesc,
-            markerLat,
-            markerLng
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`ItemLocation for the listingItemTemplateId=${createdTemplate.id} already exists!`);
-    });
 
 });

@@ -63,7 +63,6 @@ describe('ItemLocationRemoveCommand', () => {
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
@@ -72,7 +71,6 @@ describe('ItemLocationRemoveCommand', () => {
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, fakeId]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
@@ -81,7 +79,6 @@ describe('ItemLocationRemoveCommand', () => {
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, fakeId]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
@@ -117,7 +114,6 @@ describe('ItemLocationRemoveCommand', () => {
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, template.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemLocation').getMessage());
     });
 
