@@ -3,16 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {GenerateListingItemTemplateParams} from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ItemLocationRemoveCommand', () => {
 
