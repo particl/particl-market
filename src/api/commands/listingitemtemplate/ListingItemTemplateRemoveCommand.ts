@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,6 +14,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -28,24 +32,52 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        // check and find that listingItemTemplate is not related with any listingItem
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
 
-        this.log.debug('remove template: ', data.params[0]);
-        // this.log.debug('listingItemTemplate.ListingItems: ', listingItemTemplate.ListingItems.length);
-        // this.log.debug('_.isEmpty(listingItemTemplate.ListingItems): ', _.isEmpty(listingItemTemplate.ListingItems));
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        return await this.listingItemTemplateService.destroy(listingItemTemplate.id);
+    }
 
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // template has listingitems, so it cannot be removed
         if (!_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new MessageException(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${data.params[0]}`);
         }
-        return await this.listingItemTemplateService.destroy(data.params[0]);
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {

@@ -14,6 +14,9 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -30,27 +33,52 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
-     * @param data
-     * @returns {Promise<Escrow>}
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
+    }
+
+    /**
+     * data.params[]:
+     * [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MessageException('Expected ListingItemTemplate id but received no params.');
+            throw new MissingParamException('listingItemTemplateId');
         }
 
-        const listingItemTemplateId = data.params[0];
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
 
-        // template allready has listingitems so for now, it cannot be modified
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // template already has listingitems, so it cannot be modified
         if (listingItemTemplate.ListingItems.length > 0) {
-            throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
+            throw new MessageException(`Escrow cannot be deleted because ListingItems already exist for the ListingItemTemplate.`);
         }
 
-        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
+        // TODO: check that PaymentInformation exists
+        // TODO: check that Escrow exists
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {

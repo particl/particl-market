@@ -12,7 +12,7 @@ import { ListingItemObject } from './ListingItemObject';
 import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
 import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
-import {Logger as LoggerType} from '../../core/Logger';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -40,6 +40,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
+        'ListingItems.Market',
         'ListingItems.PaymentInformation',
         'ListingItems.PaymentInformation.ItemPrice',
         'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',

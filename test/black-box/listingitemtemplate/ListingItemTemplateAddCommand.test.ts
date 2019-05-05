@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 
 describe('ListingItemTemplateAddCommand', () => {
