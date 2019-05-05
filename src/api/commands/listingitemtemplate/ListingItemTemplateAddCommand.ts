@@ -2,26 +2,28 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {ListingItemTemplateService} from '../../services/model/ListingItemTemplateService';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {ListingItemTemplateCreateRequest} from '../../requests/model/ListingItemTemplateCreateRequest';
-import {ListingItemTemplate} from '../../models/ListingItemTemplate';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {CryptoAddress, CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {ListingItemTemplateFactory} from '../../factories/model/ListingItemTemplateFactory';
-import {ListingItemTemplateCreateParams} from '../../factories/model/ModelCreateParams';
-import {NotImplementedException} from '../../exceptions/NotImplementedException';
-import {CoreRpcService} from '../../services/CoreRpcService';
+import * as resources from 'resources';
+import { inject, named } from 'inversify';
+import { request, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
+import { ListingItemTemplate } from '../../models/ListingItemTemplate';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { CryptoAddress, CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
+import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -30,6 +32,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemTemplateFactory) public listingItemTemplateFactory: ListingItemTemplateFactory
     ) {
@@ -39,7 +42,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: profile_id
+     *  [0]: profile: resources.Profile
      *
      *  itemInformation
      *  [1]: title
@@ -65,6 +68,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         // TODO: support for custom categories
 
+        const profile: resources.Profile = data.params[0];
+
         // depending on escrowType, create the address for the payment
         const escrowType: EscrowType = data.params[10];
         let cryptoAddress: CryptoAddress;
@@ -87,7 +92,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         }
 
         const createRequest: ListingItemTemplateCreateRequest = await this.listingItemTemplateFactory.get({
-                profileId: data.params[0],
+                profileId: profile.id,
                 title: data.params[1],
                 shortDescription: data.params[2],
                 longDescription: data.params[3],
@@ -136,7 +141,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('profile_id');
+            throw new MissingParamException('profileId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('title');
         } else if (data.params.length < 3) {
@@ -167,7 +172,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 */
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profile_id', 'number');
+            throw new InvalidParamException('profileId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('title', 'string');
         } else if (typeof data.params[2] !== 'string') {
@@ -222,6 +227,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         if (!data.params[10]) {
             data.params[10] = EscrowType.MAD_CT;
         }
+
         const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];
         if (validEscrowTypes.indexOf(data.params[10]) === -1) {
             throw new InvalidParamException('escrowType');
@@ -236,6 +242,18 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                     throw new ModelNotFoundException('ListingItemTemplate');
                 });
         }
+
+        // make sure Profile with the id exists
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+        data.params[0] = profile;
+
+        // TODO: make sure category exists
 
         return data;
     }
