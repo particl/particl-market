@@ -15,6 +15,7 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
+import {GovernanceAction} from '../../enums/GovernanceAction';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -45,6 +46,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
                 : ProposalCategory.PUBLIC_VOTE;
 
         const message: ProposalAddMessage = {
+            type: GovernanceAction.MPA_PROPOSAL_ADD,
             submitter: params.sender.address,
             title: params.title,
             description: params.description,

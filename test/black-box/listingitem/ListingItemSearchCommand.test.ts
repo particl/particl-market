@@ -3,15 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
-import * as _ from 'lodash';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 
 describe('ListingItemSearchCommand', () => {
@@ -29,8 +29,8 @@ describe('ListingItemSearchCommand', () => {
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
 
-    let createdListingItemTemplate: resources.ListingItemTemplate;
-    let createdListingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
     const defaultListingItemSearchParams = new ListingItemSearchParams();
 
@@ -64,23 +64,20 @@ describe('ListingItemSearchCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
 
-        createdListingItemTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
         // log.debug('listingItemTemplate:', JSON.stringify(createdListingItemTemplate, null, 2));
 
-        // expect template is related to correct profile and listingitem posted to correct market
-        expect(createdListingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(createdListingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
+        // expect template is related to correct profile and ListingItem posted to correct market
+        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
+        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
 
-        // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHashDEPRECATED.getHash(createdListingItemTemplate, HashableObjectTypeDeprecated.LISTINGITEMTEMPLATE);
-        log.debug('listingItemTemplate.hash:', createdListingItemTemplate.hash);
-        log.debug('generatedTemplateHash:', generatedTemplateHash);
-        expect(createdListingItemTemplate.hash).toBe(generatedTemplateHash);
+        // TODO: generate hash and expect template hash created on the server matches what we create here
+        // expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
 
         // expect the item hash generated at the same time as template, matches with the templates one
-        log.debug('listingItemTemplate.hash:', createdListingItemTemplate.hash);
-        log.debug('listingItemTemplate.ListingItems[0].hash:', createdListingItemTemplate.ListingItems[0].hash);
-        expect(createdListingItemTemplate.hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
+        // log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
+        // log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
+        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
@@ -102,19 +99,7 @@ describe('ListingItemSearchCommand', () => {
             generateListingItemParams           // what kind of data to generate
         ) as resources.ListingItem[];
 
-        createdListingItem = listingItems[0];
-    });
-
-    test('Should fail to searchBy ListingItems if type is invalid', async () => {
-        // wtf, why pass defaultListingItemSearchParams?
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.category = 'INVALID';
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
-        res.expectJson();
-        res.expectStatusCode(404);
-
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
+        listingItem = listingItems[0];
     });
 
     test('Should fail to searchBy ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
@@ -126,7 +111,7 @@ describe('ListingItemSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL. you could pass * as all too');
+        expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL.');
     });
 
     test('Should searchBy OWN ListingItems when profileid = OWN', async () => {
@@ -140,7 +125,7 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
     });
 
     test('Should searchBy ALL ListingItems when profileid = ALL', async () => {
@@ -153,8 +138,8 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(createdListingItem.hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result[1].hash).toBe(listingItem.hash);
     });
 
     test('Should searchBy ALL ListingItems when profileId is empty, since default is ALL', async () => {
@@ -166,8 +151,8 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(createdListingItem.hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result[1].hash).toBe(listingItem.hash);
     });
 
     test('Should searchBy ALL ListingItems when profileId = *', async () => {
@@ -181,8 +166,8 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(createdListingItem.hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result[1].hash).toBe(listingItem.hash);
     });
 
     test('Should searchBy only first ListingItem using pagination and setting pageLimit to 1', async () => {
@@ -197,7 +182,7 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
     });
 
@@ -214,7 +199,7 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdListingItem.hash);
+        expect(result[0].hash).toBe(listingItem.hash);
     });
 
     test('Should return empty ListingItems array if invalid pagination', async () => {
@@ -235,11 +220,11 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy ListingItems by category.key', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
-        params.category = createdListingItem.ItemInformation.ItemCategory.key;
+        params.category = listingItem.ItemInformation.ItemCategory.key;
 
         // TODO: add category to item generation
-        const itemCount = createdListingItem.ItemInformation.ItemCategory.key
-            === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key
+        const itemCount = listingItem.ItemInformation.ItemCategory.key
+            === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key
             ? 2 : 1;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -254,10 +239,10 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy ListingItems by category.id', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
-        params.category = createdListingItem.ItemInformation.ItemCategory.id;
+        params.category = listingItem.ItemInformation.ItemCategory.id;
 
-        const itemCount = createdListingItem.ItemInformation.ItemCategory.id
-            === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
+        const itemCount = listingItem.ItemInformation.ItemCategory.id
+            === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
             ? 2 : 1;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -276,7 +261,7 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should searchBy ListingItems by searchString', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
+        params.searchString = listingItem.ItemInformation.title.substr(0, 10);
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
@@ -284,22 +269,22 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdListingItem.hash);
+        expect(result[0].hash).toBe(listingItem.hash);
 
     });
 
     test('Should return two ListingItems when searching by price', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.minPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-            < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
+        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
 
-        params.maxPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-            > createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
+        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
@@ -312,15 +297,15 @@ describe('ListingItemSearchCommand', () => {
     test('Should return one ListingItem when searching by price', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.minPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-            < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
+        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        params.maxPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-        > createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
+        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
@@ -356,7 +341,7 @@ describe('ListingItemSearchCommand', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
+        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
         expect(result[0].ItemInformation).toBeUndefined();
         expect(result[0].PaymentInformation).toBeUndefined();
         expect(result[0].MessagingInformation).toBeUndefined();
@@ -369,10 +354,10 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy ListingItems by country (ItemLocation)', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
-        params.country = createdListingItem.ItemInformation.ItemLocation.country;
+        params.country = listingItem.ItemInformation.ItemLocation.country;
 
-        const itemCount = createdListingItem.ItemInformation.ItemLocation.country
-        === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
+        const itemCount = listingItem.ItemInformation.ItemLocation.country
+        === listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
             ? 2 : 1;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -389,14 +374,14 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
 
-        const shippingDestinationsForItem1: resources.ShippingDestination[] = createdListingItem.ItemInformation.ShippingDestinations;
+        const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
         params.shippingDestination = shippingDestinationsThatShip[0].country;
 
-        const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
+        const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS
                 && o.country === params.shippingDestination;
@@ -417,14 +402,14 @@ describe('ListingItemSearchCommand', () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
-        const shippingDestinationsForItem1: resources.ShippingDestination[] = createdListingItem.ItemInformation.ShippingDestinations;
+        const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
         params.shippingDestination = shippingDestinationsThatShip[0].country;
 
-        const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
+        const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS
                 && o.country === params.shippingDestination;
@@ -432,17 +417,17 @@ describe('ListingItemSearchCommand', () => {
 
         const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
 
-        params.minPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-        < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
+        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
 
-        params.maxPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-        > createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
+        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
+            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
+        params.searchString = listingItem.ItemInformation.title.substr(0, 10);
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
@@ -468,7 +453,7 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy for flagged listing items', async () => {
         // flag item
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem.hash,
+            listingItem.hash,
             defaultProfile.id
         ]);
         // make sure we got the expected result from posting the proposal
@@ -483,7 +468,7 @@ describe('ListingItemSearchCommand', () => {
         const resMain: any = res.getBody()['result'];
 
         expect(resMain.length).toBe(1);
-        expect(resMain[0].hash).toBe(createdListingItem.hash);
+        expect(resMain[0].hash).toBe(listingItem.hash);
     });
 
 });

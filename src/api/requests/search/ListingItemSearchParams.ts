@@ -6,8 +6,6 @@ import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
-import * as _ from 'lodash';
-import {ItemPrice} from '../../models/ItemPrice';
 
 // tslint:disable:variable-name
 export class ListingItemSearchParams extends RequestBody {
@@ -22,8 +20,8 @@ export class ListingItemSearchParams extends RequestBody {
     public category: string | number;
     // @ValidateIf(o => o.type)
     // @IsEnum(ListingItemSearchType)
-    public type: ListingItemSearchType;
-    public profileId: string | number;
+    public type: ListingItemSearchType; // TODO: not used for anything
+    public profileId: string | number;  // TODO: wtf is this? theres also buyer and seller?
     public minPrice: number | null;
     public maxPrice: number | null;
     public country: string;
@@ -59,8 +57,8 @@ export class ListingItemSearchParams extends RequestBody {
         this.pageLimit              = generateParams[1] ? generateParams[1] : 10;
         this.order                  = generateParams[2] ? generateParams[2] : SearchOrder.ASC;
         this.category               = generateParams[3] ? generateParams[3] : '';
-        this.type                   = generateParams[4] ? generateParams[4] : 'ALL';
-        this.profileId              = generateParams[5] ? generateParams[4] : 'ALL';
+        this.type                   = ListingItemSearchType.ALL;
+        this.profileId              = generateParams[5] ? generateParams[5] : 'ALL';
         this.minPrice               = generateParams[6] ? generateParams[6] : null;
         this.maxPrice               = generateParams[7] ? generateParams[7] : null;
         this.country                = generateParams[8] ? generateParams[8] : '';
