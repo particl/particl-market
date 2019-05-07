@@ -21,6 +21,7 @@ export class EnvConfig {
         APP_URL_PREFIX: '/api',
         APP_PORT: 3000,
         RPCHOSTNAME: 'localhost',
+        RPCCOOKIEFILE: '.cookie',
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
         REGTEST_PORT: 19792,
