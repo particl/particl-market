@@ -23,6 +23,7 @@ export class CoreCookieService {
 
     private DEFAULT_CORE_USER = 'test';
     private DEFAULT_CORE_PASSWORD = 'test';
+    private CORE_COOKIE_FILE = process.env.RPCCOOKIEFILE ? process.env.RPCCOOKIEFILE : '.cookie';
 
     private PATH_TO_COOKIE: string;
 
@@ -124,7 +125,7 @@ export class CoreCookieService {
         // just check if it exist so it logs an error just in case
         if (this.checkIfExists(dir)) {
             // return path to cookie
-            const cookiePath = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ), '.cookie');
+            const cookiePath = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ), this.CORE_COOKIE_FILE);
             this.PATH_TO_COOKIE = cookiePath;
             return cookiePath;
         }

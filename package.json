@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.0.52",
+  "version": "0.0.54",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
