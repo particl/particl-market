@@ -984,8 +984,8 @@ export class TestDataService {
             locationMarker: {
                 lat: _.random(-50, 50),
                 lng: _.random(-50, 50),
-                markerTitle: Faker.lorem.word(),
-                markerText: Faker.lorem.sentence()
+                title: Faker.lorem.word(),
+                description: Faker.lorem.sentence()
             } as LocationMarkerCreateRequest
         } as ItemLocationCreateRequest;
     }
@@ -1049,10 +1049,10 @@ export class TestDataService {
 
         const escrow = generateParams.generateEscrow
             ? {
-                type: EscrowType.MAD, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
+                type: EscrowType.MAD_CT, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
-                    buyer: _.random(1, 100),
-                    seller: _.random(1, 100)
+                    buyer: 100,     // _.random(1, 100),
+                    seller: 100     // _.random(1, 100)
                 } as EscrowRatioCreateRequest
             } as EscrowCreateRequest
             : undefined;
@@ -1060,14 +1060,16 @@ export class TestDataService {
         const itemPrice = generateParams.generateItemPrice
             ? {
                 currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
-                basePrice: _.random(0.1, 1.00),
+                basePrice: +_.random(0.1, 1.00).toFixed(8),
                 shippingPrice: {
-                    domestic: _.random(0.01, 0.10),
-                    international: _.random(0.10, 0.20)
+                    domestic: +_.random(0.01, 0.10).toFixed(8),
+                    international: +_.random(0.10, 0.20).toFixed(8)
                 } as ShippingPriceCreateRequest,
+                // TODO: omp-lib generates these, so we cant use these right now
                 cryptocurrencyAddress: {
-                    type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
-                    address: await this.coreRpcService.getNewAddress()
+                    type: CryptoAddressType.STEALTH, // Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
+                    address: (await this.coreRpcService.getNewStealthAddress()).address
+                    // profile_id: 0 // TODO: should be linked to profile
                 } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;

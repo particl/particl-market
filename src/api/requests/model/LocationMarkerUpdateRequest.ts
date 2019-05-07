@@ -15,8 +15,8 @@ export class LocationMarkerUpdateRequest extends RequestBody implements ModelReq
     @IsNotEmpty()
     public lng: number;
 
-    public markerTitle: string;
-    public markerText: string;
+    public title: string;
+    public description: string;
 
 }
 // tslint:enable:variable-name

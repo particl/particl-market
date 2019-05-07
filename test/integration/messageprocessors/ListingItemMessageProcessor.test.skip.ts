@@ -120,8 +120,8 @@ describe('ListingItemMessage', () => {
         expect(result.ItemInformation.ItemLocation.address).toBe(message.item.information.location.address);
 
         // ItemInformation.ItemLocation.LocationMarker
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(message.item.information.location.gps.marker_title);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(message.item.information.location.gps.marker_text);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.title).toBe(message.item.information.location.gps.title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(message.item.information.location.gps.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(message.item.information.location.gps.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(message.item.information.location.gps.lng);
 

@@ -15,7 +15,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('direction').notNullable();
             table.string('target').nullable();
 
-            table.string('msgid').notNullable().unique();
+            table.string('msgid').notNullable(); // .unique(); cant be unique if we are also saving the outgoing smsgs
             table.string('version').notNullable();
             table.boolean('read').nullable();
             table.boolean('paid').nullable();

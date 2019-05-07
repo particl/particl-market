@@ -26,10 +26,11 @@ import { NotImplementedException } from '../../exceptions/NotImplementedExceptio
 import { EventEmitter } from 'events';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { strip } from 'omp-lib/dist/util';
+import { Logger as LoggerType } from '../../../core/Logger';
 
 export abstract class BaseActionService implements ActionServiceInterface, ActionProcessorInterface {
 
-    private static validate(msg: MarketplaceMessage): boolean {
+    public static validate(msg: MarketplaceMessage): boolean {
 
         switch (msg.action.type) {
             case MPAction.MPA_LISTING_ADD:
@@ -52,14 +53,20 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
     public smsgMessageService: SmsgMessageService;
     public smsgMessageFactory: SmsgMessageFactory;
     public eventEmitter: EventEmitter;
+    public log: LoggerType;
+    public eventType: ActionMessageTypes;
 
     constructor(eventType: ActionMessageTypes, smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory,
-                eventEmitter: EventEmitter) {
+                eventEmitter: EventEmitter, Logger: typeof LoggerType) {
+
+        this.log = new Logger(__filename);
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.smsgMessageFactory = smsgMessageFactory;
         this.eventEmitter = eventEmitter;
-        this.configureEventListener(eventType);
+        this.eventType = eventType;
+        // this.configureEventListener(this.eventType);
+
     }
 
     /**
@@ -107,7 +114,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                                 // todo: get rid of this if, its only here because smsgSendResponse.msgid is optional
                                 // because in one special case we return msgids, so they're both optional
                                 if (smsgSendResponse.msgid) {
-                                    await this.saveMessage(smsgSendResponse.msgid, ActionDirection.OUTGOING);
+                                    await this.saveOutgoingMessage(smsgSendResponse.msgid, ActionDirection.OUTGOING);
                                     return smsgSendResponse;
                                 } else {
                                     // we should never end up here.
@@ -139,6 +146,34 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
     public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
+     * - validate the received MarketplaceMessage
+     *   - on failure: update the SmsgMessage.status to SmsgMessageStatus.VALIDATION_FAILED
+     * - call onEvent to process the message
+     * - if there's no errors, update the SmsgMessage.status
+     * - in case of Exception, also update the SmsgMessage.status to SmsgMessageStatus.PROCESSING_FAILED
+     *
+     * @param eventType
+     */
+    protected configureEventListener(eventType: ActionMessageTypes): void {
+        this.log.debug('configureEventListener: ', eventType.toString());
+        this.eventEmitter.on(eventType.toString(), async (event: MarketplaceMessageEvent) => {
+
+            if (BaseActionService.validate(event.marketplaceMessage)) {
+                await this.onEvent(event)
+                    .then(async status => {
+                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                    })
+                    .catch(async reason => {
+                        // todo: handle different reasons?
+                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                    });
+            } else {
+                await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.VALIDATION_FAILED);
+            }
+        });
+    }
+
+    /**
      *
      * @param marketplaceMessage
      * @param sendParams
@@ -164,7 +199,7 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param direction
      * @param msgid
      */
-    private async saveMessage(msgid: string, direction: ActionDirection): Promise<resources.SmsgMessage> {
+    private async saveOutgoingMessage(msgid: string, direction: ActionDirection): Promise<resources.SmsgMessage> {
         return await this.smsgService.smsg(msgid, false, false)
             .then(async coreMessage => {
                 return await this.smsgMessageFactory.get({
@@ -177,34 +212,6 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
                             .then(value => value.toJSON());
                     });
             });
-    }
-
-    /**
-     * - validate the received MarketplaceMessage
-     *   - on failure: update the SmsgMessage.status to SmsgMessageStatus.VALIDATION_FAILED
-     * - call onEvent to process the message
-     * - if there's no errors, update the SmsgMessage.status
-     * - in case of Exception, also update the SmsgMessage.status to SmsgMessageStatus.PROCESSING_FAILED
-     *
-     * @param eventType
-     */
-    private configureEventListener(eventType: ActionMessageTypes): void {
-        this.eventEmitter.on(eventType, async (event: MarketplaceMessageEvent) => {
-
-            if (BaseActionService.validate(event.marketplaceMessage)) {
-                await this.onEvent(event)
-                    .then(async status => {
-                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
-                    })
-                    .catch(async reason => {
-                        // todo: handle different reasons?
-                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
-                    });
-
-            } else {
-                await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.VALIDATION_FAILED);
-            }
-        });
     }
 
 }

@@ -166,10 +166,10 @@ describe('ListingItemFactory', () => {
         expect(message.information.location.gps).not.toHaveProperty('itemLocationId');
         expect(message.information.location.gps).not.toHaveProperty('updatedAt');
         expect(message.information.location.gps).not.toHaveProperty('createdAt');
-        expect(message.information.location.gps).not.toHaveProperty('markerTitle');
-        expect(message.information.location.gps).not.toHaveProperty('markerText');
-        expect(message.information.location.gps.marker_title).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(message.information.location.gps.marker_text).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(message.information.location.gps).not.toHaveProperty('title');
+        expect(message.information.location.gps).not.toHaveProperty('decsription');
+        expect(message.information.location.gps.title).toBe(testData.ItemInformation.ItemLocation.LocationMarker.title);
+        expect(message.information.location.gps.description).toBe(testData.ItemInformation.ItemLocation.LocationMarker.description);
         expect(message.information.location.gps.lat).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(message.information.location.gps.lng).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lng);
 
@@ -353,8 +353,8 @@ describe('ListingItemFactory', () => {
         expect(result.itemInformation.itemLocation.address).toBe(message.information.location.address);
 
         // ItemInformation.ItemLocation.LocationMarker
-        expect(result.itemInformation.itemLocation.locationMarker.markerTitle).toBe(message.information.location.gps.marker_title);
-        expect(result.itemInformation.itemLocation.locationMarker.markerText).toBe(message.information.location.gps.marker_text);
+        expect(result.itemInformation.itemLocation.locationMarker.title).toBe(message.information.location.gps.title);
+        expect(result.itemInformation.itemLocation.locationMarker.description).toBe(message.information.location.gps.description);
         expect(result.itemInformation.itemLocation.locationMarker.lat).toBe(message.information.location.gps.lat);
         expect(result.itemInformation.itemLocation.locationMarker.lng).toBe(message.information.location.gps.lng);
 

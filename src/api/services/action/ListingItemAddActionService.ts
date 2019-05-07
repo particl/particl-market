@@ -35,7 +35,7 @@ import { ListingItemAddMessageCreateParams } from '../../requests/message/Listin
 
 export class ListingItemAddActionService extends BaseActionService {
 
-    public log: LoggerType;
+    public static ActionEvent = Symbol(MPAction.MPA_LISTING_ADD);
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -53,8 +53,7 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LISTING_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_LISTING_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**
@@ -66,6 +65,8 @@ export class ListingItemAddActionService extends BaseActionService {
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
         } as ListingItemAddMessageCreateParams);
+
+        this.log.debug('resulting actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         return {
             version: ompVersion(),
@@ -111,11 +112,13 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
+        this.log.debug('ListingItemAddActionService.onEvent()');
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
         // - first get the Market, fail if it doesn't exist
+        //   - todo: this shouldnt really happen, but if it does, make sure the msg will not be reprocessed?
         // - if ListingItem contains a custom category, create them
         // - fetch the root category with related to create the listingItemCreateRequest
         // - create the ListingItem locally with the listingItemCreateRequest
@@ -125,9 +128,14 @@ export class ListingItemAddActionService extends BaseActionService {
         return await this.marketService.findByAddress(smsgMessage.to)
             .then(async marketModel => {
                 const market: resources.Market = marketModel.toJSON();
+                this.log.debug('market: ', JSON.stringify(market, null, 2));
 
-                await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
+                const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
+                this.log.debug('category: ', JSON.stringify(category, null, 2));
+
                 const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+                this.log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
+
                 const listingItemCreateRequest = await this.listingItemFactory.get({
                         msgid: smsgMessage.msgid,
                         marketId: market.id,
@@ -136,19 +144,23 @@ export class ListingItemAddActionService extends BaseActionService {
                     actionMessage,
                     smsgMessage);
 
+                this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+
                 return await this.listingItemService.create(listingItemCreateRequest)
                     .then(async value => {
                         const listingItem: resources.ListingItem = value.toJSON();
                         await this.createFlaggedItemIfNeeded(listingItem);
                         await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+                        this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
                         return SmsgMessageStatus.PROCESSED;
                     })
                     .catch(reason => {
+                        this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                         return SmsgMessageStatus.PROCESSING_FAILED;
                     });
             })
             .catch(reason => {
-                // market not found
+                this.log.error('PROCESSING ERROR: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

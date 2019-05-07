@@ -19,7 +19,7 @@ export class HashableListingItemTemplateCreateRequestConfig extends BaseHashable
         from: 'itemInformation.longDescription',
         to: HashableItemField.LONG_DESC
     }, {
-        from: 'paymentInformation.payment.type',
+        from: 'paymentInformation.type',
         to: HashableItemField.SALE_TYPE
     }, {
         from: 'paymentInformation.escrow.type',

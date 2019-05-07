@@ -36,8 +36,6 @@ import { BidCancelValidator } from '../../messages/validator/BidCancelValidator'
 
 export class BidCancelActionService extends BaseActionService {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
@@ -52,8 +50,7 @@ export class BidCancelActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_CANCEL, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

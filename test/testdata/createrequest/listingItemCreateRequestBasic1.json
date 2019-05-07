@@ -17,8 +17,8 @@
             "country": "FI",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": 12.1234,
                 "lng": 23.2314
             }

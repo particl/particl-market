@@ -37,10 +37,7 @@ import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 
-
 export class BidAcceptActionService extends BaseActionService {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -57,8 +54,7 @@ export class BidAcceptActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

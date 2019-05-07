@@ -61,8 +61,8 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         const allGpsMarketDataParamsExist = data.params[3] && data.params[4] && data.params[5] && data.params[6];
         if (allGpsMarketDataParamsExist) {
             locationMarker = {
-                markerTitle: data.params[3],
-                markerText: data.params[4],
+                title: data.params[3],
+                description: data.params[4],
                 lat: data.params[5],
                 lng: data.params[6]
             } as LocationMarkerCreateRequest;

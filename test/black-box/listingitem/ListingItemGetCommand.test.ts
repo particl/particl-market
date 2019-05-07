@@ -72,8 +72,8 @@ describe('ListingItemGetCommand', () => {
         expect(result.ItemInformation.ItemCategory.description).toBe(createdListingItem.ItemInformation.ItemCategory.description);
         expect(result.ItemInformation.ItemLocation.country).toBe(createdListingItem.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(createdListingItem.ItemInformation.ItemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.title).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();
@@ -123,8 +123,8 @@ describe('ListingItemGetCommand', () => {
         expect(result.ItemInformation.ItemCategory.description).toBe(createdListingItem.ItemInformation.ItemCategory.description);
         expect(result.ItemInformation.ItemLocation.country).toBe(createdListingItem.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(createdListingItem.ItemInformation.ItemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.title).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(createdListingItem.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();

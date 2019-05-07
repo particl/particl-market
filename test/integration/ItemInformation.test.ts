@@ -72,8 +72,8 @@ describe('ItemInformation', () => {
             country: 'South Africa',
             address: 'asdf, asdf, asdf',
             locationMarker: {
-                markerTitle: 'Helsinki',
-                markerText: 'Helsinki',
+                title: 'Helsinki',
+                description: 'Helsinki',
                 lat: 12.1234,
                 lng: 23.2314
             } as LocationMarkerCreateRequest
@@ -114,8 +114,8 @@ describe('ItemInformation', () => {
             country: 'EU',
             address: 'zxcv, zxcv, zxcv',
             locationMarker: {
-                markerTitle: 'Stockholm',
-                markerText: 'Stockholm',
+                title: 'Stockholm',
+                description: 'Stockholm',
                 lat: 34.2314,
                 lng: 11.1234
             } as LocationMarkerUpdateRequest
@@ -214,8 +214,8 @@ describe('ItemInformation', () => {
         expect(result.ItemCategory.description).toBe(testData.itemCategory.description);
         expect(result.ItemLocation.country).toBe(testData.itemLocation.country);
         expect(result.ItemLocation.address).toBe(testData.itemLocation.address);
-        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemLocation.LocationMarker.markerText).toBe(testData.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.title).toBe(testData.itemLocation.locationMarker.title);
+        expect(result.ItemLocation.LocationMarker.description).toBe(testData.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
@@ -256,8 +256,8 @@ describe('ItemInformation', () => {
         expect(result.ItemCategory.description).toBe(testData.itemCategory.description);
         expect(result.ItemLocation.country).toBe(testData.itemLocation.country);
         expect(result.ItemLocation.address).toBe(testData.itemLocation.address);
-        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemLocation.LocationMarker.markerText).toBe(testData.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.title).toBe(testData.itemLocation.locationMarker.title);
+        expect(result.ItemLocation.LocationMarker.description).toBe(testData.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
@@ -285,8 +285,8 @@ describe('ItemInformation', () => {
         expect(result.ItemCategory.description).toBe(testDataUpdated.itemCategory.description);
         expect(result.ItemLocation.country).toBe(testDataUpdated.itemLocation.country);
         expect(result.ItemLocation.address).toBe(testDataUpdated.itemLocation.address);
-        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.title).toBe(testDataUpdated.itemLocation.locationMarker.title);
+        expect(result.ItemLocation.LocationMarker.description).toBe(testDataUpdated.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);

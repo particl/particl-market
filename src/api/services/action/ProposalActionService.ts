@@ -39,8 +39,6 @@ import { VoteRequest } from '../../requests/action/VoteRequest';
 
 export class ProposalActionService extends BaseActionService {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
@@ -56,8 +54,7 @@ export class ProposalActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

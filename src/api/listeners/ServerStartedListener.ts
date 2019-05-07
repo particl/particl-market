@@ -14,11 +14,11 @@ import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ServerStartedListener implements interfaces.Listener {
 
     public static Event = Symbol('ServerStartedListenerEvent');
-    public static ServerReadyEvent = Symbol('ServerReadyListenerEvent');
 
     public log: LoggerType;
     public isAppReady = false;
@@ -41,8 +41,6 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        // ActionServices need to be injected here to start the event listeners when testing
-
         this.log = new Logger(__filename);
     }
     // tslint:enable:max-line-length

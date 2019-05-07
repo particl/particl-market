@@ -44,7 +44,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
     public async process(messages: CoreSmsgMessage[]): Promise<void> {
 
         const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
-        this.log.debug('INCOMING messages.length: ', messages.length);
+        // this.log.debug('INCOMING messages.length: ', messages.length);
 
         // - fetch the CoreSmsgMessage from core
         // - create the createrequests
@@ -63,7 +63,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
 
-        this.log.info('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
+        // this.log.info('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
@@ -122,6 +122,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                     const smsgMessages: CoreSmsgMessage[] = messages.messages.splice(0, Math.min(10, messages.messages.length));
                     this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
+                } else {
+                    this.log.debug('no new unread smsgmessages...');
                 }
                 return;
             })

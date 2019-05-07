@@ -68,10 +68,10 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
 
                 if (data.params[5] && data.params[6]) {
                     updateRequest.locationMarker = {
-                        markerTitle: data.params[3],
-                            markerText: data.params[4],
-                            lat: data.params[5],
-                            lng: data.params[6]
+                        title: data.params[3],
+                        description: data.params[4],
+                        lat: data.params[5],
+                        lng: data.params[6]
                     } as LocationMarkerUpdateRequest;
                 }
 

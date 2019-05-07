@@ -156,8 +156,8 @@ describe('ItemLocationAddCommand', () => {
         expect(result.LocationMarker).toBeDefined();
         expect(result.country).toBe(country);
         expect(result.address).toBe(address);
-        expect(result.LocationMarker.markerTitle).toBe(gpsMarkerTitle);
-        expect(result.LocationMarker.markerText).toBe(gpsMarkerDescription);
+        expect(result.LocationMarker.title).toBe(gpsMarkerTitle);
+        expect(result.LocationMarker.description).toBe(gpsMarkerDescription);
         expect(result.LocationMarker.lat).toBe(gpsMarkerLatitude);
         expect(result.LocationMarker.lng).toBe(gpsMarkerLongitude);
     });

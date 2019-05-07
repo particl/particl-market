@@ -62,6 +62,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // send to given market address
         const toAddress = market.address;
 
+        this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
+
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate
@@ -108,38 +110,24 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         // make sure required data exists and fetch it
-        const listingItemTemplateId = data.params[0];
-        const daysRetention = data.params[1];
-        const marketId = data.params[2];
+        // const listingItemTemplateId = data.params[0];
+        // const daysRetention = data.params[1];
+        // const marketId = data.params[2];
 
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => value.toJSON()); // throws if not found
-        data.params[0] = listingItemTemplate;
 
-        const market: resources.Market = await this.marketService.findOne(marketId)
+        const market: resources.Market = await this.marketService.findOne(data.params[2])
             .then(value => value.toJSON()); // throws if not found
-        data.params[2] = market;
-
-        // make some other validations
-        const itemPrice: resources.ItemPrice = listingItemTemplate.PaymentInformation.ItemPrice;
-        if ( !(_.isNumber(itemPrice.basePrice) && itemPrice.basePrice >= 0)) {
-            throw new InvalidParamException('itemPrice');
-        }
-        if (itemPrice.ShippingPrice) {
-            if (!itemPrice.ShippingPrice.domestic || !itemPrice.ShippingPrice.international) {
-                throw new InvalidParamException('shippingPrice');
-            } else {
-                if (itemPrice.ShippingPrice.domestic < 0 || itemPrice.ShippingPrice.international < 0 ) {
-                    throw new InvalidParamException('shippingPrice');
-                }
-            }
-        }
 
         // check size limit
         const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
         if (!templateMessageDataSize.fits) {
             throw new MessageException('ListingItemTemplate information exceeds message size limitations');
         }
+
+        data.params[0] = listingItemTemplate;
+        data.params[2] = market;
 
         return data;
     }

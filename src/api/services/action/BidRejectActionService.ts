@@ -33,10 +33,7 @@ import { BidRejectMessageCreateParams } from '../../requests/message/BidRejectMe
 import { BidRejectValidator } from '../../messages/validator/BidRejectValidator';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 
-
 export class BidRejectActionService extends BaseActionService {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -52,8 +49,7 @@ export class BidRejectActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_REJECT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_REJECT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

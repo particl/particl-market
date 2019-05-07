@@ -10,8 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('location_markers', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('marker_title').nullable();
-            table.text('marker_text').nullable();
+            table.string('title').nullable();
+            table.text('description').nullable();
             table.float('lat').notNullable();
             table.float('lng').notNullable();
 

@@ -20,6 +20,8 @@ describe('ListingItemTemplatePostCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
+    // TODO: randomize posting from one of the two nodes
+
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
@@ -40,7 +42,7 @@ describe('ListingItemTemplatePostCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
-        // generate listingItemTemplate
+        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -50,17 +52,23 @@ describe('ListingItemTemplatePostCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
         ]).toParamsArray();
 
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+        const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             2,                          // how many to generate
-            true,                       // return model
+            true,                    // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
+        ) as resources.ListingItemTemplate[];
+
         listingItemTemplate = listingItemTemplates[0];
         brokenListingItemTemplate = listingItemTemplates[1];
+
     });
 
     test('Should post a ListingItem in to the default market', async () => {
@@ -74,8 +82,9 @@ describe('ListingItemTemplatePostCommand', () => {
             defaultMarket.id
         ]);
         res.expectJson();
-
         const result: any = res.getBody()['result'];
+
+        log.debug('result:', JSON.stringify(result, null, 2));
         if (result.result === 'Send failed.') {
             log.debug(JSON.stringify(result, null, 2));
         }
@@ -95,7 +104,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
-
+/*
     test('Should receive MPA_LISTING_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
         // wait for some time to make sure it's received
@@ -155,5 +164,5 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(res.error.error.message).toBeDefined();
         expect(res.error.error.message).toBe('Template details exceed message size limitations');
     });
-
+*/
 });

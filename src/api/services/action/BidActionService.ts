@@ -43,10 +43,7 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
-
 export class BidActionService extends BaseActionService {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -63,8 +60,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_BID, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

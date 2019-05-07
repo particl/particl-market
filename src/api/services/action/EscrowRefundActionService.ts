@@ -44,10 +44,7 @@ import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowRefundMessageCreateParams } from '../../requests/message/EscrowRefundMessageCreateParams';
 import { EscrowRefundValidator } from '../../messages/validator/EscrowRefundValidator';
 
-
 export class EscrowRefundActionService extends BaseActionService {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -66,8 +63,7 @@ export class EscrowRefundActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_REFUND, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(MPActionExtended.MPA_REFUND, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

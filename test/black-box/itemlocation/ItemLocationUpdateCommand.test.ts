@@ -90,8 +90,8 @@ describe('ItemLocationUpdateCommand', () => {
 
         expect(result.country).toBe(testData[2]);
         expect(result.address).toBe(testData[3]);
-        expect(result.LocationMarker.markerTitle).toBe(testData[4]);
-        expect(result.LocationMarker.markerText).toBe(testData[5]);
+        expect(result.LocationMarker.title).toBe(testData[4]);
+        expect(result.LocationMarker.description).toBe(testData[5]);
         expect(result.LocationMarker.lat).toBe(testData[6]);
         expect(result.LocationMarker.lng).toBe(testData[7]);
     });

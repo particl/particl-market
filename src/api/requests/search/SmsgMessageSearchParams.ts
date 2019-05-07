@@ -2,10 +2,11 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
-import { RequestBody } from '../../../core/api/RequestBody';
-import { SearchOrder } from '../../enums/SearchOrder';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import {IsEnum} from 'class-validator';
+import {RequestBody} from '../../../core/api/RequestBody';
+import {SearchOrder} from '../../enums/SearchOrder';
+import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 // tslint:disable:variable-name
 export class SmsgMessageSearchParams extends RequestBody {
@@ -13,6 +14,9 @@ export class SmsgMessageSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder = SearchOrder.DESC;
     public orderByColumn = 'received';
+
+    @IsEnum(ActionDirection)
+    public direction: ActionDirection = ActionDirection.INCOMING;
 
     @IsEnum(SmsgMessageStatus)
     public status: SmsgMessageStatus;

@@ -115,11 +115,16 @@ export class SmsgMessageService {
      */
     public async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<SmsgMessage> {
 
+        // this.log.debug('message:', JSON.stringify(message, null, 2));
+
         const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
 
+        // todo: we could just set the one field
         const updateRequest = {
             type: message.type.toString(),
             status,
+            direction: message.direction,
+            target: message.target,
             msgid: message.msgid,
             version: message.version,
             read: message.read,

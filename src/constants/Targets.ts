@@ -383,6 +383,7 @@ export const Targets = {
     },
     Listener:     {
         ServerStartedListener: 'ServerStartedListener',
+        ListingItemAddListener: 'ListingItemAddListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'

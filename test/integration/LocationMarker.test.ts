@@ -44,15 +44,15 @@ describe('LocationMarker', () => {
     let defaultProfile: resources.Profile;
 
     const testData = {
-        markerTitle: 'Helsinki',
-        markerText: 'Helsinki',
+        title: 'Helsinki',
+        description: 'Helsinki',
         lat: 12.1234,
         lng: 23.2314
     } as LocationMarkerCreateRequest;
 
     const testDataUpdated = {
-        markerTitle: 'Stockholm',
-        markerText: 'Stockholm',
+        title: 'Stockholm',
+        description: 'Stockholm',
         lat: 34.2314,
         lng: 11.1234
     } as LocationMarkerUpdateRequest;
@@ -118,8 +118,8 @@ describe('LocationMarker', () => {
         locationMarker = await locationMarkerService.create(testData).then(value => value.toJSON());
         const result: resources.LocationMarker = locationMarker;
 
-        expect(result.markerTitle).toBe(testData.markerTitle);
-        expect(result.markerText).toBe(testData.markerText);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
@@ -138,8 +138,8 @@ describe('LocationMarker', () => {
 
         const result = locationMarkers[1];
 
-        expect(result.markerTitle).toBe(testData.markerTitle);
-        expect(result.markerText).toBe(testData.markerText);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
@@ -149,8 +149,8 @@ describe('LocationMarker', () => {
         const locationMarkerModel: LocationMarker = await locationMarkerService.findOne(locationMarker.id);
         const result = locationMarkerModel.toJSON();
 
-        expect(result.markerTitle).toBe(testData.markerTitle);
-        expect(result.markerText).toBe(testData.markerText);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
@@ -161,8 +161,8 @@ describe('LocationMarker', () => {
         const locationMarkerModel: LocationMarker = await locationMarkerService.update(locationMarker.id, testDataUpdated);
         const result = locationMarkerModel.toJSON();
 
-        expect(result.markerTitle).toBe(testDataUpdated.markerTitle);
-        expect(result.markerText).toBe(testDataUpdated.markerText);
+        expect(result.title).toBe(testDataUpdated.title);
+        expect(result.description).toBe(testDataUpdated.description);
         expect(result.lat).toBe(testDataUpdated.lat);
         expect(result.lng).toBe(testDataUpdated.lng);
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);

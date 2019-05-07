@@ -107,8 +107,7 @@ export class ItemCategoryService {
      */
     public async createCategoriesFromArray(categoryArray: string[]): Promise<resources.ItemCategory> {
 
-        const rootCategoryWithRelatedModel: any = await this.findRoot();
-        let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
+        let rootCategoryToSearchFrom: resources.ItemCategory = await this.findRoot().then(value => value.toJSON());
 
         // this.log.debug('categoryArray', categoryArray);
         for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
@@ -124,13 +123,11 @@ export class ItemCategoryService {
                 } as ItemCategoryCreateRequest;
 
                 // create and assign it as existingCategoru
-                const newCategory = await this.create(categoryCreateRequest);
-                existingCategory = newCategory.toJSON();
+                existingCategory = await this.create(categoryCreateRequest).then(value => value.toJSON());
 
             } else {
                 // category exists, fetch it
-                const existingCategoryModel = await this.findOneByKey(categoryKeyOrName);
-                existingCategory = existingCategoryModel.toJSON();
+                existingCategory = await this.findOneByKey(categoryKeyOrName).then(value => value.toJSON());
             }
             rootCategoryToSearchFrom = existingCategory;
         }

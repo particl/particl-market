@@ -12,15 +12,12 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import {
     EscrowConfig, EscrowRatio,
-    Item,
-    ItemInfo,
-    ItemObject,
+    Item, ItemInfo, ItemObject,
     Location,
-    MessagingInfo,
-    MessagingOption,
+    MessagingInfo, MessagingOption,
     MPA,
-    PaymentInfo,
-    PaymentInfoEscrow, PaymentOption, ShippingPrice
+    PaymentInfo, PaymentInfoEscrow, PaymentOption,
+    ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
 import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
@@ -79,7 +76,12 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
         // the ListingItemTemplate.hash should have a matching hash with the outgoing message
         if (params.listingItem.hash !== message.hash) {
-            throw new HashMismatchException('ListingItemAddMessage');
+            this.log.debug('params.listingItem.hash: ', params.listingItem.hash);
+            this.log.debug('message.hash: ', message.hash);
+
+            this.log.debug('params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
+            this.log.debug('message: ', JSON.stringify(message, null, 2));
+            throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
         }
         return message;
     }
@@ -116,11 +118,11 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                 lat: locationMarker.lat
             };
 
-            if (locationMarker.markerTitle) {
-                informationLocation.gps.marker_title = locationMarker.markerTitle;
+            if (locationMarker.title) {
+                informationLocation.gps.title = locationMarker.title;
             }
-            if (locationMarker.markerText) {
-                informationLocation.gps.marker_text = locationMarker.markerText;
+            if (locationMarker.description) {
+                informationLocation.gps.description = locationMarker.description;
             }
         }
         return informationLocation;
@@ -222,10 +224,13 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     // todo: missing support for multiple payment currencies, the MP currently has just one ItemPrice
     private async getMessagePaymentOptions(itemPrice: resources.ItemPrice): Promise<PaymentOption[]> {
 
-        const address = {
+        let address;
+        if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
+            address = {
                 type: itemPrice.CryptocurrencyAddress.type,
                 address: itemPrice.CryptocurrencyAddress.address
             } as CryptoAddress;
+        }
 
         return [{
             currency: itemPrice.currency,

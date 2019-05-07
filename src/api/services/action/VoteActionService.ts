@@ -50,8 +50,6 @@ export interface AddressInfo {
 
 export class VoteActionService extends BaseActionService {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
@@ -68,8 +66,7 @@ export class VoteActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter);
-        this.log = new Logger(__filename);
+        super(GovernanceAction.MPA_VOTE, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
     }
 
     /**

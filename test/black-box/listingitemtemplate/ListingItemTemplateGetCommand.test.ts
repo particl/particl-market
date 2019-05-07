@@ -78,9 +78,9 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.ItemInformation.ItemCategory.description).toBe(listingItemTemplate.ItemInformation.ItemCategory.description);
         expect(result.ItemInformation.ItemLocation.country).toBe(listingItemTemplate.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(listingItemTemplate.ItemInformation.ItemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle)
-            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.title)
+            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();

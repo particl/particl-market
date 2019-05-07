@@ -12,7 +12,7 @@ import { Exception } from '../../core/api/Exception';
 
 
 export class HashMismatchException extends Exception {
-    constructor(param: string) {
-        super(404, `Hash mismatch for ${param}.`);
+    constructor(param: string, expecting?: string, got?: string) {
+        super(404, `Hash mismatch for ${param}.` + expecting ? ' Expecting: ' + expecting + ', but got: ' + got + '.' : '');
     }
 }

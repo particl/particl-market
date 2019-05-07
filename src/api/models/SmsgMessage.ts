@@ -38,6 +38,10 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
                     qb.where('smsg_messages.status', '=', options.status.toString());
                 }
 
+                if (!_.isEmpty(options.direction)) {
+                    qb.where('smsg_messages.direction', '=', options.direction.toString());
+                }
+
                 if (!_.isEmpty(options.types)) {
                     qb.whereIn('smsg_messages.type', options.types);
                 }

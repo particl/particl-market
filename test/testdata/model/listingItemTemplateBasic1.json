@@ -143,8 +143,8 @@
             "createdAt": 1520294532477,
             "LocationMarker": {
                 "id": 4,
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": -42.7463,
                 "lng": 88.9405,
                 "itemLocationId": 4,

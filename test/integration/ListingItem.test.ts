@@ -156,8 +156,8 @@ describe('ListingItem', () => {
         expect(result.ItemCategory.description).toBe(createRequest.itemCategory.description);
         expect(result.ItemLocation.country).toBe(createRequest.itemLocation.country);
         expect(result.ItemLocation.address).toBe(createRequest.itemLocation.address);
-        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(createRequest.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemLocation.LocationMarker.markerText).toBe(createRequest.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.title).toBe(createRequest.itemLocation.locationMarker.title);
+        expect(result.ItemLocation.LocationMarker.description).toBe(createRequest.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);

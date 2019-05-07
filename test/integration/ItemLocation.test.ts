@@ -49,8 +49,8 @@ describe('ItemLocation', () => {
         address: 'asdf, asdf, asdf',
         description: 'desc',
         locationMarker: {
-            markerTitle: 'Helsinki',
-            markerText: 'Helsinki',
+            title: 'Helsinki',
+            description: 'Helsinki',
             lat: 12.1234,
             lng: 23.2314
         } as LocationMarkerCreateRequest
@@ -61,8 +61,8 @@ describe('ItemLocation', () => {
         address: 'zxcv, zxcv, zxcv',
         description: 'desc',
         locationMarker: {
-            markerTitle: 'Stockholm',
-            markerText: 'Stockholm',
+            title: 'Stockholm',
+            description: 'Stockholm',
             lat: 34.2314,
             lng: 11.1234
         } as LocationMarkerUpdateRequest
@@ -133,8 +133,8 @@ describe('ItemLocation', () => {
 
         expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
-        expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
+        expect(result.LocationMarker.title).toBe(testData.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testData.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
@@ -156,8 +156,8 @@ describe('ItemLocation', () => {
         const result = itemLocation;
         expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
-        expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
+        expect(result.LocationMarker.title).toBe(testData.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testData.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
@@ -168,8 +168,8 @@ describe('ItemLocation', () => {
         const result = itemLocation;
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.address).toBe(testDataUpdated.address);
-        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testDataUpdated.locationMarker.markerText);
+        expect(result.LocationMarker.title).toBe(testDataUpdated.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testDataUpdated.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testDataUpdated.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testDataUpdated.locationMarker.lng);
     });

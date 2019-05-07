@@ -58,8 +58,8 @@ export class LocationMarkerService {
         const locationMarker = await this.findOne(id, false);
 
         // set new values
-        locationMarker.MarkerTitle = body.markerTitle;
-        locationMarker.MarkerText = body.markerText;
+        locationMarker.Title = body.title;
+        locationMarker.Description = body.description;
         locationMarker.Lat = body.lat;
         locationMarker.Lng = body.lng;
 

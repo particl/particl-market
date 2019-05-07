@@ -4,9 +4,9 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, multiInject, named } from 'inversify';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
+import { Core, Targets, Types } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
@@ -20,7 +20,11 @@ import { MessageException } from '../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { GovernanceAction } from '../enums/GovernanceAction';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import {MPActionExtended} from '../enums/MPActionExtended';
+import { MPActionExtended } from '../enums/MPActionExtended';
+import { ActionDirection } from '../enums/ActionDirection';
+import {ListingItemAddValidator} from '../messages/validator/ListingItemAddValidator';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
+import {ListingItemAddListener} from '../listeners/ListingItemAddListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -90,11 +94,24 @@ export class MessageProcessor implements MessageProcessorInterface {
                     + ' : ' + smsgMessage.status
                     + ' : ' + smsgMessage.msgid);
 
-                // this.log.debug('SENDING: ', eventType);
-
                 // send event to the eventTypes processor
-                this.eventEmitter.emit(smsgMessage.type, marketplaceEvent);
-
+                switch (smsgMessage.type) {
+                    case MPAction.MPA_LISTING_ADD:
+                        this.log.debug('SENDING: ', ListingItemAddListener.Event.toString());
+                        this.eventEmitter.emit(ListingItemAddListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_BID:
+                    case MPAction.MPA_ACCEPT:
+                    case MPAction.MPA_REJECT:
+                    case MPAction.MPA_CANCEL:
+                    case MPAction.MPA_LOCK:
+                    case MPActionExtended.MPA_REFUND:
+                    case MPActionExtended.MPA_RELEASE:
+                    case GovernanceAction.MPA_PROPOSAL_ADD:
+                    case GovernanceAction.MPA_VOTE:
+                    default:
+                        throw new NotImplementedException();
+                }
                 // send event to cli
                 // todo: fix the cli at some point
                 // this.eventEmitter.emit(Events.Cli, {
@@ -167,6 +184,9 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (fetchNext) {
                 // this.log.debug('MessageProcessor.poll #' + this.pollCount + ': find: ' + JSON.stringify(params));
 
+                // todo: we need to handle reprocessing of messages better..
+                // need to add read times for failed messages, then order by read times or something?
+
                 fetchNext = await this.getSmsgMessages(params.types, params.status, params.amount)
                     .then( async smsgMessages => {
 
@@ -179,6 +199,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                             for (const smsgMessage of smsgMessages) {
                                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING)
                                     .then(value => {
+                                        // this.log.debug('poll(), updated smsgMessage.status: ' + SmsgMessageStatus.PROCESSING);
                                         const msg: resources.SmsgMessage = value.toJSON();
                                         if (msg.status !== SmsgMessageStatus.PROCESSING) {
                                             throw new MessageException('Failed to set SmsgMessageStatus.');
@@ -226,6 +247,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
+            direction: ActionDirection.INCOMING,
             status,
             types,
             page: 0,
@@ -233,8 +255,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             age: 1000 * 20
         } as SmsgMessageSearchParams;
 
-        const messagesModel = await this.smsgMessageService.searchBy(searchParams);
-        const messages = messagesModel.toJSON();
+        const messages: resources.SmsgMessage[] = await this.smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         if (messages.length > 0) {
             this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);

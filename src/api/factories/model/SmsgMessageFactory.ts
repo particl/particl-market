@@ -108,7 +108,7 @@ export class SmsgMessageFactory implements ModelFactoryInterface {
 
         if (marketplaceMessage.action && marketplaceMessage.action.type) {
             // omp-lib
-            this.log.debug('getType(): ', marketplaceMessage.action.type);
+            // this.log.debug('getType(): ', marketplaceMessage.action.type);
             return marketplaceMessage.action.type;
         } else {
             // json object, but not something that we're expecting
