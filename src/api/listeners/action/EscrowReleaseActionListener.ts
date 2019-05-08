@@ -17,9 +17,9 @@ import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseActionService } from '../../services/action/EscrowReleaseActionService';
+import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 
 export class EscrowReleaseActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -38,7 +38,7 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
     }
 
     /**
-     * handles the received EscrowLockMessage and return SmsgMessageStatus as a result
+     * handles the received EscrowReleaseMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -48,11 +48,11 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
+        const actionMessage: EscrowReleaseMessage = marketplaceMessage.action as EscrowReleaseMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_LOCK)
+        // - then, save the new Bid (MPA_RELEASE)
         // - then, update the OrderItem.status and Order.status
 
         return await this.bidService.findOneByHash(actionMessage.bid)
@@ -68,9 +68,9 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
-                            .then(async escrowLockRequest => {
-                                return await this.escrowReleaseActionService.createBid(marketplaceMessage.action as EscrowLockMessage, escrowLockRequest)
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowReleaseMessage)
+                            .then(async escrowReleaseRequest => {
+                                return await this.escrowReleaseActionService.createBid(marketplaceMessage.action as EscrowReleaseMessage, escrowReleaseRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })
