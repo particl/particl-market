@@ -123,7 +123,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                     this.log.debug('found new unread smsgmessages: ', JSON.stringify(smsgMessages, null, 2));
                     await this.process(smsgMessages);
                 } else {
-                    this.log.debug('no new unread smsgmessages...');
+                    // this.log.debug('no new unread smsgmessages...');
                 }
                 return;
             })

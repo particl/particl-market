@@ -25,6 +25,7 @@ import { ActionDirection } from '../enums/ActionDirection';
 import {ListingItemAddValidator} from '../messages/validator/ListingItemAddValidator';
 import {NotImplementedException} from '../exceptions/NotImplementedException';
 import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
+import {BidActionListener} from '../listeners/action/BidActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -101,14 +102,43 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.eventEmitter.emit(ListingItemAddActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_BID:
+                        this.log.debug('SENDING: ', BidActionListener.Event.toString());
+                        this.eventEmitter.emit(BidActionListener.Event, marketplaceEvent);
+                        break;
+/*
                     case MPAction.MPA_ACCEPT:
+                        this.log.debug('SENDING: ', BidAcceptActionListener.Event.toString());
+                        this.eventEmitter.emit(BidAcceptActionListener.Event, marketplaceEvent);
+                        break;
                     case MPAction.MPA_REJECT:
+                        this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
+                        this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
+                        break;
                     case MPAction.MPA_CANCEL:
+                        this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
+                        this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
+                        break;
                     case MPAction.MPA_LOCK:
+                        this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);
+                        break;
                     case MPActionExtended.MPA_REFUND:
+                        this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
+                        break;
                     case MPActionExtended.MPA_RELEASE:
+                        this.log.debug('SENDING: ', EscrowReleaseActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowReleaseActionListener.Event, marketplaceEvent);
+                        break;
                     case GovernanceAction.MPA_PROPOSAL_ADD:
+                        this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
+                        this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
+                        break;
                     case GovernanceAction.MPA_VOTE:
+                        this.log.debug('SENDING: ', VoteActionListener.Event.toString());
+                        this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
+                        break;
+*/
                     default:
                         throw new NotImplementedException();
                 }

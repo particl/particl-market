@@ -150,64 +150,6 @@ export class BidActionService extends BaseActionService {
     }
 
     /**
-     * handles the received BidMessage and return SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
-     *
-     * @param event
-     */
-    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
-
-        // - first get the ListingItem the Bid is for, fail if it doesn't exist
-        // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
-
-        return await this.listingItemService.findOneByHash(actionMessage.item)
-            .then(async listingItemModel => {
-                const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
-                // make sure the ListingItem belongs to a local Profile
-                if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
-                    throw new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
-                }
-
-                // need to add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
-                const address = actionMessage.buyer.shippingAddress as AddressCreateRequest;
-                address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-                address.type = AddressType.SHIPPING_BID;
-
-                const bidCreateParams = {
-                    msgid: smsgMessage.msgid,
-                    listingItem,
-                    address,
-                    bidder: smsgMessage.from
-                    // parentBid: undefined
-                } as BidCreateParams;
-
-                // note: factory makes sure the hashes match
-                return await this.bidFactory.get(bidCreateParams, actionMessage)
-                    .then(async bidCreateRequest => {
-                        return await this.createBid(actionMessage, bidCreateRequest)
-                            .then(value => {
-                                return SmsgMessageStatus.PROCESSED;
-                            })
-                            .catch(reason => {
-                                return SmsgMessageStatus.PROCESSING_FAILED;
-                            });
-                    });
-            })
-            .catch(reason => {
-                // TODO: user is receiving a Bid for his own ListingItem, so if it not found, something is seriously wrong.
-                // maybe he deleted the db, or for some reason never received his own message?
-                this.log.error('ERROR, reason: ', reason);
-                return SmsgMessageStatus.WAITING;
-            });
-    }
-
-    /**
      * - create the Bid (+BidDatas)
      * - use the Factory to create OrderCreateRequest for creating Order and OrderItems
      *   - also creates the hash, which should later be passed also to the seller
@@ -216,7 +158,7 @@ export class BidActionService extends BaseActionService {
      * @param bidMessage
      * @param bidCreateRequest
      */
-    private async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: supports just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)

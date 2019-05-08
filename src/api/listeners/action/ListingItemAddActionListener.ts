@@ -3,10 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { inject, injectable, named } from 'inversify';
+import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../../constants';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { EventEmitter } from '../../../core/api/events';
 import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
@@ -26,8 +25,6 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 
-// tslint:disable:max-classes-per-file
-
 export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
     public static Event = Symbol(MPAction.MPA_LISTING_ADD);
@@ -42,7 +39,6 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_LISTING_ADD, smsgMessageService, Logger);
