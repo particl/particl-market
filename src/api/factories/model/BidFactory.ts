@@ -90,6 +90,8 @@ export class BidFactory implements ModelFactoryInterface {
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 
+            // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
             // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
             createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
                     value: params.listingItem.hash,
@@ -104,12 +106,15 @@ export class BidFactory implements ModelFactoryInterface {
 
             // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
             if (bidMessage.hash !== createRequest.hash) {
-                throw new HashMismatchException('BidCreateRequest');
+                const error = new HashMismatchException('BidCreateRequest', bidMessage.hash, createRequest.hash);
+                this.log.error(error.getMessage());
+                throw error;
             }
 
             return createRequest;
 
         } else {
+            this.log.error('Invalid MPAction.');
             throw new MessageException('Invalid MPAction.');
         }
     }

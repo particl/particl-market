@@ -15,6 +15,15 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { BidValidator } from '../messages/validator/BidValidator';
+import { BidAcceptValidator } from '../messages/validator/BidAcceptValidator';
+import { BidRejectValidator } from '../messages/validator/BidRejectValidator';
+import { BidCancelValidator } from '../messages/validator/BidCancelValidator';
+import { EscrowLockValidator } from '../messages/validator/EscrowLockValidator';
+import { EscrowRefundValidator } from '../messages/validator/EscrowRefundValidator';
+import { EscrowReleaseValidator } from '../messages/validator/EscrowReleaseValidator';
+import { ProposalAddValidator } from '../messages/validator/ProposalAddValidator';
+import { VoteValidator } from '../messages/validator/VoteValidator';
 
 // TODO: rename, refactor
 @injectable()
@@ -26,14 +35,23 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
             case MPAction.MPA_LISTING_ADD:
                 return ListingItemAddValidator.isValid(msg);
             case MPAction.MPA_BID:
+                return BidValidator.isValid(msg);
             case MPAction.MPA_ACCEPT:
+                return BidAcceptValidator.isValid(msg);
             case MPAction.MPA_REJECT:
+                return BidRejectValidator.isValid(msg);
             case MPAction.MPA_CANCEL:
+                return BidCancelValidator.isValid(msg);
             case MPAction.MPA_LOCK:
+                return EscrowLockValidator.isValid(msg);
             case MPActionExtended.MPA_REFUND:
+                return EscrowRefundValidator.isValid(msg);
             case MPActionExtended.MPA_RELEASE:
+                return EscrowReleaseValidator.isValid(msg);
             case GovernanceAction.MPA_PROPOSAL_ADD:
+                return ProposalAddValidator.isValid(msg);
             case GovernanceAction.MPA_VOTE:
+                return VoteValidator.isValid(msg);
             default:
                 throw new NotImplementedException();
         }

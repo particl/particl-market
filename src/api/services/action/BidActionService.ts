@@ -94,11 +94,14 @@ export class BidActionService extends BaseActionService {
     /**
      * validate the MarketplaceMessage to which is to be posted to the network.
      * called directly after createMessage to validate the creation.
+     *
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        this.log.debug('bidMessage: ', JSON.stringify(marketplaceMessage.action, null, 2));
-        return BidValidator.isValid(marketplaceMessage);
+        this.log.debug('validateMessage(), bidMessage: ', JSON.stringify(marketplaceMessage.action, null, 2));
+        const isValid = BidValidator.isValid(marketplaceMessage);
+        this.log.debug('validateMessage(), isValid: ', isValid);
+        return isValid;
     }
 
     /**
@@ -119,10 +122,14 @@ export class BidActionService extends BaseActionService {
             // parentBid: undefined
         } as BidCreateParams;
 
+        // this.log.debug('beforePost(), bidCreateParams: ', JSON.stringify(bidCreateParams, null, 2));
+
         // TODO: should we set the parentBid in the case the previous Bid was cancelled or rejected?
 
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
             .then(async bidCreateRequest => {
+                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
+
                 return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
                     .then(bid => {
 
@@ -162,16 +169,22 @@ export class BidActionService extends BaseActionService {
      */
     public async createBid(bidMessage: BidMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
+        // this.log.debug('createBid()');
+
         // TODO: supports just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                // if we're the seller, we should have received the order hash from the buyer (if we're the buyere, the factory generates it)
+                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+
+                // if we're the seller, we should have received the order hash from the buyer (if we're the buyer, the factory generates it)
                 bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                const hash = _.find(bidMessage.objects, (kvs: KVS) => {
+                const orderHash = _.find(bidMessage.objects, (kvs: KVS) => {
                     return kvs.key === ActionMessageObjects.ORDER_HASH;
                 });
+
+                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
                 // note: when implementing support for multiple orderItems, we're using generatedAt from the Bid which will then affect the Order.hash
                 const orderCreateParams = {
@@ -181,15 +194,19 @@ export class BidActionService extends BaseActionService {
                     seller: bid.ListingItem.seller,
                     status: OrderStatus.PROCESSING,
                     generatedAt: bid.generatedAt,
-                    hash
+                    hash: orderHash
                 } as OrderCreateParams;
+
+                // this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
 
                 return await this.orderFactory.get(orderCreateParams/*, bidMessage*/)
                     .then(async orderCreateRequest => {
+                        // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
+
                         return await this.orderService.create(orderCreateRequest)
                             .then(async orderModel => {
                                 const order: resources.Order = orderModel.toJSON();
-                                this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+                                // this.log.debug('createBid(), created Order: ', JSON.stringify(order, null, 2));
                                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
                             });
                     });

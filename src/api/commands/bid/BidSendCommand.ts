@@ -168,13 +168,13 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         }
 
         // make sure required data exists and fetch it
-        const listingItemId = data.params.shift();
+        const listingItemHash = data.params.shift();
         const profileId = data.params.shift();
         const addressId = data.params.shift();
 
         // now the rest of data.params are either address values or biddatas
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemId)
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
@@ -243,6 +243,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             if (address) {
                 delete address.id;  // we want to use an existing ShippingAddress, but save it separately for the Bid
                 return {
+                    // todo: remove this profileId, its ending up in the msg
                     profile_id: profile.id,
                     // title: address.title,
                     firstName: address.firstName,
@@ -262,6 +263,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         } else { // no addressId, address should have been given as key value params
 
             const address = {
+                // todo: remove this profileId, its ending up in the msg
                 profile_id: profile.id,
                 type: AddressType.SHIPPING_BID
             } as AddressCreateRequest;

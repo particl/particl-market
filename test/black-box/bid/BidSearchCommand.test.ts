@@ -38,7 +38,7 @@ describe('BidSearchCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
-       // create listing item
+        // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -51,7 +51,6 @@ describe('BidSearchCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // create listing item for testing
         listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                      // how many to generate
