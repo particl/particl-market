@@ -2,21 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
-import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ProposalCreateParams} from './ModelCreateParams';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Types} from '../../../constants';
+import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
+import {ProposalCreateRequest} from '../../requests/model/ProposalCreateRequest';
+import {ProposalOptionCreateRequest} from '../../requests/model/ProposalOptionCreateRequest';
+import {ModelFactoryInterface} from './ModelFactoryInterface';
+import {ProposalCreateParams} from './ModelCreateParams';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
+import {HashableProposalCreateRequestConfig} from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
 import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
-import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
+import {HashableProposalOptionMessageConfig} from '../hashableconfig/message/HashableProposalOptionMessageConfig';
+import {ProposalCategory} from '../../enums/ProposalCategory';
 
 export class ProposalFactory implements ModelFactoryInterface {
 
@@ -52,7 +52,7 @@ export class ProposalFactory implements ModelFactoryInterface {
         const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
 
         const createRequest = {
-            // msgid: params.msgid,                 // update this on afterPost()!
+            // msgid: params.msgid,                 // updated on afterPost()!
             submitter: proposalMessage.submitter,
             category: proposalMessage.category,
             title: proposalMessage.title,
@@ -62,11 +62,17 @@ export class ProposalFactory implements ModelFactoryInterface {
             ...smsgData
         } as ProposalCreateRequest;
 
+        // if ProposalCategory.ITEM_VOTE, the item hash is in the title
+        if (proposalMessage.category === ProposalCategory.ITEM_VOTE) {
+            createRequest.item = proposalMessage.title;
+        }
+
         // hash the proposal
         let hashableOptions = '';
         for (const option of createRequest.options) {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
+
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableProposalCreateRequestConfig([{
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS
@@ -74,7 +80,9 @@ export class ProposalFactory implements ModelFactoryInterface {
 
         // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
         if (proposalMessage.hash !== createRequest.hash) {
-            throw new HashMismatchException('ProposalCreateRequest');
+            const error = new HashMismatchException('ProposalCreateRequest', proposalMessage.hash, createRequest.hash);
+            this.log.error(error.getMessage());
+            throw error;
         }
 
         // add hashes for the options too

@@ -74,10 +74,11 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),
             sender: profile,
             market,
-            category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
+            category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
             title,
             description,
-            options
+            options,
+            itemHash: listingItem.hash
         } as ProposalAddRequest;
 
         return await this.proposalAddActionService.post(postRequest);
@@ -114,8 +115,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         // check if item is already flagged
         if (!_.isEmpty(listingItem.FlaggedItem)) {
-            this.log.error('Item is already flagged.');
-            throw new MessageException('Item is already flagged.');
+            this.log.error('ListingItem is already flagged.');
+            throw new MessageException('ListingItem is already flagged.');
         }
 
         // make sure profile with the id exists

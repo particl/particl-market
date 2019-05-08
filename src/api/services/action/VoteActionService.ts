@@ -77,7 +77,9 @@ export class VoteActionService extends BaseActionService {
      */
     public async createMessage(params: VoteRequest): Promise<MarketplaceMessage> {
 
+        // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
         const signature = await this.signVote(params.proposal, params.proposalOption, params.addressInfo.address);
+        // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: VoteMessage = await this.voteMessageFactory.get({
             proposalHash: params.proposal.hash,
@@ -114,7 +116,7 @@ export class VoteActionService extends BaseActionService {
             // called from send() and onEvent()
             await this.processVote(marketplaceMessage.action as VoteMessage);
         } else {
-            // if we're just estimating the price, dont save the Proposal
+            // if we're just estimating the price, dont save the Vote
         }
 
         return marketplaceMessage;
@@ -197,14 +199,20 @@ export class VoteActionService extends BaseActionService {
 
         this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
         if (_.isEmpty(addressInfos)) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
+            this.log.error('Wallet has no usable addresses for voting.');
+            return {
+                result: 'Wallet has no usable addresses for voting.'
+            } as SmsgSendResponse;
         }
 
         const msgids: string[] = [];
         for (const addressInfo of addressInfos) {
+            this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
+
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
                 voteRequest.sendParams.fromAddress = addressInfo.address;
+                voteRequest.addressInfo = addressInfo;
                 await this.post(voteRequest)
                     .then(smsgSendResponse => {
                         if (smsgSendResponse.msgid) {
@@ -324,7 +332,7 @@ export class VoteActionService extends BaseActionService {
                     .then(value => {
                         return value.toJSON();
                     });
-                // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
+                this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
             }
 
             if (vote) {

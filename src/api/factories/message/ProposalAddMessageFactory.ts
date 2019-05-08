@@ -60,6 +60,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
         for (const option of optionsList) {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
+
         message.hash = ConfigurableHasher.hash(message, new HashableProposalAddMessageConfig([{
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS

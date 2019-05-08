@@ -168,7 +168,7 @@ describe('ListingItemFlagCommand', () => {
 
         expect(listingItem.FlaggedItem.Proposal.title).toBe(listingItem.hash);
     }, 600000); // timeout to 600s
-/*
+
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.hash,
@@ -176,7 +176,7 @@ describe('ListingItemFlagCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Item is already flagged.');
+        expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
-*/
+
 });

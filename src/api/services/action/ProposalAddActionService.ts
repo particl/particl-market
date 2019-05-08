@@ -121,6 +121,8 @@ export class ProposalAddActionService extends BaseActionService {
             const proposal: resources.Proposal = await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid)
                 .then(value => value.toJSON());
 
+            this.log.debug('afterPost(), proposal: ', JSON.stringify(proposal, null, 2));
+
             // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
             if (ProposalCategory.ITEM_VOTE === proposal.category) {
 
@@ -128,7 +130,9 @@ export class ProposalAddActionService extends BaseActionService {
                     return o.description === ItemVote.REMOVE;
                 });
                 if (!proposalOption) {
-                    throw new MessageException('ProposalOption ' + ItemVote.REMOVE + ' not found.');
+                    const error = new MessageException('ProposalOption ' + ItemVote.REMOVE + ' not found.');
+                    this.log.error(error.getMessage());
+                    throw error;
                 }
 
                 const postRequest = {
@@ -157,8 +161,7 @@ export class ProposalAddActionService extends BaseActionService {
      * @param proposal
      */
     public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
 
         const flaggedItemCreateRequest = {
             listing_item_id: listingItem.id,
@@ -166,8 +169,7 @@ export class ProposalAddActionService extends BaseActionService {
             reason: proposal.description
         } as FlaggedItemCreateRequest;
 
-        const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
-        return flaggedItemModel.toJSON();
+        return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
     }
 
     /**
@@ -181,10 +183,12 @@ export class ProposalAddActionService extends BaseActionService {
      *   - if ProposalCategory.ITEM_VOTE:
      *     - create the FlaggedItem if not created yet
      *
-     * @param proposalMessage
+     * @param proposalAddMessage
      * @param smsgMessage
      */
-    public async processProposal(proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
+    public async processProposal(proposalAddMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
+
+        // this.log.debug('processProposal(), proposalAddMessage: ', JSON.stringify(proposalAddMessage, null, 2));
 
         // processProposal "processes" the Proposal, creating or updating the Proposal.
         // called from both beforePost() and onEvent()
@@ -192,7 +196,12 @@ export class ProposalAddActionService extends BaseActionService {
         // when called from beforePost() we create a ProposalCreateRequest with no smsgMessage data.
         // later, when the smsgMessage for this proposal is received in onEvent(),
         // we call this again and the relevant smsgMessage data will be updated and included in the model
-        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({} as ProposalCreateParams, proposalMessage, smsgMessage);
+        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({} as ProposalCreateParams, proposalAddMessage, smsgMessage);
+
+        this.log.debug('processProposal(), proposalAddMessage.hash: ', proposalAddMessage.hash);
+        this.log.debug('processProposal(), proposalRequest.hash: ', proposalRequest.hash);
+
+        // this.log.debug('processProposal(), proposalRequest: ', JSON.stringify(proposalRequest, null, 2));
 
         let proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
             .then(value => value.toJSON())
@@ -201,9 +210,12 @@ export class ProposalAddActionService extends BaseActionService {
                 // proposal doesnt exist yet, so we need to create it.
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
                 if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
+
+                    this.log.debug('processProposal(), creating FlaggedItem for Proposal:', JSON.stringify(createdProposal, null, 2));
+
                     // in case of ITEM_VOTE, we also need to create the FlaggedItem
                     const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                    // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                    this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
                 }
 
                 // create the first ProposalResult

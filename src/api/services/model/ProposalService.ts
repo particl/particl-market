@@ -109,7 +109,7 @@ export class ProposalService {
                 optionCreateRequest.optionId = optionId;
                 optionId++;
             }
-            this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
+            // this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
             await this.proposalOptionService.create(optionCreateRequest);
         }
 
