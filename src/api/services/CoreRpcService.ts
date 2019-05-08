@@ -516,13 +516,13 @@ CtRpc
      * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
-                             queryOptions: any = {}): Promise<RpcUnspentOutput[]> {
+    public async listUnspent(minconf: number = 1, maxconf: number = 9999999/*, addresses: string[] = [], includeUnsafe: boolean = true,
+                             queryOptions: any = {}*/): Promise<RpcUnspentOutput[]> {
 
-        const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
-        if (!_.isEmpty(queryOptions)) {
-            params.push(queryOptions);
-        }
+        const params: any[] = [minconf, maxconf]; // , addresses, includeUnsafe];
+        // if (!_.isEmpty(queryOptions)) {
+        //    params.push(queryOptions);
+        // }
         return await this.call('listunspent', params);
     }
 

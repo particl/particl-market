@@ -758,11 +758,11 @@ export class TestDataService {
 
         const timeStart = generateParams.generatePastProposal
             ? _.random(1, (currentTime / 2), false)
-            : _.random(currentTime + 100, currentTime + 1000, false);
+            : _.random(currentTime, currentTime + 1, false);
 
         const timeEnd = generateParams.generatePastProposal
             ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
-            : _.random(currentTime + 1001, currentTime + 2000, false);
+            : _.random(currentTime + 1000000, currentTime + 2000000, false);
 
         // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
         // this.log.debug('currentblock: ', currentblock);

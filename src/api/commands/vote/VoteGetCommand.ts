@@ -35,8 +35,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
 
     /**
      * command description
-     *  [0]: profileId
-     *  [1]: proposalHash
+     *  [0]: profile: resources.Profile
+     *  [1]: proposal: resources.Proposal
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -45,14 +45,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
 
-        const profileId = data.params[0];
-        const proposalHash = data.params[1];
-
-        const profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON());
-
-        const proposal = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => value.toJSON());
+        const profile: resources.Profile = data.params[0];
+        const proposal: resources.Proposal = data.params[1];
 
         return await this.voteActionService.getCombinedVote(profile, proposal);
     }
@@ -79,18 +73,23 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         }
 
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[0])
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
             });
 
         // make sure proposal with the hash exists
-        await this.proposalService.findOneByHash(data.params[1])
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);
                 throw new ModelNotFoundException('Proposal');
             });
+
+        data.params[0] = profile;
+        data.params[1] = proposal;
 
         return data;
     }

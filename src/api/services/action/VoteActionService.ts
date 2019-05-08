@@ -36,6 +36,7 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
+import {toSatoshis} from 'omp-lib/dist/util';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -150,9 +151,12 @@ export class VoteActionService extends BaseActionService {
 
         // TODO: move this and getWalletAddressInfos elsewhere, maybe VoteService
         const addressInfos: AddressInfo[] = await this.getWalletAddressInfos();
+        this.log.debug('getCombinedVote(), addressInfos:', JSON.stringify(addressInfos, null, 2));
+
         const addresses = addressInfos.map(addressInfo => {
             return addressInfo.address;
         });
+        this.log.debug('getCombinedVote(), addresses:', JSON.stringify(addresses, null, 2));
 
         const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
             .then(value => value.toJSON());
@@ -240,7 +244,7 @@ export class VoteActionService extends BaseActionService {
      * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
      * and after the VoteMessage is received.
      *
-     * - private processVote()
+     * - processVote()
      *   - verify the vote is valid
      *     - verifymessage address votemessage.signature votemessage.voteticket
      *     - get the balance for the address
@@ -259,8 +263,7 @@ export class VoteActionService extends BaseActionService {
         // TODO: way too long method, needs to be refactored
 
         // get the address balance
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter])
-            .then(value => value.balance);
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => value.balance);
 
         // verify that the vote was actually sent by the owner of the address
         const verified = await this.verifyVote(voteMessage);
@@ -268,8 +271,7 @@ export class VoteActionService extends BaseActionService {
             throw new MessageException('Received signature failed validation.');
         }
 
-        let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash)
-            .then(value => value.toJSON());
+        let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
 
         if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
             this.log.debug('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
@@ -371,26 +373,32 @@ export class VoteActionService extends BaseActionService {
      *
      * @param addresses
      */
-    private async getWalletAddressInfos(addresses: string[] = []): Promise<AddressInfo[]> {
+    private async getWalletAddressInfos(/*addresses: string[] = []*/): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
-        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 9999999, addresses);
+        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 9999999); // , addresses);
         // this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
 
         for (const output of outputs) {
             if (output.spendable && output.solvable && output.safe && output.amount > 0) {
                 // we could have multiple outputs from one address and we only want to send one Vote per address.
-                const exists = addressList.find(addressInfo => addressInfo.address === output.address);
+                const exists = _.find(addressList, addressInfo => {
+                    return addressInfo.address === output.address;
+                });
+
                 if (!exists) {
                     addressList.push({
                         address: output.address,
-                        balance: output.amount * 100000000 // in satoshis
+                        balance: toSatoshis(output.amount)
                     } as AddressInfo);
+                } else {
+                    this.log.error('output address already on addressList');
                 }
+
+            } else {
+                this.log.error('unusable output: ', JSON.stringify(output, null, 2));
             }
         }
         return addressList;
-        // const validChars = 'pP';
-        // return addressList.filter(address => validChars.includes(address.charAt(0)));
     }
 
     /**
