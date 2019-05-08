@@ -109,7 +109,7 @@ export const Targets = {
             EscrowRefundActionService: 'EscrowRefundActionService',
             EscrowCompleteActionService: 'EscrowCompleteActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
-            ProposalActionService: 'ProposalActionService',
+            ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
         model: {

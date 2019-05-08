@@ -31,6 +31,7 @@ import { BidRejectActionListener } from '../listeners/action/BidRejectActionList
 import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
 import {EscrowReleaseActionListener} from '../listeners/action/EscrowReleaseActionListener';
 import {EscrowRefundActionListener} from '../listeners/action/EscrowRefundActionListener';
+import {ProposalAddActionListener} from '../listeners/action/ProposalAddActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -134,16 +135,17 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
                         break;
-
-/*
                     case GovernanceAction.MPA_PROPOSAL_ADD:
                         this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
                         this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
                         break;
-                    case GovernanceAction.MPA_VOTE:
-                        this.log.debug('SENDING: ', VoteActionListener.Event.toString());
-                        this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
-                        break;
+
+
+                    /*
+                case GovernanceAction.MPA_VOTE:
+                    this.log.debug('SENDING: ', VoteActionListener.Event.toString());
+                    this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
+                    break;
 */
                     default:
                         throw new NotImplementedException();

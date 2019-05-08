@@ -66,7 +66,7 @@ import { VoteService } from './model/VoteService';
 import { VoteActionService } from './action/VoteActionService';
 import { ProposalResultService } from './model/ProposalResultService';
 import { ProposalOptionResultService } from './model/ProposalOptionResultService';
-import { ProposalActionService } from './action/ProposalActionService';
+import { ProposalAddActionService } from './action/ProposalAddActionService';
 import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
@@ -123,7 +123,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,

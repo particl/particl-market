@@ -13,7 +13,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { ProposalActionService } from '../../services/action/ProposalActionService';
+import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
@@ -30,7 +30,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService
     ) {

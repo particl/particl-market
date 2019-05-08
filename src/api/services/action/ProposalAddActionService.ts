@@ -37,7 +37,7 @@ import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { ProposalAddValidator } from '../../messages/validator/ProposalAddValidator';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 
-export class ProposalActionService extends BaseActionService {
+export class ProposalAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -153,31 +153,6 @@ export class ProposalActionService extends BaseActionService {
     }
 
     /**
-     * handles the received ProposalAddMessage and returns SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
-     *
-     * @param event
-     */
-    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
-
-        // processProposal will create or update the Proposal
-        return await this.processProposal(actionMessage, smsgMessage)
-            .then(value => {
-                this.log.debug('==> PROCESSED PROPOSAL: ', value.hash);
-                return SmsgMessageStatus.PROCESSED;
-            })
-            .catch(reason => {
-                this.log.debug('==> PROPOSAL PROCESSING FAILED: ', reason);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
-    }
-
-    /**
      *
      * @param proposal
      */
@@ -209,7 +184,7 @@ export class ProposalActionService extends BaseActionService {
      * @param proposalMessage
      * @param smsgMessage
      */
-    private async processProposal(proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
+    public async processProposal(proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
 
         // processProposal "processes" the Proposal, creating or updating the Proposal.
         // called from both beforePost() and onEvent()
