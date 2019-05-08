@@ -15,39 +15,13 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MessageException } from '../../exceptions/MessageException';
 import { ValidationException } from '../../exceptions/ValidationException';
-import { ActionProcessorInterface } from './ActionProcessorInterface';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
-import { GovernanceAction } from '../../enums/GovernanceAction';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { EventEmitter } from 'events';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { strip } from 'omp-lib/dist/util';
 import { Logger as LoggerType } from '../../../core/Logger';
 
-export abstract class BaseActionService implements ActionServiceInterface, ActionProcessorInterface {
-
-    public static validate(msg: MarketplaceMessage): boolean {
-
-        switch (msg.action.type) {
-            case MPAction.MPA_LISTING_ADD:
-                return ListingItemAddValidator.isValid(msg);
-            case MPAction.MPA_BID:
-            case MPAction.MPA_ACCEPT:
-            case MPAction.MPA_REJECT:
-            case MPAction.MPA_CANCEL:
-            case MPAction.MPA_LOCK:
-            case MPActionExtended.MPA_REFUND:
-            case MPActionExtended.MPA_RELEASE:
-            case GovernanceAction.MPA_PROPOSAL_ADD:
-            case GovernanceAction.MPA_VOTE:
-            default:
-                throw new NotImplementedException();
-        }
-    }
+export abstract class BaseActionService implements ActionServiceInterface {
 
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
@@ -59,13 +33,12 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
     constructor(eventType: ActionMessageTypes, smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory,
                 eventEmitter: EventEmitter, Logger: typeof LoggerType) {
 
-        this.log = new Logger(__filename);
+        this.log = new Logger(eventType);
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.smsgMessageFactory = smsgMessageFactory;
         this.eventEmitter = eventEmitter;
         this.eventType = eventType;
-        // this.configureEventListener(this.eventType);
 
     }
 
@@ -80,12 +53,6 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
      * @param marketplaceMessage
      */
     public abstract async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean>;
-
-    /**
-     * handle the event
-     * @param event
-     */
-    public abstract async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus>;
 
     /**
      * - create the marketplaceMessage, extending class should implement
@@ -146,34 +113,6 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
     public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
-     * - validate the received MarketplaceMessage
-     *   - on failure: update the SmsgMessage.status to SmsgMessageStatus.VALIDATION_FAILED
-     * - call onEvent to process the message
-     * - if there's no errors, update the SmsgMessage.status
-     * - in case of Exception, also update the SmsgMessage.status to SmsgMessageStatus.PROCESSING_FAILED
-     *
-     * @param eventType
-     */
-    protected configureEventListener(eventType: ActionMessageTypes): void {
-        this.log.debug('configureEventListener: ', eventType.toString());
-        this.eventEmitter.on(eventType.toString(), async (event: MarketplaceMessageEvent) => {
-
-            if (BaseActionService.validate(event.marketplaceMessage)) {
-                await this.onEvent(event)
-                    .then(async status => {
-                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
-                    })
-                    .catch(async reason => {
-                        // todo: handle different reasons?
-                        await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
-                    });
-            } else {
-                await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.VALIDATION_FAILED);
-            }
-        });
-    }
-
-    /**
      *
      * @param marketplaceMessage
      * @param sendParams
@@ -204,7 +143,8 @@ export abstract class BaseActionService implements ActionServiceInterface, Actio
             .then(async coreMessage => {
                 return await this.smsgMessageFactory.get({
                     direction: ActionDirection.OUTGOING,
-                    message: coreMessage
+                    message: coreMessage,
+                    status: SmsgMessageStatus.SENT
                     // todo: add also target here if its known
                 } as SmsgMessageCreateParams)
                     .then(async createRequest => {

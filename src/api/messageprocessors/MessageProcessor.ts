@@ -24,7 +24,7 @@ import { MPActionExtended } from '../enums/MPActionExtended';
 import { ActionDirection } from '../enums/ActionDirection';
 import {ListingItemAddValidator} from '../messages/validator/ListingItemAddValidator';
 import {NotImplementedException} from '../exceptions/NotImplementedException';
-import {ListingItemAddListener} from '../listeners/ListingItemAddListener';
+import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -97,8 +97,8 @@ export class MessageProcessor implements MessageProcessorInterface {
                 // send event to the eventTypes processor
                 switch (smsgMessage.type) {
                     case MPAction.MPA_LISTING_ADD:
-                        this.log.debug('SENDING: ', ListingItemAddListener.Event.toString());
-                        this.eventEmitter.emit(ListingItemAddListener.Event, marketplaceEvent);
+                        this.log.debug('SENDING: ', ListingItemAddActionListener.Event.toString());
+                        this.eventEmitter.emit(ListingItemAddActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_BID:
                     case MPAction.MPA_ACCEPT:

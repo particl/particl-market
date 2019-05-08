@@ -9,6 +9,8 @@
 
 export enum SmsgMessageStatus {
 
+    SENT = 'SENT',                              // used for the Outgoing SmsgMessage
+
     NEW = 'NEW',                                // new
     PARSING_FAILED = 'PARSING_FAILED',          // smsg parsing failed
     PROCESSING = 'PROCESSING',                  // currently being processed

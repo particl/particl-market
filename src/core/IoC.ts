@@ -170,7 +170,6 @@ export class IoC {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
                 // this.log.info('bindFiles, filePath:', filePath);
-                // this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;

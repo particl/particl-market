@@ -2,13 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 
 /**
- * ActionProcessorInterface defines how the Processor classes for the different ActionMessages should be implemented
+ * ActionListenerInterface defines how the Listener classes for the different ActionMessages should be implemented
  */
-export interface ActionProcessorInterface {
+export interface ActionListenerInterface {
 
     /**
      * handle the event

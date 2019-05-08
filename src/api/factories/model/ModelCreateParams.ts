@@ -10,6 +10,7 @@ import {OrderStatus} from '../../enums/OrderStatus';
 import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 import {AddressType} from '../../enums/AddressType';
+import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
 
 export interface ModelCreateParams {
     //
@@ -72,5 +73,6 @@ export interface VoteCreateParams extends ModelCreateParams {
 export interface SmsgMessageCreateParams extends ModelCreateParams {
     message: CoreSmsgMessage;
     direction: ActionDirection;
+    status?: SmsgMessageStatus;
     target?: string;
 }

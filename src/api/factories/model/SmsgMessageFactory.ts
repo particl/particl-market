@@ -36,7 +36,7 @@ export class SmsgMessageFactory implements ModelFactoryInterface {
 
                 const createRequest = {
                     type,
-                    status: SmsgMessageStatus.NEW,
+                    status: params.status ? params.status : SmsgMessageStatus.NEW,
                     direction: params.direction,
                     target: params.target,
                     msgid: params.message.msgid,

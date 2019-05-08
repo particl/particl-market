@@ -18,7 +18,10 @@ describe('ListingItemTemplatePostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     // TODO: randomize posting from one of the two nodes
 
@@ -36,11 +39,12 @@ describe('ListingItemTemplatePostCommand', () => {
     let brokenListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        defaultProfile = await testUtilSellerNode.getDefaultProfile();
+        defaultMarket = await testUtilSellerNode.getDefaultMarket();
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -59,7 +63,7 @@ describe('ListingItemTemplatePostCommand', () => {
             defaultMarket.id  // marketId
         ]).toParamsArray();
 
-        const listingItemTemplates = await testUtil.generateData(
+        const listingItemTemplates = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             2,                          // how many to generate
             true,                    // return model
@@ -76,7 +80,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(listingItemTemplate.id).toBeDefined();
 
         const daysRetention = 4;
-        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
             daysRetention,
             defaultMarket.id
@@ -85,10 +89,6 @@ describe('ListingItemTemplatePostCommand', () => {
         const result: any = res.getBody()['result'];
 
         log.debug('result:', JSON.stringify(result, null, 2));
-        if (result.result === 'Send failed.') {
-            log.debug(JSON.stringify(result, null, 2));
-        }
-
         res.expectStatusCode(200);
 
         expect(result.result).toBe('Sent.');
@@ -104,13 +104,13 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
-/*
-    test('Should receive MPA_LISTING_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
-        // wait for some time to make sure it's received
-        await testUtil.waitFor(5);
+    test('Should receive MPA_LISTING_ADD message on the same sellerNode, create a ListingItem and match with the existing ListingItemTemplate', async () => {
 
-        const response: any = await testUtil.rpcWaitFor(
+        // wait for some time...
+        await testUtilSellerNode.waitFor(5);
+
+        const response: any = await testUtilSellerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplate.hash],
             8 * 60,
@@ -124,15 +124,32 @@ describe('ListingItemTemplatePostCommand', () => {
         // make sure we got the expected result from seller node
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = response.getBody()['result'];
-
-        // log.debug('listingItem: ', JSON.stringify(result, null, 2));
-
         expect(result.hash).toBe(listingItemTemplate.hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
 
     }, 600000); // timeout to 600s
 
-    test('Should fail to post a ListingItem due to excessive smsgmessage size', async () => {
+    test('Should receive MPA_LISTING_ADD message on the buyerNode and create a ListingItem', async () => {
+
+        const response: any = await testUtilBuyerNode.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplate.hash],
+            8 * 60,
+            200,
+            'hash',
+            listingItemTemplate.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        // make sure we got the expected result from seller node
+        // -> meaning item hash was matched with the existing template hash
+        const result: resources.ListingItem = response.getBody()['result'];
+        expect(result.hash).toBe(listingItemTemplate.hash);
+
+    }, 600000); // timeout to 600s
+
+    test('Should fail to post a ListingItem due to excessive SmsgMessage size', async () => {
 
         expect(brokenListingItemTemplate.id).toBeDefined();
 
@@ -141,7 +158,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('loadImageFile(): ', filename);
         const filedata = fs.readFileSync(filename, { encoding: 'base64' });
 
-        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        let res = await testUtilSellerNode.rpc(itemImageCommand, [itemImageAddCommand,
             brokenListingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -154,7 +171,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // Attempt to post listing
         const daysRetention = 4;
-        res = await testUtil.rpc(templateCommand, [templatePostCommand,
+        res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             brokenListingItemTemplate.id,
             daysRetention,
             defaultMarket.id
@@ -162,7 +179,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBeDefined();
-        expect(res.error.error.message).toBe('Template details exceed message size limitations');
+        expect(res.error.error.message).toBe('ListingItemTemplate information exceeds message size limitations');
     });
-*/
+
 });

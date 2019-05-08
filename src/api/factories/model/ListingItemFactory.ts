@@ -74,18 +74,14 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
 
         const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
-        this.log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
 
         // todo: only handles escrows for now
         const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
-        this.log.debug('paymentInformation: ', JSON.stringify(paymentInformation, null, 2));
         const messagingInformation = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
-        this.log.debug('messagingInformation: ', JSON.stringify(messagingInformation, null, 2));
 
         let listingItemObjects;
         if (listingItemAddMessage.item.objects) {
             listingItemObjects = await this.getModelListingItemObjects(listingItemAddMessage.item.objects);
-            this.log.debug('listingItemObjects: ', JSON.stringify(listingItemObjects, null, 2));
         }
 
         const createRequest = {
@@ -157,13 +153,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
     }
 
     private async getModelPaymentInformation(payment: PaymentInfo): Promise<PaymentInformationCreateRequest> {
-
-        this.log.debug('payment: ', JSON.stringify(payment, null, 2));
-
         const escrow = payment.escrow ? await this.getModelEscrow(payment.escrow) : undefined;
-        this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
         const itemPrice = payment.options ? await this.getModelItemPrice(payment.options) : undefined;
-        this.log.debug('itemPrice: ', JSON.stringify(itemPrice, null, 2));
 
         return {
             type: payment.type,
@@ -177,7 +168,6 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const paymentOption: PaymentOption | undefined = _.find(paymentOptions, (option: PaymentOption) => {
             return option.currency === Cryptocurrency.PART;
         });
-        this.log.debug('paymentOption: ', JSON.stringify(paymentOption, null, 2));
 
         if (!paymentOption) {
             this.log.error('There needs to be a PaymentOption for PART');
@@ -185,7 +175,6 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         const shippingPrice = await this.getModelShippingPrice(paymentOption.shippingPrice);
-        this.log.debug('shippingPrice: ', JSON.stringify(shippingPrice, null, 2));
 
         const cryptocurrencyAddress = paymentOption.address ? await this.getModelCryptocurrencyAddress(paymentOption.address) : undefined;
 

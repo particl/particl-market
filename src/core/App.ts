@@ -20,8 +20,7 @@ import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
 import { Environment } from './helpers/Environment';
-import {MessageException} from '../api/exceptions/MessageException';
-
+import { MessageException } from '../api/exceptions/MessageException';
 
 export interface Configurable {
     configure(app: App): void;

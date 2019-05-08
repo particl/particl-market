@@ -382,12 +382,11 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ServerStartedListener: 'ServerStartedListener',
-        ListingItemAddListener: 'ListingItemAddListener',
-        user: {
-            UserAuthenticatedListener: 'UserAuthenticatedListener',
-            UserCreatedListener: 'UserCreatedListener'
-        }
+        action: {
+            ListingItemAddActionListener: 'ListingItemAddActionListener'
+        },
+        // BaseActionListener: 'BaseActionListener',
+        ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {
         ItemImageController: 'ItemImageController',

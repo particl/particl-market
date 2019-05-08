@@ -22,7 +22,6 @@ import { UserCreateRequest } from '../../requests/user/UserCreateRequest';
 import { UserUpdateRequest } from '../../requests/user/UserUpdateRequest';
 import { UserRepository } from '../../repositories/UserRepository';
 import { User } from '../../models/User';
-import { UserCreatedListener } from '../../listeners/user/UserCreatedListener';
 
 export class UserService {
 
@@ -84,7 +83,6 @@ export class UserService {
     public async create( @request(UserCreateRequest) data: any): Promise<User> {
         // If the request body was valid we will create the user
         const user = await this.userRepo.create(data);
-        this.events.emit(UserCreatedListener.Event, user.toJSON());
         return user;
     }
 

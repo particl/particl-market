@@ -149,21 +149,16 @@ export class ListingItemService {
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
         }
 
-        this.log.debug('iteminfo saved');
-
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
-
-        this.log.debug('paymentinfo saved');
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_id = listingItem.id;
                 await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
             }
-            this.log.debug('msginfo saved');
         }
 
         if (!_.isEmpty(listingItemObjects)) {
@@ -171,7 +166,6 @@ export class ListingItemService {
                 object.listing_item_id = listingItem.id;
                 await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
             }
-            this.log.debug('listingItemObjects saved');
         }
 
         // finally find and return the created listingItem
