@@ -47,7 +47,6 @@ export class BidAcceptActionService extends BaseActionService {
 
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
@@ -139,61 +138,6 @@ export class BidAcceptActionService extends BaseActionService {
     }
 
     /**
-     * handles the received BidAcceptMessage and return SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
-     *
-     * @param event
-     */
-    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
-
-        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_ACCEPT)
-        // - then, update the OrderItem.status and Order.status
-
-        return await this.bidService.findOneByHash(actionMessage.bid)
-            .then(async bidModel => {
-                const parentBid: resources.Bid = bidModel.toJSON();
-                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
-                    .then(async listingItemModel => {
-                        const listingItem = listingItemModel.toJSON();
-
-                        const bidCreateParams = {
-                            listingItem,
-                            bidder: smsgMessage.to,
-                            parentBid
-                        } as BidCreateParams;
-
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
-                            .then(async bidCreateRequest => {
-                                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
-                                    .then(value => {
-                                        return SmsgMessageStatus.PROCESSED;
-                                    })
-                                    .catch(reason => {
-                                        return SmsgMessageStatus.PROCESSING_FAILED;
-                                    });
-                            });
-
-                    });
-
-
-            })
-            .catch(reason => {
-                // could not find previous bid
-                this.log.error('ERROR, reason: ', reason);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
-
-
-    }
-
-    /**
      * - create the Bid (MPA_ACCEPT) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
      * - update OrderItem.status -> AWAITING_ESCROW
      * - update Order.status
@@ -201,7 +145,7 @@ export class BidAcceptActionService extends BaseActionService {
      * @param bidAcceptMessage
      * @param bidCreateRequest
      */
-    private async createBid(bidAcceptMessage: BidAcceptMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async createBid(bidAcceptMessage: BidAcceptMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)

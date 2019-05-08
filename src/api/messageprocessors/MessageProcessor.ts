@@ -26,6 +26,7 @@ import {ListingItemAddValidator} from '../messages/validator/ListingItemAddValid
 import {NotImplementedException} from '../exceptions/NotImplementedException';
 import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
 import {BidActionListener} from '../listeners/action/BidActionListener';
+import {BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -105,11 +106,11 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', BidActionListener.Event.toString());
                         this.eventEmitter.emit(BidActionListener.Event, marketplaceEvent);
                         break;
-/*
                     case MPAction.MPA_ACCEPT:
                         this.log.debug('SENDING: ', BidAcceptActionListener.Event.toString());
                         this.eventEmitter.emit(BidAcceptActionListener.Event, marketplaceEvent);
                         break;
+/*
                     case MPAction.MPA_REJECT:
                         this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
                         this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
