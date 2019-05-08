@@ -28,6 +28,7 @@ import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddAc
 import {BidActionListener} from '../listeners/action/BidActionListener';
 import {BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
 import {BidCancelActionListener} from '../listeners/action/BidCancelActionListener';
+import {BidRejectActionListener} from '../listeners/action/BidRejectActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -115,11 +116,11 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
                         this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
                         break;
-/*
                     case MPAction.MPA_REJECT:
                         this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
                         this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
                         break;
+/*
                     case MPAction.MPA_LOCK:
                         this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);

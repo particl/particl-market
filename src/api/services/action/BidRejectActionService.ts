@@ -123,61 +123,6 @@ export class BidRejectActionService extends BaseActionService {
     }
 
     /**
-     * handles the received BidRejectMessage and return SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
-     *
-     * @param event
-     */
-    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidRejectMessage = marketplaceMessage.action as BidRejectMessage;
-
-        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_REJECT)
-        // - then, update the OrderItem.status and Order.status
-
-        return await this.bidService.findOneByHash(actionMessage.bid)
-            .then(async bidModel => {
-                const parentBid: resources.Bid = bidModel.toJSON();
-                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
-                    .then(async listingItemModel => {
-                        const listingItem = listingItemModel.toJSON();
-
-                        const bidCreateParams = {
-                            listingItem,
-                            bidder: smsgMessage.to,
-                            parentBid
-                        } as BidCreateParams;
-
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidRejectMessage)
-                            .then(async bidCreateRequest => {
-                                return await this.createBid(marketplaceMessage.action as BidRejectMessage, bidCreateRequest)
-                                    .then(value => {
-                                        return SmsgMessageStatus.PROCESSED;
-                                    })
-                                    .catch(reason => {
-                                        return SmsgMessageStatus.PROCESSING_FAILED;
-                                    });
-                            });
-
-                    });
-
-
-            })
-            .catch(reason => {
-                // could not find previous bid
-                this.log.error('ERROR, reason: ', reason);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
-
-
-    }
-
-    /**
      * - create the Bid (MPA_REJECT) (+BidDatas copied from parentBid), with previous Bid (MPA_BID) as the parentBid
      * - update OrderItem.status -> AWAITING_ESCROW
      * - update Order.status
@@ -185,7 +130,7 @@ export class BidRejectActionService extends BaseActionService {
      * @param bidRejectMessage
      * @param bidCreateRequest
      */
-    private async createBid(bidRejectMessage: BidRejectMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async createBid(bidRejectMessage: BidRejectMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
