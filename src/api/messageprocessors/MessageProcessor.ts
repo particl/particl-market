@@ -29,9 +29,10 @@ import { BidAcceptActionListener} from '../listeners/action/BidAcceptActionListe
 import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
 import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
 import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
-import {EscrowReleaseActionListener} from '../listeners/action/EscrowReleaseActionListener';
-import {EscrowRefundActionListener} from '../listeners/action/EscrowRefundActionListener';
-import {ProposalAddActionListener} from '../listeners/action/ProposalAddActionListener';
+import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
+import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
+import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
+import { VoteActionListener } from '../listeners/action/VoteActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -139,14 +140,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
                         this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
                         break;
-
-
-                    /*
-                case GovernanceAction.MPA_VOTE:
-                    this.log.debug('SENDING: ', VoteActionListener.Event.toString());
-                    this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
-                    break;
-*/
+                    case GovernanceAction.MPA_VOTE:
+                        this.log.debug('SENDING: ', VoteActionListener.Event.toString());
+                        this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
+                        break;
                     default:
                         throw new NotImplementedException();
                 }

@@ -140,34 +140,6 @@ export class VoteActionService extends BaseActionService {
     }
 
     /**
-     * handles the received VoteMessage and returns SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
-     *
-     * @param event
-     */
-    public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
-
-        // processProposal will create or update the Proposal
-        return await this.processVote(actionMessage, smsgMessage)
-            .then(vote => {
-                if (vote) {
-                    this.log.debug('==> PROCESSED VOTE: ', vote.signature);
-                }
-                this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
-                return SmsgMessageStatus.PROCESSED;
-            })
-            .catch(reason => {
-                this.log.debug('==> VOTE PROCESSING FAILED: ', reason);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
-    }
-
-    /**
      *
      * @param profile
      * @param proposal
@@ -273,7 +245,7 @@ export class VoteActionService extends BaseActionService {
      * @param voteMessage
      * @param smsgMessage
      */
-    private async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
+    public async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
 
         // TODO: dont return undefined
         // TODO: way too long method, needs to be refactored
