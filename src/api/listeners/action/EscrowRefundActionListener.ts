@@ -10,7 +10,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
@@ -18,9 +17,9 @@ import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
+import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 
 export class EscrowRefundActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -29,7 +28,7 @@ export class EscrowRefundActionListener extends BaseActionListenr implements int
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
 
-        @inject(Types.Service) @named(Targets.Service.action.EscrowLockActionService) public escrowReleaseActionService: EscrowLockActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) public escrowRefundActionService: EscrowRefundActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
@@ -39,7 +38,7 @@ export class EscrowRefundActionListener extends BaseActionListenr implements int
     }
 
     /**
-     * handles the received EscrowLockMessage and return SmsgMessageStatus as a result
+     * handles the received EscrowRefundMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -49,11 +48,11 @@ export class EscrowRefundActionListener extends BaseActionListenr implements int
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
+        const actionMessage: EscrowRefundMessage = marketplaceMessage.action as EscrowRefundMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_LOCK)
+        // - then, save the new Bid (MPA_REFUND)
         // - then, update the OrderItem.status and Order.status
 
         return await this.bidService.findOneByHash(actionMessage.bid)
@@ -69,9 +68,9 @@ export class EscrowRefundActionListener extends BaseActionListenr implements int
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
-                            .then(async escrowLockRequest => {
-                                return await this.escrowReleaseActionService.createBid(marketplaceMessage.action as EscrowLockMessage, escrowLockRequest)
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowRefundMessage)
+                            .then(async escrowRefundRequest => {
+                                return await this.escrowRefundActionService.createBid(marketplaceMessage.action as EscrowRefundMessage, escrowRefundRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })

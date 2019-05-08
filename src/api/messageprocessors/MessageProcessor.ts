@@ -30,6 +30,7 @@ import { BidCancelActionListener } from '../listeners/action/BidCancelActionList
 import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
 import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
 import {EscrowReleaseActionListener} from '../listeners/action/EscrowReleaseActionListener';
+import {EscrowRefundActionListener} from '../listeners/action/EscrowRefundActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -129,12 +130,12 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', EscrowReleaseActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowReleaseActionListener.Event, marketplaceEvent);
                         break;
-
-/*
                     case MPActionExtended.MPA_REFUND:
                         this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
                         break;
+
+/*
                     case GovernanceAction.MPA_PROPOSAL_ADD:
                         this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
                         this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
