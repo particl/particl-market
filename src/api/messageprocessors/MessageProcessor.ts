@@ -27,6 +27,7 @@ import {NotImplementedException} from '../exceptions/NotImplementedException';
 import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
 import {BidActionListener} from '../listeners/action/BidActionListener';
 import {BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
+import {BidCancelActionListener} from '../listeners/action/BidCancelActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -110,14 +111,14 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', BidAcceptActionListener.Event.toString());
                         this.eventEmitter.emit(BidAcceptActionListener.Event, marketplaceEvent);
                         break;
+                    case MPAction.MPA_CANCEL:
+                        this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
+                        this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
+                        break;
 /*
                     case MPAction.MPA_REJECT:
                         this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
                         this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
-                        break;
-                    case MPAction.MPA_CANCEL:
-                        this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
-                        this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_LOCK:
                         this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
