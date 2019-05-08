@@ -35,7 +35,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalAddActionService
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);
@@ -80,7 +80,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             options
         } as ProposalAddRequest;
 
-        return await this.proposalActionService.post(postRequest);
+        return await this.proposalAddActionService.post(postRequest);
     }
 
     /**

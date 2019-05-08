@@ -68,12 +68,11 @@ import { ProposalResultService } from './model/ProposalResultService';
 import { ProposalOptionResultService } from './model/ProposalOptionResultService';
 import { ProposalAddActionService } from './action/ProposalAddActionService';
 import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
-import { BidDataValue } from '../enums/BidDataValue';
 import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDestinationCreateRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import {EscrowType, HashableBidField, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, HashableBidField, MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
@@ -88,16 +87,14 @@ import { LocationMarkerCreateRequest } from '../requests/model/LocationMarkerCre
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
 import { OrderCreateParams } from '../factories/model/ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableBidCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
-import {HashableProposalCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import {HashableProposalAddField, HashableProposalOptionField} from '../factories/hashableconfig/HashableField';
-import {HashableListingItemTemplateCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
-import {HashableProposalOptionMessageConfig} from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
-import {OrderStatus} from '../enums/OrderStatus';
-import {OrderItemStatus} from '../enums/OrderItemStatus';
-import {OrderItemCreateRequest} from '../requests/model/OrderItemCreateRequest';
-import {toSatoshis} from 'omp-lib/dist/util';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
+import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import { HashableProposalAddField, HashableProposalOptionField } from '../factories/hashableconfig/HashableField';
+import { HashableListingItemTemplateCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
+import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
+import { OrderStatus } from '../enums/OrderStatus';
+import { toSatoshis } from 'omp-lib/dist/util';
 
 export class TestDataService {
 
@@ -123,7 +120,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) private proposalActionService: ProposalAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,

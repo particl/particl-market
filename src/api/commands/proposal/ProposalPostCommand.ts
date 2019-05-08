@@ -30,7 +30,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalActionService) public proposalActionService: ProposalAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService
     ) {
@@ -82,7 +82,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             options
         } as ProposalAddRequest;
 
-        return await this.proposalActionService.post(postRequest);
+        return await this.proposalAddActionService.post(postRequest);
     }
 
     /**

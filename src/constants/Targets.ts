@@ -385,7 +385,14 @@ export const Targets = {
         action: {
             ListingItemAddActionListener: 'ListingItemAddActionListener',
             BidActionListener: 'BidActionListener',
-            BidAcceptActionListener: 'BidAcceptActionListener'
+            BidAcceptActionListener: 'BidAcceptActionListener',
+            BidCancelActionListener: 'BidCancelActionListener',
+            BidRejectActionListener: 'BidRejectActionListener',
+            EscrowLockActionListener: 'EscrowLockActionListener',
+            EscrowRefundActionListener: 'EscrowRefundActionListener',
+            EscrowReleaseActionListener: 'EscrowReleaseActionListener',
+            ProposalAddActionListener: 'ProposalAddActionListener',
+            VoteActionListener: 'VoteActionListener'
         },
         // BaseActionListener: 'BaseActionListener',
         ServerStartedListener: 'ServerStartedListener'

@@ -82,7 +82,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                     return null;
                 });
 
-            //  const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
+            // const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
 
             // this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
             // this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
