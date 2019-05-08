@@ -22,13 +22,13 @@ import { GovernanceAction } from '../enums/GovernanceAction';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { MPActionExtended } from '../enums/MPActionExtended';
 import { ActionDirection } from '../enums/ActionDirection';
-import {ListingItemAddValidator} from '../messages/validator/ListingItemAddValidator';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
-import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
-import {BidActionListener} from '../listeners/action/BidActionListener';
-import {BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
-import {BidCancelActionListener} from '../listeners/action/BidCancelActionListener';
-import {BidRejectActionListener} from '../listeners/action/BidRejectActionListener';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
+import { BidActionListener } from '../listeners/action/BidActionListener';
+import { BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
+import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
+import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
+import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -120,11 +120,11 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
                         this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
                         break;
-/*
                     case MPAction.MPA_LOCK:
                         this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);
                         break;
+/*
                     case MPActionExtended.MPA_REFUND:
                         this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
