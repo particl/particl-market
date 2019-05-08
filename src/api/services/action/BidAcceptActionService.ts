@@ -53,7 +53,8 @@ export class BidAcceptActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
+        super(smsgService, smsgMessageService, smsgMessageFactory);
+        this.log = new Logger(__filename);
     }
 
     /**

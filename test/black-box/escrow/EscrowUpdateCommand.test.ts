@@ -82,7 +82,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of missing buyerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MAD_CT
+            EscrowType.MULTISIG
         ];
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
@@ -93,7 +93,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of missing sellerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100
         ];
         const res: any = await testUtil.rpc(escrowCommand, testData);
@@ -105,7 +105,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of invalid listingItemTemplateId', async () => {
         const testData = [escrowUpdateCommand,
             'not a number',
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100,
             100
         ];
@@ -133,7 +133,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of invalid buyerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             'invalid',
             100
         ];
@@ -147,7 +147,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of invalid sellerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100,
             'invalid'
         ];
@@ -161,7 +161,7 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of a non-existent ListingItemTemplate', async () => {
         const testData = [escrowUpdateCommand,
             1000000000,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100,
             100
         ];
@@ -200,7 +200,7 @@ describe('EscrowUpdateCommand', () => {
 
         const testData = [escrowUpdateCommand,
             templatesWithoutEscrow[0].id,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100,
             100
         ];
@@ -216,7 +216,7 @@ describe('EscrowUpdateCommand', () => {
 
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MAD_CT,
+            EscrowType.MULTISIG,
             100,
             100
         ];

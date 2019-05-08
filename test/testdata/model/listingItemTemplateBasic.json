@@ -58,7 +58,7 @@
         "ItemPrice": {
             "id": 4,
             "currency": "PART",
-            "basePrice": 76.31903702293027,
+            "basePrice": 1,
             "paymentInformationId": 4,
             "cryptocurrencyAddressId": 4,
             "updatedAt": 1520294533415,
@@ -73,8 +73,8 @@
             },
             "ShippingPrice": {
                 "id": 4,
-                "domestic": 2.13268661244928,
-                "international": 8.76915941696489,
+                "domestic": 2,
+                "international": 3,
                 "itemPriceId": 4,
                 "updatedAt": 1520294533423,
                 "createdAt": 1520294533423

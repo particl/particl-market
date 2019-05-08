@@ -81,9 +81,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
                 return await this.listingItemService.create(listingItemCreateRequest)
                     .then(async value => {
                         const listingItem: resources.ListingItem = value.toJSON();
-                        this.log.debug('createFlaggedItemIfNeeded...');
                         await this.createFlaggedItemIfNeeded(listingItem);
-                        this.log.debug('updateListingItemAndTemplateRelationIfNeeded...');
                         await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
                         this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
                         return SmsgMessageStatus.PROCESSED;

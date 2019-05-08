@@ -49,7 +49,8 @@ export class BidRejectActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_REJECT, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
+        super(smsgService, smsgMessageService, smsgMessageFactory);
+        this.log = new Logger(__filename);
     }
 
     /**

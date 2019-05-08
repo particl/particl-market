@@ -23,8 +23,6 @@ describe('ListingItemTemplatePostCommand', () => {
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
-    // TODO: randomize posting from one of the two nodes
-
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;

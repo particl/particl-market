@@ -32,7 +32,8 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LISTING_ADD, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
+        super(smsgService, smsgMessageService, smsgMessageFactory);
+        this.log = new Logger(__filename);
     }
 
     /**
@@ -46,8 +47,7 @@ export class ListingItemAddActionService extends BaseActionService {
             listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
         } as ListingItemAddMessageCreateParams);
 
-        this.log.debug('resulting actionMessage:', JSON.stringify(actionMessage, null, 2));
-
+        // this.log.debug('resulting actionMessage:', JSON.stringify(actionMessage, null, 2));
         return {
             version: ompVersion(),
             action: actionMessage

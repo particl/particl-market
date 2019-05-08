@@ -60,9 +60,9 @@ describe('ListingItemTemplateAddCommand', () => {
             category.id,                    // [4]: categoryID
             SaleType.SALE,                  // [5]: sale type
             Cryptocurrency.PART,            // [6]: currency
-            10.1234,                        // [7]: base price
-            2.12341234,                     // [8]: domestic shipping price
-            1.12341234                      // [9]: international shipping price
+            10,                             // [7]: base price
+            20,                             // [8]: domestic shipping price
+            30                              // [9]: international shipping price
         ];
 
         const res = await testUtil.rpc(templateCommand, testData);
@@ -100,10 +100,10 @@ describe('ListingItemTemplateAddCommand', () => {
             category.id,                    // [4]: categoryID
             SaleType.SALE,                  // [5]: payment type
             Cryptocurrency.PART,            // [6]: currency
-            10.1234,                        // [7]: base price
-            2.12341234,                     // [8]: domestic shipping price
-            1.12341234,                     // [9]: international shipping price
-            EscrowType.MAD_CT,              // [10]: escrow type
+            1,                              // [7]: base price
+            2,                              // [8]: domestic shipping price
+            3,                              // [9]: international shipping price
+            EscrowType.MULTISIG,            // [10]: escrow type
             100,                            // [11]: buyerRatio
             100                             // [12]: sellerRatio
         ];

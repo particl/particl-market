@@ -97,6 +97,7 @@ import {HashableProposalOptionMessageConfig} from '../factories/hashableconfig/m
 import {OrderStatus} from '../enums/OrderStatus';
 import {OrderItemStatus} from '../enums/OrderItemStatus';
 import {OrderItemCreateRequest} from '../requests/model/OrderItemCreateRequest';
+import {toSatoshis} from 'omp-lib/dist/util';
 
 export class TestDataService {
 
@@ -332,8 +333,9 @@ export class TestDataService {
 
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
-            this.log.debug('created listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
+            // this.log.debug('created listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+            this.log.debug('created listingItemTemplate, hash: ', listingItemTemplate.hash);
             this.log.debug('generateParams.generateListingItem: ', generateParams.generateListingItem);
 
             // generate a ListingItem with the same data
@@ -357,18 +359,19 @@ export class TestDataService {
                     postedAt: new Date().getTime(),
                     expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
                     receivedAt: new Date().getTime(),
-                    generatedAt: new Date().getTime()
+                    generatedAt: listingItemTemplateCreateRequest.generatedAt
                 } as ListingItemCreateRequest;
+
+                listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
 
                 // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                     .then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+                this.log.debug('created listingItem, hash: ', listingItem.hash);
 
-                // fetch new relation
-                listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id)
-                    .then(value => value.toJSON());
+                listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
 
             }
             items.push(listingItemTemplate);
@@ -539,7 +542,7 @@ export class TestDataService {
             value: generateParams.listingItemHash,
             to: HashableBidField.ITEM_HASH
         }, {
-            value: EscrowType.MAD_CT,
+            value: EscrowType.MULTISIG,
             to: HashableBidField.PAYMENT_ESCROW_TYPE
         }, {
             value: Cryptocurrency.PART,
@@ -1049,7 +1052,7 @@ export class TestDataService {
 
         const escrow = generateParams.generateEscrow
             ? {
-                type: EscrowType.MAD_CT, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
+                type: EscrowType.MULTISIG, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
                     buyer: 100,     // _.random(1, 100),
                     seller: 100     // _.random(1, 100)
@@ -1060,10 +1063,11 @@ export class TestDataService {
         const itemPrice = generateParams.generateItemPrice
             ? {
                 currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
-                basePrice: +_.random(0.1, 1.00).toFixed(8),
+                // todo:
+                basePrice: toSatoshis(+_.random(0.1, 1.00).toFixed(8)),
                 shippingPrice: {
-                    domestic: +_.random(0.01, 0.10).toFixed(8),
-                    international: +_.random(0.10, 0.20).toFixed(8)
+                    domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
+                    international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
                 } as ShippingPriceCreateRequest,
                 // TODO: omp-lib generates these, so we cant use these right now
                 cryptocurrencyAddress: {

@@ -383,7 +383,9 @@ export const Targets = {
     },
     Listener:     {
         action: {
-            ListingItemAddActionListener: 'ListingItemAddActionListener'
+            ListingItemAddActionListener: 'ListingItemAddActionListener',
+            BidActionListener: 'BidActionListener',
+            BidAcceptActionListener: 'BidAcceptActionListener'
         },
         // BaseActionListener: 'BaseActionListener',
         ServerStartedListener: 'ServerStartedListener'

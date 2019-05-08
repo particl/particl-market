@@ -50,7 +50,8 @@ export class BidCancelActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
+        super(smsgService, smsgMessageService, smsgMessageFactory);
+        this.log = new Logger(__filename);
     }
 
     /**

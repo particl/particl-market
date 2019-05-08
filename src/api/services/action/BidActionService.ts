@@ -60,7 +60,8 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgService, smsgMessageService, smsgMessageFactory, eventEmitter, Logger);
+        super(smsgService, smsgMessageService, smsgMessageFactory);
+        this.log = new Logger(__filename);
     }
 
     /**
@@ -96,6 +97,7 @@ export class BidActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
+        this.log.debug('bidMessage: ', JSON.stringify(marketplaceMessage.action, null, 2));
         return BidValidator.isValid(marketplaceMessage);
     }
 

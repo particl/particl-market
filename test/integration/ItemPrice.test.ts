@@ -106,10 +106,10 @@ describe('ItemPrice', () => {
         expect.assertions(1);
 
         const testData = {
-            basePrice: 0.0001,
+            basePrice: 1,
             shippingPrice: {
-                domestic: 0.123,
-                international: 1.234
+                domestic: 2,
+                international: 3
             } as ShippingPriceCreateRequest,
             cryptocurrencyAddress: {
                 type: CryptoAddressType.NORMAL,
@@ -127,10 +127,10 @@ describe('ItemPrice', () => {
 
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
-            basePrice: 0.0001,
+            basePrice: 1,
             shippingPrice: {
-                domestic: 0.123,
-                international: 1.234
+                domestic: 2,
+                international: 3
             } as ShippingPriceCreateRequest,
             cryptocurrencyAddress: {
                 type: CryptoAddressType.NORMAL,
@@ -169,10 +169,10 @@ describe('ItemPrice', () => {
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001,
+            basePrice: 1,
             shippingPrice: {
-                domestic: 0.123,
-                international: 1.234
+                domestic: 2,
+                international: 3
             } as ShippingPriceCreateRequest,
             cryptocurrencyAddress: {
                 type: CryptoAddressType.NORMAL,
@@ -220,10 +220,10 @@ describe('ItemPrice', () => {
 
         const testDataUpdated = {
             currency: Cryptocurrency.PART,
-            basePrice: 0.002,
+            basePrice: 2,
             shippingPrice: {
-                domestic: 1.234,
-                international: 2.345
+                domestic: 3,
+                international: 4
             } as ShippingPriceUpdateRequest,
             cryptocurrencyAddress: {
                 type: CryptoAddressType.STEALTH,
@@ -246,7 +246,7 @@ describe('ItemPrice', () => {
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001,
+            basePrice: 1,
             cryptocurrencyAddress: {
                 type: CryptoAddressType.NORMAL,
                 address: '1234'
@@ -268,10 +268,10 @@ describe('ItemPrice', () => {
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001,
+            basePrice: 1,
             shippingPrice: {
-                domestic: 0.123,
-                international: 1.234
+                domestic: 2,
+                international: 3
             } as ShippingPriceCreateRequest
         } as ItemPriceCreateRequest;
 
@@ -288,7 +288,7 @@ describe('ItemPrice', () => {
         const testData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001
+            basePrice: 1
         } as ItemPriceCreateRequest;
 
         const result: resources.ItemPrice = await itemPriceService.create(testData).then(value => value.toJSON());

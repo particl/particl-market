@@ -62,7 +62,7 @@ describe('PaymentInformation', () => {
         } as EscrowCreateRequest,
         itemPrice: {
             currency: Cryptocurrency.BTC,
-            basePrice: 0.0001
+            basePrice: 1
         } as ItemPriceCreateRequest
     } as PaymentInformationCreateRequest;
 
@@ -78,7 +78,7 @@ describe('PaymentInformation', () => {
         } as EscrowUpdateRequest,
         itemPrice: {
             currency: Cryptocurrency.PART,
-            basePrice: 0.002
+            basePrice: 2
         } as ItemPriceUpdateRequest
     } as PaymentInformationUpdateRequest;
 

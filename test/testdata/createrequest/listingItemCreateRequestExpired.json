@@ -64,10 +64,10 @@
         },
         "itemPrice": {
             "currency": "PART",
-            "basePrice": 76.31903702293027,
+            "basePrice": 1,
             "shippingPrice": {
-                "domestic": 2.13268661244928,
-                "international": 8.76915941696489
+                "domestic": 2,
+                "international": 3
             },
             "cryptocurrencyAddress": {
                 "type": "NORMAL",

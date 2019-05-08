@@ -129,7 +129,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [7]: basePrice
      *  [8]: domesticShippingPrice
      *  [9]: internationalShippingPrice
-     *  [10]: escrowType, (optional) default EscrowType.MAD_CT
+     *  [10]: escrowType, (optional) default EscrowType.MULTISIG
      *  [11]: buyerRatio, (optional) default 100
      *  [12]: sellerRatio, (optional) default 100
      *  [13]: parent_listing_item_template_id (optional)
@@ -211,6 +211,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         // TODO: forced values for now
         data.params[5] = SaleType.SALE;
         data.params[6] = Cryptocurrency.PART;
+        data.params[10] = EscrowType.MULTISIG;
         data.params[11] = 100;
         data.params[12] = 100;
 
@@ -225,7 +226,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         }
 
         if (!data.params[10]) {
-            data.params[10] = EscrowType.MAD_CT;
+            data.params[10] = EscrowType.MULTISIG;
         }
 
         const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];

@@ -16,30 +16,21 @@ import { SmsgMessageCreateParams } from '../../factories/model/ModelCreateParams
 import { MessageException } from '../../exceptions/MessageException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
-import { EventEmitter } from 'events';
 import { strip } from 'omp-lib/dist/util';
-import { Logger as LoggerType } from '../../../core/Logger';
+import {Logger as LoggerType} from '../../../core/Logger';
 
 export abstract class BaseActionService implements ActionServiceInterface {
+
+    public log: LoggerType;
 
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
     public smsgMessageFactory: SmsgMessageFactory;
-    public eventEmitter: EventEmitter;
-    public log: LoggerType;
-    public eventType: ActionMessageTypes;
 
-    constructor(eventType: ActionMessageTypes, smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory,
-                eventEmitter: EventEmitter, Logger: typeof LoggerType) {
-
-        this.log = new Logger(eventType);
+    constructor(smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory) {
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.smsgMessageFactory = smsgMessageFactory;
-        this.eventEmitter = eventEmitter;
-        this.eventType = eventType;
-
     }
 
     /**
