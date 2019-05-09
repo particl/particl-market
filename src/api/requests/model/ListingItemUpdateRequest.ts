@@ -10,6 +10,7 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ListingItemUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     public hash: string;
+    public removed: boolean;
 
     @IsNotEmpty()
     public seller: string;

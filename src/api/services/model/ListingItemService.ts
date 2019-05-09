@@ -23,7 +23,6 @@ import { ListingItemSearchParams } from '../../requests/search/ListingItemSearch
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
-import { PaymentInformationUpdateRequest } from '../../requests/model/PaymentInformationUpdateRequest';
 import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
@@ -200,6 +199,7 @@ export class ListingItemService {
         listingItem.postedAt = body.postedAt;
         listingItem.expiredAt = body.expiredAt;
         listingItem.receivedAt = body.receivedAt;
+        listingItem.removed = body.removed;
         listingItem.generatedAt = body.generatedAt;
 
         // and update the ListingItem record
@@ -376,6 +376,16 @@ export class ListingItemService {
         await this.listingItemRepo.update(listingItem.id, listingItemModel.toJSON());
         return await this.findOne(listingItem.id);
     }
+
+    /**
+     * Flag listing as removed
+     *
+     * @returns {Promise<void>}
+     */
+    public async setRemovedFlag(itemHash: string, flag: boolean): Promise<void> {
+        const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
+        await this.listingItemRepo.update(listingItem.id, { removed: flag });
+     }
 
     /**
      * check if object is exist in a array
