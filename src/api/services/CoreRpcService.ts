@@ -46,7 +46,7 @@ export interface BlockchainInfo {
 
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
-export class CoreRpcService extends Rpc { // CtRpc {
+export class CoreRpcService extends CtRpc {
 
     public log: LoggerType;
 
@@ -242,12 +242,11 @@ export class CoreRpcService extends Rpc { // CtRpc {
             address: sx
         } as CryptoAddress;
     }
-/*
-CtRpc
+
     public async getBlindPrevouts(satoshis: number, blind?: string): Promise<BlindPrevout[]> {
         return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
     }
-*/
+
     /**
      * Verify value commitment.
      * note that the amount is satoshis, which differs from the rpc api
