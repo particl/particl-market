@@ -11,7 +11,6 @@ import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
 import { SmsgService } from '../SmsgService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { VoteFactory } from '../../factories/model/VoteFactory';
 import { VoteService } from '../model/VoteService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -23,20 +22,19 @@ import { ProposalOptionService } from '../model/ProposalOptionService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ListingItemService } from '../model/ListingItemService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ProposalResultService } from '../model/ProposalResultService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { GovernanceAction } from '../../enums/GovernanceAction';
 import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
-import {toSatoshis} from 'omp-lib/dist/util';
+import { toSatoshis } from 'omp-lib/dist/util';
+import { ItemVote } from '../../enums/ItemVote';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -345,7 +343,15 @@ export class VoteActionService extends BaseActionService {
 
                 // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                 // we can now check whether the ListingItem should be removed or not
+
                 if (proposal.category === ProposalCategory.ITEM_VOTE) {
+
+                    const isMine = await this.coreRpcService.getAddressInfo(voteMessage.voter);
+                    // if this vote is mine lets set/unset the removed flag
+                    if (isMine) {
+                        this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    }
+
                     const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
                         .then(value => value.toJSON());
                     await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)

@@ -11,6 +11,7 @@ declare module 'resources' {
         seller: string;
         expiryTime: number;
         generatedAt: number;
+        removed: boolean;
         receivedAt: number;
         postedAt: number;
         expiredAt: number;
