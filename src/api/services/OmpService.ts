@@ -13,6 +13,7 @@ import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import {Config} from 'omp-lib/dist/abstract/config';
 
 export class OmpService {
 
@@ -31,7 +32,8 @@ export class OmpService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.omp = new OpenMarketProtocol();
+        const ompConfig = { network: 'testnet'} as Config;
+        this.omp = new OpenMarketProtocol(ompConfig);
         this.omp.inject(Cryptocurrency.PART, coreRpcService);
     }
 
