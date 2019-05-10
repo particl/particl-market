@@ -155,6 +155,17 @@ export class BidActionService {
         }
 
         // this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
+        let sellerRegion = '';
+        let buyerRegion = '';
+
+        if (listingItem.ItemInformation && listingItem.ItemInformation.ItemLocation && (typeof listingItem.ItemInformation.ItemLocation.region === 'string') ) {
+            sellerRegion = listingItem.ItemInformation.ItemLocation.region;
+        }
+
+        const buyerParam = _.findLast(additionalParams, (param) => param.id === 'shippingAddress.country');
+        if (buyerParam) {
+            buyerRegion = String(buyerParam.value);
+        }
 
         // todo: calculate correct shippingPrice
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
@@ -458,10 +469,24 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        let sellerRegion = '';
+        let buyerRegion = '';
+
+        if (listingItem.ItemInformation && listingItem.ItemInformation.ItemLocation && (typeof listingItem.ItemInformation.ItemLocation.region === 'string') ) {
+            sellerRegion = listingItem.ItemInformation.ItemLocation.region;
+        }
+
+        if (bid.ShippingAddress && bid.ShippingAddress.country) {
+            buyerRegion = bid.ShippingAddress.country;
+        }
+
+
+
+
         // todo: price type...
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
         const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
-        const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
+        const shippingPriceMax = buyerRegion === sellerRegion ? shippingPrice.domestic : shippingPrice.international;
         const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
         const requiredAmount = totalPrice; // todo: sellers required amount
         // todo: calculate totalprice using the items escrowratio
