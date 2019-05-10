@@ -166,12 +166,13 @@ export class BidActionService {
 
         this.log.debug('totalPrice: ', totalPrice);
 
+        const fundFromAddress = additionalParams.find(kv => kv.id === 'fundFromAddress');
         // returns: {
         //    outputs
         //    outputsSum
         //    outputsChangeAmount
         // }
-        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
+        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount, fundFromAddress ? fundFromAddress.value : null);
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const buyerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
@@ -220,7 +221,7 @@ export class BidActionService {
      * @param {number} requiredAmount
      * @returns {Promise<any>}
      */
-    public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
+    public async findUnspentOutputs(requiredAmount: number, fundFromAddress?: string): Promise<OutputData> {
 
         // requiredAmount, for MPA_BID: (totalPrice * 2)
         // requiredAmount, for MPA_ACCEPT: totalPrice
@@ -239,9 +240,14 @@ export class BidActionService {
         let exactMatchIdx = -1;
         let maxOutputIdx = -1;
         const defaultselectedOutputsIdxs: number[] = [];
+        const addressesToScan: string[] = [];
+
+        if (fundFromAddress) {
+            addressesToScan.push(fundFromAddress);
+        }
 
         // get all unspent transaction outputs
-        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, addressesToScan, false);
 
         // Loop over all outputs once to obtain various fitlering information
         unspentOutputs = unspentOutputs.filter(
