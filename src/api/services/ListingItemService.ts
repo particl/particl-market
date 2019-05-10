@@ -384,13 +384,8 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async setRemovedFlag(itemHash: string, flag: boolean): Promise<void> {
-        const listingItemModel = await this.findOneByHash(itemHash);
-        if (!listingItemModel) {
-            this.log.error('Item listing does not exist. hash = ' + itemHash);
-            throw new NotFoundException('Item listing does not exist. hash = ' + itemHash);
-        }
-        const {id} = listingItemModel.toJSON();
-        await this.listingItemRepo.update(id, {removed: flag});
+        const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
+        await this.listingItemRepo.update(listingItem.id, {removed: flag});
      }
 
     /**
