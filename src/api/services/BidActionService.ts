@@ -154,24 +154,37 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        let sellerRegion = '';
+        let buyerRegion = '';
+
+        if (listingItem.ItemInformation && listingItem.ItemInformation.ItemLocation && (typeof listingItem.ItemInformation.ItemLocation.region === 'string') ) {
+            sellerRegion = listingItem.ItemInformation.ItemLocation.region;
+        }
+
+        const buyerParam = _.findLast(additionalParams, (param) => param.id === 'shippingAddress.country');
+        if (buyerParam) {
+            buyerRegion = String(buyerParam.value);
+        }
+
         // this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
         // todo: calculate correct shippingPrice
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
         const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
-        const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
+        const shippingPriceMax = buyerRegion === sellerRegion ? shippingPrice.domestic : shippingPrice.international;
         const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
         const requiredAmount = totalPrice * 2; // todo: bidders required amount
         // todo: calculate totalprice using the items escrowratio
 
         this.log.debug('totalPrice: ', totalPrice);
 
+        const fundFromAddress = additionalParams.find(kv => kv.id === 'fundFromAddress');
         // returns: {
         //    outputs
         //    outputsSum
         //    outputsChangeAmount
         // }
-        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
+        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount, fundFromAddress ? fundFromAddress.value : null);
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const buyerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
@@ -220,7 +233,7 @@ export class BidActionService {
      * @param {number} requiredAmount
      * @returns {Promise<any>}
      */
-    public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
+    public async findUnspentOutputs(requiredAmount: number, fundFromAddress?: string): Promise<OutputData> {
 
         // requiredAmount, for MPA_BID: (totalPrice * 2)
         // requiredAmount, for MPA_ACCEPT: totalPrice
@@ -239,9 +252,14 @@ export class BidActionService {
         let exactMatchIdx = -1;
         let maxOutputIdx = -1;
         const defaultselectedOutputsIdxs: number[] = [];
+        const addressesToScan: string[] = [];
+
+        if (fundFromAddress) {
+            addressesToScan.push(fundFromAddress);
+        }
 
         // get all unspent transaction outputs
-        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        let unspentOutputs: UnspentOutput[] = await this.coreRpcService.listUnspent(1, 99999999, addressesToScan, false);
 
         // Loop over all outputs once to obtain various fitlering information
         unspentOutputs = unspentOutputs.filter(
@@ -458,10 +476,21 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        let sellerRegion = '';
+        let buyerRegion = '';
+
+        if (listingItem.ItemInformation && listingItem.ItemInformation.ItemLocation && (typeof listingItem.ItemInformation.ItemLocation.region === 'string') ) {
+            sellerRegion = listingItem.ItemInformation.ItemLocation.region;
+        }
+
+        if (bid.ShippingAddress && bid.ShippingAddress.country) {
+            buyerRegion = bid.ShippingAddress.country;
+        }
+
         // todo: price type...
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
         const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
-        const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
+        const shippingPriceMax = buyerRegion === sellerRegion ? shippingPrice.domestic : shippingPrice.international;
         const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
         const requiredAmount = totalPrice; // todo: sellers required amount
         // todo: calculate totalprice using the items escrowratio

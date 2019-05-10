@@ -9,6 +9,7 @@ declare module 'resources' {
         hash: string;
         seller: string;
         expiryTime: number;
+        removed: boolean;
 
         receivedAt: number;
         postedAt: number;
