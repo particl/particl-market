@@ -9,6 +9,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class ListingItemUpdateRequest extends RequestBody {
 
     public hash: string;
+    public removed: boolean;
 
     @IsNotEmpty()
     public seller: string;

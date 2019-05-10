@@ -192,7 +192,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 if (options.flagged) {
+                    // ListingItems having FlaggedItem and ignore whether or not FlaggedItem has the removed flag.
                     qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
+                } else {
+                    // Show all listingitems, but dont include the ones having ListingItem.FlaggedItem.removed
+                    qb.where('listing_items.removed', '=', false);
                 }
 
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
@@ -226,6 +230,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
+
+    public get Removed(): string { return this.get('removed'); }
+    public set Removed(value: string) { this.set('removed', value); }
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }

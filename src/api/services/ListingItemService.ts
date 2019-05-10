@@ -213,6 +213,7 @@ export class ListingItemService {
         listingItem.PostedAt = body.postedAt;
         listingItem.ExpiredAt = body.expiredAt;
         listingItem.ReceivedAt = body.receivedAt;
+        listingItem.Removed = body.removed;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
@@ -376,6 +377,16 @@ export class ListingItemService {
            }
        }
     }
+
+    /**
+     * Flag listing as removed
+     *
+     * @returns {Promise<void>}
+     */
+    public async setRemovedFlag(itemHash: string, flag: boolean): Promise<void> {
+        const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
+        await this.listingItemRepo.update(listingItem.id, {removed: flag});
+     }
 
     /**
      * check if object is exist in a array
