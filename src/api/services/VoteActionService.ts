@@ -319,9 +319,9 @@ export class VoteActionService {
                 // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
                 // we can now check whether the ListingItem should be removed or not
                 if (proposal.type === ProposalType.ITEM_VOTE) {
-                    const isMine = await this.coreRpcService.getAddressInfo(voteMessage.voter);
+                    const {ismine} = await this.coreRpcService.getAddressInfo(voteMessage.voter);
                     // if this vote is mine lets set/unset the removed flag
-                    if (isMine) {
+                    if (ismine) {
                         this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
                     }
 
