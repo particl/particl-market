@@ -161,23 +161,12 @@ export class BidActionService {
             sellerRegion = listingItem.ItemInformation.ItemLocation.region;
         }
 
-        const buyerParam = _.findLast(additionalParams, (param) => param.id === 'shippingAddress.country');
-        if (buyerParam) {
-            buyerRegion = String(buyerParam.value);
+        const buyerRegionParam = _.findLast(additionalParams, (param) => param.id === 'shippingAddress.country');
+        if (buyerRegionParam) {
+            buyerRegion = String(buyerRegionParam.value);
         }
 
         // this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
-        let sellerRegion = '';
-        let buyerRegion = '';
-
-        if (listingItem.ItemInformation && listingItem.ItemInformation.ItemLocation && (typeof listingItem.ItemInformation.ItemLocation.region === 'string') ) {
-            sellerRegion = listingItem.ItemInformation.ItemLocation.region;
-        }
-
-        const buyerParam = _.findLast(additionalParams, (param) => param.id === 'shippingAddress.country');
-        if (buyerParam) {
-            buyerRegion = String(buyerParam.value);
-        }
 
         // todo: calculate correct shippingPrice
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
