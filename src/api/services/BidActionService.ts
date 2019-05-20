@@ -663,9 +663,14 @@ export class BidActionService {
         this.log.debug('listingItem.hash: ', listingItemHash);
 
         txout[escrowMultisigAddress] = +(itemTotalPrice * 3).toFixed(8); // TODO: Shipping... ;(
-        txout[sellerEscrowChangeAddress] = sellerSelectedOutputData.outputsChangeAmount;
-        txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
 
+        if (sellerSelectedOutputData.outputsChangeAmount > 0) {
+            txout[sellerEscrowChangeAddress] = sellerSelectedOutputData.outputsChangeAmount;
+        }
+
+        if (buyerSelectedOutputData.outputsChangeAmount > 0) {
+            txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
+        }
 
         // this.log.debug('buyerOutputs: ', JSON.stringify(buyerSelectedOutputData.outputs, null, 2));
 
@@ -691,7 +696,10 @@ export class BidActionService {
                 this.log.warn('Buyers outputs do not contain enough funds!');
                 throw new MessageException('Buyers outputs do not contain enough funds!');
             }
-            txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
+            // TODO: shouldn't this be using buyerOutputsSum?
+            if (buyerSelectedOutputData.outputsChangeAmount > 0) {
+                txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
+            }
 
         } else {
             this.log.error('Buyer didn\'t supply outputs!');
