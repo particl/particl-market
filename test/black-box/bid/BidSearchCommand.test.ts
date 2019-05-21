@@ -26,6 +26,7 @@ describe('BidSearchCommand', () => {
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
     let listingItems: resources.ListingItem[];
+    let bid: resources.Bid;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -96,8 +97,10 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItem.hash
-            MPAction.MPA_BID,     // type
-            defaultProfile.address      // bidder
+            MPAction.MPA_BID,           // type
+            defaultProfile.address,     // bidder
+            undefined,                  // seller
+            undefined                   // parentBidId
         ]).toParamsArray();
 
         // generate bid
@@ -113,22 +116,33 @@ describe('BidSearchCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Bid[] = res.getBody()['result'];
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
+        bid = result[0];
 
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
 
     });
 
     test('Should generate a second Bid and return two Bids when searchBy by ListingItem.hash', async () => {
+
+        log.debug('bid.id: ', bid.id);
+
         // create second bid
         const bidGenerateParams = new GenerateBidParams([
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItemhash
-            MPAction.MPA_ACCEPT,  // type
-            defaultProfile.address      // bidder
+            MPAction.MPA_ACCEPT,        // type
+            defaultProfile.address,     // bidder
+            undefined,                  // seller
+            bid.id                      // parentBidId
         ]).toParamsArray();
+
+        log.debug('bidGenerateParams: ', bidGenerateParams);
 
         // generate bid
         const bids: any = await testUtil.generateData(
@@ -143,9 +157,9 @@ describe('BidSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -155,9 +169,9 @@ describe('BidSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
-        expect(result[1].action).toBe(MPAction.MPA_BID);
+        expect(result[1].type).toBe(MPAction.MPA_BID);
         expect(result[1].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -172,7 +186,7 @@ describe('BidSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -192,7 +206,7 @@ describe('BidSearchCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 

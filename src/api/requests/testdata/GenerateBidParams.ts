@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 
 export interface GenerateBidParamsInterface {
     generateListingItem: boolean;
@@ -17,6 +18,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
     public type: string;
     public bidder: string;
     public listingItemSeller: string;
+    public parentBidId: number;
 
 
     /**
@@ -27,6 +29,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
      * [3]: type, bid type, see MPAction
      * [4]: bidder, bidders address
      * [5]: seller, ListingItem sellers address
+     * [6]: parentBidId, should be set if type !== MPA_BID
      *
      * @param generateParams
      */
@@ -39,13 +42,19 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.listingItemHash = generateParams[2] ? generateParams[2] : null;
 
             // if item hash was given, set generateListingItem to false
-            this.generateListingItem = this.listingItemHash ? false : true;
+            this.generateListingItem = !this.listingItemHash;
 
             this.type = generateParams[3] ? generateParams[3] : null;
             this.bidder = generateParams[4] ? generateParams[4] : null;
 
             this.listingItemSeller = generateParams[5] ? generateParams[5] : null;
+            if (generateParams[6]) {
+                this.parentBidId = generateParams[6];
+            }
         }
+
+        console.log('generateParams[6]:', generateParams[6]);
+        console.log('this.parentBidId:', this.parentBidId);
 
     }
 
@@ -56,7 +65,8 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.listingItemHash,
             this.type,
             this.bidder,
-            this.listingItemSeller
+            this.listingItemSeller,
+            this.parentBidId
         ];
     }
 

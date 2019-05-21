@@ -93,8 +93,10 @@ export class BidService {
 
         // if item hash was given, set the item id
         if (options.listingItemHash) {
-            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
-            options.listingItemId = foundListing.Id;
+            this.log.debug('findOneByHash: ', options.listingItemHash);
+            const foundListing: resources.ListingItem = await this.listingItemService.findOneByHash(options.listingItemHash, false)
+                .then(value => value.toJSON());
+            options.listingItemId = foundListing.id;
         }
         return await this.bidRepo.search(options, withRelated);
     }

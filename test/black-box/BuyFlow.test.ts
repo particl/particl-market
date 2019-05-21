@@ -318,7 +318,7 @@ describe('Happy Buy Flow', () => {
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -358,7 +358,7 @@ describe('Happy Buy Flow', () => {
             ],
             8 * 60,
             200,
-            '[0].action',
+            '[0].type',
             MPAction.MPA_BID.toString()
         );
         res.expectJson();
@@ -366,7 +366,7 @@ describe('Happy Buy Flow', () => {
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -442,7 +442,7 @@ describe('Happy Buy Flow', () => {
             ],
             8 * 60,
             200,
-            '[0].action',
+            '[0].type',
             MPAction.MPA_ACCEPT.toString()
         );
         res.expectJson();
@@ -450,7 +450,7 @@ describe('Happy Buy Flow', () => {
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnSellerNode.ListingItem.hash);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
@@ -527,7 +527,7 @@ describe('Happy Buy Flow', () => {
             ],
             8 * 60,
             200,
-            '[0].action',
+            '[0].type',
             MPAction.MPA_ACCEPT.toString()
         );
         res.expectJson();
@@ -535,7 +535,7 @@ describe('Happy Buy Flow', () => {
 
         const result: resources.Bid = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].bidder).toBe(buyerProfile.address);
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
@@ -613,7 +613,7 @@ describe('Happy Buy Flow', () => {
 
         const result: any = response.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(MPAction.MPA_ACCEPT);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnBuyerNode.ListingItem.hash);
         expect(result[0].OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
 
@@ -990,5 +990,6 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
+
 
 });
