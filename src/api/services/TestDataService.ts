@@ -211,12 +211,12 @@ export class TestDataService {
     /**
      * generates testdata
      *
-     * @param data
      *  model - listingitemtemplate, listingitem or profile
      *  amount - amount of models to create
      *  withRelated - return full related model data or just id's, defaults to true
      *  generateParams - boolean array from GenerateListingItemTemplateParams
      *
+     * @param body
      * @returns {Promise<any>}
      */
     @validate()
@@ -1055,7 +1055,7 @@ export class TestDataService {
 
         const escrow = generateParams.generateEscrow
             ? {
-                type: EscrowType.MULTISIG, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
+                type: EscrowType.MAD_CT, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
                     buyer: 100,     // _.random(1, 100),
                     seller: 100     // _.random(1, 100)

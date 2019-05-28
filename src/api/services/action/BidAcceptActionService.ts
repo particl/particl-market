@@ -8,18 +8,14 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { SmsgService } from '../SmsgService';
-import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
@@ -75,10 +71,16 @@ export class BidAcceptActionService extends BaseActionService {
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
+                this.log.debug('createMessage(), listingItemAddMPM:', JSON.stringify(listingItemAddMPM, null, 2));
+
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
                     .then(async value => {
-                        const bidMPM: MarketplaceMessage = value.toJSON();
+
+                        const bidSmsgMessage: resources.SmsgMessage = value.toJSON();
+                        this.log.debug('createMessage(), bidSmsgMessage:', JSON.stringify(bidSmsgMessage, null, 2));
+                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
+                        this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
 
                         // finally use omp to generate BidAcceptMessage
                         return await this.ompService.accept(
@@ -111,6 +113,7 @@ export class BidAcceptActionService extends BaseActionService {
      */
     public async beforePost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
+        // TODO: msgid is not set here!! update in afterPost?
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
@@ -119,6 +122,7 @@ export class BidAcceptActionService extends BaseActionService {
 
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
             .then(async bidCreateRequest => {
+                this.log.debug('bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
                 return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
                     .then(value => {
                         return marketplaceMessage;
@@ -151,8 +155,13 @@ export class BidAcceptActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
-                const bid: resources.Bid = value.toJSON();
+                let bid: resources.Bid = value.toJSON();
+                bid = await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
+                this.log.debug('bid: ', JSON.stringify(bid, null, 2));
 
+                this.log.debug('bid.ParentBid.OrderItem.id: ', bid.ParentBid.OrderItem.id);
+                this.log.debug('bid.ParentBid.OrderItem.Order.id: ', bid.ParentBid.OrderItem.Order.id);
+                this.log.debug('bid.id: ', bid.id);
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
 

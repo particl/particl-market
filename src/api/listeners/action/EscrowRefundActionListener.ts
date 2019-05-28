@@ -63,6 +63,7 @@ export class EscrowRefundActionListener extends BaseActionListenr implements int
                         const listingItem = listingItemModel.toJSON();
 
                         const bidCreateParams = {
+                            msgid: smsgMessage.msgid,
                             listingItem,
                             bidder: smsgMessage.to,
                             parentBid

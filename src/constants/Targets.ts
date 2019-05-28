@@ -388,6 +388,7 @@ export const Targets = {
             BidAcceptActionListener: 'BidAcceptActionListener',
             BidCancelActionListener: 'BidCancelActionListener',
             BidRejectActionListener: 'BidRejectActionListener',
+            EscrowCompleteActionListener: 'EscrowCompleteActionListener',
             EscrowLockActionListener: 'EscrowLockActionListener',
             EscrowRefundActionListener: 'EscrowRefundActionListener',
             EscrowReleaseActionListener: 'EscrowReleaseActionListener',

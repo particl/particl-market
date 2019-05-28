@@ -51,9 +51,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
         const bid: resources.Bid = data.params[0];
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id)
-            .then(value => value.toJSON());
-
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
         const profile: resources.Profile = listingItem.ListingItemTemplate.Profile;
 
         const fromAddress = profile.address;    // we are the seller, send from the profiles address which posted the item being bidded for

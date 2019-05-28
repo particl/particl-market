@@ -81,6 +81,7 @@ export class EscrowLockActionService extends BaseActionService {
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
+                // this.log.debug('params: ', JSON.stringify(params, null, 2));
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
                     .then(async bid => {
@@ -123,6 +124,7 @@ export class EscrowLockActionService extends BaseActionService {
      */
     public async beforePost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
+        // TODO: msgid is not set here!! update in afterPost?
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,

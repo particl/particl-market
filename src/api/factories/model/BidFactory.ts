@@ -90,7 +90,10 @@ export class BidFactory implements ModelFactoryInterface {
                 hash: 'recalculateandvalidate'
             } as BidCreateRequest;
 
-            // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
+            if (params.parentBid) {
+                createRequest.parent_bid_id = params.parentBid.id;
+            }
+            this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
             // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
             createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
@@ -104,12 +107,15 @@ export class BidFactory implements ModelFactoryInterface {
                     to: HashableBidField.PAYMENT_CRYPTO
                 }]));
 
+            this.log.debug('bidMessage.hash:', bidMessage.hash);
+            this.log.debug('createRequest.hash:', createRequest.hash);
+            // todo: when called from beforePost(), we dont have the bidMessage.hash
             // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
-            if (bidMessage.hash !== createRequest.hash) {
-                const error = new HashMismatchException('BidCreateRequest', bidMessage.hash, createRequest.hash);
-                this.log.error(error.getMessage());
-                throw error;
-            }
+            // if (bidMessage.hash !== createRequest.hash) {
+            //    const error = new HashMismatchException('BidCreateRequest', bidMessage.hash, createRequest.hash);
+            //    this.log.error(error.getMessage());
+            //    throw error;
+            // }
 
             return createRequest;
 

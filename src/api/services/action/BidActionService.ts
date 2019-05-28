@@ -115,6 +115,7 @@ export class BidActionService extends BaseActionService {
      */
     public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
+        // TODO: msgid is not set here!! update in afterPost?
         const bidCreateParams = {
             listingItem: params.listingItem,
             address: params.address,
@@ -194,19 +195,20 @@ export class BidActionService extends BaseActionService {
                     seller: bid.ListingItem.seller,
                     status: OrderStatus.PROCESSING,
                     generatedAt: bid.generatedAt,
-                    hash: orderHash
+                    hash: orderHash ? orderHash.value : undefined
                 } as OrderCreateParams;
 
                 // this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
 
+                // OrderFactory creates also the OrderItemCreateRequests
                 return await this.orderFactory.get(orderCreateParams/*, bidMessage*/)
                     .then(async orderCreateRequest => {
-                        // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
+                        this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
 
                         return await this.orderService.create(orderCreateRequest)
                             .then(async orderModel => {
                                 const order: resources.Order = orderModel.toJSON();
-                                // this.log.debug('createBid(), created Order: ', JSON.stringify(order, null, 2));
+                                this.log.debug('createBid(), created Order: ', JSON.stringify(order, null, 2));
                                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
                             });
                     });

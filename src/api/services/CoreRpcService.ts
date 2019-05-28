@@ -247,7 +247,13 @@ export class CoreRpcService extends CtRpc {
 //        return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
 //    }
     public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
+        // omp-lib: const type = (this.network === 'testnet') ? 'anon' : 'blind';
+        // todo: why send anon type to blind on testnet?
+        // todo: also without anon funds, failing with: Insufficient anon funds
+        // todo: create an enum for the type
+
+        this.log.debug('getBlindPrevouts(), type: blind, satoshis: ' + satoshis + ', blind: ' + blind);
+        return [await this.createBlindPrevoutFrom('blind', /* type, */satoshis, blind)];
     }
 
     /**
@@ -403,7 +409,13 @@ export class CoreRpcService extends CtRpc {
      * @param outputs       (json array, required) A json array of json objects
      */
     public async sendTypeTo(typeIn: string, typeOut: string, outputs: RpcBlindSendToOutput[]): Promise<string> {
-        return await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+        // for (const output of outputs) {
+        //    output['subfee'] = false;
+        // }
+        // this.log.debug('outputs: ', outputs);
+        const txid = await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+        this.log.debug('txid: ', txid);
+        return txid;
     }
 
     /**
@@ -537,10 +549,23 @@ export class CoreRpcService extends CtRpc {
      * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspentBlind(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
-                                  queryOptions: any = {}): Promise<RpcUnspentOutput[]> {
+    public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
+                                  queryOptions?: any): Promise<RpcUnspentOutput[]> {
 
-        const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
+        const params: any[] = [minconf]; // [minconf, maxconf, addresses, includeUnsafe];
+
+        if (maxconf !== undefined) {
+            params.push(maxconf);
+        }
+
+        if (addresses !== undefined) {
+            params.push(addresses);
+        }
+
+        if (includeUnsafe !== undefined) {
+            params.push(includeUnsafe);
+        }
+
         if (!_.isEmpty(queryOptions)) {
             params.push(queryOptions);
         }

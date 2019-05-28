@@ -89,6 +89,7 @@ export class BidCancelActionService extends BaseActionService {
      */
     public async beforePost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
+        // TODO: msgid is not set here!! update in afterPost?
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,

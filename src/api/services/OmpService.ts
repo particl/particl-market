@@ -60,10 +60,13 @@ export class OmpService {
      * @param bidMessage
      */
     public async accept(listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage): Promise<MarketplaceMessage> {
-        return await this.omp.accept(
-            OmpService.getMPM(listingItemAddMessage),
-            OmpService.getMPM(bidMessage)
-        ) as MarketplaceMessage;
+        const listingMPM: MPM = OmpService.getMPM(listingItemAddMessage);
+        const bidMPM: MPM = OmpService.getMPM(bidMessage);
+
+        this.log.debug('accept(), listingMPM: ', JSON.stringify(listingMPM, null, 2));
+        this.log.debug('accept(), bidMPM: ', JSON.stringify(bidMPM, null, 2));
+
+        return await this.omp.accept(listingMPM, bidMPM) as MarketplaceMessage;
     }
 
     /**

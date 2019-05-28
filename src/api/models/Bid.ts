@@ -180,7 +180,9 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public OrderItem(): OrderItem {
-        return this.hasOne(OrderItem);
+        // return this.hasMany(OrderItem);
+        // model.hasOne(Target, [foreignKey], [foreignKeyTarget])
+        return this.hasOne(OrderItem, 'bid_id', 'id');
     }
 
     public ListingItem(): ListingItem {

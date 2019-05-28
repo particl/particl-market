@@ -70,7 +70,7 @@ export class OrderService {
         const startTime = new Date().getTime();
 
         const body: OrderCreateRequest = JSON.parse(JSON.stringify(data));
-        this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
+        // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
@@ -130,7 +130,10 @@ export class OrderService {
     public async updateStatus(id: number, status: OrderStatus): Promise<Order> {
         const order = await this.findOne(id, false);
         order.Status = status;
-        return await this.orderRepo.update(id, order.toJSON());
+        const updated = await this.orderRepo.update(id, order.toJSON());
+        this.log.debug('updated Order ' + id + ' status to: ' + updated.Status);
+        return updated;
+
     }
 
 }

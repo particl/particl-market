@@ -64,6 +64,7 @@ export class BidCancelActionListener extends BaseActionListenr implements interf
                         const listingItem = listingItemModel.toJSON();
 
                         const bidCreateParams = {
+                            msgid: smsgMessage.msgid,
                             listingItem,
                             bidder: smsgMessage.to,
                             parentBid

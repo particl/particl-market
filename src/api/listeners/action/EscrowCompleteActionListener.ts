@@ -20,15 +20,18 @@ import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
+import {MPActionExtended} from '../../enums/MPActionExtended';
+import {EscrowCompleteMessage} from '../../messages/action/EscrowCompleteMessage';
+import {EscrowCompleteActionService} from '../../services/action/EscrowCompleteActionService';
 
-export class EscrowLockActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class EscrowCompleteActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
-    public static Event = Symbol(MPAction.MPA_LOCK);
+    public static Event = Symbol(MPActionExtended.MPA_COMPLETE);
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
 
-        @inject(Types.Service) @named(Targets.Service.action.EscrowLockActionService) public escrowLockActionService: EscrowLockActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowCompleteActionService) public escrowCompleteActionService: EscrowCompleteActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
@@ -38,7 +41,7 @@ export class EscrowLockActionListener extends BaseActionListenr implements inter
     }
 
     /**
-     * handles the received EscrowLockMessage and return SmsgMessageStatus as a result
+     * handles the received EscrowCompleteMessage and return SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
@@ -48,11 +51,11 @@ export class EscrowLockActionListener extends BaseActionListenr implements inter
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
+        const actionMessage: EscrowCompleteMessage = marketplaceMessage.action as EscrowCompleteMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_LOCK)
+        // - then, save the new Bid (MPA_COMPLETE)
         // - then, update the OrderItem.status and Order.status
 
         return await this.bidService.findOneByHash(actionMessage.bid)
@@ -69,9 +72,10 @@ export class EscrowLockActionListener extends BaseActionListenr implements inter
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage)
-                            .then(async escrowLockRequest => {
-                                return await this.escrowLockActionService.createBid(marketplaceMessage.action as EscrowLockMessage, escrowLockRequest)
+                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowCompleteMessage)
+                            .then(async escrowCompleteRequest => {
+                                return await this.escrowCompleteActionService.createBid(marketplaceMessage.action as EscrowCompleteMessage,
+                                    escrowCompleteRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })
@@ -87,5 +91,6 @@ export class EscrowLockActionListener extends BaseActionListenr implements inter
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
+
 
 }

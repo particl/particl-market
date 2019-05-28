@@ -156,6 +156,7 @@ export class EscrowReleaseActionService extends BaseActionService {
             value: txid
         } as KVS);
 
+        // TODO: msgid is not set here!! update in afterPost?
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,

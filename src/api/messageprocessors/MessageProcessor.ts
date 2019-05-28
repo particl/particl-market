@@ -89,7 +89,11 @@ export class MessageProcessor implements MessageProcessorInterface {
             // this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
             if (marketplaceMessage !== null && smsgMessage.type !== null && emitEvent) {
-                smsgMessage.text = '';
+
+                if (MPAction.MPA_LISTING_ADD === smsgMessage.type) {
+                    // no need to store the listing data "twice"
+                    smsgMessage.text = '';
+                }
 
                 const marketplaceEvent: MarketplaceMessageEvent = {
                     smsgMessage,

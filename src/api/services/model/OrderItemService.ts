@@ -82,7 +82,9 @@ export class OrderItemService {
     public async updateStatus(id: number, status: OrderItemStatus): Promise<OrderItem> {
         const orderItem = await this.findOne(id, false);
         orderItem.Status = status;
-        return await this.orderItemRepo.update(id, orderItem.toJSON());
+        const updated = await this.orderItemRepo.update(id, orderItem.toJSON());
+        this.log.debug('updated OrderItem ' + id + ' status to: ' + updated.Status);
+        return updated;
     }
 
 }

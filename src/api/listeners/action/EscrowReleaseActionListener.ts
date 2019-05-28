@@ -63,6 +63,7 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
                         const listingItem = listingItemModel.toJSON();
 
                         const bidCreateParams = {
+                            msgid: smsgMessage.msgid,
                             listingItem,
                             bidder: smsgMessage.to,
                             parentBid

@@ -59,7 +59,7 @@ export class SmsgMessageService {
     public async create( @request(SmsgMessageCreateRequest) data: SmsgMessageCreateRequest): Promise<SmsgMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the smsgMessage
         const smsgMessage = await this.smsgMessageRepo.create(body);
@@ -115,10 +115,18 @@ export class SmsgMessageService {
      */
     public async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<SmsgMessage> {
 
+        // find the existing one without related
+        const smsgMessage = await this.findOne(message.id, false);
+
+        smsgMessage.Status = status;
+        // update smsgMessage record
+        const updatedSmsgMessage = await this.smsgMessageRepo.update(message.id, smsgMessage.toJSON());
+
         // this.log.debug('message:', JSON.stringify(message, null, 2));
 
-        const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
-
+        // we need to fetch the bid messages to recreate new messages so not setting text to '' for now...
+        // const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
+/*
         // todo: we could just set the one field
         const updateRequest = {
             type: message.type.toString(),
@@ -136,13 +144,14 @@ export class SmsgMessageService {
             daysretention: message.daysretention,
             from: message.from,
             to: message.to,
-            text
+            text: message.text
         } as SmsgMessageUpdateRequest;
-
+*/
         // this.log.debug('message:', JSON.stringify(message, null, 2));
         // this.log.debug('updateRequest:', JSON.stringify(updateRequest, null, 2));
+        // return await this.update(message.id, updateRequest);
 
-        return await this.update(message.id, updateRequest);
+        return updatedSmsgMessage;
     }
 
     public async destroy(id: number): Promise<void> {
