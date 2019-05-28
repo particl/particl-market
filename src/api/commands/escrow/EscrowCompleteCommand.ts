@@ -69,8 +69,8 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         }
         escrowLock = await this.bidService.findOne(escrowLock.id).then(value => value.toJSON());
 
-        const fromAddress = orderItem.Order.buyer;  // we are the seller
-        const toAddress = orderItem.Order.seller;
+        const fromAddress = orderItem.Order.seller;
+        const toAddress = orderItem.Order.buyer;
 
         // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
         const daysRetention = 2;

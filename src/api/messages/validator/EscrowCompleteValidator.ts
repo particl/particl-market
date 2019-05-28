@@ -27,8 +27,8 @@ export class EscrowCompleteValidator implements ActionMessageValidatorInterface 
             throw new MessageException('action.type: missing');
         }
 
-        if (msg.action.type !== MPActionExtended.MPA_REFUND) {
-            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_REFUND]);
+        if (msg.action.type !== MPActionExtended.MPA_COMPLETE) {
+            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_COMPLETE]);
         }
 
         return true;

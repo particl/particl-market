@@ -3,23 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
-import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
-import { HashableBidReleaseField } from '../HashableField';
+import { HashableBidField, HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
+import {HashableBidReleaseField} from '../HashableField';
 
-/**
- * used for MPA_COMPLETE, MPA_RELEASE and MPA_REFUND
- */
-export class HashableBidMessageConfig extends BaseHashableConfig {
+// TODO: rename
+export class HashableBidBasicCreateRequestConfig extends BaseHashableConfig {
 
     public fields = [{
-        from: 'generated',
+        from: 'generatedAt',
         to: HashableCommonField.GENERATED
-    }, {
-        from: 'bid',
-        to: HashableBidReleaseField.BID_HASH
     }] as HashableFieldConfig[];
 
-    constructor(values?: HashableFieldValueConfig[]) {
+    constructor(values: HashableFieldValueConfig[]) {
         super(values);
     }
 }

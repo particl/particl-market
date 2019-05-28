@@ -112,6 +112,7 @@ export class EscrowCompleteActionService extends BaseActionService {
                                             escrowLockMPM.action as EscrowLockMessage
                                         );
 
+                                        // this.log.debug('completetx: ', completetx);
                                         const actionMessage: EscrowCompleteMessage = await this.escrowCompleteMessageFactory.get({
                                             bidHash: params.bid.hash,
                                             memo: params.memo
@@ -119,6 +120,8 @@ export class EscrowCompleteActionService extends BaseActionService {
 
                                         // store the completetx temporarily in the actionMessage
                                         actionMessage['_completetx'] = completetx;
+
+                                        this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
 
                                         return {
                                             version: ompVersion(),
@@ -206,15 +209,17 @@ export class EscrowCompleteActionService extends BaseActionService {
      * @param escrowCompleteMessage
      * @param bidCreateRequest
      */
-    public async createBid(escrowCompleteMessage: EscrowCompleteMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async createBid(escrowCompleteMessage: EscrowCompleteMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.COMPLETE);
-                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.COMPLETE);
+                this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.SHIPPING);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.SHIPPING);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

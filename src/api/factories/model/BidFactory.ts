@@ -18,14 +18,18 @@ import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableBidCreateRequestConfig } from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
+import { HashableBidBasicCreateRequestConfig } from '../hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
+import { HashableBidReleaseField } from '../hashableconfig/HashableField';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage
+    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage;
+
+export type BidMessageTypesWithParentBid = BidAcceptMessage | BidRejectMessage | BidCancelMessage
     | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage;
 
 export class BidFactory implements ModelFactoryInterface {
@@ -93,10 +97,10 @@ export class BidFactory implements ModelFactoryInterface {
             if (params.parentBid) {
                 createRequest.parent_bid_id = params.parentBid.id;
             }
-            this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
-            // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
-            createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
+            if (MPAction.MPA_BID === createRequest.type) {
+                // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
+                createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
                     value: params.listingItem.hash,
                     to: HashableBidField.ITEM_HASH
                 }, {
@@ -106,7 +110,14 @@ export class BidFactory implements ModelFactoryInterface {
                     value: params.listingItem.PaymentInformation.ItemPrice.currency,
                     to: HashableBidField.PAYMENT_CRYPTO
                 }]));
+            } else {
+                createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidBasicCreateRequestConfig([{
+                    value: (bidMessage as BidMessageTypesWithParentBid).bid,
+                    to: HashableBidReleaseField.BID_HASH
+                }]));
+            }
 
+            this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
             this.log.debug('bidMessage.hash:', bidMessage.hash);
             this.log.debug('createRequest.hash:', createRequest.hash);
             // todo: when called from beforePost(), we dont have the bidMessage.hash

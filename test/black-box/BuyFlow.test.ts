@@ -38,6 +38,7 @@ describe('Happy Buy Flow', () => {
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
+    const escrowCompleteCommand = Commands.ESCROW_COMPLETE.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let sellerProfile: resources.Profile;
@@ -669,7 +670,6 @@ describe('Happy Buy Flow', () => {
 
     });
 
-/*
     test('Should have updated Order on BUYER node after posting the MPA_LOCK, OrderItemStatus.ESCROW_LOCKED', async () => {
 
         expect(sent).toBeTruthy();
@@ -744,7 +744,8 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Should post MPA_RELEASE from SELLER node, indicating that the item has been sent', async () => {
+
+    test('Should post MPA_COMPLETE from SELLER node, indicating that the item has been sent', async () => {
 
         expect(sent).toBeTruthy();
         expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
@@ -752,13 +753,13 @@ describe('Happy Buy Flow', () => {
         sent = false;
 
         log.debug('========================================================================================');
-        log.debug('SELLER POSTS MPA_RELEASE, indicating that the item has been sent');
+        log.debug('SELLER POSTS MPA_COMPLETE, indicating that the item has been sent');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
 
         const res: any = await testUtilSellerNode.rpc(escrowCommand, [
-            escrowReleaseCommand,
+            escrowCompleteCommand,
             orderOnSellerNode.OrderItems[0].id,
             'tracking1234'
         ]);
@@ -784,12 +785,12 @@ describe('Happy Buy Flow', () => {
     });
 
 
-    test('Should have updated Order on SELLER node after sending MPA_RELEASE, OrderItemStatus.SHIPPING', async () => {
+    test('Should have updated Order on SELLER node after sending MPA_COMPLETE, OrderItemStatus.SHIPPING', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been updated on seller node after sending the MPA_RELEASE, OrderItemStatus.SHIPPING');
+        log.debug('Order should have been updated on seller node after sending the MPA_COMPLETE, OrderItemStatus.SHIPPING');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
@@ -819,7 +820,7 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Should have updated Order on BUYER node after receiving MPA_RELEASE, OrderItemStatus.SHIPPING', async () => {
+    test('Should have updated Order on BUYER node after receiving MPA_COMPLETE, OrderItemStatus.SHIPPING', async () => {
 
         expect(sent).toBeTruthy();
         expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
@@ -1003,5 +1004,5 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
-*/
+
 });

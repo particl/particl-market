@@ -22,6 +22,7 @@ export enum HashableOrderField {
     ORDER_SELLER = 'orderSeller'
 }
 
+// TODO: rename
 export enum HashableBidReleaseField {
     BID_HASH = 'bidHash'
 }

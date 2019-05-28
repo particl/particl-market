@@ -8,6 +8,8 @@ import { BidDataCreateRequest } from './BidDataCreateRequest';
 import { AddressCreateRequest } from './AddressCreateRequest';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 // tslint:disable:variable-name
 export class BidCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -18,9 +20,9 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
 
     public msgid: string;
 
-    @IsEnum(MPAction)
+    // @IsEnum(MPAction || MPActionExtended)
     @IsNotEmpty()
-    public type: MPAction;
+    public type: ActionMessageTypes;
 
     public address: AddressCreateRequest;
     public address_id: number;
