@@ -69,6 +69,7 @@ export class Order extends Bookshelf.Model<Order> {
         const orderCollection = Order.forge<Model<Order>>()
             .query( qb => {
                 qb.join('order_items', 'orders.id', 'order_items.order_id');
+
                 if (options.listingItemId) {
                     qb.join('bids', 'order_items.bid_id', 'bids.id');
                     qb.where('bids.listing_item_id', '=', options.listingItemId);

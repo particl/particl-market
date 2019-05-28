@@ -33,6 +33,7 @@ import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseAc
 import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
 import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
 import { VoteActionListener } from '../listeners/action/VoteActionListener';
+import {EscrowCompleteActionListener} from '../listeners/action/EscrowCompleteActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -132,6 +133,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);
                         break;
+                    case MPActionExtended.MPA_COMPLETE:
+                        this.log.debug('SENDING: ', EscrowCompleteActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowCompleteActionListener.Event, marketplaceEvent);
+                        break;
                     case MPActionExtended.MPA_RELEASE:
                         this.log.debug('SENDING: ', EscrowReleaseActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowReleaseActionListener.Event, marketplaceEvent);
@@ -149,6 +154,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
                         break;
                     default:
+                        this.log.error('ERROR: Received a message type thats missing a Listener.');
                         throw new NotImplementedException();
                 }
                 // send event to cli

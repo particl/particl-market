@@ -52,6 +52,7 @@ export class OrderService {
      * searchBy Order using given OrderSearchParams
      *
      * @param options
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()

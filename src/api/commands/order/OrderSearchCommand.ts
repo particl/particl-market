@@ -31,7 +31,7 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      * [0]: itemhash, optional
-     * [1]: status, optional
+     * [1]: OrderItemStatus, optional
      * [2]: buyerAddress, optional
      * [3]: sellerAddress, optional
      * [4]: ordering, optional
@@ -60,6 +60,12 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
         } as OrderSearchParams;
 
         return await this.orderService.search(searchArgs);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // todo: validations
+
+        return data;
     }
 
     public usage(): string {

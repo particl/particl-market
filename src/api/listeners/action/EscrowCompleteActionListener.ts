@@ -37,7 +37,7 @@ export class EscrowCompleteActionListener extends BaseActionListenr implements i
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LOCK, smsgMessageService, Logger);
+        super(MPActionExtended.MPA_COMPLETE, smsgMessageService, Logger);
     }
 
     /**

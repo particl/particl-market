@@ -216,7 +216,7 @@ export class EscrowCompleteActionService extends BaseActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.SHIPPING);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.SHIPPING);
