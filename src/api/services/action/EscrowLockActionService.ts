@@ -85,11 +85,17 @@ export class EscrowLockActionService extends BaseActionService {
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
                     .then(async bid => {
-                        const bidMPM: MarketplaceMessage = bid.toJSON();
+
+                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
+                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
+                        // this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
 
                         return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid)
                             .then(async bidAccept => {
-                                const bidAcceptMPM: MarketplaceMessage = bidAccept.toJSON();
+
+                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
+                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
+                                // this.log.debug('createMessage(), bidAcceptMPM:', JSON.stringify(bidMPM, null, 2));
 
                                 // finally use omp to generate EscrowLockMessage
                                 return await this.ompService.lock(
@@ -109,6 +115,7 @@ export class EscrowLockActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
+        this.log.debug('validate, marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
         return EscrowLockValidator.isValid(marketplaceMessage);
     }
 
@@ -124,7 +131,7 @@ export class EscrowLockActionService extends BaseActionService {
      */
     public async beforePost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
-        // TODO: msgid is not set here!! update in afterPost?
+        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
@@ -150,6 +157,7 @@ export class EscrowLockActionService extends BaseActionService {
                             } as KVS);
                         }
 
+                        params.createdBid = value;
                         return marketplaceMessage;
                     });
             });
@@ -164,6 +172,9 @@ export class EscrowLockActionService extends BaseActionService {
      */
     public async afterPost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
+        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
+        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 

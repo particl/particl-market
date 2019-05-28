@@ -13,10 +13,11 @@ export class BidRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
     public sendParams: SmsgSendParams;       // PostRequest always needs to contain the send parameters for the message
-
     @IsNotEmpty()
     public listingItem: resources.ListingItem;  // listingItem being bidder for to be used to create the ListingItemAddMessage
-
     @IsNotEmpty()
     public address: AddressCreateRequest;       // bidder delivery address
+
+    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
+
 }

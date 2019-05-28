@@ -26,6 +26,8 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageException } from '../../exceptions/MessageException';
 import {ListingItem} from '../../models/ListingItem';
+import {OrderItemStatus} from '../../enums/OrderItemStatus';
+import {OrderItem} from '../../models/OrderItem';
 
 export class BidService {
 
@@ -222,5 +224,13 @@ export class BidService {
 
     public async destroy(id: number): Promise<void> {
         await this.bidRepo.destroy(id);
+    }
+
+    public async updateMsgId(id: number, msgid: string): Promise<Bid> {
+        const bid = await this.findOne(id, false);
+        bid.Msgid = msgid;
+        const updated = await this.bidRepo.update(id, bid.toJSON());
+        this.log.debug('updated Bid ' + id + ' msgid to: ' + updated.Msgid);
+        return updated;
     }
 }

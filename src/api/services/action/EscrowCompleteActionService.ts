@@ -91,15 +91,18 @@ export class EscrowCompleteActionService extends BaseActionService {
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
                     .then(async bid => {
-                        const bidMPM: MarketplaceMessage = bid.toJSON();
+                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
+                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
 
                         return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid)
                             .then(async bidAccept => {
-                                const bidAcceptMPM: MarketplaceMessage = bidAccept.toJSON();
+                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
+                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
 
                                 return this.smsgMessageService.findOneByMsgId(params.escrowLock.msgid)
                                     .then(async escrowLock => {
-                                        const escrowLockMPM: MarketplaceMessage = escrowLock.toJSON();
+                                        const escrowLockSmsgMessage: resources.SmsgMessage = escrowLock.toJSON();
+                                        const escrowLockMPM: MarketplaceMessage = JSON.parse(escrowLockSmsgMessage.text);
 
                                         // finally use omp to generate completetx
                                         const completetx = await this.ompService.complete(
@@ -163,7 +166,7 @@ export class EscrowCompleteActionService extends BaseActionService {
             value: txid
         } as KVS);
 
-        // TODO: msgid is not set here!! update in afterPost?
+        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
@@ -174,6 +177,7 @@ export class EscrowCompleteActionService extends BaseActionService {
             .then(async bidCreateRequest => {
                 return await this.createBid(marketplaceMessage.action as EscrowCompleteMessage, bidCreateRequest)
                     .then(async value => {
+                        params.createdBid = value;
                         return marketplaceMessage;
                     });
             });
@@ -188,6 +192,9 @@ export class EscrowCompleteActionService extends BaseActionService {
      */
     public async afterPost(params: EscrowCompleteRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
+        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
+        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 

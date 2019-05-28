@@ -95,7 +95,7 @@ export class BidRejectActionService extends BaseActionService {
      */
     public async beforePost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
-        // TODO: msgid is not set here!! update in afterPost?
+        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
@@ -106,6 +106,7 @@ export class BidRejectActionService extends BaseActionService {
             .then(async bidCreateRequest => {
                 return await this.createBid(marketplaceMessage.action as BidRejectMessage, bidCreateRequest)
                     .then(value => {
+                        params.createdBid = value;
                         return marketplaceMessage;
                     });
             });
@@ -120,6 +121,9 @@ export class BidRejectActionService extends BaseActionService {
      */
     public async afterPost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
+        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
+        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 

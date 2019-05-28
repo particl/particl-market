@@ -78,9 +78,7 @@ export class BidAcceptActionService extends BaseActionService {
                     .then(async value => {
 
                         const bidSmsgMessage: resources.SmsgMessage = value.toJSON();
-                        this.log.debug('createMessage(), bidSmsgMessage:', JSON.stringify(bidSmsgMessage, null, 2));
                         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-                        this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
 
                         // finally use omp to generate BidAcceptMessage
                         return await this.ompService.accept(
@@ -113,7 +111,7 @@ export class BidAcceptActionService extends BaseActionService {
      */
     public async beforePost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
-        // TODO: msgid is not set here!! update in afterPost?
+        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
@@ -122,9 +120,10 @@ export class BidAcceptActionService extends BaseActionService {
 
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
             .then(async bidCreateRequest => {
-                this.log.debug('bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
+                // this.log.debug('bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
                 return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
                     .then(value => {
+                        params.createdBid = value;
                         return marketplaceMessage;
                     });
             });
@@ -139,6 +138,9 @@ export class BidAcceptActionService extends BaseActionService {
      */
     public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
+        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
+        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 

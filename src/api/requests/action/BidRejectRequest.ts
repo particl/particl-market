@@ -12,8 +12,9 @@ export class BidRejectRequest extends RequestBody implements ActionRequestInterf
 
     @IsNotEmpty()
     public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
-
     @IsNotEmpty()
     public bid: resources.Bid;                  // bid which we're rejecting
+
+    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
 
 }
