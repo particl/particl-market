@@ -862,7 +862,6 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
-/*
     test('Should post MPA_RELEASE from BUYER node, indicating that the item has been received', async () => {
 
         expect(sent).toBeTruthy();
@@ -1006,5 +1005,5 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
-*/
+
 });
