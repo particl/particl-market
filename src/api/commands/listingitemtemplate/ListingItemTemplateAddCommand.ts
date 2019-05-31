@@ -211,7 +211,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         // TODO: forced values for now
         data.params[5] = SaleType.SALE;
         data.params[6] = Cryptocurrency.PART;
-        data.params[10] = EscrowType.MULTISIG;
+        data.params[10] = EscrowType.MAD_CT;
         data.params[11] = 100;
         data.params[12] = 100;
 
