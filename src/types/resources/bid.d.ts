@@ -20,6 +20,8 @@ declare module 'resources' {
         ParentBid: Bid;
         ChildBids: Bid[];
 
+        parentBidId: number;    // used in OrderItemStatusCommand
+
         createdAt: Date;
         updatedAt: Date;
     }

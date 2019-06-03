@@ -103,12 +103,14 @@ describe('Happy Buy Flow', () => {
             false,              // generateListingItem
             sellerMarket.id     // marketId
         ]).toParamsArray();
+
         listingItemTemplatesSellerNode = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
             1,                              // how many to generate
             true,                       // return model
             generateListingItemTemplateParams       // what kind of data to generate
         ) as resources.ListingItemTemplates[];
+
         expect(listingItemTemplatesSellerNode[0].id).toBeDefined();
         expect(listingItemTemplatesSellerNode[0].hash).toBeDefined();
 

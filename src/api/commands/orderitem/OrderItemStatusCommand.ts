@@ -2,12 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
+import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
@@ -15,9 +15,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatusResponse[]> {
 
@@ -46,11 +47,11 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         const buyer = data.params[1];
         const seller = data.params[2];
 
-        const type = 'ALL';         // todo: use * instead of ALL
-        const profileId = 'ALL';    // todo: use * instead of ALL
+        const type = 'ALL';         // todo: refactor to use * instead of ALL
+        const profileId = 'ALL';    // todo: refactor to use * instead of ALL
 
         // searchBy for listingitem(s) with certain seller and having bids from certain buyer
-        const listingItemsModel: Bookshelf.Collection<ListingItem> = await this.listingItemService.search({
+        const listingItems: resources.ListingItem[] = await this.listingItemService.search({
             itemHash,
             buyer,
             seller,
@@ -61,18 +62,51 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             page: 0,
             pageLimit: 100,
             withBids: true
-        } as ListingItemSearchParams, true);
-        const listingItems = listingItemsModel.toJSON();
+        } as ListingItemSearchParams, true).then(value => value.toJSON());
 
-        // this.log.debug('listingItems:', JSON.stringify(listingItems, null, 2));
 
         // Extract status details from the orderItems, since that's what we want to return to the userd
         const orderItemStatuses: OrderItemStatusResponse[] = [];
         for (const listingItem of listingItems) {
-            for (const bid of listingItem.Bids) {
+            this.log.debug('listingItem.id:', listingItem.id);
+
+            // first create a new collection of only MPA_BID bids
+            const mpaBids: resources.Bid[] = _.filter(listingItem.Bids, (bid) => {
+                return bid.type === MPAction.MPA_BID;
+            });
+            this.log.debug('mpaBids:', JSON.stringify(mpaBids, null, 2));
+
+            for (const bid of mpaBids) {
+
+                // we are only creating a status if there's no specific buyer set or when the given buyer matches bid.bidder
                 if (!buyer || buyer === '*' || bid.bidder === buyer) {
-                    const orderItemStatus = new OrderItemStatusResponse(listingItem.hash, bid.type, bid.OrderItem.status, bid.bidder, listingItem.seller);
-                    orderItemStatuses.push(orderItemStatus);
+
+                    this.log.debug('listingItem.Bids:', JSON.stringify(listingItem.Bids, null, 2));
+
+                    // find the childBids of the Bid
+                    const childBids = _.filter(listingItem.Bids, (childBid) => {
+                        return childBid.parentBidId === bid.id;
+                    });
+                    this.log.debug('childBids:', JSON.stringify(childBids, null, 2));
+
+                    if (!_.isEmpty(childBids)) {
+                        // we have childBids and there could be multiple of them, so orderBy createdAt
+                        const childBidsOrdered = _.orderBy(childBids, ['createdAt'], ['asc']);
+                        this.log.debug('childBidsOrdered: ', JSON.stringify(childBidsOrdered, null, 2));
+                        const orderItemStatus = new OrderItemStatusResponse(
+                            listingItem.hash,
+                            childBidsOrdered[0].type,
+                            bid.OrderItem.status, // todo: only MPA_BID has the relation to OrderItem
+                            childBidsOrdered[0].bidder,
+                            listingItem.seller
+                        );
+                        orderItemStatuses.push(orderItemStatus);
+
+                    } else {
+                        // there are no childBids, use the current one
+                        const orderItemStatus = new OrderItemStatusResponse(listingItem.hash, bid.type, bid.OrderItem.status, bid.bidder, listingItem.seller);
+                        orderItemStatuses.push(orderItemStatus);
+                    }
                 }
             }
         }
@@ -103,20 +137,13 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             data.params[2] = '*';
         }
 
-        const itemHash = data.params[0];
-        const buyer = data.params[1];
-        const seller = data.params[2];
-
-        if (typeof itemHash !== 'string') {
-            throw new MessageException('itemHash should be a string.');
-        }
-
-        if (typeof buyer !== 'string') {
-            throw new MessageException('buyer should be a string.');
-        }
-
-        if (typeof seller !== 'string') {
-            throw new MessageException('seller should be a string.');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('itemHash', 'string');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('buyer', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('seller', 'string');
         }
 
         return data;
