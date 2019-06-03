@@ -103,7 +103,7 @@ describe('ListingItemTemplateAddCommand', () => {
             1,                              // [7]: base price
             2,                              // [8]: domestic shipping price
             3,                              // [9]: international shipping price
-            EscrowType.MULTISIG,            // [10]: escrow type
+            EscrowType.MAD_CT,              // [10]: escrow type
             100,                            // [11]: buyerRatio
             100                             // [12]: sellerRatio
         ];
