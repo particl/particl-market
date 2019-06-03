@@ -382,7 +382,8 @@ export class VoteActionService extends BaseActionService {
     private async getWalletAddressInfos(/*addresses: string[] = []*/): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
         const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 9999999); // , addresses);
-        // this.log.debug('getProfileAddressInfos(), outputs: ', JSON.stringify(outputs, null, 2));
+
+        this.log.debug('getWalletAddressInfos(), outputs.length: ', outputs.length);
 
         for (const output of outputs) {
             if (output.spendable && output.solvable && output.safe && output.amount > 0) {
@@ -401,7 +402,11 @@ export class VoteActionService extends BaseActionService {
                 }
 
             } else {
-                this.log.error('unusable output: ', JSON.stringify(output, null, 2));
+                if (output.amount <= 0) {
+                    this.log.error('unusable output (amount): ', JSON.stringify(output, null, 2));
+                } else {
+                    this.log.error('unusable output (!spendable || !solvable || !safe): ', JSON.stringify(output, null, 2));
+                }
             }
         }
         return addressList;
