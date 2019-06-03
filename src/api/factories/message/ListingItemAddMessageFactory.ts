@@ -247,7 +247,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         }] as PaymentOption[];
     }
 
-    private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<MessagingInfo> {
+    private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<MessagingInfo | undefined> {
 
         const options: MessagingOption[] = [];
         for (const info of messagingInformations) {
@@ -260,6 +260,11 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         const messagingInfo: MessagingInfo = {
             options
         };
+
+        // dont return empty array if there are no options
+        if (_.isEmpty(options)) {
+            return undefined;
+        }
 
         return messagingInfo;
     }
