@@ -128,7 +128,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return informationLocation;
     }
 
-    private async getMessageItemInfoShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[]> {
+    private async getMessageItemInfoShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[] | undefined> {
         const shippingDesArray: string[] = [];
         for (const destination of shippingDestinations) {
             switch (destination.shippingAvailability) {
@@ -139,6 +139,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                     shippingDesArray.push('-' + destination.country);
                     break;
             }
+        }
+
+        if (_.isEmpty(shippingDesArray)) {
+            return undefined;
         }
         return shippingDesArray;
     }
