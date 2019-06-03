@@ -112,7 +112,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         if (itemLocation.address) {
             informationLocation.address = itemLocation.address;
         }
-        if (locationMarker) {
+        if (!_.isEmpty(locationMarker)) {
             informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat

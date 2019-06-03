@@ -986,13 +986,16 @@ export class TestDataService {
         return {
             country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
             address: Faker.address.streetAddress(),
-            description: Faker.lorem.paragraph(),
+            description: Faker.lorem.paragraph()
+/*
+    TODO: this should be configurable
             locationMarker: {
                 lat: _.random(-50, 50),
                 lng: _.random(-50, 50),
                 title: Faker.lorem.word(),
                 description: Faker.lorem.sentence()
             } as LocationMarkerCreateRequest
+*/
         } as ItemLocationCreateRequest;
     }
 
