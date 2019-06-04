@@ -390,13 +390,13 @@ describe('Happy Buy Flow', () => {
         bidOnSellerNode = result[0];
         log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
 
-        // expect Order and OrderItem to be created
         expect(result[0].OrderItem.id).toBeDefined();
         expect(result[0].OrderItem.Order.id).toBeDefined();
 
         log.debug('==> SELLER received MPA_BID.');
 
     }, 600000); // timeout to 600s
+
 
     test('Should post MPA_ACCEPT from SELLER node', async () => {
 
@@ -837,7 +837,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilBuyerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 bidOnSellerNode.ListingItem.hash,   // item hash
                 OrderItemStatus.SHIPPING,           // status
                 buyerProfile.address,               // buyerAddress
@@ -860,10 +860,12 @@ describe('Happy Buy Flow', () => {
 
         orderOnBuyerNode = result[0];
 
+        log.debug('orderOnBuyerNode: ', JSON.stringify(orderOnBuyerNode, null, 2));
+
         log.debug('==> BUYER received MPA_COMPLETE.');
 
     }, 600000); // timeout to 600s
-
+/*
     test('Should post MPA_RELEASE from BUYER node, indicating that the item has been received', async () => {
 
         expect(sent).toBeTruthy();
@@ -877,13 +879,10 @@ describe('Happy Buy Flow', () => {
 
         await testUtilBuyerNode.waitFor(5);
 
-        const escrowReleaseCommandParams = [
-            escrowReleaseCommand,
+        const res: any = await testUtilBuyerNode.rpc(escrowCommand, [escrowReleaseCommand,
             orderOnBuyerNode.OrderItems[0].id,
             'kthanxbye'
-        ];
-
-        const res: any = await testUtilBuyerNode.rpc(escrowCommand, escrowReleaseCommandParams);
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -1006,6 +1005,6 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-
+*/
 
 });

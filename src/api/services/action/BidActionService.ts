@@ -181,7 +181,7 @@ export class BidActionService extends BaseActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+                this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
                 // if we're the seller, we should have received the order hash from the buyer (if we're the buyer, the factory generates it)
                 bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
@@ -189,7 +189,7 @@ export class BidActionService extends BaseActionService {
                     return kvs.key === ActionMessageObjects.ORDER_HASH;
                 });
 
-                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+                this.log.debug('createBid(), orderHash: ', orderHash);
 
                 // note: when implementing support for multiple orderItems, we're using generatedAt from the Bid which will then affect the Order.hash
                 const orderCreateParams = {
@@ -202,7 +202,7 @@ export class BidActionService extends BaseActionService {
                     hash: orderHash ? orderHash.value : undefined
                 } as OrderCreateParams;
 
-                // this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
+                this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
 
                 // OrderFactory creates also the OrderItemCreateRequests
                 return await this.orderFactory.get(orderCreateParams/*, bidMessage*/)
