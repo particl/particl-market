@@ -9,18 +9,6 @@
 
 export enum BidDataValue {
 
-    BUYER_PUBKEY = 'buyerPubkey',
-    BUYER_OUTPUTS = 'buyerOutputs',
-    BUYER_CHANGE_ADDRESS = 'buyerChangeAddress',
-    BUYER_CHANGE_AMOUNT = 'buyerChange',
-    BUYER_RELEASE_ADDRESS = 'buyerAddress',
-
-    SELLER_PUBKEY = 'sellerPubkey',
-    SELLER_OUTPUTS = 'sellerOutputs',
-
-    RAW_TX = 'rawtx',
-    ORDER_HASH = 'orderHash',
-
     SHIPPING_ADDRESS_FIRST_NAME = 'shippingAddress.firstName',
     SHIPPING_ADDRESS_LAST_NAME = 'shippingAddress.lastName',
     SHIPPING_ADDRESS_ADDRESS_LINE1 = 'shippingAddress.addressLine1',
@@ -28,5 +16,9 @@ export enum BidDataValue {
     SHIPPING_ADDRESS_CITY = 'shippingAddress.city',
     SHIPPING_ADDRESS_STATE = 'shippingAddress.state',
     SHIPPING_ADDRESS_ZIP_CODE = 'shippingAddress.zipCode',
-    SHIPPING_ADDRESS_COUNTRY = 'shippingAddress.country'
+    SHIPPING_ADDRESS_COUNTRY = 'shippingAddress.country',
+
+    DELIVERY_CONTACT_PHONE = 'delivery.phone',
+    DELIVERY_CONTACT_EMAIL = 'delivery.email'
+
 }

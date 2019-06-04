@@ -27,6 +27,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -73,11 +74,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * [0]: listingItem, resources.ListingItem
      * [1]: profile, resources.Profile
      * [2]: address, resources.Address
-     * [3]: bidDataId, string
-     * [4]: bidDataValue, string
-     * [5]: bidDataId, string
-     * [6]: bidDataValue, string
-     *      ...
+     * [...]: bidDataId, string, optional       TODO: currently ignored
+     * [...]: bidDataValue, string, optional    TODO: currently ignored
      *
      * @param {RpcRequest} data
      * @returns {Promise<SmsgSendResponse>}
@@ -127,11 +125,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      *                         'shippingAddress.state',
      *                         'shippingAddress.country'
      *                         'shippingAddress.zipCode',
-     * [3]: bidDataId, string
-     * [4]: bidDataValue, string
-     * [5]: bidDataId, string
-     * [6]: bidDataValue, string
-     * ......
+     * [...]: bidDataId, string, optional
+     * [...]: bidDataValue, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -270,6 +265,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
             // loop through the data.params values and create the resources.Address
             while (!_.isEmpty(data.params)) {
+                if (data.params.length < 2) {
+                    throw new MissingParamException('paramValue');
+                }
                 const paramKey = data.params.shift();
                 const paramValue = data.params.shift();
                 if (_.includes(this.PARAMS_ADDRESS_KEYS, paramKey)) {

@@ -3,10 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { SmsgSendParams } from './SmsgSendParams';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
 /**
  *
  */
 export interface ActionRequestInterface {
     sendParams: SmsgSendParams;
+    objects?: KVS[];
 }

@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { ActionServiceInterface } from './ActionServiceInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -17,7 +18,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ValidationException } from '../../exceptions/ValidationException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { strip } from 'omp-lib/dist/util';
-import {Logger as LoggerType} from '../../../core/Logger';
+import { Logger as LoggerType } from '../../../core/Logger';
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -58,6 +59,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public async post(params: ActionRequestInterface): Promise<SmsgSendResponse> {
         return await this.createMessage(params)
             .then(async marketplaceMessage => {
+
+                // each message has objects?: KVS[] for extending messages, add those to the message here
+                if (!_.isEmpty(params.objects)) {
+                    marketplaceMessage.action.objects = params.objects;
+                }
 
                 const validated = await this.validateMessage(marketplaceMessage);
                 if (validated) {

@@ -25,10 +25,17 @@ import { BidService } from '../../services/model/BidService';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { BidDataValue } from '../../enums/BidDataValue';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
+
+    private PARAMS_KEYS: string[] = [
+        BidDataValue.DELIVERY_CONTACT_PHONE.toString(),
+        BidDataValue.DELIVERY_CONTACT_EMAIL.toString()
+    ];
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -44,12 +51,13 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      * [0]: orderItem, resources.OrderItem
+     * [1]: options, KVS[], should contain the phone number for delivery, if given
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
+    public async execute(@request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
@@ -73,7 +81,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
-            bidAccept
+            bidAccept,
+            objects: data.params[1]
         } as EscrowLockRequest;
 
         return this.escrowLockActionService.post(postRequest);
@@ -82,6 +91,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      * [0]: orderItemId
+     * [...]: bidDatKey, string, optional
+     * [...]: bidDataValue, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -126,6 +137,12 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             throw new ModelNotFoundException('Ratio');
         }
 
+        // get the extra delivery contact information, if it exists
+        const options: KVS[] = this.additionalParamsToKVS(data);
+        if (!_.isEmpty(options)) {
+            data.params[1] = options;
+        }
+
         // TODO: check that we are the buyer
 
         return data;
@@ -144,4 +161,19 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         return 'Lock an Escrow.';
     }
 
+    private additionalParamsToKVS(data: RpcRequest): KVS[] {
+        const additionalParams: KVS[] = [];
+
+        for (const paramsKey of this.PARAMS_KEYS) {
+            for (let j = 0; j < data.params.length - 1; ++j) {
+                if (paramsKey === data.params[j]) {
+                    additionalParams.push({
+                        key:  paramsKey,
+                        value: !_.includes(this.PARAMS_KEYS, data.params[j + 1]) ? data.params[j + 1] : ''});
+                    break;
+                }
+            }
+        }
+        return additionalParams;
+    }
 }

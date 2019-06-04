@@ -7,6 +7,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class EscrowLockRequest extends RequestBody implements ActionRequestInterface {
 
@@ -19,4 +20,5 @@ export class EscrowLockRequest extends RequestBody implements ActionRequestInter
 
     public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
 
+    public objects?: KVS[];
 }
