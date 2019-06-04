@@ -4,35 +4,35 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Targets, Types } from '../../constants';
-import { EventEmitter } from '../../core/api/events';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { SmsgMessageService } from '../services/model/SmsgMessageService';
-import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { SearchOrder } from '../enums/SearchOrder';
-import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
-import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { MessageException } from '../exceptions/MessageException';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { GovernanceAction } from '../enums/GovernanceAction';
-import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import { MPActionExtended } from '../enums/MPActionExtended';
-import { ActionDirection } from '../enums/ActionDirection';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
-import { BidActionListener } from '../listeners/action/BidActionListener';
-import { BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
-import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
-import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
-import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
-import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
-import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
-import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
-import { VoteActionListener } from '../listeners/action/VoteActionListener';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Core, Targets, Types} from '../../constants';
+import {EventEmitter} from '../../core/api/events';
+import {MessageProcessorInterface} from './MessageProcessorInterface';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {SmsgMessageService} from '../services/model/SmsgMessageService';
+import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import {SearchOrder} from '../enums/SearchOrder';
+import {MarketplaceMessageEvent} from '../messages/MarketplaceMessageEvent';
+import {SmsgMessageFactory} from '../factories/model/SmsgMessageFactory';
+import {MessageException} from '../exceptions/MessageException';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {GovernanceAction} from '../enums/GovernanceAction';
+import {ActionMessageTypes} from '../enums/ActionMessageTypes';
+import {MPActionExtended} from '../enums/MPActionExtended';
+import {ActionDirection} from '../enums/ActionDirection';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
+import {ListingItemAddActionListener} from '../listeners/action/ListingItemAddActionListener';
+import {BidActionListener} from '../listeners/action/BidActionListener';
+import {BidAcceptActionListener} from '../listeners/action/BidAcceptActionListener';
+import {BidCancelActionListener} from '../listeners/action/BidCancelActionListener';
+import {BidRejectActionListener} from '../listeners/action/BidRejectActionListener';
+import {EscrowLockActionListener} from '../listeners/action/EscrowLockActionListener';
+import {EscrowReleaseActionListener} from '../listeners/action/EscrowReleaseActionListener';
+import {EscrowRefundActionListener} from '../listeners/action/EscrowRefundActionListener';
+import {ProposalAddActionListener} from '../listeners/action/ProposalAddActionListener';
+import {VoteActionListener} from '../listeners/action/VoteActionListener';
 import {EscrowCompleteActionListener} from '../listeners/action/EscrowCompleteActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
@@ -46,7 +46,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
     private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
-    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND];
+    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND, MPActionExtended.MPA_COMPLETE];
     private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
     private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
 
@@ -186,9 +186,13 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.interval = setInterval(() => {
 
             clearInterval(this.interval);
-            this.poll().then(interval => {
-                this.schedulePoll(interval); // re-run
-            });
+            this.poll()
+                .then(interval => {
+                    this.schedulePoll(interval); // re-run
+                })
+                .catch(reason => {
+                    this.log.error('POLLING FAILED!');
+                });
 
         }, pollingInterval);
 

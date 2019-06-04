@@ -7,7 +7,6 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -16,7 +15,6 @@ import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
@@ -143,6 +141,7 @@ export class EscrowLockActionService extends BaseActionService {
                 return await this.createBid(marketplaceMessage.action as EscrowLockMessage, bidCreateRequest)
                     .then(async value => {
 
+                        this.log.debug('beforePost(): created new bid: ', JSON.stringify(value, null, 2));
                         if (params.bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
                             // send the lock rawtx
                             const bidtx = marketplaceMessage.action['_rawbidtx'];

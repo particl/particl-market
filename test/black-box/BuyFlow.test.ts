@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -12,6 +13,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/testda
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
+import { BidDataValue } from '../../src/api/enums/BidDataValue';
 
 describe('Happy Buy Flow', () => {
 
@@ -61,6 +63,9 @@ describe('Happy Buy Flow', () => {
     const PAGE_LIMIT = 10;
     const ORDERING = SearchOrder.ASC;
     const DAYS_RETENTION = 2;
+
+    const DELIVERY_CONTACT_PHONE = '+3584512345678';
+    const DELIVERY_CONTACT_EMAIL = 'test@test.com';
 
     let sent = false;
 
@@ -348,11 +353,11 @@ describe('Happy Buy Flow', () => {
         expect(bidOnBuyerNode).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('SELLER RECEIVES MPA_BID posted from buyers node');
+        log.debug('SELLER RECEIVES MPA_BID posted from BUYER node');
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Bid has been created
-        await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(10);
 
         const res: any = await testUtilSellerNode.rpcWaitFor(
             bidCommand,
@@ -638,7 +643,8 @@ describe('Happy Buy Flow', () => {
         log.debug('==> Updated Bid found on BUYER node.');
     });
 
-    test('Should post MPA_LOCK from BUYER node', async () => {
+
+    test('Should post MPA_LOCK from BUYER node (with delivery details)', async () => {
 
         expect(bidOnBuyerNode.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
         sent = false;
@@ -648,7 +654,11 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
 
         const res: any = await testUtilBuyerNode.rpc(escrowCommand, [escrowLockCommand,
-            orderOnBuyerNode.OrderItems[0].id
+            orderOnBuyerNode.OrderItems[0].id,
+            BidDataValue.DELIVERY_CONTACT_EMAIL,
+            DELIVERY_CONTACT_EMAIL,
+            BidDataValue.DELIVERY_CONTACT_PHONE,
+            DELIVERY_CONTACT_PHONE
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -692,12 +702,22 @@ describe('Happy Buy Flow', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order[] = res.getBody()['result'];
+
+        log.debug('order on BUYER node after MPA_LOCK: ', JSON.stringify(result, null, 2));
+
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
         expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].Bid.ChildBids).toHaveLength(2);
+
+        const lockBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
+            return value.type === MPAction.MPA_LOCK;
+        });
+        expect(lockBid.BidDatas).toHaveLength(2);
+
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
@@ -705,6 +725,7 @@ describe('Happy Buy Flow', () => {
 
         log.debug('==> Updated Bid found on BUYER node.');
     });
+
 
     test('Should have updated Order on SELLER node after receiving MPA_LOCK, OrderItemStatus.ESCROW_LOCKED', async () => {
 
@@ -716,10 +737,7 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderItemStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(
-            orderCommand,
-            [
-                orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 bidOnSellerNode.ListingItem.hash,
                 OrderItemStatus.ESCROW_LOCKED,
                 buyerProfile.address,
@@ -734,11 +752,23 @@ describe('Happy Buy Flow', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order[] = res.getBody()['result'];
+
+        log.debug('order on SELLER node after MPA_LOCK: ', JSON.stringify(result, null, 2));
+
         expect(result.length).toBe(1);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].Bid.ChildBids).toHaveLength(2);
+
+        const lockBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
+            return value.type === MPAction.MPA_LOCK;
+        });
+        expect(lockBid.BidDatas).toHaveLength(3);
+
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
 
@@ -784,6 +814,7 @@ describe('Happy Buy Flow', () => {
         log.debug('order.orderItem.id: ' + orderOnBuyerNode.OrderItems[0].id);
         log.debug('=================================================================================');
     });
+
 
     test('Should have updated Order on SELLER node after sending MPA_COMPLETE, OrderItemStatus.SHIPPING', async () => {
 

@@ -129,8 +129,8 @@ export class BidActionService extends BaseActionService {
 
         return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
             .then(async bidCreateRequest => {
-                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
 
+                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
                 return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
                     .then(async bid => {
 
@@ -138,6 +138,7 @@ export class BidActionService extends BaseActionService {
                         const bidMessage = marketplaceMessage.action as BidMessage;
                         bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
                         bidMessage.objects.push({
+                            // note: Bid was already saved, so this is not stored in the BidData
                             key: ActionMessageObjects.ORDER_HASH,
                             value: bid.OrderItem.Order.hash
                         } as KVS);

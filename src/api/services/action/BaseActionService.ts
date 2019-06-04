@@ -62,7 +62,8 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
                 // each message has objects?: KVS[] for extending messages, add those to the message here
                 if (!_.isEmpty(params.objects)) {
-                    marketplaceMessage.action.objects = params.objects;
+                    marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
+                    marketplaceMessage.action.objects.push(...(params.objects ? params.objects : []));
                 }
 
                 const validated = await this.validateMessage(marketplaceMessage);

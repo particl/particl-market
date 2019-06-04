@@ -10,7 +10,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
@@ -18,11 +17,9 @@ import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
-import {MPActionExtended} from '../../enums/MPActionExtended';
-import {EscrowCompleteMessage} from '../../messages/action/EscrowCompleteMessage';
-import {EscrowCompleteActionService} from '../../services/action/EscrowCompleteActionService';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
+import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 
 export class EscrowCompleteActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 

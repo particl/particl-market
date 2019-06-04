@@ -6,8 +6,9 @@
  * BidDataValue
  *
  */
-
 export enum BidDataValue {
+
+    // TODO: move to ActionMessageObjects
 
     SHIPPING_ADDRESS_FIRST_NAME = 'shippingAddress.firstName',
     SHIPPING_ADDRESS_LAST_NAME = 'shippingAddress.lastName',
