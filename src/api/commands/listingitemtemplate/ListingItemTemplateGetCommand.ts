@@ -33,7 +33,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: id
      *  [1]: returnImageData (optional)
      *
      * when data.params[0] is number then findById, else findOneByHash
@@ -67,7 +67,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: id
      *  [1]: returnImageData (optional)
      *
      * when data.params[0] is number then findById, else findOneByHash
@@ -78,11 +78,11 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('id or hash');
+            throw new MissingParamException('id');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'string' && typeof data.params[0] !== 'number' ) {
-            throw new InvalidParamException('id or hash', 'number or string');
+        if (data.params[0] && typeof data.params[0] !== 'number' ) {
+            throw new InvalidParamException('id', 'number');
         }
 
         if (data.params[1] && typeof data.params[1] !== 'boolean') {
