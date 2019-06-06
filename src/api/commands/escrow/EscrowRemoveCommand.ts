@@ -17,6 +17,8 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import * as _ from 'lodash';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -73,8 +75,20 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException(`Escrow cannot be deleted because ListingItems already exist for the ListingItemTemplate.`);
         }
 
-        // TODO: check that PaymentInformation exists
-        // TODO: check that Escrow exists
+        // make sure PaymentInformation exists
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+        }
+
+        // make sure Escrow exists
+        if (_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
+            throw new ModelNotFoundException('Escrow');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
 
         data.params[0] = listingItemTemplate;
 
