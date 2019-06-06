@@ -25,6 +25,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
@@ -35,6 +36,8 @@ describe('ListingItemTemplatePostCommand', () => {
     let defaultMarket: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
     let brokenListingItemTemplate: resources.ListingItemTemplate;
+
+    let sent = false;
 
     beforeAll(async () => {
         await testUtilSellerNode.cleanDb();
@@ -84,12 +87,16 @@ describe('ListingItemTemplatePostCommand', () => {
             defaultMarket.id
         ]);
         res.expectJson();
+
+        // make sure we got the expected result from posting the template
         const result: any = res.getBody()['result'];
-
         log.debug('result:', JSON.stringify(result, null, 2));
-        res.expectStatusCode(200);
-
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toBe('Sent.');
+
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
 
@@ -103,7 +110,19 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
+    test('Get the updated ListingItemTemplate to get the hash', async () => {
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplate = res.getBody()['result'];
+    });
+
     test('Should receive MPA_LISTING_ADD message on the same sellerNode, create a ListingItem and match with the existing ListingItemTemplate', async () => {
+
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
 
         // wait for some time...
         await testUtilSellerNode.waitFor(5);
@@ -129,6 +148,9 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should receive MPA_LISTING_ADD message on the buyerNode and create a ListingItem', async () => {
 
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
         const response: any = await testUtilBuyerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplate.hash],
@@ -148,6 +170,9 @@ describe('ListingItemTemplatePostCommand', () => {
     }, 600000); // timeout to 600s
 
     test('Should fail to post a ListingItem due to excessive SmsgMessage size', async () => {
+
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
 
         expect(brokenListingItemTemplate.id).toBeDefined();
 

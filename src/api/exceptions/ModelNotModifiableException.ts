@@ -3,20 +3,17 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * InvalidParamException
+ * ModelNotModifiableException
  * ----------------------------------------
  *
- *
- * This should be used if the command that
- * was called has invalid parameter
  */
 
 import { Exception } from '../../core/api/Exception';
 
 
-export class InvalidParamException extends Exception {
-    constructor(invalidParam: string, validType?: string) {
-        super(400, 'Invalid ' + invalidParam + (validType ? ', should be of type: ' + validType : '.'));
+export class ModelNotModifiableException extends Exception {
+    constructor(name: string) {
+        super(400, `${name} cannot be modified.`);
     }
 }
 

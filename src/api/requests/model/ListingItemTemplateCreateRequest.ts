@@ -20,8 +20,9 @@ export class ListingItemTemplateCreateRequest extends RequestBody implements Mod
     @IsNotEmpty()
     public generatedAt: number;
 
-    @IsNotEmpty()
-    public hash: string;
+    // should be empty when created, as template with a hash should not be modified anymore
+    // public hash: string;
+
     public itemInformation: ItemInformationCreateRequest;
     public paymentInformation: PaymentInformationCreateRequest;
     public messagingInformation: MessagingInformationCreateRequest[];

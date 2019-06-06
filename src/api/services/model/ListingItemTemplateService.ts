@@ -41,6 +41,7 @@ import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ListingItemTemplateService {
 
@@ -113,8 +114,6 @@ export class ListingItemTemplateService {
         // this.log.debug('listingItemTemplate, data:', JSON.stringify(data, null, 2));
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // NOTE: hashes are created in the factory, not here!!!
-
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
@@ -125,32 +124,30 @@ export class ListingItemTemplateService {
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
-        let result;
-
         // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body)
             .then(value => value.toJSON());
 
-        result = listingItemTemplate;
-        // this.log.debug('listingItemTemplate, result:', JSON.stringify(result, null, 2));
-
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
-            result = await this.itemInformationService.create(itemInformation).then(value => value.toJSON());
+            const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
+                .then(value => value.toJSON());
             // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
-            result = await this.paymentInformationService.create(paymentInformation).then(value => value.toJSON());
+            const createdPaymentInfo: resources.PaymentInformation = await this.paymentInformationService.create(paymentInformation)
+                .then(value => value.toJSON());
             // this.log.debug('paymentInformation, result:', JSON.stringify(result, null, 2));
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
-                result = await this.messagingInformationService.create(msgInfo).then(value => value.toJSON());
+                const createdMsgInfo: resources.MessagingInformation = await this.messagingInformationService.create(msgInfo)
+                    .then(value => value.toJSON());
                 // this.log.debug('msgInfo, result:', JSON.stringify(result, null, 2));
             }
         }
@@ -158,7 +155,8 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_template_id = listingItemTemplate.id;
-                result = await this.listingItemObjectService.create(object).then(value => value.toJSON());
+                const createdListingItemObject: resources.ListingItemObject = await this.listingItemObjectService.create(object)
+                    .then(value => value.toJSON());
                 // this.log.debug('object, result:', JSON.stringify(result, null, 2));
             }
         }
@@ -173,8 +171,10 @@ export class ListingItemTemplateService {
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
-        // set new values
-        listingItemTemplate.Hash = body.hash;
+        // ListingItemTemplates with a hash are not supposed to be modified anymore
+        if (!_.isEmpty(listingItemTemplate.Hash) || !_.isEmpty(listingItemTemplate.ListingItems)) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
 
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
@@ -275,31 +275,44 @@ export class ListingItemTemplateService {
     }
 
     public async destroy(id: number): Promise<void> {
-        const listingItemTemplateModel = await this.findOne(id);
-        if (!listingItemTemplateModel) {
-            throw new NotFoundException('ListingItemTemplate does not exist. id = ' + id);
-        }
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
-        this.log.debug('delete listingItemTemplate:', listingItemTemplate.id);
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id).then(value => value.toJSON());
 
-        if (_.isEmpty(listingItemTemplate.ListingItems)) {
-            await this.listingItemTemplateRepo.destroy(id);
-        } else {
+        if (!_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new MessageException('ListingItemTemplate has ListingItems.');
         }
+
+        this.log.debug('deleting listingItemTemplate:', listingItemTemplate.id);
+        await this.listingItemTemplateRepo.destroy(id);
+    }
+
+    public async updateHash(id: number, hash: string): Promise<ListingItemTemplate> {
+        const listingItemTemplate = await this.findOne(id, false);
+        listingItemTemplate.Hash = hash;
+        const updated = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
+        this.log.debug('updated ListingItemTemplate ' + id + ' hash to: ' + updated.Hash);
+        return updated;
+    }
+
+    public async isModifiable(id: number): Promise<boolean> {
+        const listingItemTemplate = await this.findOne(id, false);
+
+        // ListingItemTemplates which dont have a hash, related ListingItems or ChildListingItems can be modified
+        return (_.isEmpty(listingItemTemplate.Hash)
+            && _.isEmpty(listingItemTemplate.ListingItems)
+            && _.isEmpty(listingItemTemplate.ChildListingItemTemplate()));
     }
 
     /**
      * creates resized versions of the template images, so that all of them fit in one smsgmessage
      *
-     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @param {"resources".ListingItemTemplate} listingItemTemplate
      * @returns {Promise<"resources".ListingItemTemplate>}
      */
-    public async createResizedTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
+    public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
         const startTime = new Date().getTime();
 
         // ItemInformation has ItemImages, which is an array.
-        const itemImages = itemTemplate.ItemInformation.ItemImages;
+        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
         const originalImageDatas: resources.ItemImageData[] = [];
 
         for (const itemImage of itemImages) {
@@ -332,7 +345,7 @@ export class ListingItemTemplateService {
 
         this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
 
-        return await this.findOne(itemTemplate.id);
+        return await this.findOne(listingItemTemplate.id);
     }
 
     /**

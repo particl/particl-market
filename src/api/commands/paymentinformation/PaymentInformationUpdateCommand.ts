@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -15,16 +16,14 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { MessageException } from '../../exceptions/MessageException';
-import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {ItemPriceUpdateRequest} from '../../requests/model/ItemPriceUpdateRequest';
-import {ShippingPriceUpdateRequest} from '../../requests/model/ShippingPriceUpdateRequest';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import * as resources from "resources";
-import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {CryptocurrencyAddressUpdateRequest} from '../../requests/model/CryptocurrencyAddressUpdateRequest';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ItemPriceUpdateRequest } from '../../requests/model/ItemPriceUpdateRequest';
+import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 

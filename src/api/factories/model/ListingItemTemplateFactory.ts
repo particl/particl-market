@@ -69,6 +69,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
      * create a ListingItemTemplateCreateRequest
      *
      * @param params
+     * @param createHash
      */
     public async get(params: ListingItemTemplateCreateParams): Promise<ListingItemTemplateCreateRequest> {
 
@@ -114,7 +115,9 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
             createRequest.parent_listing_item_template_id = params[13];
         }
 
-        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
+        // hash should not be saved until just before the ListingItemTemplate is posted,
+        // since ListingItemTemplates with hash should not be modified anymore
+        // createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         return createRequest;
     }

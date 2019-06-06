@@ -13,8 +13,8 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ListingItemTemplateUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
-    public hash: string;
+    // @IsNotEmpty()
+    // public hash: string;
 
     public itemInformation: ItemInformationUpdateRequest;
     public paymentInformation: PaymentInformationUpdateRequest;

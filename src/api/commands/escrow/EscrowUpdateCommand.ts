@@ -20,6 +20,9 @@ import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdate
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -91,7 +94,10 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('sellerRatio', 'number');
         }
 
-        // TODO: validate the escrow type
+        const validEscrowTypes = [EscrowType.MAD_CT/*, EscrowType.MULTISIG, EscrowType.MAD, EscrowType.FE*/];
+        if (validEscrowTypes.indexOf(data.params[1]) === -1) {
+            throw new InvalidParamException('escrowType');
+        }
 
         // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
@@ -112,6 +118,9 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new ModelNotFoundException('Escrow');
         }
 
+        if (await this.listingItemTemplateService.isModifiable(listingItemTemplate.id)) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
         data.params[0] = listingItemTemplate;
 
         return data;

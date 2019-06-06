@@ -74,13 +74,14 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
-        // the ListingItemTemplate.hash should have a matching hash with the outgoing message
-        if (params.listingItem.hash !== message.hash) {
+        // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
+        if (params.listingItem.hash
+            && params.listingItem.hash !== message.hash) {
             this.log.debug('params.listingItem.hash: ', params.listingItem.hash);
             this.log.debug('message.hash: ', message.hash);
 
-            this.log.debug('params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
-            this.log.debug('message: ', JSON.stringify(message, null, 2));
+            // this.log.debug('params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
+            // this.log.debug('message: ', JSON.stringify(message, null, 2));
             throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
         }
         return message;

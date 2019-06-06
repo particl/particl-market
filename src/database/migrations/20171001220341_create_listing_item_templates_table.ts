@@ -10,7 +10,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('listing_item_templates', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('hash').notNullable().unique();
+            table.string('hash').nullable().unique();
             table.integer('generated_at').unsigned().notNullable();
 
             table.integer('profile_id').notNullable();

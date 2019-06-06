@@ -120,21 +120,9 @@ describe('Happy Buy Flow', () => {
         ) as resources.ListingItemTemplates[];
 
         expect(listingItemTemplatesSellerNode[0].id).toBeDefined();
-        expect(listingItemTemplatesSellerNode[0].hash).toBeDefined();
-
-        // we should be also able to get the ListingItemTemplate
-        let res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
-            listingItemTemplatesSellerNode[0].id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: resources.ListingItemTemplate = res.getBody()['result'];
-        log.debug('listingItemTemplates[0].hash:', listingItemTemplatesSellerNode[0].hash);
-        log.debug('result.hash:', result.hash);
-        expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
 
         // start with clean outputs in case something went wrong earlier
-        res = await testUtilSellerNode.rpc(daemonCommand, ['lockunspent', true]);
+        let res = await testUtilSellerNode.rpc(daemonCommand, ['lockunspent', true]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -178,6 +166,18 @@ describe('Happy Buy Flow', () => {
             + listingItemTemplatesSellerNode[0].ItemInformation.ItemCategory.name);
         log.debug('========================================================================================');
 
+    });
+
+    test('Get the updated ListingItemTemplate to get the hash', async () => {
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplatesSellerNode[0].id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplatesSellerNode[0] = res.getBody()['result'];
     });
 
     test('Should have received ListingItem (MPA_LISTING_ADD) on SELLER node, ListingItem is created', async () => {

@@ -33,6 +33,7 @@ import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { EventEmitter } from 'events';
 import { ProposalService } from './ProposalService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemService {
 
@@ -333,20 +334,10 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async destroy(id: number): Promise<void> {
-        const listingItemModel = await this.findOne(id, true);
-        if (!listingItemModel) {
-            this.log.error('Item listing does not exist. id = ' + id);
-            throw new NotFoundException('Item listing does not exist. id = ' + id);
-        }
-        const listingItem = listingItemModel.toJSON();
 
-        await this.listingItemRepo.destroy(id);
-
-        // remove related CryptocurrencyAddress if it exists
-        if (listingItem.PaymentInformation && listingItem.PaymentInformation.ItemPrice
-            && listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress) {
-            await this.cryptocurrencyAddressService.destroy(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
-        }
+        const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
+        this.log.debug('deleting listingItem:', listingItem.id);
+        await this.listingItemRepo.destroy(listingItem.id);
     }
 
     /**

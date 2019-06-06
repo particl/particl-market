@@ -43,8 +43,13 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            listingItem: params.listingItem // in this case this is actually the listingItemTemplate, as we use to create the message from both
+            // in this case this is actually the listingItemTemplate, as we use to create the message from both
+            listingItem: params.listingItem
         } as ListingItemAddMessageCreateParams);
+
+        // hash should not be saved until just before the ListingItemTemplate is posted,
+        // since ListingItemTemplates with hash should not be modified anymore
+        // createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         // this.log.debug('resulting actionMessage:', JSON.stringify(actionMessage, null, 2));
         return {

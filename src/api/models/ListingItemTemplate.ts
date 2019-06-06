@@ -57,7 +57,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
-        'ChildListingItemTemplates'
+        'ChildListingItemTemplate'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
@@ -191,7 +191,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
-    public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
-        return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    // public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
+    //    return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    // }
+
+    public ChildListingItemTemplate(): ListingItemTemplate {
+        return this.hasOne(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
+
 }

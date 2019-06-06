@@ -21,6 +21,9 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableListingMessageConfig} from 'omp-lib/dist/hasher/config/listingitemadd';
+import {HashableListingItemTemplateConfig} from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -51,7 +54,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const market: resources.Market = data.params[2];
         const estimateFee: boolean = data.params[3] ? data.params[3] : false;
@@ -61,6 +64,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         // send to given market address
         const toAddress = market.address;
+
+        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
+        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+        listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
+            .then(value => value.toJSON());
 
         this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
