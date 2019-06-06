@@ -75,7 +75,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId // todo: change to hash?
+     *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
      *  [3]: estimateFee (optional, default: false)

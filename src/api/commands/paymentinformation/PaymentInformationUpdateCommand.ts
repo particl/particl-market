@@ -16,9 +16,15 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
 import {ItemPriceUpdateRequest} from '../../requests/model/ItemPriceUpdateRequest';
 import {ShippingPriceUpdateRequest} from '../../requests/model/ShippingPriceUpdateRequest';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import * as resources from "resources";
+import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {CryptocurrencyAddressUpdateRequest} from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -35,13 +41,13 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
-     *  [1]: payment type
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: paymentType
      *  [2]: currency
-     *  [3]: base price
-     *  [4]: domestic shipping price
-     *  [5]: international shipping price
-     *  [6]: payment address, optional
+     *  [3]: basePrice
+     *  [4]: domesticShippingPrice
+     *  [5]: internationalShippingPrice
+     *  [6]: paymentAddress, optional
      *
      * @param data
      * @returns {Promise<PaymentInformation>}
@@ -49,23 +55,15 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<PaymentInformation> {
 
-        // get the template
-        const listingItemTemplateId = data.params[0];
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
-
-        // template allready has listingitems so for now, it cannot be modified
-        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
-            throw new MessageException(`PaymentInformation for the ListingItemTemplate was not found!`);
-        }
-
-        let cryptocurrencyAddress;
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        let cryptocurrencyAddress: CryptocurrencyAddressUpdateRequest | undefined;
 
         if (data.params[6]) {
             cryptocurrencyAddress = {
-                type: CryptoAddressType.NORMAL,
+                // TODO: fix
+                type: CryptoAddressType.STEALTH,
                 address: data.params[6]
-            };
+            } as CryptocurrencyAddressUpdateRequest;
         }
 
         const paymentInformationUpdateRequest = {
@@ -82,6 +80,81 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         } as PaymentInformationUpdateRequest;
 
         return this.paymentInformationService.update(listingItemTemplate.PaymentInformation.id, paymentInformationUpdateRequest);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: ListingItemTemplateId
+     *  [1]: saleType
+     *  [2]: currency
+     *  [3]: basePrice
+     *  [4]: domesticShippingPrice
+     *  [5]: internationalShippingPrice
+     *  [6]: paymentAddress, optional
+     *
+     * @param data
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('saleType');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('currency');
+        } else if (data.params.length < 4) {
+            throw new MissingParamException('basePrice');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('domesticShippingPrice');
+        } else if (data.params.length < 6) {
+            throw new MissingParamException('internationalShippingPrice');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('saleType', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('currency', 'string');
+        } else if (typeof data.params[3] !== 'number' || data.params[3] < 0) {
+            throw new InvalidParamException('basePrice', 'number');
+        } else if (typeof data.params[4] !== 'number' || data.params[4] < 0) {
+            throw new InvalidParamException('domesticShippingPrice', 'number');
+        } else if (typeof data.params[5] !== 'number' || data.params[5] < 0) {
+            throw new InvalidParamException('internationalShippingPrice', 'number');
+        } else if (data.params[6] && typeof data.params[6] !== 'string') {
+            throw new InvalidParamException('paymentAddress', 'string');
+        }
+
+        // make sure required data exists and fetch it
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => value.toJSON()); // throws if not found
+
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+       }
+
+        // override the needed params
+        // TODO: forced values for now, remove later
+        data.params[1] = SaleType.SALE;
+        data.params[2] = Cryptocurrency.PART;
+
+        const validSaleTypeTypes = [SaleType.SALE];
+        if (validSaleTypeTypes.indexOf(data.params[1]) === -1) {
+            throw new InvalidParamException('saleType');
+        }
+
+        const validCryptocurrencyTypes = [Cryptocurrency.PART];
+        if (validCryptocurrencyTypes.indexOf(data.params[2]) === -1) {
+            throw new InvalidParamException('currency');
+        }
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {
@@ -109,7 +182,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
     }
 
     public description(): string {
-        return 'Update the details of payment information associated with listingItemTemplateId.';
+        return 'Update the details of PaymentInformation associated with ListingItemTemplate.';
     }
 
     public example(): string {
