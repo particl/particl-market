@@ -110,10 +110,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         // make sure required data exists and fetch it
-        // const listingItemTemplateId = data.params[0];
-        // const daysRetention = data.params[1];
-        // const marketId = data.params[2];
-
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => value.toJSON()); // throws if not found
 
