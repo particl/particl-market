@@ -97,13 +97,16 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
         if (BaseActionListenr.validate(event.marketplaceMessage)) {
             await this.onEvent(event)
                 .then(async status => {
+                    this.log.info(event.smsgMessage.type + ', new status: ', status);
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })
                 .catch(async reason => {
+                    this.log.error('ERROR: ', reason);
                     // todo: handle different reasons?
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });
         } else {
+            this.log.error('event.marketplaceMessage validation failed. ', event.smsgMessage.msgid);
             await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.VALIDATION_FAILED);
         }
     }

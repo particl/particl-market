@@ -76,7 +76,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
             this.log.debug('PROCESSING: ', smsgMessage.msgid);
 
-            // this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+            this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
 
             const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage)
                 .then(value => value)

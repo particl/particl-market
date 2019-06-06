@@ -80,8 +80,7 @@ export class BidFactory implements ModelFactoryInterface {
                     value: bidDataValues[key]
                 } as BidDataCreateRequest;
             });
-
-            // this.log.debug('bidDatas:', JSON.stringify(bidDatas, null, 2));
+            this.log.debug('get(), bidDatas:', JSON.stringify(bidDatas, null, 2));
 
             // create and return the request that can be used to create the bid
             const createRequest = {
@@ -162,7 +161,9 @@ export class BidFactory implements ModelFactoryInterface {
                     // parent bid was rejected, so we allow only new bids
                     return bidMessage.type === MPAction.MPA_BID;
                 default:
-                    throw new MessageException('Unknown BidMessage.type');
+                    const exception = new MessageException('Unknown BidMessage.type');
+                    this.log.error(exception.getMessage());
+                    throw exception;
             }
         } else if (bidMessage.type === MPAction.MPA_BID) {
             // if no existing bid and message is MPA_BID -> true

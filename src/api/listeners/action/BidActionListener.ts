@@ -54,13 +54,27 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
         // - first get the ListingItem the Bid is for, fail if it doesn't exist
         // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
 
+        // this.log.debug('onEvent(), actionMessage: ', JSON.stringify(actionMessage, null, 2));
+
         return await this.listingItemService.findOneByHash(actionMessage.item)
             .then(async listingItemModel => {
                 const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
+                // make sure the ListingItemTemplate exists
+                if (_.isEmpty(listingItem.ListingItemTemplate)) {
+                    const exception = new MessageException('Received a Bid for a ListingItemTemplate that doesnt exists.');
+                    this.log.error('ERROR, reason: ', exception.getMessage());
+                    // throw exception;
+
+                    // TODO: error handling should be improved, just return PROCESSING_FAILED for now
+                    return SmsgMessageStatus.PROCESSING_FAILED;
+                }
+
                 // make sure the ListingItem belongs to a local Profile
                 if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
-                    throw new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
+                    const exception = new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
+                    // this.log.error('ERROR, reason: ', exception.getMessage());
+                    throw exception;
                 }
 
                 // need to add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
@@ -81,9 +95,11 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
                     .then(async bidCreateRequest => {
                         return await this.bidActionService.createBid(actionMessage, bidCreateRequest)
                             .then(value => {
+                                this.log.debug('bid created: ', value.id);
                                 return SmsgMessageStatus.PROCESSED;
                             })
                             .catch(reason => {
+                                this.log.error('PROCESSING_FAILED, reason: ', reason);
                                 return SmsgMessageStatus.PROCESSING_FAILED;
                             });
                     });
