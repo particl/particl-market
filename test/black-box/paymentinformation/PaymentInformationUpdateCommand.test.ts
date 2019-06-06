@@ -27,7 +27,7 @@ describe('PaymentInformationUpdateCommand', () => {
     let listingItemTemplate: resources.ListingItemTemplate;
 
     const testData = {
-        type: SaleType.FREE,
+        type: SaleType.SALE,
         itemPrice: {
             currency: Cryptocurrency.PART,
             basePrice: 1,
@@ -36,7 +36,7 @@ describe('PaymentInformationUpdateCommand', () => {
                 international: 3
             },
             cryptocurrencyAddress: {
-                type: CryptoAddressType.NORMAL,
+                type: CryptoAddressType.STEALTH,
                 address: 'This is NEW address.'
             }
         }
