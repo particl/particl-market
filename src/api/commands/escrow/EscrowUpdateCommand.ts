@@ -118,7 +118,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new ModelNotFoundException('Escrow');
         }
 
-        if (await this.listingItemTemplateService.isModifiable(listingItemTemplate.id)) {
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
         data.params[0] = listingItemTemplate;

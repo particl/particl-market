@@ -11,11 +11,10 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
-import { EscrowRatioUpdateRequest } from '../../../src/api/requests/model/EscrowRatioUpdateRequest';
-import { EscrowUpdateRequest } from '../../../src/api/requests/model/EscrowUpdateRequest';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('EscrowUpdateCommand', () => {
 
@@ -26,6 +25,8 @@ describe('EscrowUpdateCommand', () => {
 
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowUpdateCommand = Commands.ESCROW_UPDATE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -37,19 +38,19 @@ describe('EscrowUpdateCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            defaultProfile.id,  // profileId
+            false,              // generateListingItem
+            defaultMarket.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -65,54 +66,49 @@ describe('EscrowUpdateCommand', () => {
     test('Should fail to update Escrow because of missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(escrowCommand, [escrowUpdateCommand]);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
     test('Should fail to update Escrow because of missing escrowType', async () => {
         const testData = [escrowUpdateCommand,
-            listingItemTemplate.id,
+            listingItemTemplate.id
         ];
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('escrowType').getMessage());
     });
 
     test('Should fail to update Escrow because of missing buyerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MULTISIG
+            EscrowType.MAD_CT
         ];
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('buyerRatio').getMessage());
     });
 
     test('Should fail to update Escrow because of missing sellerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100
         ];
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('sellerRatio').getMessage());
     });
 
     test('Should fail to update Escrow because of invalid listingItemTemplateId', async () => {
         const testData = [escrowUpdateCommand,
             'not a number',
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100,
             100
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
@@ -126,49 +122,45 @@ describe('EscrowUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new InvalidParamException('escrowType', 'string').getMessage());
     });
 
     test('Should fail to update Escrow because of invalid buyerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             'invalid',
             100
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new InvalidParamException('buyerRatio', 'number').getMessage());
     });
 
     test('Should fail to update Escrow because of invalid sellerRatio', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100,
             'invalid'
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
     });
 
     test('Should fail to update Escrow because of a non-existent ListingItemTemplate', async () => {
         const testData = [escrowUpdateCommand,
             1000000000,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100,
             100
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
@@ -200,15 +192,13 @@ describe('EscrowUpdateCommand', () => {
 
         const testData = [escrowUpdateCommand,
             templatesWithoutEscrow[0].id,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100,
             100
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Escrow').getMessage());
     });
 
@@ -216,7 +206,7 @@ describe('EscrowUpdateCommand', () => {
 
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id,
-            EscrowType.MULTISIG,
+            EscrowType.MAD_CT,
             100,
             100
         ];
@@ -229,4 +219,32 @@ describe('EscrowUpdateCommand', () => {
         expect(result.Ratio.buyer).toBe(testData[3]);
         expect(result.Ratio.seller).toBe(testData[4]);
     });
+
+    test('Should not be able to update Escrow because ListingItemTemplate is not modifiable', async () => {
+
+        let res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            2,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
+
+        await testUtil.waitFor(5);
+
+        res = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
+            listingItemTemplate.id,
+            EscrowType.MAD_CT,
+            100,
+            100
+        ]);
+        res.expectJson();
+        expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+    });
+
+
 });

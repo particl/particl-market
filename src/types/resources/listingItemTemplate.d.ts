@@ -14,6 +14,9 @@ declare module 'resources' {
         ListingItemObjects: ListingItemObject[];
         ListingItems: ListingItem[];
         Profile: Profile;
+        ParentListingItemTemplate: ListingItemTemplate;
+        ChildListingItemTemplate: ListingItemTemplate;
+
         createdAt: Date;
         updatedAt: Date;
     }

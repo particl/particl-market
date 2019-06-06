@@ -294,12 +294,19 @@ export class ListingItemTemplateService {
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate = await this.findOne(id, false);
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, false).then(value => value.toJSON());
 
         // ListingItemTemplates which dont have a hash, related ListingItems or ChildListingItems can be modified
-        return (_.isEmpty(listingItemTemplate.Hash)
+        this.log.debug('listingItemTemplate.hash: ' + listingItemTemplate.hash);
+        this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
+        this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
+
+        const isModifiable = (_.isEmpty(listingItemTemplate.hash)
             && _.isEmpty(listingItemTemplate.ListingItems)
-            && _.isEmpty(listingItemTemplate.ChildListingItemTemplate()));
+            && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+
+        this.log.debug('isModifiable: ' + isModifiable);
+        return isModifiable;
     }
 
     /**
