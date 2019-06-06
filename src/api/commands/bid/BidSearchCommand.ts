@@ -177,6 +177,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
                 return OrderItemStatus.AWAITING_ESCROW;
             case 'ESCROW_LOCKED':
                 return OrderItemStatus.ESCROW_LOCKED;
+            case 'ESCROW_COMPLETED':
+                return OrderItemStatus.ESCROW_COMPLETED;
             case 'SHIPPING':
                 return OrderItemStatus.SHIPPING;
             case 'COMPLETE':

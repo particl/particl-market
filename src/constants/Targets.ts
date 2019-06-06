@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import {OrderItemShipActionListener} from '../api/listeners/action/OrderItemShipActionListener';
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -109,6 +111,7 @@ export const Targets = {
             EscrowRefundActionService: 'EscrowRefundActionService',
             EscrowCompleteActionService: 'EscrowCompleteActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
+            OrderItemShipActionService: 'OrderItemShipActionService',
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
@@ -276,7 +279,8 @@ export const Targets = {
         },
         orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemShipCommand: 'OrderItemShipCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -350,6 +354,7 @@ export const Targets = {
             EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
+            OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'
         },
@@ -392,6 +397,7 @@ export const Targets = {
             EscrowLockActionListener: 'EscrowLockActionListener',
             EscrowRefundActionListener: 'EscrowRefundActionListener',
             EscrowReleaseActionListener: 'EscrowReleaseActionListener',
+            OrderItemShipActionListener: 'OrderItemShipActionListener',
             ProposalAddActionListener: 'ProposalAddActionListener',
             VoteActionListener: 'VoteActionListener'
         },

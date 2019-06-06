@@ -15,6 +15,7 @@ export enum OrderItemStatus {
     BID_REJECTED = 'BID_REJECTED',          // seller rejected the buyers bid for the item
     AWAITING_ESCROW = 'AWAITING_ESCROW',    // seller has accepted buyers bid, waiting for buyer payment
     ESCROW_LOCKED = 'ESCROW_LOCKED',        // buyer has paid, waiting for seller to ship
+    ESCROW_COMPLETED = 'ESCROW_COMPLETED',  // seller posted completetx
     ESCROW_REFUNDED = 'ESCROW_REFUNDED',
     SHIPPING = 'SHIPPING',                  // seller has shipped, waiting for buyer to receive
     COMPLETE = 'COMPLETE'                   // order completed

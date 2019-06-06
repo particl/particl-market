@@ -4,45 +4,46 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
+import { request, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { OrderItemService } from '../../services/model/OrderItemService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { OrderItemService } from '../../services/model/OrderItemService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest';
 import { BidService } from '../../services/model/BidService';
-import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
-import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
 
-export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
+export class OrderItemShipCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) private escrowRefundActionService: EscrowRefundActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.action.OrderItemShipActionService) private orderItemShipActionService: OrderItemShipActionService
     ) {
-        super(Commands.ESCROW_REFUND);
+        super(Commands.ORDERITEM_SHIP);
         this.log = new Logger(__filename);
     }
 
     /**
      * data.params[]:
-     * [0]: orderItemId
+     * [0]: orderItem: resources.OrderItem
      * [1]: memo
+     *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -50,27 +51,20 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
+        // todo: to validate()?
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
-        let bidAccept: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
-            return child.type === MPAction.MPA_ACCEPT;
+        const bidAccept: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
+            return child.type === MPActionExtended.MPA_COMPLETE;
         });
         if (!bidAccept) {
             throw new MessageException('No accepted Bid found.');
         }
-        bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
-        let escrowLock: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
-            return child.type === MPAction.MPA_LOCK;
-        });
-        if (!escrowLock) {
-            throw new MessageException('No locked Bid found.');
-        }
-        escrowLock = await this.bidService.findOne(escrowLock.id).then(value => value.toJSON());
-
-        const fromAddress = orderItem.Order.buyer;  // we are the seller
-        const toAddress = orderItem.Order.seller;
+        const fromAddress = orderItem.Order.seller;
+        const toAddress = orderItem.Order.buyer;
 
         // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
         const daysRetention = 2;
@@ -79,12 +73,11 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
-            bidAccept,
-            escrowLock,
-            memo: data.params[1]
-        } as EscrowRefundRequest;
+            memo
+        } as OrderItemShipRequest;
 
-        return this.escrowRefundActionService.post(postRequest);
+        return this.orderItemShipActionService.post(postRequest);
+
     }
 
     /**
@@ -104,6 +97,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('orderItemId', 'number');
+        } else if (data.params[1] && typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('memo', 'string');
         }
 
         // make sure required data exists and fetch it
@@ -113,11 +108,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             });
         data.params[0] = orderItem;
 
-        // TODO: check these
         const validOrderItemStatuses = [
-            OrderItemStatus.ESCROW_LOCKED,
-            OrderItemStatus.ESCROW_COMPLETED,
-            OrderItemStatus.SHIPPING
+            OrderItemStatus.ESCROW_COMPLETED
         ];
 
         // check if in the right state.
@@ -133,17 +125,21 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' [<orderItemId> [<memo>]]] ';
+        return this.getName() + ' [<itemhash|*> [<buyer|*> [<seller|*>]]]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to refund the Escrow.\n'
-            + '    <memo>                   - String - The memo of the Escrow ';
+            + '    <orderItemId>            - String - The id of the OrderItem which we want mark as sent.\n'
+            + '    <memo>                   - String - The message to the buyer';
     }
 
     public description(): string {
-        return 'Refund an escrow.';
+        return 'Mark OrderItem as shipped.';
+    }
+
+    public example(): string {
+        return 'orderitem ' + this.getName() + ' ';
     }
 
 }

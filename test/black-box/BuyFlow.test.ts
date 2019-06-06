@@ -41,6 +41,8 @@ describe('Happy Buy Flow', () => {
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
     const escrowCompleteCommand = Commands.ESCROW_COMPLETE.commandName;
+    const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
+    const orderItemShipCommand = Commands.ORDERITEM_SHIP.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let sellerProfile: resources.Profile;
@@ -66,6 +68,7 @@ describe('Happy Buy Flow', () => {
 
     const DELIVERY_CONTACT_PHONE = '+3584512345678';
     const DELIVERY_CONTACT_EMAIL = 'test@test.com';
+    const DELIVERY_TRACKING_ID = 'trackingid #12345';
 
     let sent = false;
 
@@ -777,7 +780,7 @@ describe('Happy Buy Flow', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should post MPA_COMPLETE from SELLER node, indicating that the item has been sent', async () => {
+    test('Should post MPA_COMPLETE from SELLER node, completing the escrow', async () => {
 
         expect(sent).toBeTruthy();
         expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
@@ -785,15 +788,15 @@ describe('Happy Buy Flow', () => {
         sent = false;
 
         log.debug('========================================================================================');
-        log.debug('SELLER POSTS MPA_COMPLETE, indicating that the item has been sent');
+        log.debug('SELLER POSTS MPA_COMPLETE, completing the escrow');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
 
         const res: any = await testUtilSellerNode.rpc(escrowCommand, [
             escrowCompleteCommand,
-            orderOnSellerNode.OrderItems[0].id,
-            'tracking1234'
+            orderOnSellerNode.OrderItems[0].id
+            // 'tracking1234'
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -805,23 +808,143 @@ describe('Happy Buy Flow', () => {
         }
         expect(result.result).toBe('Sent.');
 
-        log.debug('==[ release Escrow /// seller (node1) -> buyer (node2) ]=========================');
+        log.debug('==[ complete Escrow /// seller (node1) -> buyer (node2) ]=========================');
         log.debug('msgid: ' + result.msgid);
-        log.debug('order.hash: ' + orderOnBuyerNode.hash);
-        log.debug('order.buyer: ' + orderOnBuyerNode.buyer);
-        log.debug('order.seller: ' + orderOnBuyerNode.seller);
-        log.debug('order.id: ' + orderOnBuyerNode.id);
-        log.debug('order.orderItem.id: ' + orderOnBuyerNode.OrderItems[0].id);
+        log.debug('order.hash: ' + orderOnSellerNode.hash);
+        log.debug('order.buyer: ' + orderOnSellerNode.buyer);
+        log.debug('order.seller: ' + orderOnSellerNode.seller);
+        log.debug('order.id: ' + orderOnSellerNode.id);
+        log.debug('order.orderItem.id: ' + orderOnSellerNode.OrderItems[0].id);
         log.debug('=================================================================================');
     });
 
 
-    test('Should have updated Order on SELLER node after sending MPA_COMPLETE, OrderItemStatus.SHIPPING', async () => {
+    test('Should have updated Order on SELLER node after sending MPA_COMPLETE, OrderItemStatus.ESCROW_COMPLETED', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Order should have been updated on seller node after sending the MPA_COMPLETE, OrderItemStatus.SHIPPING');
+        log.debug('Order should have been updated on seller node after sending the MPA_COMPLETE, OrderItemStatus.ESCROW_COMPLETED');
+        log.debug('========================================================================================');
+
+        await testUtilSellerNode.waitFor(5);
+
+        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+                bidOnSellerNode.ListingItem.hash,   // item hash
+                OrderItemStatus.ESCROW_COMPLETED,   // status
+                buyerProfile.address,               // buyerAddress
+                sellerProfile.address,              // sellerAddress
+                SearchOrder.ASC                     // ordering
+            ],
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderItemStatus.ESCROW_COMPLETED.toString()
+        );
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Order = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
+
+        orderOnSellerNode = result[0];
+
+        log.debug('==> Order updated on SELLER node.');
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should have updated Order on BUYER node after receiving MPA_COMPLETE, OrderItemStatus.ESCROW_COMPLETED', async () => {
+
+        expect(sent).toBeTruthy();
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
+
+        log.debug('========================================================================================');
+        log.debug('BUYER RECEIVES MPA_COMPLETE posted from sellers node, OrderItemStatus.ESCROW_COMPLETED');
+        log.debug('========================================================================================');
+
+        await testUtilBuyerNode.waitFor(5);
+
+        const res: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+                bidOnSellerNode.ListingItem.hash,   // item hash
+                OrderItemStatus.ESCROW_COMPLETED,   // status
+                buyerProfile.address,               // buyerAddress
+                sellerProfile.address,              // sellerAddress
+                SearchOrder.ASC                     // ordering
+            ],
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderItemStatus.ESCROW_COMPLETED.toString()
+        );
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Order = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+
+        orderOnBuyerNode = result[0];
+
+        log.debug('orderOnBuyerNode: ', JSON.stringify(orderOnBuyerNode, null, 2));
+
+        log.debug('==> BUYER received MPA_COMPLETE.');
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should post MPA_SHIP from SELLER node, indicating that the item has been sent', async () => {
+
+        expect(sent).toBeTruthy();
+        expect(orderOnBuyerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
+        expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
+        sent = false;
+
+        log.debug('========================================================================================');
+        log.debug('SELLER POSTS MPA_SHIP, indicating that the item has been sent');
+        log.debug('========================================================================================');
+
+        await testUtilSellerNode.waitFor(5);
+
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemShipCommand,
+            orderOnSellerNode.OrderItems[0].id,
+            DELIVERY_TRACKING_ID
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ ship OrderItem /// seller (node1) -> buyer (node2) ]=========================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('order.hash: ' + orderOnSellerNode.hash);
+        log.debug('order.buyer: ' + orderOnSellerNode.buyer);
+        log.debug('order.seller: ' + orderOnSellerNode.seller);
+        log.debug('order.id: ' + orderOnSellerNode.id);
+        log.debug('order.orderItem.id: ' + orderOnSellerNode.OrderItems[0].id);
+        log.debug('=================================================================================');
+    });
+
+
+    test('Should have updated Order on SELLER node after sending MPA_SHIP, OrderItemStatus.SHIPPING', async () => {
+
+        expect(sent).toBeTruthy();
+
+        log.debug('========================================================================================');
+        log.debug('Order should have been updated on seller node after sending the MPA_SHIP, OrderItemStatus.SHIPPING');
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
@@ -857,13 +980,13 @@ describe('Happy Buy Flow', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should have updated Order on BUYER node after receiving MPA_COMPLETE, OrderItemStatus.SHIPPING', async () => {
+    test('Should have updated Order on BUYER node after receiving MPA_SHIP, OrderItemStatus.SHIPPING', async () => {
 
         expect(sent).toBeTruthy();
         expect(orderOnSellerNode.OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
 
         log.debug('========================================================================================');
-        log.debug('BUYER RECEIVES MPA_COMPLETE posted from sellers node, OrderItemStatus.SHIPPING');
+        log.debug('BUYER RECEIVES MPA_SHIP posted from sellers node, OrderItemStatus.SHIPPING');
         log.debug('========================================================================================');
 
         await testUtilBuyerNode.waitFor(5);
@@ -893,10 +1016,11 @@ describe('Happy Buy Flow', () => {
 
         log.debug('orderOnBuyerNode: ', JSON.stringify(orderOnBuyerNode, null, 2));
 
-        log.debug('==> BUYER received MPA_COMPLETE.');
+        log.debug('==> BUYER received MPA_SHIP.');
 
     }, 600000); // timeout to 600s
-/*
+
+
     test('Should post MPA_RELEASE from BUYER node, indicating that the item has been received', async () => {
 
         expect(sent).toBeTruthy();
@@ -1036,6 +1160,6 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-*/
+
 
 });

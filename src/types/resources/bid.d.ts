@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPActionExtended } from '../../api/enums/MPActionExtended';
 
 declare module 'resources' {
 
@@ -12,7 +13,7 @@ declare module 'resources' {
         hash: string;
         bidder: string;
         generatedAt: number;
-        type: MPAction;
+        type: MPAction | MPActionExtended;
         BidDatas: BidData[];
         ListingItem: ListingItem;
         ShippingAddress: Address;

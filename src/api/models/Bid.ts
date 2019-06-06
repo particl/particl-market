@@ -112,6 +112,7 @@ export class Bid extends Bookshelf.Model<Bid> {
                     && (searchParams.type === OrderItemStatus.AWAITING_ESCROW
                         || searchParams.type === OrderItemStatus.COMPLETE
                         || searchParams.type === OrderItemStatus.ESCROW_LOCKED
+                        || searchParams.type === OrderItemStatus.ESCROW_COMPLETED
                         || searchParams.type === OrderItemStatus.SHIPPING)) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
                     qb.where('order_items.status', '=', searchParams.type);

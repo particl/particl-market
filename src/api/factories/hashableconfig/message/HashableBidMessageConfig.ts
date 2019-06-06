@@ -7,7 +7,7 @@ import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
 import { HashableBidReleaseField } from '../HashableField';
 
 /**
- * used for MPA_COMPLETE, MPA_RELEASE and MPA_REFUND
+ * used for MPA_COMPLETE, MPA_RELEASE and MPA_REFUND, MPA_SHIP
  */
 export class HashableBidMessageConfig extends BaseHashableConfig {
 

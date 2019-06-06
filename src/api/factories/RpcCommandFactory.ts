@@ -99,6 +99,7 @@ import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
 import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
 import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
+import { OrderItemShipCommand } from '../commands/orderitem/OrderItemShipCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
@@ -239,6 +240,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemShipCommand) private orderItemShipCommand: OrderItemShipCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -388,6 +390,7 @@ export class RpcCommandFactory {
 
         this.commands.push(orderItemRootCommand);
         this.commands.push(orderItemStatusCommand);
+        this.commands.push(orderItemShipCommand);
 
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(paymentInformationRootCommand);

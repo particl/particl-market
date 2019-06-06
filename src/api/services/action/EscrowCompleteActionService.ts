@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -17,7 +16,6 @@ import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
@@ -34,7 +32,6 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
@@ -218,8 +215,8 @@ export class EscrowCompleteActionService extends BaseActionService {
 
                 // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
-                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.SHIPPING);
-                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.SHIPPING);
+                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_COMPLETED);
+                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });

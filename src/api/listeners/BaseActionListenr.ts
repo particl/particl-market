@@ -25,6 +25,7 @@ import { EscrowReleaseValidator } from '../messages/validator/EscrowReleaseValid
 import { ProposalAddValidator } from '../messages/validator/ProposalAddValidator';
 import { VoteValidator } from '../messages/validator/VoteValidator';
 import {EscrowCompleteValidator} from '../messages/validator/EscrowCompleteValidator';
+import {OrderItemShipValidator} from '../messages/validator/OrderItemShipValidator';
 
 // TODO: rename, refactor
 @injectable()
@@ -51,6 +52,8 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
                 return EscrowReleaseValidator.isValid(msg);
             case MPActionExtended.MPA_COMPLETE:
                 return EscrowCompleteValidator.isValid(msg);
+            case MPActionExtended.MPA_SHIP:
+                return OrderItemShipValidator.isValid(msg);
             case GovernanceAction.MPA_PROPOSAL_ADD:
                 return ProposalAddValidator.isValid(msg);
             case GovernanceAction.MPA_VOTE:

@@ -25,12 +25,13 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 import { HashableBidBasicCreateRequestConfig } from '../hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { HashableBidReleaseField } from '../hashableconfig/HashableField';
+import {OrderItemShipMessage} from '../../messages/action/OrderItemShipMessage';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage
-    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage;
+    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage | OrderItemShipMessage;
 
 export type BidMessageTypesWithParentBid = BidAcceptMessage | BidRejectMessage | BidCancelMessage
-    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage;
+    | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage | OrderItemShipMessage;
 
 export class BidFactory implements ModelFactoryInterface {
 
@@ -146,6 +147,7 @@ export class BidFactory implements ModelFactoryInterface {
     private checkBidMessageActionValidity(bidMessage: BidMessageTypes, parentBid?: resources.Bid): boolean {
 
         if (parentBid) {
+            // todo: might be that parentBid is always MPAction.MPA_BID, this might need to be fixed
             switch (parentBid.type) {
                 case MPAction.MPA_BID:
                     // if the parent bid was already bidded on, then the message needs to be something else

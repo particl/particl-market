@@ -109,7 +109,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
         // TODO: check these
         const validOrderItemStatuses = [
-            OrderItemStatus.ESCROW_LOCKED,
+            // OrderItemStatus.ESCROW_COMPLETED
             OrderItemStatus.SHIPPING
         ];
 

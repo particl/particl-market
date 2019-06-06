@@ -10,10 +10,10 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
+import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 
-export class EscrowCompleteMessageFactory implements MessageFactoryInterface {
+export class OrderItemShipMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
@@ -27,16 +27,18 @@ export class EscrowCompleteMessageFactory implements MessageFactoryInterface {
      *
      * @param params
      *      bidHash: string
-     * @returns {Promise<EscrowCompleteMessage>}
+     * @returns {Promise<OrderItemShipMessage>}
      */
-    public async get(params: EscrowCompleteMessageCreateParams): Promise<EscrowCompleteMessage> {
+    public async get(params: EscrowCompleteMessageCreateParams): Promise<OrderItemShipMessage> {
         const message = {
-            type: MPActionExtended.MPA_COMPLETE,
+            type: MPActionExtended.MPA_SHIP,
             generated: +new Date().getTime(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]
-        } as EscrowCompleteMessage;
+        } as OrderItemShipMessage;
+
+        // todo: use previous message hashes in the hash generation?
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;

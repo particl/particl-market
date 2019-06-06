@@ -41,7 +41,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     * [0]: orderItemId
+     * [0]: orderItem: resources.OrderItem
      * [1]: memo
      * @param data
      * @returns {Promise<SmsgSendResponse>}
@@ -115,8 +115,8 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
 
         // TODO: check these
         const validOrderItemStatuses = [
-            OrderItemStatus.ESCROW_LOCKED,
-            OrderItemStatus.SHIPPING
+            OrderItemStatus.ESCROW_LOCKED
+            // OrderItemStatus.SHIPPING
         ];
 
         // check if in the right state.
