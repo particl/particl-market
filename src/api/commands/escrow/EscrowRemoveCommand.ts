@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -17,8 +18,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import * as _ from 'lodash';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 

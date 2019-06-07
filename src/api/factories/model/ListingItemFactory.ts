@@ -143,6 +143,9 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
     private async getModelMessagingInformation(messaging: MessagingInfo): Promise<MessagingInformationCreateRequest[]> {
         const messagingArray: MessagingInformationCreateRequest[] = [];
+        if (!messaging || !_.isArray(messaging.options)) {
+            return messagingArray;
+        }
         for (const messagingData of messaging.options) {
             messagingArray.push({
                 protocol: MessagingProtocol[messagingData.protocol],

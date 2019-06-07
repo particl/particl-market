@@ -20,9 +20,8 @@ import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdate
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
