@@ -12,6 +12,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ItemImageRemoveCommand', () => {
 
@@ -37,19 +38,19 @@ describe('ItemImageRemoveCommand', () => {
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            defaultProfile.id,  // profileId
+            false,              // generateListingItem
+            defaultMarket.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -74,7 +75,7 @@ describe('ItemImageRemoveCommand', () => {
             'INVALIDID'
         ]);
         result.expectJson();
-        result.expectStatusCode(404);
+        result.expectStatusCode(400);
         expect(result.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
 
@@ -87,7 +88,7 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(200);
     });
 
-    test('Should fail to remove ItemImage because itemImage already been removed', async () => {
+    test('Should fail to remove ItemImage because ItemImage has already been removed', async () => {
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
             listingItemTemplate.ItemInformation.ItemImages[0].id
         ]);
@@ -95,7 +96,7 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(404);
     });
 
-    test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
+    test('Should fail to remove ItemImage because there is a ListingItemTemplate has been published', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,                       // generateItemInformation
@@ -126,8 +127,8 @@ describe('ItemImageRemoveCommand', () => {
             listingItem.ItemInformation.ItemImages[0].id
         ]);
         result.expectJson();
-        result.expectStatusCode(404);
-        expect(result.error.error.message).toBe('Can\'t delete ItemImage because the ListingItemTemplate has already been posted!');
+        result.expectStatusCode(400);
+        expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
 
 
