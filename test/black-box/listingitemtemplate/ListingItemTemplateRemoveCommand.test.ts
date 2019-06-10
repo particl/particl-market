@@ -12,7 +12,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 

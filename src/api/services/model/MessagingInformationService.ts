@@ -62,11 +62,6 @@ export class MessagingInformationService {
     @validate()
     public async update(id: number, @request(MessagingInformationUpdateRequest) body: MessagingInformationUpdateRequest): Promise<MessagingInformation> {
 
-        // todo: could this be annotated in MessagingInformationCreateRequest?
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
-            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
-        }
-
         // find the existing one without related
         const messagingInformation = await this.findOne(id, false);
 
