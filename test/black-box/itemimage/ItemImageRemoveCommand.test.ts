@@ -96,7 +96,7 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(404);
     });
 
-    test('Should fail to remove ItemImage because there is a ListingItemTemplate has been published', async () => {
+    test('Should fail to remove ItemImage because the ListingItemTemplate has been published', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,                       // generateItemInformation

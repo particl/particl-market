@@ -12,6 +12,8 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import {GenerateListingItemParams} from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ItemInformationUpdateCommand', () => {
 
@@ -22,6 +24,11 @@ describe('ItemInformationUpdateCommand', () => {
 
     const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let itemCategory: resources.ItemCategory;
@@ -29,8 +36,8 @@ describe('ItemInformationUpdateCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
-        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -68,7 +75,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
@@ -80,7 +86,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
     });
 
@@ -93,7 +98,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('shortDescription').getMessage());
     });
 
@@ -107,7 +111,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
 
@@ -122,7 +125,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
     });
 
@@ -137,7 +139,7 @@ describe('ItemInformationUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
@@ -153,8 +155,7 @@ describe('ItemInformationUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('title', 'string').getMessage());
     });
 
@@ -169,8 +170,7 @@ describe('ItemInformationUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('shortDescription', 'string').getMessage());
     });
 
@@ -185,8 +185,7 @@ describe('ItemInformationUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('longDescription', 'string').getMessage());
     });
 
@@ -201,8 +200,7 @@ describe('ItemInformationUpdateCommand', () => {
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
@@ -218,7 +216,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
@@ -236,7 +233,6 @@ describe('ItemInformationUpdateCommand', () => {
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
@@ -259,4 +255,42 @@ describe('ItemInformationUpdateCommand', () => {
         expect(result.longDescription).toBe(testData[4]);
         expect(result.ItemCategory.id).toBe(testData[5]);
     });
+
+    test('Should fail to update ItemInformation because the ListingItemTemplate has been published', async () => {
+
+        // post template
+        const daysRetention = 4;
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        let result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        const sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+
+        // then try to update
+        const testData = [itemInformationUpdateCommand,
+            listingItemTemplate.id,
+            'ASDF title',
+            'ASDF short description',
+            'ASDF long description',
+            itemCategory.id
+        ];
+
+        result = await testUtil.rpc(itemInformationCommand, testData);
+        result.expectJson();
+        result.expectStatusCode(400);
+
+        expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+    });
+
+
 });

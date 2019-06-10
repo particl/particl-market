@@ -956,14 +956,16 @@ export class TestDataService {
         // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id
-        let listingItemTemplate: resources.ListingItemTemplate | null = null;
         if (generateParams.listingItemTemplateHash) {
-            const listingItemTemplateModel = await this.listingItemTemplateService.findOneByHash(generateParams.listingItemTemplateHash);
-            listingItemTemplate = listingItemTemplateModel ? listingItemTemplateModel.toJSON() : null;
-            if (listingItemTemplate) {
-                listingItemCreateRequest.listing_item_template_id = listingItemTemplate.id;
-            }
+            const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService
+                .findOneByHash(generateParams.listingItemTemplateHash)
+                .then(value => value.toJSON());
+            listingItemCreateRequest.listing_item_template_id = listingItemTemplate.id;
+            listingItemCreateRequest.hash = listingItemTemplate.hash;
         }
+
+        this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
+        this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
         return listingItemCreateRequest;
     }
 

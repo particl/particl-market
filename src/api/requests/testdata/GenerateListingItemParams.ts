@@ -34,9 +34,9 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     // GenerateListingItemObjectParamsInterface
     public generateObjectDatas = true;
 
-    public listingItemTemplateHash: string | null = null;
-    public seller: string | null = null;
-    public categoryId: number | null = null;
+    public listingItemTemplateHash: string;
+    public seller: string;
+    public categoryId: number;
 
     /**
      * generateParams[]:
@@ -71,9 +71,9 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateMessagingInformation   = generateParams[7] ? true : false;
             this.generateListingItemObjects     = generateParams[8] ? true : false;
             this.generateObjectDatas            = generateParams[9] ? true : false;
-            this.listingItemTemplateHash        = generateParams[10] ? generateParams[10] : null;
-            this.seller                         = generateParams[11] ? generateParams[11] : null;
-            this.categoryId                     = generateParams[12] ? generateParams[12] : null;
+            this.listingItemTemplateHash        = generateParams[10] ? generateParams[10] : undefined;
+            this.seller                         = generateParams[11] ? generateParams[11] : undefined;
+            this.categoryId                     = generateParams[12] ? generateParams[12] : undefined;
         }
     }
 

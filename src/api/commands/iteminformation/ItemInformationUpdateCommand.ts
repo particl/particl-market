@@ -21,6 +21,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -122,6 +123,11 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             .catch(reason => {
                 throw new ModelNotFoundException('ItemCategory');
             });
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
 
         data.params[0] = listingItemTemplate;
         data.params[4] = itemCategory;
