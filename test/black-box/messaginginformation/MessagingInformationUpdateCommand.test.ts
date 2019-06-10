@@ -47,7 +47,11 @@ describe('MessagingInformationUpdateCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
         ]).toParamsArray();
 
         // generate listingItemTemplate
