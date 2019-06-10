@@ -129,7 +129,7 @@ describe('ShippingDestinationAddCommand', () => {
         expect(res.error.error.message).toBe('Shipping Availability <' + invalidShippingAvailability + '> was not valid!');
     });
 
-    test('Should not add the ShippingDestination because the ListingItemTemplate has been published', async () => {
+    test('Should fail to add the ShippingDestination because the ListingItemTemplate has been published', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
