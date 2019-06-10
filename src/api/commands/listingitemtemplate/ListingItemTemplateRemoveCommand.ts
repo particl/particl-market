@@ -13,10 +13,10 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -70,9 +70,10 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
 
-        // template has listingitems, so it cannot be removed
-        if (!_.isEmpty(listingItemTemplate.ListingItems)) {
-            throw new MessageException(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${data.params[0]}`);
+        // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         data.params[0] = listingItemTemplate;

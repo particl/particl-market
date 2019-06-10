@@ -294,7 +294,8 @@ export class ListingItemTemplateService {
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, false).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true)
+            .then(value => value.toJSON());
 
         // ListingItemTemplates which dont have a hash, related ListingItems or ChildListingItems can be modified
         this.log.debug('listingItemTemplate.hash: ' + listingItemTemplate.hash);

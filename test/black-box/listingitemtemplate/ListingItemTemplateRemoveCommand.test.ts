@@ -12,6 +12,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 
@@ -72,7 +73,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
         const fakeId = 'not a number';
         const res: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, fakeId]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
@@ -82,53 +83,6 @@ describe('ListingItemTemplateRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
-    });
-
-    test('Should fail to remove ListingItemTemplate because ListingItemTemplate has related ListingItems', async () => {
-
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            true,   // generateListingItem
-            defaultMarket.id  // marketId
-        ]).toParamsArray();
-
-        // generate ListingItemTemplate with ListingItem
-        const listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplate[];
-        listingItemTemplate = listingItemTemplates[0];
-
-        // expect template is related to correct profile and ListingItem posted to correct Market
-        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
-
-        // TODO: expect template hash created on the server matches what we create here
-        // todo generate hash
-        // expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
-
-        // expect the item hash generated at the same time as template, matches with the templates one
-        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
-        log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
-        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
-
-        // remove Listing item template
-        const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
-        result.expectJson();
-        result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${listingItemTemplate.id}`);
     });
 
     test('Should remove ListingItemTemplate', async () => {
@@ -169,5 +123,45 @@ describe('ListingItemTemplateRemoveCommand', () => {
         expect(result.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
+    test('Should fail to remove ListingItemTemplate because ListingItemTemplate has related ListingItems', async () => {
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        // generate ListingItemTemplate with ListingItem
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        listingItemTemplate = listingItemTemplates[0];
+
+        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+
+        // expect template is related to correct profile and ListingItem posted to correct Market
+        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
+        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
+
+        // remove Listing item template
+        const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
+        result.expectJson();
+//        result.expectStatusCode(400);
+        expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+
+    });
 
 });

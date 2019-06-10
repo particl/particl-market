@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,12 +18,11 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {LocationMarkerUpdateRequest} from '../../requests/model/LocationMarkerUpdateRequest';
-import * as resources from "resources";
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { LocationMarkerUpdateRequest } from '../../requests/model/LocationMarkerUpdateRequest';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
