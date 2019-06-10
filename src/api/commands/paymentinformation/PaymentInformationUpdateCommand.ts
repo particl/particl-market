@@ -24,6 +24,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -83,7 +84,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplateId
+     *  [0]: listingItemTemplateId
      *  [1]: saleType
      *  [2]: currency
      *  [3]: basePrice
@@ -128,13 +129,19 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
             throw new InvalidParamException('paymentAddress', 'string');
         }
 
-        // make sure required data exists and fetch it
+        // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON()); // throws if not found
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
 
+        // make sure PaymentInformation exists
         if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
             throw new ModelNotFoundException('PaymentInformation');
-       }
+        }
 
         // override the needed params
         // TODO: forced values for now, remove later
@@ -149,6 +156,11 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         const validCryptocurrencyTypes = [Cryptocurrency.PART];
         if (validCryptocurrencyTypes.indexOf(data.params[2]) === -1) {
             throw new InvalidParamException('currency');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         data.params[0] = listingItemTemplate;
