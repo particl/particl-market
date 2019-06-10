@@ -22,6 +22,7 @@ import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarker
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -138,6 +139,11 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
+
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
 
         // can't add if ItemLocation already exists
         if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) { // templates itemlocation exist

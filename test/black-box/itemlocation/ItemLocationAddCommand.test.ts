@@ -9,7 +9,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ItemLocationAddCommand', () => {
 
@@ -132,7 +132,6 @@ describe('ItemLocationAddCommand', () => {
     });
 
     // TODO: should not create because invalid params...
-
     // TODO: should not create because ListingItemTemplate doesnt exist
     // TODO: should not create because ItemLocation already exists
 

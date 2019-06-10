@@ -18,6 +18,11 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import {LocationMarkerUpdateRequest} from '../../requests/model/LocationMarkerUpdateRequest';
+import * as resources from "resources";
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -34,56 +39,124 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     * [0]: listing_item_template_id
-     * [1]: country (country/countryCode)
-     * [2]: address, optional
-     * [3]: gps marker title, optional
-     * [4]: gps marker description, optional
-     * [5]: gps marker latitude, optional
-     * [6]: gps marker longitude, optional
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *  [1]: country (country/countryCode)
+     *  [2]: address, optional
+     *  [3]: gpsMarkerTitle, optional
+     *  [4]: gpsMarkerDescription, optional
+     *  [5]: gpsMarkerLatitude, optional
+     *  [6]: gpsMarkerLongitude, optional
      *
      * @param data
      * @returns {Promise<ItemLocation>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
-        const listingItemTemplateId = data.params[0];
-        // If countryCode is country, convert to countryCode.
-        // If countryCode is country code, validate, and possibly throw error.
-        if (data.params[1]) {
-            let countryCode: string = data.params[1];
-            countryCode = ShippingCountries.convertAndValidate(countryCode);
 
-            const itemInformation = await this.getItemInformation(listingItemTemplateId);
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const countryCode = data.params[1];
+        const address = data.params[2];
 
-            // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-            if (itemInformation.listingItemId) {
-                throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
-            } else {
-                // TODO: its not possible to update the description
-                const updateRequest = {
-                    country: countryCode,
-                    address: data.params[2]
-                } as ItemLocationUpdateRequest;
+        const itemInformation = await this.getItemInformation(listingItemTemplate.id);
 
-                if (data.params[5] && data.params[6]) {
-                    updateRequest.locationMarker = {
-                        title: data.params[3],
-                        description: data.params[4],
-                        lat: data.params[5],
-                        lng: data.params[6]
-                    } as LocationMarkerUpdateRequest;
-                }
+        // TODO: its not possible to update the description
+        const updateRequest = {
+            country: countryCode,
+            address: data.params[2]
+        } as ItemLocationUpdateRequest;
 
-                // update item location
-                return this.itemLocationService.update(itemInformation.ItemLocation.id, updateRequest);
-            }
-        } else {
-            throw new MessageException('Country code can\'t be blank.');
+        if (data.params[5] && data.params[6]) {
+            updateRequest.locationMarker = {
+                title: data.params[3],
+                description: data.params[4],
+                lat: data.params[5],
+                lng: data.params[6]
+            } as LocationMarkerUpdateRequest;
         }
+
+        return this.itemLocationService.update(itemInformation.ItemLocation.id, updateRequest);
     }
 
-    // TODO: validate
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: country (country/countryCode)
+     *  [2]: address, optional
+     *  [3]: gpsMarkerTitle, optional
+     *  [4]: gpsMarkerDescription, optional
+     *  [5]: gpsMarkerLatitude, optional
+     *  [6]: gpsMarkerLongitude, optional
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('country');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('country', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('address', 'string');
+        }
+
+        if (data.params.length > 3 && data.params.length !== 7) {
+            if (data.params.length < 5) {
+                throw new MissingParamException('gpsMarkerDescription');
+            } else if (data.params.length < 6) {
+                throw new MissingParamException('gpsMarkerLatitude');
+            } else if (data.params.length < 7) {
+                throw new MissingParamException('gpsMarkerLongitude');
+            }
+
+            if (typeof data.params[3] !== 'string') {
+                throw new InvalidParamException('gpsMarkerTitle', 'string');
+            } else if (typeof data.params[4] !== 'string') {
+                throw new InvalidParamException('gpsMarkerDescription', 'string');
+            } else if (typeof data.params[5] !== 'number') {
+                throw new InvalidParamException('gpsMarkerLatitude', 'number');
+            } else if (typeof data.params[6] !== 'number') {
+                throw new InvalidParamException('gpsMarkerLongitude', 'number');
+            }
+        }
+
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        data.params[1] = ShippingCountries.convertAndValidate(data.params[1]);
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
+
+        // make sure ItemLocation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
+    }
 
     public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <country> <address> <gpsMarkerTitle>'
