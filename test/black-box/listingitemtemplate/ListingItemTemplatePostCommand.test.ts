@@ -109,7 +109,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-    test('Get the updated ListingItemTemplate to get the hash', async () => {
+    test('Should get the updated ListingItemTemplate with the hash', async () => {
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
             listingItemTemplate.id
         ]);
@@ -118,6 +118,7 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplate = res.getBody()['result'];
 
         expect(listingItemTemplate.hash).toBeDefined();
+        log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
 
