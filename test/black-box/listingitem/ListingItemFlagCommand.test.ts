@@ -92,7 +92,7 @@ describe('ListingItemFlagCommand', () => {
             defaultProfile.id
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemHash', 'string').getMessage());
     });
 
@@ -104,7 +104,7 @@ describe('ListingItemFlagCommand', () => {
             invalidProfileId
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
