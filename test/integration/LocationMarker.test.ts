@@ -81,7 +81,7 @@ describe('LocationMarker', () => {
             false,              // generateItemImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
-            false,               // generateItemPrice
+            false,              // generateItemPrice
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
@@ -113,7 +113,7 @@ describe('LocationMarker', () => {
         );
     });
 
-    test('Should create a new location marker', async () => {
+    test('Should create a new LocationMarker', async () => {
         testData['item_location_id'] = listingItemTemplate.ItemInformation.ItemLocation.id;
         locationMarker = await locationMarkerService.create(testData).then(value => value.toJSON());
         const result: resources.LocationMarker = locationMarker;
@@ -125,18 +125,18 @@ describe('LocationMarker', () => {
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
-    test('Should throw ValidationException because we want to create a empty location marker', async () => {
+    test('Should throw ValidationException because we want to create a empty LocationMarker', async () => {
         expect.assertions(1);
         await locationMarkerService.create({} as LocationMarkerCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list location markers with our new create one', async () => {
+    test('Should list LocationMarkers with our new create one', async () => {
         const locationMarkers: resources.LocationMarker[] = await locationMarkerService.findAll().then(value => value.toJSON());
-        expect(locationMarkers.length).toBe(2);
+        expect(locationMarkers.length).toBe(1);
 
-        const result = locationMarkers[1];
+        const result = locationMarkers[0];
 
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -145,7 +145,7 @@ describe('LocationMarker', () => {
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
-    test('Should return one location marker', async () => {
+    test('Should return one LocationMarker', async () => {
         const locationMarkerModel: LocationMarker = await locationMarkerService.findOne(locationMarker.id);
         const result = locationMarkerModel.toJSON();
 
@@ -156,7 +156,7 @@ describe('LocationMarker', () => {
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
-    test('Should update the location marker', async () => {
+    test('Should update the LocationMarker', async () => {
         testDataUpdated['item_location_id'] = listingItemTemplate.ItemInformation.ItemLocation.id;
         const locationMarkerModel: LocationMarker = await locationMarkerService.update(locationMarker.id, testDataUpdated);
         const result = locationMarkerModel.toJSON();
@@ -168,29 +168,12 @@ describe('LocationMarker', () => {
         expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
-    test('Should delete the location marker', async () => {
-        expect.assertions(4);
+    test('Should delete the LocationMarker', async () => {
+        expect.assertions(1);
         await locationMarkerService.destroy(locationMarker.id);
         await locationMarkerService.findOne(locationMarker.id).catch(e =>
             expect(e).toEqual(new NotFoundException(locationMarker.id))
         );
-
-        // listing-item-template
-        await listingItemTemplateService.destroy(listingItemTemplate.id);
-        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
-        );
-
-        // itemLocation
-        await itemLocationService.findOne(listingItemTemplate.ItemInformation.ItemLocation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.ItemInformation.ItemLocation.id))
-        );
-
-        // item-information
-        await itemInformationService.findOne(listingItemTemplate.ItemInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.ItemInformation.id))
-        );
-
     });
 
 });
