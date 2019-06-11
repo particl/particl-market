@@ -184,6 +184,18 @@ describe('OrderItemStatus', () => {
 */
     }, 600000); // timeout to 600s
 
+    test('Should get the updated ListingItemTemplate with the hash', async () => {
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateSellerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateSellerNode = res.getBody()['result'];
+
+        expect(listingItemTemplateSellerNode.hash).toBeDefined();
+        log.debug('listingItemTemplateSellerNode.hash: ', listingItemTemplateSellerNode.hash);
+
+    });
 
     test('Should have received ListingItem (MPA_LISTING_ADD) on SELLER node, ListingItem is created', async () => {
 
