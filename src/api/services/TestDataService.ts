@@ -475,7 +475,7 @@ export class TestDataService {
         if (generateParams.generateListingItem) {
 
             // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
+            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : '';
 
             this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
 
