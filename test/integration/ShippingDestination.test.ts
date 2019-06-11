@@ -148,34 +148,10 @@ describe('ShippingDestination', () => {
     });
 
     test('Should delete the ShippingDestination related to ListingItemTemplate', async () => {
-        expect.assertions(5);
+        expect.assertions(1);
         await shippingDestinationService.destroy(shippingDestination.id);
         await shippingDestinationService.findOne(shippingDestination.id).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingDestination.id))
-        );
-
-        // delete listing-item-template
-        await listingItemTemplateService.destroy(listingItemTemplate.id);
-        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
-        );
-
-        const ItemInformation = listingItemTemplate.ItemInformation;
-        await itemInformationService.findOne(ItemInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(ItemInformation.id))
-        );
-
-        const createdItemLocation = ItemInformation.ItemLocation;
-        const createdLocationMarker = ItemInformation.ItemLocation.LocationMarker;
-
-        // itemLocation
-        await itemLocationService.findOne(createdItemLocation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdItemLocation.id))
-        );
-
-        // LocationMarker
-        await locationMarkerService.findOne(createdLocationMarker.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdLocationMarker.id))
         );
     });
 

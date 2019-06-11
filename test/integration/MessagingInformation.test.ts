@@ -178,12 +178,6 @@ describe('MessagingInformation', () => {
         await messagingInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
-
-        // delete listing-item-template
-        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
-        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
-        );
     });
 
 });
