@@ -70,7 +70,7 @@ describe('ItemLocationRemoveCommand', () => {
         const fakeId = 'not a number';
         const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, fakeId]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
