@@ -104,7 +104,7 @@ describe('VotePostCommand', () => {
             proposal.ProposalOptions[0].optionId
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
@@ -119,7 +119,7 @@ describe('VotePostCommand', () => {
             proposal.ProposalOptions[0].optionId
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
 
     });
@@ -135,7 +135,7 @@ describe('VotePostCommand', () => {
             invalidProposalOptionId
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('proposalOptionId', 'number').getMessage());
     });
 

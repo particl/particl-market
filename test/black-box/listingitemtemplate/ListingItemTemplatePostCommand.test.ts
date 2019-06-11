@@ -105,7 +105,6 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('desc: ' + listingItemTemplate.ItemInformation.shortDescription);
         log.debug('category: ' + listingItemTemplate.ItemInformation.ItemCategory.id + ', '
             + listingItemTemplate.ItemInformation.ItemCategory.name);
-        log.debug('hash: ' + listingItemTemplate.hash);
         log.debug('==============================================================================================');
 
     });
@@ -117,6 +116,9 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         listingItemTemplate = res.getBody()['result'];
+
+        expect(listingItemTemplate.hash).toBeDefined();
+
     });
 
     test('Should receive MPA_LISTING_ADD message on the same sellerNode, create a ListingItem and match with the existing ListingItemTemplate', async () => {
