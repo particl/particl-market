@@ -71,14 +71,6 @@ describe('ListingItemSearchCommand', () => {
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
         expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
 
-        // TODO: generate hash and expect template hash created on the server matches what we create here
-        // expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
-
-        // expect the item hash generated at the same time as template, matches with the templates one
-        // log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
-        // log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
-        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
-
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
