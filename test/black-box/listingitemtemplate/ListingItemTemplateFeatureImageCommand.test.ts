@@ -130,21 +130,21 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
 
     test('Should fail to set featured because listingItemTemplateId is of invalid type', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
-            'invalid type',
+            'INVALID',
             listingItemTemplate.ItemInformation.ItemImages[0].id
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Should fail to set featured because itemImageId is of invalid type', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id,
-            'invalid type'
+            'INVALID'
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
 
