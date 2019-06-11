@@ -61,7 +61,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const daysRetention = data.params[3];
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
-        // get the ListingItem market.
+        // get the ListingItem market
         const market: resources.Market = listingItem.Market;
 
         // send from the template profiles address

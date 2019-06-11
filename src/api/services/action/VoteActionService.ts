@@ -159,6 +159,8 @@ export class VoteActionService extends BaseActionService {
         const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
             .then(value => value.toJSON());
 
+        this.log.debug('getCombinedVote(), votes:', JSON.stringify(votes, null, 2));
+
         if (_.isEmpty(votes)) {
             throw new MessageException('No Votes found.');
         }

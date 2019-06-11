@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';
+import { SmsgSendResponse } from '../../src/api/responses/SmsgSendResponse';
 
 describe('Happy Vote Flow', () => {
 
@@ -30,7 +30,6 @@ describe('Happy Vote Flow', () => {
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let profileNode1: resources.Profile;
     let profileNode2: resources.Profile;
