@@ -100,6 +100,7 @@ export class ProposalResultService {
      * check whether ListingItem should be removed or not based on ProposalResult
      *
      * @param {"resources".ProposalResult} proposalResult
+     * @param listingItem
      * @returns {Promise<boolean>}
      */
     public async shouldRemoveListingItem(proposalResult: resources.ProposalResult, listingItem: resources.ListingItem): Promise<boolean> {
@@ -125,12 +126,12 @@ export class ProposalResultService {
         const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const networkSupply = blockchainInfo.moneysupply * 100000000;
 
-        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 10; // todo: configurable
+        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 0.1; // todo: configurable
         if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
-            this.log.debug('Votes for ListingItem removal exceed 10%');
+            this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '%');
             return true;
         }
-        this.log.debug('ListingItem should NOT be destroyed');
+        // this.log.debug('ListingItem should NOT be destroyed');
         return false;
     }
 

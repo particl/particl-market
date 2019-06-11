@@ -56,17 +56,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
 
-        // If countryCode is country, convert to countryCode.
-        // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[8];
-        countryCode = ShippingCountries.convertAndValidate(countryCode);
-
-        // Validate ZIP code
-        const zipCodeStr = data.params[9];
-        if (!ShippingZips.validate(countryCode, zipCodeStr)) {
-            throw new ZipCodeNotFoundException(zipCodeStr);
-        }
-
+        // TODO: type is ignored
         return this.addressService.update(data.params[0], {
             title: data.params[1],
             firstName: data.params[2],
@@ -75,74 +65,91 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
             addressLine2: data.params[5],
             city: data.params[6],
             state: data.params[7],
-            country: countryCode,
-            zipCode: zipCodeStr
+            country: data.params[8],
+            zipCode: data.params[9]
         } as AddressUpdateRequest);
     }
 
+    /**
+     *
+     * data.params[]:
+     *  [0]: addressId
+     *  [1]: title
+     *  [2]: firstName
+     *  [3]: lastName
+     *  [4]: addressLine1
+     *  [5]: addressLine2
+     *  [6]: city
+     *  [7]: state
+     *  [8]: country/countryCode
+     *  [9]: zipCode
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('addressId');
-        }
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('addressId');
-        }
-        if (data.params.length < 2) {
+        } else if (data.params.length < 2) {
             throw new MissingParamException('title');
-        }
-        if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('title');
-        }
-        if (data.params.length < 3) {
+        } else if (data.params.length < 3) {
             throw new MissingParamException('firstName');
-        }
-        if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('firstName');
-        }
-        if (data.params.length < 4) {
+        } else if (data.params.length < 4) {
             throw new MissingParamException('lastName');
-        }
-        if (typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('lastName');
-        }
-        if (data.params.length < 5) {
+        } else if (data.params.length < 5) {
             throw new MissingParamException('addressLine1');
-        }
-        if (typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('addressLine1');
-        }
-        if (data.params.length < 6) {
+        } else if (data.params.length < 6) {
             throw new MissingParamException('addressLine2');
-        }
-        if (typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('addressLine2');
-        }
-        if (data.params.length < 7) {
+        } else if (data.params.length < 7) {
             throw new MissingParamException('city');
-        }
-        if (typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('city');
-        }
-        if (data.params.length < 8) {
+        } else if (data.params.length < 8) {
             throw new MissingParamException('state');
-        }
-        if (typeof data.params[7] !== 'string' && data.params[7] !== '') {
-            throw new InvalidParamException('state');
-        }
-        if (data.params.length < 9) {
+        } else if (data.params.length < 9) {
             throw new MissingParamException('country');
-        }
-        if (typeof data.params[8] !== 'string') {
-            throw new InvalidParamException('country');
-        }
-        if (data.params.length < 10) {
+        } else if (data.params.length < 10) {
             throw new MissingParamException('zipCode');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('addressId');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('title');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('firstName');
+        } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('lastName');
+        } else if (typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('addressLine1');
+        } else if (typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('addressLine2');
+        } else if (typeof data.params[6] !== 'string') {
+            throw new InvalidParamException('city');
+        } else if (typeof data.params[7] !== 'string' && data.params[7] !== '') {
+            throw new InvalidParamException('state');
+        } else if (typeof data.params[8] !== 'string') {
+            throw new InvalidParamException('country');
+        } else if (typeof data.params[9] !== 'string') {
+            throw new InvalidParamException('zipCode');
+        }
+
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        let countryCode: string = data.params[8];
+        countryCode = ShippingCountries.convertAndValidate(countryCode);
+        data.params[8] = countryCode;
+
+        // Validate ZIP code
+        const zipCodeStr = data.params[9];
+        if (!ShippingZips.validate(countryCode, zipCodeStr)) {
+            throw new ZipCodeNotFoundException(zipCodeStr);
+        }
+
+        // TODO: type is ignored
         if (data.params[10]) {
             const type = data.params[10];
             const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_ORDER, AddressType.SHIPPING_OWN];
             if (type && !_.includes(validTypes, type)) {
-                throw new InvalidParamException('zipCode');
+                throw new InvalidParamException('type');
             }
         }
         return data;

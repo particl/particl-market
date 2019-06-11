@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
@@ -10,7 +11,6 @@ import { AddressType } from '../../../src/api/enums/AddressType';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('AddressAddCommand', () => {
