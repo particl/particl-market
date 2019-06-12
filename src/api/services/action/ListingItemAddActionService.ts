@@ -16,19 +16,15 @@ import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
-import { EscrowType, ompVersion } from 'omp-lib/dist/omp';
+import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
-import { CryptoAddress, CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
-import { CoreRpcService } from '../CoreRpcService';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class ListingItemAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
 
@@ -47,31 +43,10 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
-        const listingItemTemplate: resources.ListingItemTemplate | resources.ListingItem = params.listingItem;
-
-        // generate paymentAddress for the item
-        let cryptoAddress: CryptoAddress;
-        switch (listingItemTemplate.PaymentInformation.Escrow.type) {
-            case EscrowType.MULTISIG:
-                const address = await this.coreRpcService.getNewAddress();
-                cryptoAddress = {
-                    address,
-                    type: CryptoAddressType.NORMAL
-                };
-                break;
-            case EscrowType.MAD_CT:
-                cryptoAddress = await this.coreRpcService.getNewStealthAddress();
-                break;
-            case EscrowType.MAD:
-            case EscrowType.FE:
-            default:
-                throw new NotImplementedException();
-        }
-
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
             listingItem: params.listingItem,
-            cryptoAddress
+            // cryptoAddress, we could override the payment address here
         } as ListingItemAddMessageCreateParams);
 
         // hash should not be saved until just before the ListingItemTemplate is posted,

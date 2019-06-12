@@ -21,9 +21,16 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableListingMessageConfig} from 'omp-lib/dist/hasher/config/listingitemadd';
-import {HashableListingItemTemplateConfig} from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { CryptoAddress, CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
+import {CryptocurrencyAddressCreateRequest} from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import {IsEnum, IsNotEmpty} from 'class-validator';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -31,8 +38,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_POST);
@@ -118,8 +127,33 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => value.toJSON()); // throws if not found
+
+        // make sure the ListingItemTemplate has a paymentAddress and generate and update it, if it doesn't
+        // paymentAddress is part of the hash, so it needs to be created before the hash (unless it already exists)
+
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
+            throw new ModelNotFoundException('ItemPrice');
+        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+
+            listingItemTemplate = await this.generateCryptoAddressForEscrowType(listingItemTemplate.PaymentInformation.Escrow.type)
+                .then( async paymentAddress => {
+                    // create new CryptocurrencyAddress related to the ListingItemTemplate
+                    return await this.cryptocurrencyAddressService.create({
+                        profile_id: listingItemTemplate.Profile.id,
+                        type: paymentAddress.type,
+                        address: paymentAddress.address
+                    } as CryptocurrencyAddressCreateRequest)
+                        .then(async cryptocurrencyAddressModel => {
+                            // fetch updated ListingItemTemplate
+                            return await this.listingItemTemplateService.findOne(data.params[0])
+                                .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
+                        });
+                });
+        }
 
         const market: resources.Market = await this.marketService.findOne(data.params[2])
             .then(value => value.toJSON()); // throws if not found
@@ -155,4 +189,29 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     public example(): string {
         return 'template ' + this.getName() + ' 1 1 false';
     }
+
+    private async generateCryptoAddressForEscrowType(type: EscrowType): Promise<CryptoAddress> {
+
+        // generate paymentAddress for the item
+        let cryptoAddress: CryptoAddress;
+        switch (type) {
+            case EscrowType.MULTISIG:
+                const address = await this.coreRpcService.getNewAddress();
+                cryptoAddress = {
+                    address,
+                    type: CryptoAddressType.NORMAL
+                };
+                break;
+            case EscrowType.MAD_CT:
+                cryptoAddress = await this.coreRpcService.getNewStealthAddress();
+                break;
+            case EscrowType.MAD:
+            case EscrowType.FE:
+            default:
+                throw new NotImplementedException();
+        }
+
+        return cryptoAddress;
+    }
+
 }

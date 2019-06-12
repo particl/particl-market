@@ -229,11 +229,12 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     // todo: missing support for multiple payment currencies, the MP currently has just one ItemPrice
     private async getMessagePaymentOptions(itemPrice: resources.ItemPrice, cryptoAddress: CryptoAddress): Promise<PaymentOption[]> {
 
-        let address: CryptoAddress = cryptoAddress;
+        let address: CryptoAddress;
 
-        // TODO: currently, this is propably always empty, cryptoAddress is generated when template is posted, not when created
-        // overriding if addres is set on the ListingItemTemplate
-        if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
+        if (!_.isEmpty(cryptoAddress)) {
+            // cryptoAddress can be used to override the one set on the template
+            address = cryptoAddress;
+        } else {
             address = {
                 type: itemPrice.CryptocurrencyAddress.type,
                 address: itemPrice.CryptocurrencyAddress.address
