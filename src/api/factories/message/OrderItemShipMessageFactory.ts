@@ -12,6 +12,8 @@ import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidM
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
+import {OrderItemShipMessageCreateParams} from '../../requests/message/OrderItemShipMessageCreateParams';
+import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
 
 export class OrderItemShipMessageFactory implements MessageFactoryInterface {
 
@@ -29,18 +31,22 @@ export class OrderItemShipMessageFactory implements MessageFactoryInterface {
      *      bidHash: string
      * @returns {Promise<OrderItemShipMessage>}
      */
-    public async get(params: EscrowCompleteMessageCreateParams): Promise<OrderItemShipMessage> {
+    public async get(params: OrderItemShipMessageCreateParams): Promise<OrderItemShipMessage> {
         const message = {
             type: MPActionExtended.MPA_SHIP,
             generated: +new Date().getTime(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
-            objects: [] as KVS[]
+            bid: params.bidHash                 // hash of MPA_BID
         } as OrderItemShipMessage;
 
-        // todo: use previous message hashes in the hash generation?
+        if (params.memo) {
+            message.objects = [] as KVS[];
+            message.objects.push({
+                key: ActionMessageObjects.SHIPPING_MEMO,
+                value: params.memo
+            } as KVS);
+        }
 
-        message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;
     }
 
