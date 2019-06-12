@@ -72,8 +72,10 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         // depending on escrowType, create the address for the payment
         const escrowType: EscrowType = data.params[10];
-        let cryptoAddress: CryptoAddress;
+/*
+    TODO: omp-lib will generate cryptoAddress for now as this will require unlocked wallet
 
+        let cryptoAddress: CryptoAddress;
         switch (escrowType) {
             case EscrowType.MULTISIG:
                 const address = await this.coreRpcService.getNewAddress();
@@ -90,7 +92,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             default:
                 throw new NotImplementedException();
         }
-
+*/
         const createRequest: ListingItemTemplateCreateRequest = await this.listingItemTemplateFactory.get({
                 profileId: profile.id,
                 title: data.params[1],
@@ -105,9 +107,9 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 escrowType: data.params[10],
                 buyerRatio: data.params[11],
                 sellerRatio: data.params[12],
-                parentListingItemTemplateId: data.params[13],
-                paymentAddress: cryptoAddress.address,
-                paymentAddressType: cryptoAddress.type
+                parentListingItemTemplateId: data.params[13]
+                // paymentAddress: cryptoAddress.address,
+                // paymentAddressType: cryptoAddress.type
             } as ListingItemTemplateCreateParams);
 
         return await this.listingItemTemplateService.create(createRequest);
