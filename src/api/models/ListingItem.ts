@@ -206,7 +206,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
                 }
-                qb.groupBy('listing_items.id');
+                // qb.groupBy('listing_items.id');
 
             })
             .orderBy('updated_at', options.order)
