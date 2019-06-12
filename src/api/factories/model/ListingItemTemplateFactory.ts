@@ -87,7 +87,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
             paymentInformation: {
                 type: params.saleType,
                 itemPrice: {
-                    // TODO: omp-lib will generate cryptocurrencyAddress for now as this will require unlocked wallet
+                    // NOTE: we will generate cryptocurrencyAddress just before posting the message
                     // cryptocurrencyAddress: {
                     //     profile_id: params.profileId,
                     //     type: params.paymentAddressType,

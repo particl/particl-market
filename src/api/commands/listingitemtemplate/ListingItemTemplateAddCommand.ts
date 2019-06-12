@@ -14,15 +14,13 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { CryptoAddress, CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import { CoreRpcService } from '../../services/CoreRpcService';
 import { ProfileService } from '../../services/model/ProfileService';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -33,7 +31,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemTemplateFactory) public listingItemTemplateFactory: ListingItemTemplateFactory
     ) {
         super(Commands.TEMPLATE_ADD);

@@ -54,7 +54,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
-        const payment = await this.getMessagePayment(params.listingItem.PaymentInformation);
+        const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
 
@@ -194,9 +194,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
 
-    private async getMessagePayment(paymentInformation: resources.PaymentInformation): Promise<PaymentInfo> {
+    private async getMessagePayment(paymentInformation: resources.PaymentInformation, cryptoAddress: CryptoAddress): Promise<PaymentInfo> {
         const escrow = await this.getMessageEscrow(paymentInformation.Escrow);
-        const options = await this.getMessagePaymentOptions(paymentInformation.ItemPrice);
+        const options = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
         switch (paymentInformation.type) {
             case SaleType.SALE:
                 return {
@@ -227,9 +227,12 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
     // todo: missing support for multiple payment currencies, the MP currently has just one ItemPrice
-    private async getMessagePaymentOptions(itemPrice: resources.ItemPrice): Promise<PaymentOption[]> {
+    private async getMessagePaymentOptions(itemPrice: resources.ItemPrice, cryptoAddress: CryptoAddress): Promise<PaymentOption[]> {
 
-        let address;
+        let address: CryptoAddress = cryptoAddress;
+
+        // TODO: currently, this is propably always empty, cryptoAddress is generated when template is posted, not when created
+        // overriding if addres is set on the ListingItemTemplate
         if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
             address = {
                 type: itemPrice.CryptocurrencyAddress.type,
