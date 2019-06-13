@@ -31,7 +31,7 @@ import { MessageSize } from '../../responses/MessageSize';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ImageFactory } from '../../factories/ImageFactory';
 import { ItemImage } from '../../models/ItemImage';
-import { ompVersion } from 'omp-lib/dist/omp';
+import {EscrowType, ompVersion} from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ItemInformationService } from './ItemInformationService';
@@ -42,6 +42,7 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import {CryptoAddressType} from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemTemplateService {
 
@@ -364,7 +365,20 @@ export class ListingItemTemplateService {
      */
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
 
-        // TODO: why is this method here? sounds like it should be in the actionservice
+        // TODO: move to actionservice?
+
+        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
+        // add some data to get a more realistic result
+        if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+            if (EscrowType.MAD_CT === listingItemTemplate.PaymentInformation.Escrow.type) {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address
+                    = 'TetbeNoZDWJ6mMzMBy745BXQ84KntsNch58GWz53cqG6X5uupqNojqcoC7vmEguRPfC5QkpJsdbBnEcdXMLgJG2dAtoAinSdKNFWtB';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.STEALTH;
+            } else {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address = 'pmnK6L2iZx9zLA6GAmd3BUWq6yKa53Lb8H';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
+            }
+        }
 
         // convert the template to message
         const action = await this.listingItemAddMessageFactory.get({
