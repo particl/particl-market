@@ -298,14 +298,11 @@ export class ListingItemTemplateService {
         const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true)
             .then(value => value.toJSON());
 
-        // ListingItemTemplates which dont have a hash, related ListingItems or ChildListingItems can be modified
-        this.log.debug('listingItemTemplate.hash: ' + listingItemTemplate.hash);
-        this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
-        this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
+        // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
+        // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
+        // this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
 
-        const isModifiable = (_.isEmpty(listingItemTemplate.hash)
-            && _.isEmpty(listingItemTemplate.ListingItems)
-            && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+        const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
 
         this.log.debug('isModifiable: ' + isModifiable);
         return isModifiable;
