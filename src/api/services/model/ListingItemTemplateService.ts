@@ -359,24 +359,10 @@ export class ListingItemTemplateService {
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
      * @param listingItemTemplate
+     * @param estimateFee
      */
+    // TODO: move to actionservice?
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
-
-        // TODO: move to actionservice?
-
-        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
-        // add some data to get a more realistic result
-        if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-            listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress = {} as resources.CryptocurrencyAddress;
-            if (EscrowType.MAD_CT === listingItemTemplate.PaymentInformation.Escrow.type) {
-                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address
-                    = 'TetbeNoZDWJ6mMzMBy745BXQ84KntsNch58GWz53cqG6X5uupqNojqcoC7vmEguRPfC5QkpJsdbBnEcdXMLgJG2dAtoAinSdKNFWtB';
-                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.STEALTH;
-            } else {
-                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address = 'pmnK6L2iZx9zLA6GAmd3BUWq6yKa53Lb8H';
-                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
-            }
-        }
 
         // convert the template to message
         const action = await this.listingItemAddMessageFactory.get({

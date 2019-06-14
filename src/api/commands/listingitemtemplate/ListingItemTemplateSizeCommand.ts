@@ -16,6 +16,8 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import {CryptoAddressType} from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -41,6 +43,23 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => value.toJSON());
+
+        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
+        // add some data to get a more realistic result
+        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
+            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+            listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress = {} as resources.CryptocurrencyAddress;
+
+            if (EscrowType.MAD_CT === listingItemTemplate.PaymentInformation.Escrow.type) {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address
+                    = 'TetbeNoZDWJ6mMzMBy745BXQ84KntsNch58GWz53cqG6X5uupqNojqcoC7vmEguRPfC5QkpJsdbBnEcdXMLgJG2dAtoAinSdKNFWtB';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.STEALTH;
+            } else {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address = 'pmnK6L2iZx9zLA6GAmd3BUWq6yKa53Lb8H';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
+            }
+        }
+
         return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
     }
 

@@ -76,9 +76,12 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const toAddress = market.address;
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
-        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-        listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
-            .then(value => value.toJSON());
+        if (!estimateFee) {
+            // no need to update if we are just estimating
+            const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
+                .then(value => value.toJSON());
+        }
 
         this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
@@ -140,27 +143,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new ModelNotFoundException('ItemPrice');
         }
 
+        // update the paymentAddress in case it's not generated yet
         if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
             || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-
-            listingItemTemplate = await this.generateCryptoAddressForEscrowType(listingItemTemplate.PaymentInformation.Escrow.type)
-                .then( async paymentAddress => {
-                    // create new CryptocurrencyAddress related to the ListingItemTemplate
-                    return await this.cryptocurrencyAddressService.create({
-                        profile_id: listingItemTemplate.Profile.id,
-                        type: paymentAddress.type,
-                        address: paymentAddress.address
-                    } as CryptocurrencyAddressCreateRequest)
-                        .then(async cryptocurrencyAddressModel => {
-                            // update relation to the created CryptocurrencyAddress
-                            const cryptocurrencyAddress: resources.CryptocurrencyAddress = cryptocurrencyAddressModel.toJSON();
-                            await this.itemPriceService.updatePaymentAddress(listingItemTemplate.PaymentInformation.ItemPrice.id, cryptocurrencyAddress.id);
-
-                            // finally, fetch updated ListingItemTemplate
-                            return await this.listingItemTemplateService.findOne(data.params[0])
-                                .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
-                        });
-                });
+            listingItemTemplate = await this.updatePaymentAddress(listingItemTemplate);
         }
 
         const market: resources.Market = await this.marketService.findOne(data.params[2])
@@ -220,6 +206,27 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         return cryptoAddress;
+    }
+
+    private async updatePaymentAddress(listingItemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+        return await this.generateCryptoAddressForEscrowType(listingItemTemplate.PaymentInformation.Escrow.type)
+            .then( async paymentAddress => {
+                // create new CryptocurrencyAddress related to the ListingItemTemplate
+                return await this.cryptocurrencyAddressService.create({
+                    profile_id: listingItemTemplate.Profile.id,
+                    type: paymentAddress.type,
+                    address: paymentAddress.address
+                } as CryptocurrencyAddressCreateRequest)
+                    .then(async cryptocurrencyAddressModel => {
+                        // update relation to the created CryptocurrencyAddress
+                        const cryptocurrencyAddress: resources.CryptocurrencyAddress = cryptocurrencyAddressModel.toJSON();
+                        await this.itemPriceService.updatePaymentAddress(listingItemTemplate.PaymentInformation.ItemPrice.id, cryptocurrencyAddress.id);
+
+                        // finally, fetch updated ListingItemTemplate
+                        return await this.listingItemTemplateService.findOne(listingItemTemplate.id)
+                            .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
+                    });
+            });
     }
 
 }
