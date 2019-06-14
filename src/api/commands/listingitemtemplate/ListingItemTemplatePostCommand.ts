@@ -137,7 +137,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new ModelNotFoundException('PaymentInformation');
         } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
             throw new ModelNotFoundException('ItemPrice');
-        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+        }
+
+        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
+            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
 
             listingItemTemplate = await this.generateCryptoAddressForEscrowType(listingItemTemplate.PaymentInformation.Escrow.type)
                 .then( async paymentAddress => {
