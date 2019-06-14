@@ -29,8 +29,8 @@ import { NotImplementedException } from '../../exceptions/NotImplementedExceptio
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
-import {CryptocurrencyAddressCreateRequest} from '../../requests/model/CryptocurrencyAddressCreateRequest';
-import {IsEnum, IsNotEmpty} from 'class-validator';
+import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
+import { ItemPriceService } from '../../services/model/ItemPriceService';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -41,6 +41,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemPriceService) public itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
@@ -151,7 +152,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                         address: paymentAddress.address
                     } as CryptocurrencyAddressCreateRequest)
                         .then(async cryptocurrencyAddressModel => {
-                            // fetch updated ListingItemTemplate
+                            // update relation to the created CryptocurrencyAddress
+                            const cryptocurrencyAddress: resources.CryptocurrencyAddress = cryptocurrencyAddressModel.toJSON();
+                            await this.itemPriceService.updatePaymentAddress(listingItemTemplate.PaymentInformation.ItemPrice.id, cryptocurrencyAddress.id);
+
+                            // finally, fetch updated ListingItemTemplate
                             return await this.listingItemTemplateService.findOne(data.params[0])
                                 .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
                         });

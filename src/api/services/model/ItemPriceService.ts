@@ -20,6 +20,7 @@ import { CryptocurrencyAddressCreateRequest } from '../../requests/model/Cryptoc
 import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
+import {ListingItem} from '../../models/ListingItem';
 
 export class ItemPriceService {
 
@@ -112,6 +113,7 @@ export class ItemPriceService {
         // find related CryptocurrencyAddress
         let relatedCryptocurrencyAddress = updatedItemPrice.related('CryptocurrencyAddress').toJSON() || {};
 
+        // TODO: this doesnt work!!! there is no item_price_id
         if (!_.isEmpty(relatedCryptocurrencyAddress)) {
             const cryptocurrencyAddressId = relatedCryptocurrencyAddress.id;
             relatedCryptocurrencyAddress = body.cryptocurrencyAddress;
@@ -137,4 +139,12 @@ export class ItemPriceService {
             await this.cryptocurrencyAddressService.destroy(relatedCryptocurrencyAddress.Id);
         }
     }
+
+    public async updatePaymentAddress(id: number, paymentAddressId: number): Promise<ItemPrice> {
+        const itemPriceModel: ItemPrice = await this.findOne(id, false);
+        itemPriceModel.set('cryptocurrencyAddressId', paymentAddressId);
+        await this.itemPriceRepo.update(id, itemPriceModel.toJSON());
+        return await this.findOne(id);
+    }
+
 }
