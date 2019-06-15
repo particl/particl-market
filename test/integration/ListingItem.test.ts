@@ -398,7 +398,7 @@ describe('ListingItem', () => {
     }, 600000); // timeout to 600s
 
     test('Should delete the previously updated ListingItem', async () => {
-        expect.assertions(22);
+        expect.assertions(21);
         await listingItemService.destroy(updatedListingItem1.id);
         await expectListingItemWasDeleted(updatedListingItem1);
     });
@@ -447,52 +447,9 @@ describe('ListingItem', () => {
     }, 600000); // timeout to 600s
 
     test('Should delete the ListingItem with ItemInformation and PaymentInformation', async () => {
-        expect.assertions(12);
+        expect.assertions(11);
         await listingItemService.destroy(createdListingItem2.id);
         await expectListingItemWasDeleted(createdListingItem2);
-    });
-
-    test('Should create ListingItem with relation to ListingItemTemplate', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-
-        // create ListingItemTemplate
-        const listingItemTemplateCreateRequest = {
-            profile_id: defaultProfile.id,
-            itemInformation: testDataToSave.itemInformation,
-            paymentInformation: testDataToSave.paymentInformation,
-            messagingInformation: testDataToSave.messagingInformation,
-            listingItemObjects: testDataToSave.listingItemObjects,
-            generatedAt: +new Date().getTime()
-        } as ListingItemTemplateCreateRequest;
-
-        listingItemTemplateCreateRequest.hash = hash(listingItemTemplateCreateRequest);     // TODO: FIX
-
-        log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
-        const listingItemTemplate: ListingItemTemplate = await listingItemTemplateService.create(listingItemTemplateCreateRequest);
-
-        // create ListingItem with relation to ListingItemTemplate
-        testDataToSave.listing_item_template_id = listingItemTemplate.Id;
-        testDataToSave.market_id = defaultMarket.id;
-        testDataToSave.seller = defaultProfile.address;
-        testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = new Date().getTime();
-        testDataToSave.expiredAt = new Date().getTime();
-        testDataToSave.receivedAt = new Date().getTime();
-        testDataToSave.generatedAt = new Date().getTime();
-        testDataToSave.hash = listingItemTemplateCreateRequest.hash;    // TODO: FIX
-
-        log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem3 = listingItemModel.toJSON();
-
-        expectListingItemFromCreateRequest(createdListingItem3, testDataToSave);
-        expect(createdListingItem3.ListingItemTemplate.id).toBe(listingItemTemplate.Id);
-    }, 600000); // timeout to 600s
-
-    test('Should delete ListingItem with relation to ListingItemTemplate', async () => {
-        expect.assertions(22);
-        await listingItemService.destroy(createdListingItem3.id);
-        await expectListingItemWasDeleted(createdListingItem3);
     });
 
     test('Should delete expired ListingItem', async () => {

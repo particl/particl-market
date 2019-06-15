@@ -173,7 +173,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should delete the MessagingInformation', async () => {
-        expect.assertions(2);
+        expect.assertions(1);
         await messagingInformationService.destroy(createdId);
         await messagingInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
