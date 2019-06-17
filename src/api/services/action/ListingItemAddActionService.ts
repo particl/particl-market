@@ -45,7 +45,7 @@ export class ListingItemAddActionService extends BaseActionService {
 
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
-            listingItem: params.listingItem,
+            listingItem: params.listingItem
             // cryptoAddress, we could override the payment address here
         } as ListingItemAddMessageCreateParams);
 
