@@ -63,7 +63,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             smsgMessageCreateRequests.push(smsgMessageCreateRequest);
         }
 
-        // this.log.info('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
+        this.log.debug('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
@@ -90,6 +90,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                     }
                 }
             });
+
+        return;
     }
 
     public stop(): void {

@@ -12,7 +12,6 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ProposalCategory } from '../enums/ProposalCategory';
-import {Vote} from '../models/Vote';
 
 export class ProposalRepository {
 

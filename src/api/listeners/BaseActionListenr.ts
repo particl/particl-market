@@ -92,7 +92,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
      * @returns {Promise<void>}
      */
     public async act(event: MarketplaceMessageEvent): Promise<void> {
-        this.log.info('Received event: ', event.smsgMessage.type/*JSON.stringify(event, null, 2)*/);
+        this.log.info('Received event: ', event.smsgMessage.type);
 
         if (BaseActionListenr.validate(event.marketplaceMessage)) {
             await this.onEvent(event)

@@ -94,13 +94,14 @@ export class ServerStartedListener implements interfaces.Listener {
                     // seed the default Profile
                     await this.defaultProfileService.seedDefaultProfile();
 
-                    // start expiredListingItemProcessor
-                    this.expiredListingItemProcessor.scheduleProcess();
-                    this.proposalResultProcessor.scheduleProcess();
+                    // start message polling and other stuff, unless we're running integration tests
+                    if (process.env.NODE_ENV !== 'test') {
+                        this.expiredListingItemProcessor.scheduleProcess();
+                        this.proposalResultProcessor.scheduleProcess();
+                        this.coreMessageProcessor.schedulePoll();
+                        this.messageProcessor.schedulePoll();
+                    }
 
-                    // start message polling, unless we're running tests
-                    this.coreMessageProcessor.schedulePoll();
-                    this.messageProcessor.schedulePoll();
                     this.interval = 10000;
                 } else {
                     this.log.error('wallet not initialized yet, retrying in ' + this.interval + 'ms.');

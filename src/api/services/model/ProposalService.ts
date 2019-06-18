@@ -147,6 +147,16 @@ export class ProposalService {
         return updatedProposal;
     }
 
+    public async updateTimes(id: number, timeStart: number, postedAt: number, receivedAt: number, expiredAt: number): Promise<Proposal> {
+        const proposal = await this.findOne(id, false);
+        proposal.set('timeStart', timeStart);
+        proposal.set('postedAt', postedAt);
+        proposal.set('receivedAt', receivedAt);
+        proposal.set('expiredAt', expiredAt);
+        await this.proposalRepo.update(id, proposal.toJSON());
+        return await this.findOne(id);
+    }
+
     public async destroy(id: number): Promise<void> {
         await this.proposalRepo.destroy(id);
     }

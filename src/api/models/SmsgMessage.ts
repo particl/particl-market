@@ -2,11 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Bookshelf as Database, Bookshelf } from '../../config/Database';
-import { Collection, Model } from 'bookshelf';
-import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import {Bookshelf as Database, Bookshelf} from '../../config/Database';
+import {Collection, Model} from 'bookshelf';
+import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
 import * as _ from 'lodash';
-import { Logger as LoggerType } from '../../core/Logger';
+import {Logger as LoggerType} from '../../core/Logger';
+import {ActionDirection} from '../enums/ActionDirection';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -74,13 +75,15 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
         }
     }
 
-    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<SmsgMessage> {
+    public static async fetchByMsgIdAndDirection(value: string,
+                                                 direction: ActionDirection = ActionDirection.INCOMING,
+                                                 withRelated: boolean = true): Promise<SmsgMessage> {
         if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch({
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch();
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch();
         }
     }
 

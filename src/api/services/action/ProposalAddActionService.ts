@@ -201,8 +201,6 @@ export class ProposalAddActionService extends BaseActionService {
         this.log.debug('processProposal(), proposalAddMessage.hash: ', proposalAddMessage.hash);
         this.log.debug('processProposal(), proposalRequest.hash: ', proposalRequest.hash);
 
-        // this.log.debug('processProposal(), proposalRequest: ', JSON.stringify(proposalRequest, null, 2));
-
         let proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
             .then(value => value.toJSON())
             .catch(async reason => {
@@ -223,10 +221,16 @@ export class ProposalAddActionService extends BaseActionService {
                 return await this.proposalService.findOne(createdProposal.id).then(value => value.toJSON());
             });
 
-        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER/*|| (proposalRequest.postedAt < proposal.postedAt)*/) {
+        // this.log.debug('processProposal(), proposal: ', JSON.stringify(proposal, null, 2));
+        // this.log.debug('processProposal(), proposalRequest: ', JSON.stringify(proposalRequest, null, 2));
+        // this.log.debug('processProposal(), Number.MAX_SAFE_INTEGER: ', Number.MAX_SAFE_INTEGER);
+        // this.log.debug('processProposal(), proposalRequest.postedAt: ', proposalRequest.postedAt);
+
+        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER) {
             // means processProposal was called from onEvent() and we should update the Proposal data
-            proposal = await this.proposalService.update(proposal.id, proposalRequest).then(value => value.toJSON());
-            // this.log.debug('processProposal(), proposal updated');
+            proposal = await this.proposalService.updateTimes(proposal.id, proposalRequest.timeStart, proposalRequest.postedAt, proposalRequest.receivedAt,
+                proposalRequest.expiredAt).then(value => value.toJSON());
+            this.log.debug('processProposal(), proposal updated');
         } else {
             // called from send(), we already created the Proposal so nothing else needs to be done
         }

@@ -24,7 +24,7 @@
     "test:ui": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui -i",
     "test:ui:pretty": "npm run test:ui -- --verbose",
     "test:ui:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST -i",
-    "test:runtest": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" -i --forceExit",
+    "test:runtest": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" -i --forceExit --verbose",
     "test:integration": "npm run test:runtest -- --testPathPattern=integration",
     "test:integration:pretty": "npm run test:integration -- --verbose",
     "test:integration:single": "npm run test:runtest -- --testPathPattern=integration/$TEST",

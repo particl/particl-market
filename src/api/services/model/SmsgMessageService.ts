@@ -15,6 +15,7 @@ import { SmsgMessageCreateRequest } from '../../requests/model/SmsgMessageCreate
 import { SmsgMessageUpdateRequest } from '../../requests/model/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export class SmsgMessageService {
 
@@ -46,8 +47,8 @@ export class SmsgMessageService {
         return smsgMessage;
     }
 
-    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<SmsgMessage> {
-        const smsgMessage = await this.smsgMessageRepo.findOneByMsgId(msgId, withRelated);
+    public async findOneByMsgId(msgId: string, direction: ActionDirection = ActionDirection.INCOMING, withRelated: boolean = true): Promise<SmsgMessage> {
+        const smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, direction, withRelated);
         if (smsgMessage === null) {
             this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
             throw new NotFoundException(msgId);
@@ -114,44 +115,10 @@ export class SmsgMessageService {
      * @returns {Promise<module:resources.SmsgMessage>}
      */
     public async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<SmsgMessage> {
-
-        // find the existing one without related
         const smsgMessage = await this.findOne(message.id, false);
-
-        smsgMessage.Status = status;
-        // update smsgMessage record
-        const updatedSmsgMessage = await this.smsgMessageRepo.update(message.id, smsgMessage.toJSON());
-
-        // this.log.debug('message:', JSON.stringify(message, null, 2));
-
-        // we need to fetch the bid messages to recreate new messages so not setting text to '' for now...
-        // const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
-/*
-        // todo: we could just set the one field
-        const updateRequest = {
-            type: message.type.toString(),
-            status,
-            direction: message.direction,
-            target: message.target,
-            msgid: message.msgid,
-            version: message.version,
-            read: message.read,
-            paid: message.paid,
-            payloadsize: message.payloadsize,
-            received: message.received,
-            sent: message.sent,
-            expiration: message.expiration,
-            daysretention: message.daysretention,
-            from: message.from,
-            to: message.to,
-            text: message.text
-        } as SmsgMessageUpdateRequest;
-*/
-        // this.log.debug('message:', JSON.stringify(message, null, 2));
-        // this.log.debug('updateRequest:', JSON.stringify(updateRequest, null, 2));
-        // return await this.update(message.id, updateRequest);
-
-        return updatedSmsgMessage;
+        smsgMessage.set('status', status);
+        await this.smsgMessageRepo.update(message.id, smsgMessage.toJSON());
+        return await this.findOne(message.id);
     }
 
     public async destroy(id: number): Promise<void> {

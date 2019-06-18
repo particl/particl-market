@@ -10,6 +10,7 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import {ActionDirection} from '../enums/ActionDirection';
 
 
 export class SmsgMessageRepository {
@@ -36,8 +37,10 @@ export class SmsgMessageRepository {
         return this.SmsgMessageModel.fetchById(id, withRelated);
     }
 
-    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<SmsgMessage> {
-        return this.SmsgMessageModel.fetchByMsgId(msgId, withRelated);
+    public async findOneByMsgIdAndDirection(msgId: string,
+                                            direction: ActionDirection = ActionDirection.INCOMING,
+                                            withRelated: boolean = true): Promise<SmsgMessage> {
+        return this.SmsgMessageModel.fetchByMsgIdAndDirection(msgId, direction, withRelated);
     }
 
     public async create(data: any): Promise<SmsgMessage> {
