@@ -191,4 +191,89 @@ describe('ProposalAddActionListener', () => {
         expect(updatedProposal.FlaggedItem).toEqual({});
     });
 
+    test('Should process the SmsgMessage (PUBLIC_VOTE) sent from another node (Proposal doesnt exist yet)', async () => {
+
+        await proposalService.destroy(proposal.id);
+
+        const marketplaceMessage: MarketplaceMessage = await smsgMessageFactory.getMarketplaceMessage(smsgMessage).then(value => value);
+        const marketplaceEvent: MarketplaceMessageEvent = {
+            smsgMessage,
+            marketplaceMessage
+        };
+
+        await proposalAddActionListener.act(marketplaceEvent);
+
+        // once the smsgmessage is processed:
+        // - SmsgMessage status should have been updated
+        // - Proposals receivedAt, postedAt, expiredAt should have been updated
+        // - no new empty ProposalResult should have been added
+        // - still no FlaggedItem since ProposalCategory is PUBLIC_VOTE
+
+        smsgMessage = await smsgMessageService.findOneByMsgId(smsgMessage.msgid!, ActionDirection.INCOMING).then(value => value.toJSON());
+        log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        expect(smsgMessage.direction).toBe(ActionDirection.INCOMING);
+        expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
+        expect(smsgMessage.status).toBe(SmsgMessageStatus.PROCESSED);
+
+        const updatedProposal: resources.Proposal = await proposalService.findOneByMsgId(smsgMessage.msgid!).then(value => value.toJSON());
+        // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        expect(updatedProposal.msgid).toBe(smsgMessage.msgid);
+        expect(updatedProposal.timeStart).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.postedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.receivedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.expiredAt).not.toBe(Number.MAX_SAFE_INTEGER);
+
+        expect(updatedProposal.ProposalResults.length).toBe(1);
+        expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
+        expect(updatedProposal.FlaggedItem).toEqual({});
+    });
+
+/*
+    test('Should create and post ProposalAddMessage (PUBLIC_VOTE)', async () => {
+
+        const fromAddress = defaultProfile.address;     // send from the default profile address
+        const toAddress = defaultMarket.address;        // send to the default market address
+        const paid = true;                              // paid message
+        const daysRetention = 2;                        // days retention
+        const estimateFee = false;                      // estimate fee
+
+        // create a ProposalAddRequest, sendParams skipping the actual send
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, paid, daysRetention, estimateFee),
+            sender: defaultProfile,
+            market: defaultMarket,
+            category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
+            title: Faker.lorem.words(),
+            description: Faker.lorem.paragraph(),
+            options: ['YES', 'NO', 'MAYBE']
+        } as ProposalAddRequest;
+
+        const smsgSendResponse: SmsgSendResponse = await proposalAddActionService.post(postRequest);
+        log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
+        expect(smsgSendResponse.result).toBe('Sent.');
+        expect(smsgSendResponse.msgid).toBeDefined();
+        expect(smsgSendResponse.txid).toBeDefined();
+        expect(smsgSendResponse.fee).toBeDefined();
+
+        // at this point:
+        // - outgoing SmsgMessage should have been saved and sent
+        // - Proposal updated with the msgid should exist
+        // - first ProposalResult should exist
+        // - there is no FlaggedItem since ProposalCategory is PUBLIC_VOTE
+
+        smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
+        // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
+        expect(smsgMessage.direction).toBe(ActionDirection.OUTGOING);
+        expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
+        expect(smsgMessage.status).toBe(SmsgMessageStatus.SENT);
+
+        proposal = await proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
+        // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        expect(proposal.msgid).toBe(smsgSendResponse.msgid);
+        expect(proposal.ProposalResults.length).toBe(1);
+        expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
+        expect(proposal.FlaggedItem).toEqual({});
+    });
+*/
 });
