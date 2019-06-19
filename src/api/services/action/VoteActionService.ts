@@ -31,7 +31,7 @@ import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreat
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
-import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
+import {RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
@@ -264,17 +264,21 @@ export class VoteActionService extends BaseActionService {
 
         // get the address balance
         const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => value.balance);
+        this.log.debug('voteMessage.voter: ', voteMessage.voter);
+        this.log.debug('balance: ', balance);
 
         // verify that the vote was actually sent by the owner of the address
         const verified = await this.verifyVote(voteMessage);
         if (!verified) {
             throw new MessageException('Received signature failed validation.');
+        } else {
+            this.log.debug('vote verified!');
         }
 
         let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
 
         if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
-            this.log.debug('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
+            this.log.error('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
             // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
             // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
             throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
@@ -284,18 +288,13 @@ export class VoteActionService extends BaseActionService {
         // already checked in send, but doing it again since we call this also from onEvent()
         if (balance > 0) {
 
-            const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash)
-                .then(value => value.toJSON());
+            // find the ProposalOption for which the Vote is for
+            const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
 
-            // find the vote and if it exists, update it, and if not, then create it
+            // find the Vote and if it exists, update it, and if not, then create it
             let vote: resources.Vote | undefined = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
-                // empty .catch() wont work!
-                .catch(reason => this.log.debug('Vote not found: ', reason))
-                .then(value => {
-                    if (value) {
-                        return value.toJSON();
-                    }
-                });
+                .then(value => value.toJSON())
+                .catch(reason => this.log.debug('Vote not found: ', reason));
 
             // todo: createOrUpdateVote
             if (vote) {
@@ -312,10 +311,9 @@ export class VoteActionService extends BaseActionService {
                 this.log.debug('found vote, updating the existing one');
                 this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
                 this.log.debug('proposal.id: ' + proposal.id);
-                vote = await this.voteService.update(vote.id, voteUpdateRequest)
-                    .then(value => {
-                        return value.toJSON();
-                    });
+                this.log.debug('vote.id: ' + vote.id);
+                vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
+                this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
 
             } else {
                 // Vote doesnt exist yet, so we need to create it.
@@ -330,28 +328,26 @@ export class VoteActionService extends BaseActionService {
                     voteMessage,
                     smsgMessage);
 
-                vote = await this.voteService.create(voteCreateRequest)
-                    .then(value => {
-                        return value.toJSON();
-                    });
+                vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
                 this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
             }
 
             if (vote) {
                 // after creating/updating the Vote, recalculate the ProposalResult
-                proposal = await this.proposalService.findOne(vote.ProposalOption.Proposal.id)
-                    .then(value => value.toJSON());
+                proposal = await this.proposalService.findOne(vote.ProposalOption.Proposal.id).then(value => value.toJSON());
                 const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+                this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
                 // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                 // we can now check whether the ListingItem should be removed or not
-
                 if (proposal.category === ProposalCategory.ITEM_VOTE) {
 
-                    const isMine = await this.coreRpcService.getAddressInfo(voteMessage.voter);
                     // if this vote is mine lets set/unset the removed flag
-                    if (isMine) {
-                        this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
+                    if (addressInfo && addressInfo.ismine) {
+                        this.log.debug('isMine: ', addressInfo.ismine);
+                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
                     }
 
                     const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
@@ -359,12 +355,14 @@ export class VoteActionService extends BaseActionService {
                     await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
                         .then(async remove => {
                             if (remove) {
+                                this.log.debug('removing the ListingItem...');
                                 await this.listingItemService.destroy(listingItem.id);
                             }
                         });
                 }
                 return vote;
             }
+
         }
 
         // returning undefined vote in case there's no balance

@@ -32,7 +32,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ItemVote } from '../../../src/api/enums/ItemVote';
-import {VoteService} from '../../../src/api/services/model/VoteService';
+import { VoteService } from '../../../src/api/services/model/VoteService';
+import { VoteActionListener } from '../../../src/api/listeners/action/VoteActionListener';
 
 
 describe('ProposalAddActionListener', () => {
@@ -49,6 +50,7 @@ describe('ProposalAddActionListener', () => {
     let voteService: VoteService;
     let proposalAddActionService: ProposalAddActionService;
     let proposalAddActionListener: ProposalAddActionListener;
+    let voteActionListener: VoteActionListener;
     let smsgMessageFactory: SmsgMessageFactory;
     let coreMessageProcessor: CoreMessageProcessor;
 
@@ -56,6 +58,8 @@ describe('ProposalAddActionListener', () => {
     let defaultProfile: resources.Profile;
 
     let smsgMessage: resources.SmsgMessage;
+    let smsgMessageVotes: resources.SmsgMessage[] = [];
+
     let proposal: resources.Proposal;
     let listingItem: resources.ListingItem;
 
@@ -74,6 +78,7 @@ describe('ProposalAddActionListener', () => {
         coreMessageProcessor = app.IoC.getNamed<CoreMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CoreMessageProcessor);
 
         proposalAddActionListener = app.IoC.getNamed<ProposalAddActionListener>(Types.Listener, Targets.Listener.action.ProposalAddActionListener);
+        voteActionListener = app.IoC.getNamed<VoteActionListener>(Types.Listener, Targets.Listener.action.VoteActionListener);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
 
@@ -172,10 +177,10 @@ describe('ProposalAddActionListener', () => {
         expect(smsgMessage.status).toBe(SmsgMessageStatus.NEW);
     });
 
-    test('Should process the SmsgMessage (PUBLIC_VOTE)', async () => {
+    test('Should process the SmsgMessage (ProposalAddMessage) (PUBLIC_VOTE)', async () => {
 
         log.debug('===================================================================================');
-        log.debug('process SmsgMessage, update Proposal');
+        log.debug('process SmsgMessage (ProposalAddMessage), update Proposal');
         log.debug('===================================================================================');
 
         const marketplaceMessage: MarketplaceMessage = await smsgMessageFactory.getMarketplaceMessage(smsgMessage).then(value => value);
@@ -211,10 +216,10 @@ describe('ProposalAddActionListener', () => {
         expect(updatedProposal.FlaggedItem).toEqual({});
     });
 
-    test('Should process the SmsgMessage (PUBLIC_VOTE) sent from another node (Proposal doesnt exist yet)', async () => {
+    test('Should process the SmsgMessage (ProposalAddMessage) (PUBLIC_VOTE) sent from another node (Proposal doesnt exist yet)', async () => {
 
         log.debug('===================================================================================');
-        log.debug('remove Proposal and set SmsgMessage.status to NEW, process SmsgMessage again, creating Proposal');
+        log.debug('remove the existing Proposal and set SmsgMessage.status to NEW, process SmsgMessage again, creating Proposal');
         log.debug('===================================================================================');
 
         // update the messagestatus and remove the existing proposal ss
@@ -325,9 +330,6 @@ describe('ProposalAddActionListener', () => {
         // - Votes updated with the msgid should exist
         // - Votes should have a relation to Proposal
 
-        // TODO: check the ProposalResult creation, after voting new one is calculated?
-        // TODO: expects FlaggedItem and other relations
-
         smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
         // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
         expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
@@ -343,6 +345,8 @@ describe('ProposalAddActionListener', () => {
             expect(smsgMessageVote.direction).toBe(ActionDirection.OUTGOING);
             expect(smsgMessageVote.type).toBe(GovernanceAction.MPA_VOTE);
             expect(smsgMessageVote.status).toBe(SmsgMessageStatus.SENT);
+
+            smsgMessageVotes.push(smsgMessageVote);
         }
 
         proposal = await proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
@@ -358,15 +362,209 @@ describe('ProposalAddActionListener', () => {
         expect(proposal.FlaggedItem.reason).toEqual(postRequest.description);
 
         for (const voteMsgid of smsgSendResponse.msgids!) {
-            const smsgMessageVote: resources.SmsgMessage = await voteService.findOneByMsgId(voteMsgid)
-                .then(value => value.toJSON());
-            log.debug('smsgMessageVote: ', JSON.stringify(smsgMessageVote, null, 2));
-            expect(smsgMessageVote.ProposalOption.id).toBeDefined();
-            expect(smsgMessageVote.ProposalOption.Proposal.id).toBeDefined();
-            expect(smsgMessageVote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
-            expect(smsgMessageVote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
+            const vote: resources.Vote = await voteService.findOneByMsgId(voteMsgid).then(value => value.toJSON());
+            log.debug('vote: ', JSON.stringify(vote, null, 2));
+            expect(vote.ProposalOption.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
         }
 
     });
 
+    test('Should process the previous MPA_PROPOSAL_ADD (ITEM_VOTE) and create SmsgMessage', async () => {
+
+        log.debug('===================================================================================');
+        log.debug('process MPA_PROPOSAL_ADD (ITEM_VOTE) and create SmsgMessage');
+        log.debug('===================================================================================');
+
+        const coreSmsgMessage = {
+            msgid: smsgMessage.msgid,
+            version: smsgMessage.version,
+            location: 'incoming',
+            read: false,
+            paid: true,
+            payloadsize: smsgMessage.payloadsize,
+            received: smsgMessage.received,
+            sent: smsgMessage.sent,
+            expiration: smsgMessage.expiration,
+            daysretention: smsgMessage.daysretention,
+            from: smsgMessage.from,
+            to: smsgMessage.to,
+            text: smsgMessage.text
+        } as CoreSmsgMessage;
+
+        await coreMessageProcessor.process([coreSmsgMessage]);
+
+        // once the coremessage is processed:
+        // - SmsgMessage status and direction should have been updated (actually a new message is created with direction === INCOMING)
+
+        smsgMessage = await smsgMessageService.findOneByMsgId(smsgMessage.msgid!, ActionDirection.INCOMING).then(value => value.toJSON());
+        // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        expect(smsgMessage.direction).toBe(ActionDirection.INCOMING);
+        expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
+        expect(smsgMessage.status).toBe(SmsgMessageStatus.NEW);
+    });
+
+    test('Should process the MPA_VOTE(s) and create SmsgMessage(s) (ProposalAddMessage/VoteMessage)', async () => {
+
+        log.debug('===================================================================================');
+        log.debug('process MPA_VOTE(s) and create SmsgMessage(s)');
+        log.debug('===================================================================================');
+
+        const incomingSmsgMessageVotes: resources.SmsgMessage[] = [];
+
+        for (let smsgMessageVote of smsgMessageVotes) {
+            const coreSmsgMessage = {
+                msgid: smsgMessageVote.msgid,
+                version: smsgMessageVote.version,
+                location: 'incoming',
+                read: false,
+                paid: true,
+                payloadsize: smsgMessageVote.payloadsize,
+                received: smsgMessageVote.received,
+                sent: smsgMessageVote.sent,
+                expiration: smsgMessageVote.expiration,
+                daysretention: smsgMessageVote.daysretention,
+                from: smsgMessageVote.from,
+                to: smsgMessageVote.to,
+                text: smsgMessageVote.text
+            } as CoreSmsgMessage;
+
+            await coreMessageProcessor.process([coreSmsgMessage]);
+
+            // once the coremessage is processed:
+            // - SmsgMessage status and direction should have been updated (actually a new message is created with direction === INCOMING)
+
+            smsgMessageVote = await smsgMessageService.findOneByMsgId(smsgMessageVote.msgid!, ActionDirection.INCOMING).then(value => value.toJSON());
+            log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+            expect(smsgMessageVote.direction).toBe(ActionDirection.INCOMING);
+            expect(smsgMessageVote.type).toBe(GovernanceAction.MPA_VOTE);
+            expect(smsgMessageVote.status).toBe(SmsgMessageStatus.NEW);
+
+            incomingSmsgMessageVotes.push(smsgMessageVote);
+        }
+
+        // smsgMessageVotes contains the sent smsgs, need to replace those with the incoming...
+        smsgMessageVotes = incomingSmsgMessageVotes;
+    });
+
+    test('Should process the SmsgMessage (ProposalAddMessage) (ITEM_VOTE)', async () => {
+
+        log.debug('===================================================================================');
+        log.debug('process SmsgMessage, update Proposal');
+        log.debug('===================================================================================');
+
+        const marketplaceMessage: MarketplaceMessage = await smsgMessageFactory.getMarketplaceMessage(smsgMessage).then(value => value);
+        const marketplaceEvent: MarketplaceMessageEvent = {
+            smsgMessage,
+            marketplaceMessage
+        };
+
+        await proposalAddActionListener.act(marketplaceEvent);
+
+        // once the smsgmessage is processed:
+        // - SmsgMessage status should have been updated
+        // - Proposals receivedAt, postedAt, expiredAt should have been updated
+        // - no new ProposalResults should have been added (there should be two)
+        // - Proposal should have a relation to FlaggedItem since ProposalCategory is PUBLIC_VOTE
+        // - first ProposalResult should exist having weight 0
+        // - second ProposalResult should exist having weight larger than 0
+
+        smsgMessage = await smsgMessageService.findOneByMsgId(smsgMessage.msgid!, ActionDirection.INCOMING).then(value => value.toJSON());
+        // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        expect(smsgMessage.direction).toBe(ActionDirection.INCOMING);
+        expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
+        expect(smsgMessage.status).toBe(SmsgMessageStatus.PROCESSED);
+
+        const updatedProposal: resources.Proposal = await proposalService.findOneByMsgId(smsgMessage.msgid!).then(value => value.toJSON());
+        // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        expect(updatedProposal.msgid).toBe(smsgMessage.msgid);
+        expect(updatedProposal.timeStart).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.postedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.receivedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+        expect(updatedProposal.expiredAt).not.toBe(Number.MAX_SAFE_INTEGER);
+
+        expect(updatedProposal.ProposalResults.length).toBe(2);
+        expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(2);
+        expect(updatedProposal.ProposalResults[0].ProposalOptionResults[0].weight).toBe(0);
+        expect(updatedProposal.ProposalResults[0].ProposalOptionResults[1].weight).toBe(0);
+        expect(updatedProposal.ProposalResults[1].ProposalOptionResults[0].weight).toBe(0);
+        expect(updatedProposal.ProposalResults[1].ProposalOptionResults[1].weight).toBeGreaterThan(0);
+        expect(updatedProposal.FlaggedItem.listingItemId).toEqual(listingItem.id);
+
+    });
+
+    test('Should process the SmsgMessages (VoteMessage)', async () => {
+
+        log.debug('===================================================================================');
+        log.debug('process SmsgMessage, update Votes');
+        log.debug('===================================================================================');
+
+        let removeWeight = 0;
+        let keepWeight = 0;
+        let voteCount = 0;
+
+/*
+        // one vote was created when the vote was sent
+        const allVotes = await voteService.findAll().then(value => value.toJSON());
+        expect(allVotes.length).toBe(1);
+        log.debug('allVotes: ', JSON.stringify(allVotes, null, 2));
+
+        const smsgs = await smsgMessageService.findAll().then(value => value.toJSON());
+        log.debug('smsgs: ', JSON.stringify(smsgs, null, 2));
+        expect(allVotes.length).toBe(1);
+*/
+        for (const smsgMessageVote of smsgMessageVotes) {
+            voteCount++;
+
+            const marketplaceMessage: MarketplaceMessage = await smsgMessageFactory.getMarketplaceMessage(smsgMessageVote).then(value => value);
+            const marketplaceEvent: MarketplaceMessageEvent = {
+                smsgMessage: smsgMessageVote,
+                marketplaceMessage
+            };
+
+            await voteActionListener.act(marketplaceEvent);
+
+            // once the smsgmessage is processed:
+            // - SmsgMessage status should have been updated
+            // - Votes receivedAt, postedAt, expiredAt should have been updated
+            // - new ProposalResult should be calculated after each Vote
+            // - first ProposalResult should exist having weight 0
+            // - second ProposalResult should exist having weight larger than 0
+
+            const updatedVoteSmsgMessage = await smsgMessageService.findOneByMsgId(smsgMessageVote.msgid!, ActionDirection.INCOMING)
+                .then(value => value.toJSON());
+            // log.debug('smsgMessage: ', JSON.stringify(updatedVoteSmsgMessage, null, 2));
+            expect(updatedVoteSmsgMessage.direction).toBe(ActionDirection.INCOMING);
+            expect(updatedVoteSmsgMessage.type).toBe(GovernanceAction.MPA_VOTE);
+            expect(updatedVoteSmsgMessage.status).toBe(SmsgMessageStatus.PROCESSED);
+
+            const vote: resources.Vote = await voteService.findOneByMsgId(smsgMessageVote.msgid).then(value => value.toJSON());
+            // log.debug('vote: ', JSON.stringify(vote, null, 2));
+            expect(vote.postedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+            expect(vote.receivedAt).not.toBe(Number.MAX_SAFE_INTEGER);
+            expect(vote.expiredAt).not.toBe(Number.MAX_SAFE_INTEGER);
+            expect(vote.weight).not.toBe(0);
+            expect(vote.ProposalOption.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
+
+            // calculate the total weights
+            removeWeight = ItemVote.REMOVE === vote.ProposalOption.description ? removeWeight + vote.weight : removeWeight;
+            keepWeight = ItemVote.KEEP === vote.ProposalOption.description ? keepWeight + vote.weight : keepWeight;
+
+            proposal = await proposalService.findOneByMsgId(smsgMessage.msgid!).then(value => value.toJSON());
+            log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+
+            // first ProposalResults created when ProposalAddMessage is posted and Proposal is created
+            // second ProposalResults created when ProposalAddMessage is received and Proposal is updated
+            // third ProposalResults created when Vote is received
+            expect(proposal.ProposalResults.length).toBe(2 + voteCount);
+            expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(2);
+            expect(proposal.ProposalResults[2 + voteCount - 1].ProposalOptionResults[1].weight).toBe(removeWeight);
+
+        }
+    });
 });

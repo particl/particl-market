@@ -47,8 +47,9 @@ export class VoteActionListener extends BaseActionListenr implements interfaces.
             .then(vote => {
                 if (vote) {
                     this.log.debug('==> PROCESSED VOTE: ', vote.signature);
+                } else {
+                    this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
                 }
-                this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {

@@ -68,7 +68,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
             sender: profile,
             market,
             proposal,

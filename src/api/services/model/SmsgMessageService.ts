@@ -110,15 +110,15 @@ export class SmsgMessageService {
     /**
      * update the status of the processed message, clean the text field if processing was successfull
      *
-     * @param {module:resources.SmsgMessage} message
+     * @param id
      * @param {SmsgMessageStatus} status
      * @returns {Promise<module:resources.SmsgMessage>}
      */
-    public async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<SmsgMessage> {
-        const smsgMessage = await this.findOne(message.id, false);
+    public async updateSmsgMessageStatus(id: number, status: SmsgMessageStatus): Promise<SmsgMessage> {
+        const smsgMessage = await this.findOne(id, false);
         smsgMessage.set('status', status);
-        await this.smsgMessageRepo.update(message.id, smsgMessage.toJSON());
-        return await this.findOne(message.id);
+        await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {

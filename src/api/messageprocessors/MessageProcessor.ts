@@ -176,7 +176,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                 this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
                 this.log.error('emitEvent:', JSON.stringify(emitEvent, null, 2));
                 this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
-                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
             }
         }
     }
@@ -252,7 +252,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                             this.log.debug('poll(), smsgMessages.length: ' + smsgMessages.length);
 
                             for (const smsgMessage of smsgMessages) {
-                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING)
+                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PROCESSING)
                                     .then(value => {
                                         // this.log.debug('poll(), updated smsgMessage.status: ' + SmsgMessageStatus.PROCESSING);
                                         const msg: resources.SmsgMessage = value.toJSON();
