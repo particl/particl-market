@@ -965,7 +965,7 @@ export class TestDataService {
         }
 
         this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
-        this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+        // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
         return listingItemCreateRequest;
     }
 

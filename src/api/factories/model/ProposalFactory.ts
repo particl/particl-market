@@ -47,12 +47,12 @@ export class ProposalFactory implements ModelFactoryInterface {
             smsgData.receivedAt = smsgMessage.received;
             smsgData.expiredAt = smsgMessage.expiration;
             smsgData.timeStart = smsgMessage.sent;
+            smsgData.msgid = smsgMessage.msgid;
         }
 
         const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
 
         const createRequest = {
-            // msgid: params.msgid,                 // updated on afterPost()!
             submitter: proposalMessage.submitter,
             category: proposalMessage.category,
             title: proposalMessage.title,

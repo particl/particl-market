@@ -197,7 +197,7 @@ export class ProposalService {
                 proposal_result_id: proposalResult.id
             } as ProposalOptionResultCreateRequest;
             // this.log.debug('createEmptyProposalResult(), proposalOptionResultCreateRequest:', JSON.stringify(proposalOptionResultCreateRequest, null, 2));
-            const proposalOptionResult = await this.proposalOptionResultService.create(proposalOptionResultCreateRequest)
+            const proposalOptionResult: resources.ProposalOptionResult = await this.proposalOptionResultService.create(proposalOptionResultCreateRequest)
                 .then(value => value.toJSON());
             // this.log.debug('createEmptyProposalResult(), proposalOptionResult:', JSON.stringify(proposalOptionResult, null, 2));
         }
@@ -205,6 +205,7 @@ export class ProposalService {
         proposalResult = await this.proposalResultService.findOne(proposalResult.id)
             .then(value => value.toJSON());
         // this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
+        this.log.debug('createEmptyProposalResult(), created ProposalResult');
 
         return proposalResult;
     }

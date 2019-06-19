@@ -143,9 +143,11 @@ export class ProposalAddActionService extends BaseActionService {
                     proposalOption
                 } as VoteRequest;
 
+                this.log.debug('afterPost(), sending votes...');
+
                 // send the VoteMessages from each of senderProfiles addresses
                 const voteSmsgSendResponse = await this.voteActionService.vote(postRequest);
-
+                smsgSendResponse.msgids = voteSmsgSendResponse.msgids;
                 // ProposalResult will be calculated after each vote has been sent...
             }
 
@@ -207,13 +209,14 @@ export class ProposalAddActionService extends BaseActionService {
 
                 // proposal doesnt exist yet, so we need to create it.
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
-                if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
 
-                    this.log.debug('processProposal(), creating FlaggedItem for Proposal:', JSON.stringify(createdProposal, null, 2));
+                if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
+                    // this.log.debug('processProposal(), creating FlaggedItem for Proposal:', JSON.stringify(createdProposal, null, 2));
 
                     // in case of ITEM_VOTE, we also need to create the FlaggedItem
                     const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                    this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                    // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                    this.log.debug('processProposal(), created FlaggedItem');
                 }
 
                 // create the first ProposalResult
