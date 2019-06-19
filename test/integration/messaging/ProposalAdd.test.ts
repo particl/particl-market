@@ -92,7 +92,7 @@ describe('ProposalAddActionListener', () => {
     });
     // tslint:enable:max-line-length
 
-/*
+
     test('Should create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE)', async () => {
         log.debug('===================================================================================');
         log.debug('create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE), create Proposal');
@@ -223,7 +223,7 @@ describe('ProposalAddActionListener', () => {
         log.debug('===================================================================================');
 
         // update the messagestatus and remove the existing proposal ss
-        await smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.NEW);
+        await smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.NEW);
         await proposalService.destroy(proposal.id);
 
         const marketplaceMessage: MarketplaceMessage = await smsgMessageFactory.getMarketplaceMessage(smsgMessage).then(value => value);
@@ -258,7 +258,6 @@ describe('ProposalAddActionListener', () => {
         expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
         expect(updatedProposal.FlaggedItem).toEqual({});
     });
-*/
 
     test('Should create and post MPA_PROPOSAL_ADD (ITEM_VOTE)', async () => {
 
@@ -505,16 +504,6 @@ describe('ProposalAddActionListener', () => {
         let keepWeight = 0;
         let voteCount = 0;
 
-/*
-        // one vote was created when the vote was sent
-        const allVotes = await voteService.findAll().then(value => value.toJSON());
-        expect(allVotes.length).toBe(1);
-        log.debug('allVotes: ', JSON.stringify(allVotes, null, 2));
-
-        const smsgs = await smsgMessageService.findAll().then(value => value.toJSON());
-        log.debug('smsgs: ', JSON.stringify(smsgs, null, 2));
-        expect(allVotes.length).toBe(1);
-*/
         for (const smsgMessageVote of smsgMessageVotes) {
             voteCount++;
 
@@ -567,4 +556,5 @@ describe('ProposalAddActionListener', () => {
 
         }
     });
+
 });
