@@ -3,40 +3,41 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { EventEmitter } from 'events';
-import { BidService } from '../model/BidService';
-import { BidFactory } from '../../factories/model/BidFactory';
-import { SmsgService } from '../SmsgService';
-import { ListingItemService } from '../model/ListingItemService';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { OrderService } from '../model/OrderService';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { BaseActionService } from './BaseActionService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddActionService } from './ListingItemAddActionService';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { OmpService } from '../OmpService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
-import { OrderStatus } from '../../enums/OrderStatus';
-import { BidMessage } from '../../messages/action/BidMessage';
-import { OrderItemService } from '../model/OrderItemService';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
-import { EscrowLockValidator } from '../../messages/validator/EscrowLockValidator';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
-import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
-import { CoreRpcService } from '../CoreRpcService';
-import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
-import { KVS } from 'omp-lib/dist/interfaces/common';
+import {inject, named} from 'inversify';
+import {ompVersion} from 'omp-lib';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {EventEmitter} from 'events';
+import {BidService} from '../model/BidService';
+import {BidFactory} from '../../factories/model/BidFactory';
+import {SmsgService} from '../SmsgService';
+import {ListingItemService} from '../model/ListingItemService';
+import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
+import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
+import {OrderService} from '../model/OrderService';
+import {SmsgMessageService} from '../model/SmsgMessageService';
+import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import {BaseActionService} from './BaseActionService';
+import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
+import {ListingItemAddRequest} from '../../requests/action/ListingItemAddRequest';
+import {ListingItemAddActionService} from './ListingItemAddActionService';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {OmpService} from '../OmpService';
+import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
+import {BidCreateParams} from '../../factories/model/ModelCreateParams';
+import {OrderStatus} from '../../enums/OrderStatus';
+import {BidMessage} from '../../messages/action/BidMessage';
+import {OrderItemService} from '../model/OrderItemService';
+import {OrderItemStatus} from '../../enums/OrderItemStatus';
+import {EscrowLockRequest} from '../../requests/action/EscrowLockRequest';
+import {EscrowLockValidator} from '../../messages/validator/EscrowLockValidator';
+import {EscrowLockMessage} from '../../messages/action/EscrowLockMessage';
+import {BidAcceptMessage} from '../../messages/action/BidAcceptMessage';
+import {BidCreateRequest} from '../../requests/model/BidCreateRequest';
+import {CoreRpcService} from '../CoreRpcService';
+import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
+import {KVS} from 'omp-lib/dist/interfaces/common';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export class EscrowLockActionService extends BaseActionService {
 
@@ -81,14 +82,14 @@ export class EscrowLockActionService extends BaseActionService {
 
                 // this.log.debug('params: ', JSON.stringify(params, null, 2));
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
+                return this.smsgMessageService.findOneByMsgId(params.bid.msgid, ActionDirection.OUTGOING)
                     .then(async bid => {
 
                         const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
                         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
                         // this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
 
-                        return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid)
+                        return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid, ActionDirection.INCOMING)
                             .then(async bidAccept => {
 
                                 const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();

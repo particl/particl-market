@@ -557,4 +557,8 @@ describe('ProposalAddActionListener', () => {
         }
     });
 
+    // TODO: remove proposal and votes and then process incoming proposal and votes
+    // TODO: process votes coming from external addresses
+
+
 });

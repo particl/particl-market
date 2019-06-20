@@ -15,7 +15,7 @@ import { SmsgMessageCreateRequest } from '../../requests/model/SmsgMessageCreate
 import { SmsgMessageUpdateRequest } from '../../requests/model/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class SmsgMessageService {
 
@@ -47,11 +47,23 @@ export class SmsgMessageService {
         return smsgMessage;
     }
 
-    public async findOneByMsgId(msgId: string, direction: ActionDirection = ActionDirection.INCOMING, withRelated: boolean = true): Promise<SmsgMessage> {
-        const smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, direction, withRelated);
-        if (smsgMessage === null) {
-            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
-            throw new NotFoundException(msgId);
+    public async findOneByMsgId(msgId: string, direction: ActionDirection = ActionDirection.BOTH, withRelated: boolean = true): Promise<SmsgMessage> {
+        let smsgMessage;
+        if (direction === ActionDirection.BOTH) {
+            smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, ActionDirection.INCOMING, withRelated);
+            if (smsgMessage === null) {
+                smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, ActionDirection.OUTGOING, withRelated);
+                if (smsgMessage === null) {
+                    this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+                    throw new NotFoundException(msgId);
+                }
+            }
+        } else {
+            smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, direction, withRelated);
+            if (smsgMessage === null) {
+                this.log.warn(`SmsgMessage with the msgid=${msgId} and direction=${direction} was not found!`);
+                throw new NotFoundException(msgId);
+            }
         }
         return smsgMessage;
     }

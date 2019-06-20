@@ -10,6 +10,8 @@
 export enum ActionDirection {
 
     INCOMING = 'INCOMING',
-    OUTGOING = 'OUTGOING'
+    OUTGOING = 'OUTGOING',
+
+    BOTH = 'BOTH'   // used to search for either incoming or outgoing
 
 }
