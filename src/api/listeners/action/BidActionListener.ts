@@ -21,6 +21,8 @@ import { MessageException } from '../../exceptions/MessageException';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
 import { BidFactory } from '../../factories/model/BidFactory';
+import { BidService } from '../../services/model/BidService';
+import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
 
 export class BidActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
@@ -29,13 +31,14 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) public bidActionService: BidActionService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgMessageService, Logger);
+        super(MPAction.MPA_BID, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**

@@ -15,6 +15,8 @@ import { BaseActionListenr } from '../BaseActionListenr';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { VoteActionService } from '../../services/action/VoteActionService';
 import { VoteMessage } from '../../messages/action/VoteMessage';
+import { BidService } from '../../services/model/BidService';
+import { ProposalService } from '../../services/model/ProposalService';
 
 export class VoteActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -22,11 +24,12 @@ export class VoteActionListener extends BaseActionListenr implements interfaces.
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-
+        @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, smsgMessageService, Logger);
+        super(GovernanceAction.MPA_VOTE, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**

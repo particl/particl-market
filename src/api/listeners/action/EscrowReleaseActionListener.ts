@@ -20,6 +20,7 @@ import { BidService } from '../../services/model/BidService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { EscrowReleaseActionService } from '../../services/action/EscrowReleaseActionService';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
+import { ProposalService } from '../../services/model/ProposalService';
 
 export class EscrowReleaseActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -27,14 +28,14 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-
         @inject(Types.Service) @named(Targets.Service.action.EscrowReleaseActionService) public escrowReleaseActionService: EscrowReleaseActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_RELEASE, smsgMessageService, Logger);
+        super(MPActionExtended.MPA_RELEASE, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**

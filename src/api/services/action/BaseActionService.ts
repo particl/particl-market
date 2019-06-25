@@ -79,7 +79,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
                                 // todo: get rid of this if, its only here because smsgSendResponse.msgid is optional
                                 // because in one special case we return msgids, so they're both optional
                                 if (smsgSendResponse.msgid) {
-                                    await this.saveOutgoingMessage(smsgSendResponse.msgid, ActionDirection.OUTGOING);
+                                    await this.saveOutgoingMessage(smsgSendResponse.msgid);
                                     return smsgSendResponse;
                                 } else {
                                     // we should never end up here.
@@ -136,7 +136,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param direction
      * @param msgid
      */
-    private async saveOutgoingMessage(msgid: string, direction: ActionDirection): Promise<resources.SmsgMessage> {
+    private async saveOutgoingMessage(msgid: string): Promise<resources.SmsgMessage> {
         return await this.smsgService.smsg(msgid, false, false)
             .then(async coreMessage => {
                 return await this.smsgMessageFactory.get({

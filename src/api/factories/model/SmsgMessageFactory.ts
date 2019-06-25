@@ -10,12 +10,11 @@ import { SmsgMessageCreateRequest } from '../../requests/model/SmsgMessageCreate
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { SmsgMessageCreateParams } from './ModelCreateParams';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
 
 export class SmsgMessageFactory implements ModelFactoryInterface {
 

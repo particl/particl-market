@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -17,9 +16,7 @@ import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { BidRequest } from '../../requests/action/BidRequest';
@@ -33,11 +30,8 @@ import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessa
 import { BidValidator } from '../../messages/validator/BidValidator';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
-import { MessageException } from '../../exceptions/MessageException';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
-import { AddressType } from '../../enums/AddressType';
 import { ShippingAddress } from 'omp-lib/dist/interfaces/omp';
-import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { OrderFactory } from '../../factories/model/OrderFactory';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -50,7 +44,6 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -81,7 +74,7 @@ export class BidActionService extends BaseActionService {
         } as ListingItemAddRequest);
 
         const config: BidConfiguration = {
-            cryptocurrency: Cryptocurrency.PART,    // todo: hardcoded PART for now
+            cryptocurrency: Cryptocurrency.PART,    // todo: hardcoded to PART for now
             escrow: params.listingItem.PaymentInformation.Escrow.type,
             shippingAddress: params.address as ShippingAddress
             // objects: KVS[] // product variations etc bid related params

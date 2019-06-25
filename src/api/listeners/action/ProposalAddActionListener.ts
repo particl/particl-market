@@ -15,6 +15,8 @@ import { BaseActionListenr } from '../BaseActionListenr';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
+import { BidService } from '../../services/model/BidService';
+import { ProposalService } from '../../services/model/ProposalService';
 
 export class ProposalAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -22,11 +24,12 @@ export class ProposalAddActionListener extends BaseActionListenr implements inte
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-
+        @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, Logger);
+        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**

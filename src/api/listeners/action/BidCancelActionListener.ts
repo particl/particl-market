@@ -20,6 +20,7 @@ import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelActionService } from '../../services/action/BidCancelActionService';
+import { ProposalService } from '../../services/model/ProposalService';
 
 export class BidCancelActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -27,14 +28,14 @@ export class BidCancelActionListener extends BaseActionListenr implements interf
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-
         @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) public bidCancelActionService: BidCancelActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL, smsgMessageService, Logger);
+        super(MPAction.MPA_CANCEL, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**

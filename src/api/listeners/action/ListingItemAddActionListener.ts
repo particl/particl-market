@@ -24,6 +24,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { ProposalService } from '../../services/model/ProposalService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
+import { BidService } from '../../services/model/BidService';
 
 export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -32,6 +33,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
     constructor(
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
@@ -41,7 +43,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LISTING_ADD, smsgMessageService, Logger);
+        super(MPAction.MPA_LISTING_ADD, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**
