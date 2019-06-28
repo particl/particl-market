@@ -14,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -46,7 +47,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MessageException('Missing name.');
+            throw new MissingParamException('name');
         }
 
         // check if profile already exist for the given name
@@ -80,7 +81,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Create a new profile.';
+        return 'Create a new Profile.';
     }
 
     public example(): string {

@@ -3,10 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 
 describe('ProfileAddCommand', () => {
 
@@ -52,19 +53,17 @@ describe('ProfileAddCommand', () => {
         expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
-    test('Should fail to create a new Profile because profile with given name allready exist', async () => {
+    test('Should fail to create because given name already exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(404); // TODO: 404 makes no sense
         expect(res.error.error.message).toBe(`Profile already exist for the given name = ${profileName}`);
     });
 
-    test('Should fail because we want to create a Profile without a name', async () => {
+    test('Should fail to create because missing name', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing name.');
+        expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 });

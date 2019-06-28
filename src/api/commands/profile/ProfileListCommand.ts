@@ -14,9 +14,6 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-/*
- * Get a list of all profile
- */
 export class ProfileListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Profile>> {
 
     public log: LoggerType;
@@ -39,6 +36,10 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
         return await this.profileService.findAll();
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' ';
     }
@@ -48,7 +49,7 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'List all the profiles.';
+        return 'List all the Profiles.';
     }
 
     public example(): string {
