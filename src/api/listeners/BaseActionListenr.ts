@@ -39,6 +39,7 @@ import { EscrowCompleteMessage } from '../messages/action/EscrowCompleteMessage'
 import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import { VoteMessage } from '../messages/action/VoteMessage';
 import { ProposalService } from '../services/model/ProposalService';
+import {OrderItemStatus} from '../enums/OrderItemStatus';
 
 // TODO: rename, refactor
 @injectable()
@@ -216,11 +217,15 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
 
             case MPActionExtended.MPA_SHIP:
                 // MPA_COMPLETE should exists
+                // -> orderItem should have status OrderItemStatus.ESCROW_COMPLETED, meaning there's no race condition
                 // -> (msg.action as MPA_SHIP).bid is the hash of MPA_BID and should be found
                 // -> Bid of the type MPA_BID should have ChildBid of type MPA_COMPLETE
                 return await this.bidService.findOneByHash((msg.action as OrderItemShipMessage).bid, true)
                     .then( (value) => {
                         const mpaBid: resources.Bid = value.toJSON();
+                        if (mpaBid.OrderItem.status !== OrderItemStatus.ESCROW_COMPLETED) {
+                            return false;
+                        }
                         const childBid: resources.Bid | undefined = _.find(mpaBid.ChildBids, (child) => {
                             return child.type === MPActionExtended.MPA_COMPLETE;
                         });

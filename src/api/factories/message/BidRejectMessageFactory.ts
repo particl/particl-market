@@ -12,6 +12,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidRejectMessageCreateParams } from '../../requests/message/BidRejectMessageCreateParams';
+import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
 
 export class BidRejectMessageFactory implements MessageFactoryInterface {
 
@@ -34,9 +35,16 @@ export class BidRejectMessageFactory implements MessageFactoryInterface {
             type: MPAction.MPA_REJECT,
             generated: +new Date().getTime(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
-            objects: [] as KVS[]
+            bid: params.bidHash                 // hash of MPA_BID
         } as BidRejectMessage;
+
+        if (params.reason) {
+            message.objects = [] as KVS[];
+            message.objects.push({
+                key: ActionMessageObjects.BID_REJECT_REASON,
+                value: params.reason
+            } as KVS);
+        }
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;

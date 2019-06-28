@@ -9,6 +9,6 @@ export enum ActionMessageObjects {
     TXID_LOCK = 'txid.lock',            // MPA_LOCK
     TXID_RELEASE = 'txid.release',      // MPA_RELEASE
     TXID_REFUND = 'txid.refund',        // MPA_REFUND
-    TXID_COMPLETE = 'txid.complete'     // MPA_COMPLETE
-
+    TXID_COMPLETE = 'txid.complete',    // MPA_COMPLETE
+    BID_REJECT_REASON = 'reject.reason' // MPA_REJECT
 }
