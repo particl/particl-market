@@ -3,9 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { MessageCreateParamsInterface } from './MessageCreateParamsInterface';
+import {BidRejectReason} from '../../enums/BidRejectReason';
 
 export interface BidRejectMessageCreateParams extends MessageCreateParamsInterface {
     bidHash: string;    // bid hash to reject
+    reason: BidRejectReason;
 }
 
 
