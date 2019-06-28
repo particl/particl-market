@@ -132,18 +132,16 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template \n'
-            + '                                associated with the escrow we want to modify. \n'
-            + '    <escrowType>             - String - The escrow type we want to give to the \n'
+            + '    <listingItemTemplateId>  - Numeric - The ID of the ListingItemTemplate \n'
+            + '                                associated with the Escrow we want to modify. \n'
+            + '    <escrowType>             - EscrowType - The escrow type to give to the \n'
             + '                                escrow we are modifying. \n'
-            + '                             - ENUM{NOP,MAD} - The escrow type to give to the \n'
-            + '                                escrow we are modifying. \n'
-            + '    <buyerRatio>             - Numeric - [TODO] \n'
-            + '    <sellerRatio>            - Numeric - [TODO] ';
+            + '    <buyerRatio>             - Numeric - The ratio of the buyer in the Escrow. \n'
+            + '    <sellerRatio>            - Numeric - The ratio of the seller in the Escrow. ';
     }
 
     public description(): string {
-        return 'Update the details of an escrow given by listingItemTemplateId.';
+        return 'Update the details of an Escrow.';
     }
 
 
