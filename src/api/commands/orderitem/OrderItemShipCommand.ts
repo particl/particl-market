@@ -114,8 +114,8 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
 
         // check if in the right state.
         if (validOrderItemStatuses.indexOf(orderItem.status) === -1) {
-            this.log.error('OrderItem is in invalid state');
-            throw new MessageException('OrderItem is in invalid state');
+            this.log.error('OrderItem has invalid status');
+            throw new MessageException('OrderItem has invalid status: ' + orderItem.status + ', should be: ' + OrderItemStatus.ESCROW_COMPLETED);
         }
 
         // TODO: check that we are the seller

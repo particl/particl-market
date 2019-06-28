@@ -146,14 +146,6 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
     // TODO: refactor
     public async isValidSequence(msg: MarketplaceMessage): Promise<boolean> {
 
-        /*
-            const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
-                // MPA_BID should exists
-                return child.type === MPAction.MPA_BID;
-            });
-            return childBid ? true : false;
-        */
-
         switch (msg.action.type) {
             case MPAction.MPA_LISTING_ADD:
                 return true;

@@ -14,6 +14,7 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 import { BidDataValue } from '../../src/api/enums/BidDataValue';
+import { OrderStatus } from '../../src/api/enums/OrderStatus';
 
 describe('Happy Buy Flow', () => {
 
@@ -336,6 +337,11 @@ describe('Happy Buy Flow', () => {
 
         // there should be no relation to template on the buyer side
         expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
+
+        // make sure the Order/OrderItem statuses are correct
+        expect(result[0].OrderItem.status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+
         bidOnBuyerNode = result[0];
 
         log.debug('bidOnBuyerNode: ', JSON.stringify(bidOnBuyerNode, null, 2));
@@ -395,6 +401,11 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
 
         // todo: check for correct biddata
+
+        // make sure the Order/OrderItem statuses are correct
+        expect(result[0].OrderItem.status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+
         bidOnSellerNode = result[0];
         log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
 
@@ -470,6 +481,9 @@ describe('Happy Buy Flow', () => {
         res.expectStatusCode(200);
 
         const result: resources.Bid = res.getBody()['result'];
+
+        // log.debug('bidOnSellerNode, MPA_ACCEPT: ', JSON.stringify(result[0], null, 2));
+
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(bidOnSellerNode.ListingItem.hash);
@@ -479,7 +493,13 @@ describe('Happy Buy Flow', () => {
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
 
+        // make sure the Order/OrderItem statuses are correct
+        expect(result[0].ParentBid.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
+        expect(result[0].ParentBid.OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+
         bidOnSellerNode = result[0];
+
+        log.debug('bidOnSellerNode, MPA_ACCEPT: ', JSON.stringify(bidOnSellerNode, null, 2));
 
         log.debug('==> Bid updated on SELLER node.');
     });
@@ -512,6 +532,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].hash).toBeDefined(); // TODO: should match bidOnSellerNode.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
         expect(result[0].OrderItems).toHaveLength(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
@@ -566,6 +587,11 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
 
         // todo: check for correct biddata
+
+        // make sure the Order/OrderItem statuses are correct
+        expect(result[0].ParentBid.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
+        expect(result[0].ParentBid.OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+
         bidOnBuyerNode = result[0];
 
         log.debug('==> BUYER received MPA_ACCEPT.');
@@ -601,6 +627,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
         expect(result[0].OrderItems).toHaveLength(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
@@ -716,6 +743,9 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems).toHaveLength(1);
         expect(result[0].OrderItems[0].Bid.ChildBids).toHaveLength(2);
 
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+
         const lockBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
             return value.type === MPAction.MPA_LOCK;
         });
@@ -769,7 +799,6 @@ describe('Happy Buy Flow', () => {
             return value.type === MPAction.MPA_LOCK;
         });
         expect(lockBid.BidDatas).toHaveLength(3);
-
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
