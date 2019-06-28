@@ -12,19 +12,19 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalOptionResult } from '../../src/api/models/ProposalOptionResult';
-import { ProposalOptionResultService } from '../../src/api/services/ProposalOptionResultService';
-import { ProposalOptionResultCreateRequest } from '../../src/api/requests/ProposalOptionResultCreateRequest';
-import { ProposalService } from '../../src/api/services/ProposalService';
-import { ProposalResultService } from '../../src/api/services/ProposalResultService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ProposalOptionResultService } from '../../src/api/services/model/ProposalOptionResultService';
+import { ProposalOptionResultCreateRequest } from '../../src/api/requests/model/ProposalOptionResultCreateRequest';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
+import { ProposalResultService } from '../../src/api/services/model/ProposalResultService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
-import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/ProposalOptionResultUpdateRequest';
+import { ProposalOptionCreateRequest } from '../../src/api/requests/model/ProposalOptionCreateRequest';
+import { ProposalOptionService } from '../../src/api/services/model/ProposalOptionService';
+import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/model/ProposalOptionResultUpdateRequest';
 
 describe('ProposalOptionResult', () => {
 
@@ -43,6 +43,7 @@ describe('ProposalOptionResult', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
+
     let createdProposal: resources.Proposal;
     let createdProposalResult: resources.ProposalResult;
     let createdListingItem: resources.ListingItem;
@@ -53,12 +54,12 @@ describe('ProposalOptionResult', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
-        proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.ProposalResultService);
-        proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.ProposalOptionService);
-        proposalOptionResultService = app.IoC.getNamed<ProposalOptionResultService>(Types.Service, Targets.Service.ProposalOptionResultService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.model.ProposalResultService);
+        proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.model.ProposalOptionService);
+        proposalOptionResultService = app.IoC.getNamed<ProposalOptionResultService>(Types.Service, Targets.Service.model.ProposalOptionResultService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -115,8 +116,8 @@ describe('ProposalOptionResult', () => {
 
         // log.debug('proposals: ', JSON.stringify(proposals, null, 2));
 
-        const proposalResultModel = await proposalResultService.findOne(createdProposal.ProposalResults[0].id);
-        createdProposalResult = proposalResultModel.toJSON();
+        createdProposalResult = await proposalResultService.findOne(createdProposal.ProposalResults[0].id).then(value => value.toJSON());
+
     });
 
     test('Should throw ValidationException because there is no related_id', async () => {
@@ -143,13 +144,12 @@ describe('ProposalOptionResult', () => {
         // first add new ProposalOption
         const proposalOptionCreateRequest = {
             proposal_id: createdProposal.id,
-            proposalHash: createdProposal.hash,
             optionId: 2,
-            description: 'REMOVE_MAYBE'
+            description: 'REMOVE_MAYBE',
+            hash: 'hash'
         } as ProposalOptionCreateRequest;
 
-        createdProposalOption = await proposalOptionService.create(proposalOptionCreateRequest)
-            .then(value => value.toJSON());
+        createdProposalOption = await proposalOptionService.create(proposalOptionCreateRequest).then(value => value.toJSON());
 
         // then add new ProposalOptionResult
         const testData = {
@@ -159,8 +159,7 @@ describe('ProposalOptionResult', () => {
             voters: 5
         } as ProposalOptionResultCreateRequest;
 
-        createdProposalOptionResult = await proposalOptionResultService.create(testData)
-            .then(value => value.toJSON());
+        createdProposalOptionResult = await proposalOptionResultService.create(testData).then(value => value.toJSON());
         const result = createdProposalOptionResult;
 
         // test the values
@@ -171,8 +170,7 @@ describe('ProposalOptionResult', () => {
     });
 
     test('Should list ProposalOptionResults with our newly create one', async () => {
-        const proposalOptionResults = await proposalOptionResultService.findAll()
-            .then(value => value.toJSON());
+        const proposalOptionResults = await proposalOptionResultService.findAll().then(value => value.toJSON());
 
         // testDataService.generate creates first 2 empty results, then recalculates and generates 2 more, +1 generated here === 5
         expect(proposalOptionResults.length).toBe(5);

@@ -1,9 +1,11 @@
 FROM mhart/alpine-node:9.6.1
 
-RUN apk add --update --no-cache gcc g++ make libc6-compat python git build-base openssl-dev curl bash
-# RUN apk add --no-cache fftw-dev --repository https://dl-3.alpinelinux.org/alpine/edge/main/
-# RUN apk add --no-cache vips-dev --repository https://dl-3.alpinelinux.org/alpine/edge/testing/
-RUN npm install --global -s --no-progress wait-port yarn ts-node tslint typescript
+ENV BUILD_PACKAGES git wget curl bash make gcc g++ python libc6-compat build-base openssl-dev ca-certificates libssl1.0 openssl libstdc++
+ENV NPM_PACKAGES wait-port yarn ts-node tslint typescript
+
+# update and install all of the required packages, then remove the apk cache
+RUN apk --update add --no-cache $BUILD_PACKAGES
+RUN npm install -g -s --no-progress $NPM_PACKAGES
 
 RUN mkdir -p /app/data/database
 WORKDIR /app/

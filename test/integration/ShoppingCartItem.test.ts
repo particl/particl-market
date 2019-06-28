@@ -12,15 +12,15 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShoppingCartItem } from '../../src/api/models/ShoppingCartItem';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ShoppingCartItemService } from '../../src/api/services/ShoppingCartItemService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ShoppingCartItemCreateRequest } from '../../src/api/requests/ShoppingCartItemCreateRequest';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ShoppingCartItemService } from '../../src/api/services/model/ShoppingCartItemService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ShoppingCartItemCreateRequest } from '../../src/api/requests/model/ShoppingCartItemCreateRequest';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ShoppingCartList', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -51,10 +51,10 @@ describe('ShoppingCartList', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        shoppingCartItemService = app.IoC.getNamed<ShoppingCartItemService>(Types.Service, Targets.Service.ShoppingCartItemService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        shoppingCartItemService = app.IoC.getNamed<ShoppingCartItemService>(Types.Service, Targets.Service.model.ShoppingCartItemService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

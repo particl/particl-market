@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import {OrderItemShipActionListener} from '../api/listeners/action/OrderItemShipActionListener';
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -14,7 +16,6 @@
 
 export const Targets = {
     Model:     {
-        ActionMessage: 'ActionMessage',
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -37,14 +38,9 @@ export const Targets = {
         LocationMarker: 'LocationMarker',
         LockedOutput: 'LockedOutput',
         Market: 'Market',
-        MessageData: 'MessageData',
-        MessageEscrow: 'MessageEscrow',
-        MessageInfo: 'MessageInfo',
-        MessageObject: 'MessageObject',
         MessagingInformation: 'MessagingInformation',
         Order: 'Order',
         OrderItem: 'OrderItem',
-        OrderItemObject: 'OrderItemObject',
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
@@ -62,7 +58,6 @@ export const Targets = {
         Vote: 'Vote'
     },
     Repository:     {
-        ActionMessageRepository: 'ActionMessageRepository',
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -85,12 +80,7 @@ export const Targets = {
         LocationMarkerRepository: 'LocationMarkerRepository',
         LockedOutputRepository: 'LockedOutputRepository',
         MarketRepository: 'MarketRepository',
-        MessageDataRepository: 'MessageDataRepository',
-        MessageEscrowRepository: 'MessageEscrowRepository',
-        MessageInfoRepository: 'MessageInfoRepository',
-        MessageObjectRepository: 'MessageObjectRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
-        OrderItemObjectRepository: 'OrderItemObjectRepository',
         OrderItemRepository: 'OrderItemRepository',
         OrderRepository: 'OrderRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
@@ -110,65 +100,72 @@ export const Targets = {
         VoteRepository: 'VoteRepository'
     },
     Service:     {
-        ActionMessageService: 'ActionMessageService',
-        AddressService: 'AddressService',
-        BidActionService: 'BidActionService',
-        BidDataService: 'BidDataService',
-        BidService: 'BidService',
+        action: {
+            BaseActionService: 'BaseActionService',
+            BidActionService: 'BidActionService',
+            BidAcceptActionService: 'BidAcceptActionService',
+            BidCancelActionService: 'BidCancelActionService',
+            BidRejectActionService: 'BidRejectActionService',
+            EscrowLockActionService: 'EscrowLockActionService',
+            EscrowReleaseActionService: 'EscrowReleaseActionService',
+            EscrowRefundActionService: 'EscrowRefundActionService',
+            EscrowCompleteActionService: 'EscrowCompleteActionService',
+            ListingItemAddActionService: 'ListingItemAddActionService',
+            OrderItemShipActionService: 'OrderItemShipActionService',
+            ProposalAddActionService: 'ProposalAddActionService',
+            VoteActionService: 'VoteActionService'
+        },
+        model: {
+            AddressService: 'AddressService',
+            BidDataService: 'BidDataService',
+            BidService: 'BidService',
+            CryptocurrencyAddressService: 'CryptocurrencyAddressService',
+            CurrencyPriceService: 'CurrencyPriceService',
+            EscrowRatioService: 'EscrowRatioService',
+            EscrowService: 'EscrowService',
+            FavoriteItemService: 'FavoriteItemService',
+            FlaggedItemService: 'FlaggedItemService',
+            ItemCategoryService: 'ItemCategoryService',
+            ItemImageDataService: 'ItemImageDataService',
+            ItemImageService: 'ItemImageService',
+            ItemInformationService: 'ItemInformationService',
+            ItemLocationService: 'ItemLocationService',
+            ItemPriceService: 'ItemPriceService',
+            ListingItemObjectDataService: 'ListingItemObjectDataService',
+            ListingItemObjectService: 'ListingItemObjectService',
+            ListingItemService: 'ListingItemService',
+            ListingItemTemplateService: 'ListingItemTemplateService',
+            LocationMarkerService: 'LocationMarkerService',
+            LockedOutputService: 'LockedOutputService',
+            MarketService: 'MarketService',
+            MessagingInformationService: 'MessagingInformationService',
+            OrderItemService: 'OrderItemService',
+            OrderService: 'OrderService',
+            PaymentInformationService: 'PaymentInformationService',
+            PriceTickerService: 'PriceTickerService',
+            ProfileService: 'ProfileService',
+            ProposalOptionResultService: 'ProposalOptionResultService',
+            ProposalOptionService: 'ProposalOptionService',
+            ProposalResultService: 'ProposalResultService',
+            ProposalService: 'ProposalService',
+            SettingService: 'SettingService',
+            ShippingDestinationService: 'ShippingDestinationService',
+            ShippingPriceService: 'ShippingPriceService',
+            ShoppingCartItemService: 'ShoppingCartItemService',
+            ShoppingCartService: 'ShoppingCartService',
+            SmsgMessageService: 'SmsgMessageService',
+            UserService: 'UserService',
+            VoteService: 'VoteService'
+        },
         CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
-        CryptocurrencyAddressService: 'CryptocurrencyAddressService',
-        CurrencyPriceService: 'CurrencyPriceService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
-        EscrowActionService: 'EscrowActionService',
-        EscrowRatioService: 'EscrowRatioService',
-        EscrowService: 'EscrowService',
-        FavoriteItemService: 'FavoriteItemService',
-        FlaggedItemService: 'FlaggedItemService',
-        ItemCategoryService: 'ItemCategoryService',
-        ItemImageDataService: 'ItemImageDataService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
-        ItemImageService: 'ItemImageService',
-        ItemInformationService: 'ItemInformationService',
-        ItemLocationService: 'ItemLocationService',
-        ItemPriceService: 'ItemPriceService',
-        ListingItemActionService: 'ListingItemActionService',
-        ListingItemObjectDataService: 'ListingItemObjectDataService',
-        ListingItemObjectService: 'ListingItemObjectService',
-        ListingItemService: 'ListingItemService',
-        ListingItemTemplateService: 'ListingItemTemplateService',
-        LocationMarkerService: 'LocationMarkerService',
-        LockedOutputService: 'LockedOutputService',
-        MarketService: 'MarketService',
-        MessageDataService: 'MessageDataService',
-        MessageEscrowService: 'MessageEscrowService',
-        MessageInfoService: 'MessageInfoService',
-        MessageObjectService: 'MessageObjectService',
-        MessagingInformationService: 'MessagingInformationService',
-        OrderItemObjectService: 'OrderItemObjectService',
-        OrderItemService: 'OrderItemService',
-        OrderService: 'OrderService',
-        PaymentInformationService: 'PaymentInformationService',
-        PriceTickerService: 'PriceTickerService',
-        ProfileService: 'ProfileService',
-        ProposalActionService: 'ProposalActionService',
-        ProposalOptionResultService: 'ProposalOptionResultService',
-        ProposalOptionService: 'ProposalOptionService',
-        ProposalResultService: 'ProposalResultService',
-        ProposalService: 'ProposalService',
-        SettingService: 'SettingService',
-        ShippingDestinationService: 'ShippingDestinationService',
-        ShippingPriceService: 'ShippingPriceService',
-        ShoppingCartItemService: 'ShoppingCartItemService',
-        ShoppingCartService: 'ShoppingCartService',
-        SmsgMessageService: 'SmsgMessageService',
+        OmpService: 'OmpService',
         SmsgService: 'SmsgService',
-        TestDataService: 'TestDataService',
-        UserService: 'UserService',
-        VoteActionService: 'VoteActionService',
-        VoteService: 'VoteService'
+        TestDataService: 'TestDataService'
     },
     Command:     {
         address: {
@@ -205,7 +202,7 @@ export const Targets = {
             DataRootCommand: 'DataRootCommand'
         },
         escrow: {
-            EscrowAddCommand: 'EscrowAddCommand',
+            EscrowCompleteCommand: 'EscrowCompleteCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
@@ -259,12 +256,12 @@ export const Targets = {
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
@@ -282,7 +279,8 @@ export const Targets = {
         },
         orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemShipCommand: 'OrderItemShipCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -347,25 +345,39 @@ export const Targets = {
         }
     },
     Factory:     {
-        ActionMessageFactory: 'ActionMessageFactory',
-        BidFactory: 'BidFactory',
-        EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
-        ListingItemFactory: 'ListingItemFactory',
+        message: {
+            BidCancelMessageFactory: 'BidCancelMessageFactory',
+            BidRejectMessageFactory: 'BidRejectMessageFactory',
+            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
+            EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
+            EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
+            ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
+            OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
+            ProposalAddMessageFactory: 'ProposalAddMessageFactory',
+            VoteMessageFactory: 'VoteMessageFactory'
+        },
         MessagingInformationFactory: 'MessagingInformationFactory',
-        OrderFactory: 'OrderFactory',
-        ProposalFactory: 'ProposalFactory',
-        RpcCommandFactory: 'RpcCommandFactory',
-        SmsgMessageFactory: 'SmsgMessageFactory',
-        VoteFactory: 'VoteFactory'
+        model: {
+            BidFactory: 'BidFactory',
+            ListingItemFactory: 'ListingItemFactory',
+            ListingItemTemplateFactory: 'ListingItemTemplateFactory',
+            ModelCreateParams: 'ModelCreateParams',
+            ModelFactoryInterface: 'ModelFactoryInterface',
+            OrderFactory: 'OrderFactory',
+            ProposalFactory: 'ProposalFactory',
+            SmsgMessageFactory: 'SmsgMessageFactory',
+            VoteFactory: 'VoteFactory'
+        },
+        RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
-        ProposalResultProcessor: 'ProposalResultProcessor',
+        CoreMessageProcessor: 'CoreMessageProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
-        SmsgMessageProcessor: 'SmsgMessageProcessor'
+        ProposalResultProcessor: 'ProposalResultProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
@@ -375,11 +387,22 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ServerStartedListener: 'ServerStartedListener',
-        user: {
-            UserAuthenticatedListener: 'UserAuthenticatedListener',
-            UserCreatedListener: 'UserCreatedListener'
-        }
+        action: {
+            ListingItemAddActionListener: 'ListingItemAddActionListener',
+            BidActionListener: 'BidActionListener',
+            BidAcceptActionListener: 'BidAcceptActionListener',
+            BidCancelActionListener: 'BidCancelActionListener',
+            BidRejectActionListener: 'BidRejectActionListener',
+            EscrowCompleteActionListener: 'EscrowCompleteActionListener',
+            EscrowLockActionListener: 'EscrowLockActionListener',
+            EscrowRefundActionListener: 'EscrowRefundActionListener',
+            EscrowReleaseActionListener: 'EscrowReleaseActionListener',
+            OrderItemShipActionListener: 'OrderItemShipActionListener',
+            ProposalAddActionListener: 'ProposalAddActionListener',
+            VoteActionListener: 'VoteActionListener'
+        },
+        // BaseActionListener: 'BaseActionListener',
+        ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {
         ItemImageController: 'ItemImageController',

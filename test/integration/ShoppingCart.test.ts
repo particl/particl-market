@@ -11,10 +11,10 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShoppingCart } from '../../src/api/models/ShoppingCart';
-import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ShoppingCartCreateRequest } from '../../src/api/requests/ShoppingCartCreateRequest';
-import { ShoppingCartUpdateRequest } from '../../src/api/requests/ShoppingCartUpdateRequest';
+import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ShoppingCartCreateRequest } from '../../src/api/requests/model/ShoppingCartCreateRequest';
+import { ShoppingCartUpdateRequest } from '../../src/api/requests/model/ShoppingCartUpdateRequest';
 import * as resources from 'resources';
 
 describe('ShoppingCart', () => {
@@ -43,8 +43,8 @@ describe('ShoppingCart', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.ShoppingCartService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

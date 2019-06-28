@@ -2,20 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemInformationService } from '../../services/ItemInformationService';
+import { ItemInformationService } from '../../services/model/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
+import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -23,8 +29,9 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);
@@ -32,59 +39,99 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
 
     /**
      * data.params[]:
-     *  [0]: listing template id
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
      *  [1]: title
-     *  [2]: short-description
-     *  [3]: long-description
-     *  [4]: categoryId
+     *  [2]: shortDescription
+     *  [3]: longDescription
+     *  [4]: itemCategory, resources.ItemCategory
      *
      * @param data
      * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        return this.updateWithCheckListingTemplate({
-            listing_item_template_id: data.params[0],
+
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const itemCategory: resources.ItemCategory = data.params[4];
+
+        return this.itemInformationService.update(listingItemTemplate.ItemInformation.id, {
+            listing_item_template_id: data.params[0].id,
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
             itemCategory: {
-                id: data.params[4]
-            }
+                id: itemCategory.id
+            } as ItemCategoryUpdateRequest
         } as ItemInformationUpdateRequest);
     }
 
-    // TODO: WTF FIX
-    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
-        const listingItemTemplateId = body.listing_item_template_id;
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
-        if (_.isEmpty(itemInformation)) {
-            this.log.warn(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
-            throw new MessageException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
-        }
-        return this.itemInformationService.update(itemInformation.id, body);
-    }
-
     /**
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: title
+     *  [2]: shortDescription
+     *  [3]: longDescription
+     *  [4]: categoryId
      *
      * @param {RpcRequest} data
-     * @returns {Promise<void>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 5) {
-            this.log.error('Not enough args.');
-            throw new MessageException('Not enough args.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('ListingItemTemplate ID must be numeric.');
-            throw new MessageException('ListingItemTemplate ID must be numeric.');
-        } else if (typeof data.params[4] !== 'number') {
-            this.log.error('Category ID must be numeric.');
-            throw new MessageException('Category ID must be numeric.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('title');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('shortDescription');
+        } else if (data.params.length < 4) {
+            throw new MissingParamException('longDescription');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('categoryId');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('title', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('shortDescription', 'string');
+        } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('longDescription', 'string');
+        } else if (typeof data.params[4] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        }
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
+
+        // make sure ItemCategory with the id exists
+        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ItemCategory');
+            });
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
+        data.params[0] = listingItemTemplate;
+        data.params[4] = itemCategory;
+
         return data;
     }
 

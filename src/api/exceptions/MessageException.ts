@@ -16,6 +16,7 @@ import { Exception } from '../../core/api/Exception';
 
 export class MessageException extends Exception {
     constructor(message?: string) {
+        // TODO: should be 400
         super(404, `${message}`);
     }
 }

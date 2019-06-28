@@ -4,7 +4,7 @@
 
 import * as _ from 'lodash';
 import * as WebRequest from 'web-request';
-import { inject, named } from 'inversify';
+import { inject, decorate, named, injectable } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
@@ -12,15 +12,20 @@ import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
-import { Output } from './BidActionService';
+import { Rpc } from 'omp-lib';
+import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
+import { BlockchainInfo } from './CoreRpcService';
+import { BlindPrevout, CryptoAddress, CryptoAddressType, Prevout } from 'omp-lib/dist/interfaces/crypto';
+import { fromSatoshis } from 'omp-lib/dist/util';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
 let RPC_REQUEST_ID = 1;
 
-// todo: create interfaces for results, and move them to separate files
-
+// TODO: refactor the omp-lib rpc stuff, this code is painfull to look at!!!
+// TODO: create interfaces for results, and move them to separate files
 export interface BlockchainInfo {
     chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
     blocks: number;                     // the current number of blocks processed in the server
@@ -39,26 +44,9 @@ export interface BlockchainInfo {
     // todo: add pruning and softfork related data when needed
 }
 
-export interface UnspentOutput   {
-    txid: string;                   // (string) the transaction id
-    vout: number;                   // (numeric) the vout value
-    address: string;                // (string) the particl address
-    coldstaking_address: string;    // (string) the particl address this output must stake on
-    label: string;                  // (string) The associated label, or "" for the default label
-    scriptPubKey: string;           // (string) the script key
-    amount: number;                 // (numeric) the transaction output amount in PART
-    confirmations: number;          // (numeric) The number of confirmations
-    redeemScript: string;           // (string) The redeemScript if scriptPubKey is P2SH
-    spendable: boolean;             // (bool) Whether we have the private keys to spend this output
-    solvable: boolean;              // (bool) Whether we know how to spend this output, ignoring the lack of keys
-    safe: boolean;                  // (bool) Whether this output is considered safe to spend. Unconfirmed transactions
-                                    // from outside keys and unconfirmed replacement transactions are considered unsafe
-                                    // and are not eligible for spending by fundrawtransaction and sendtoaddress.
-    stakeable: boolean;             // (bool) Whether we have the private keys to stake this output
-}
-
-
-export class CoreRpcService {
+decorate(injectable(), Rpc);
+// TODO: refactor omp-lib CtRpc/Rpc
+export class CoreRpcService extends CtRpc {
 
     public log: LoggerType;
 
@@ -72,6 +60,7 @@ export class CoreRpcService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
@@ -105,10 +94,16 @@ export class CoreRpcService {
             });
     }
 
+    /**
+     *
+     */
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
     }
 
+    /**
+     *
+     */
     public async getWalletInfo(): Promise<any> {
         return await this.call('getwalletinfo');
     }
@@ -192,23 +187,85 @@ export class CoreRpcService {
      * [2] hardened, (bool, optional) Derive a hardened key.
      * [3] 256bit, (bool, optional) Use 256bit hash.
      *
+     * Result:
+     * "address"                (string) The new particl address
+     *
      * @param {any[]} params
      * @param {boolean} smsgAddress
-     * @returns {Promise<any>}
+     * @returns {Promise<string>}
      */
-    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<any> {
-        const response = await this.call('getnewaddress', params);
+    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<string> {
+        const address = await this.call('getnewaddress', params);
 
         if (smsgAddress) {
             // call﻿smsgaddlocaladdress, even though I'm not sure if its required
-            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [response]);
+            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address]);
             this.log.debug('addLocalAddressResponse: ', addLocalAddressResponse);
 
             // add address as receive address
             // const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
             // this.log.debug('localKeyResponse: ', localKeyResponse);
         }
-        return response;
+        return address;
+    }
+
+    /**
+     * ﻿Returns a new Particl stealth address for receiving payments.
+     *
+     * params:
+     * ﻿[0] label                (string, optional, default=) If specified the key is added to the address book.
+     * [1] num_prefix_bits      (numeric, optional, default=0)
+     * [2] prefix_num           (numeric, optional, default=) If prefix_num is not specified the prefix will be
+     *                          selected deterministically.
+     *                          prefix_num can be specified in base2, 10 or 16, for base 2 prefix_num must
+     *                          begin with 0b, 0x for base16.
+     *                          A 32bit integer will be created from prefix_num and the least significant num_prefix_bits
+     *                          will become the prefix.
+     *                          A stealth address created without a prefix will scan all incoming stealth transactions,
+     *                          irrespective of transaction prefixes.
+     *                          Stealth addresses with prefixes will scan only incoming stealth transactions with
+     *                          a matching prefix.
+     * [3] bech32               (boolean, optional, default=false) Use Bech32 encoding.
+     * [4] makeV2               (boolean, optional, default=false) Generate an address from the same scheme used
+     *                          for hardware wallets.
+     *
+     * Result:
+     * "address"                (string) The new particl stealth address
+     *
+     * @param {any[]} params
+     * @returns {Promise<string>}
+     */
+    public async getNewStealthAddress(params: any[] = []): Promise<CryptoAddress> {
+        const sx = await this.call('getnewstealthaddress', params);
+        return {
+            type: CryptoAddressType.STEALTH,
+            address: sx
+        } as CryptoAddress;
+    }
+
+//    public async getBlindPrevouts(satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+//        return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
+//    }
+    public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+        // omp-lib: const type = (this.network === 'testnet') ? 'anon' : 'blind';
+        // todo: why send anon type to blind on testnet?
+        // todo: also without anon funds, failing with: Insufficient anon funds
+        // todo: create an enum for the type
+
+        this.log.debug('getBlindPrevouts(), type: blind, satoshis: ' + satoshis + ', blind: ' + blind);
+        return [await this.createBlindPrevoutFrom('blind', /* type, */satoshis, blind)];
+    }
+
+    /**
+     * Verify value commitment.
+     * note that the amount is satoshis, which differs from the rpc api
+     *
+     * @param commitment
+     * @param blind
+     * @param satoshis
+     */
+    public async verifyCommitment(commitment: string, blind: string, satoshis: number): Promise<boolean> {
+        return (await this.call('verifycommitment', [commitment, blind, fromSatoshis(satoshis)])).result;
     }
 
     /**
@@ -232,7 +289,7 @@ export class CoreRpcService {
      * @param {string} address
      * @returns {Promise<any>}
      */
-    public async getAddressInfo(address: string): Promise<any> {
+    public async getAddressInfo(address: string): Promise<RpcAddressInfo> {
         return await this.call('getaddressinfo', [address]);
     }
 
@@ -286,7 +343,7 @@ export class CoreRpcService {
      * @param outputs
      * @returns {Promise<any>}
      */
-    public async createRawTransaction(inputs: Output[], outputs: any): Promise<any> {
+    public async createRawTransaction(inputs: BlindPrevout[], outputs: any[]): Promise<any> {
         return await this.call('createrawtransaction', [inputs, outputs]);
     }
 
@@ -307,13 +364,67 @@ export class CoreRpcService {
     }
 
     /**
+     * Create a signature for a raw transaction for a particular prevout & address (serialized, hex-encoded)
+     *
+     * @param {string} hex
+     * @param {RpcUnspentOutput} prevtx
+     * @param {string} address
+     * @returns {Promise<string>} hex encoded signature
+     */
+    public async createSignatureWithWallet(hex: string, prevtx: RpcUnspentOutput, address: string): Promise<string> {
+        return await this.call('createsignaturewithwallet', [hex, prevtx, address]);
+    }
+
+    /**
+     * Imports an address into the wallets
+     *
+     * @param {string} address the address to import
+     * @param {string} label the label to assign the address
+     * @param {boolean} rescan should the wallet rescan the blockchain for the transactions to this address
+     * @param {boolean} p2sh should the address be a p2sh address
+     * @returns {Promise<void>} returns nothing
+     */
+    public async importAddress(address: string, label: string, rescan: boolean, p2sh: boolean): Promise<void> {
+        await this.call('importaddress', [address, label, rescan, p2sh]);
+    }
+
+    /**
+     * Send a certain amount to an address.
+     *
+     * @param {string} address the address to send coins to
+     * @param {number} amount the amount of coins to transfer (NOT in satoshis!)
+     * @param {string} comment the comment to attach to the wallet transaction
+     * @returns {Promise<string>} returns the transaction id
+     */
+    public async sendToAddress(address: string, amount: number, comment: string): Promise<string> {
+        return await this.call('sendtoaddress', [address, amount, comment]);
+    }
+
+
+    /**
+     * Send part to multiple outputs.
+     *
+     * @param typeIn        (string, required) part/blind/anon
+     * @param typeOut       (string, required) part/blind/anon
+     * @param outputs       (json array, required) A json array of json objects
+     */
+    public async sendTypeTo(typeIn: string, typeOut: string, outputs: RpcBlindSendToOutput[]): Promise<string> {
+        // for (const output of outputs) {
+        //    output['subfee'] = false;
+        // }
+        // this.log.debug('outputs: ', outputs);
+        const txid = await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+        this.log.debug('txid: ', txid);
+        return txid;
+    }
+
+    /**
      * ﻿combinerawtransaction ["hexstring",...]
      *
      * Combine multiple partially signed transactions into one transaction.
      * The combined transaction may be another partially signed transaction or a fully signed transaction
      *
-     * @param {string} hexstring
-     * @param {any[]} outputs
+     * @param hexstrings
      * @returns {Promise<any>}
      */
     public async combineRawTransaction(hexstrings: string[]): Promise<any> {
@@ -360,12 +471,13 @@ export class CoreRpcService {
     /**
      * Submits raw transaction (serialized, hex-encoded) to local node and network.
      *
-     * @param {string} hexstring
+     * @param {string} hex the raw transaction in hex format.
+     * @param allowHighFees
      * @returns {Promise<any>}
      */
-    public async sendRawTransaction(hexstring: string, allowHighFees: boolean = false): Promise<any> {
+    public async sendRawTransaction(hex: string, allowHighFees: boolean = false): Promise<string> {
         const params: any[] = [];
-        params.push(hexstring);
+        params.push(hex);
         params.push(allowHighFees);
         return await this.call('sendrawtransaction', params);
     }
@@ -374,6 +486,7 @@ export class CoreRpcService {
      * Return a JSON object representing the serialized, hex-encoded transaction.
      *
      * @param {string} hexstring
+     * @param isWitness
      * @returns {Promise<any>}
      */
     public async decodeRawTransaction(hexstring: string, isWitness?: boolean): Promise<any> {
@@ -389,16 +502,16 @@ export class CoreRpcService {
     /**
      * Return the raw transaction data.
      *
-     * @param {string} hexstring
      * @returns {Promise<any>}
+     * @param txid
+     * @param verbose
+     * @param blockhash
      */
-    public async getRawTransaction(txid: string, verbose?: boolean, blockhash?: string): Promise<any> {
+    public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<any> {
         const params: any[] = [];
         params.push(txid);
+        params.push(verbose);
 
-        if (verbose !== undefined) {
-            params.push(verbose);
-        }
         if (blockhash !== undefined) {
             params.push(blockhash);
         }
@@ -417,26 +530,58 @@ export class CoreRpcService {
      * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number = 1, maxconf: number = 9999999, addresses: string[] = [], includeUnsafe: boolean = true,
-                             queryOptions: any = {}): Promise<any> {
+    public async listUnspent(minconf: number = 1, maxconf: number = 9999999/*, addresses: string[] = [], includeUnsafe: boolean = true,
+                             queryOptions: any = {}*/): Promise<RpcUnspentOutput[]> {
 
-        const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
-        if (!_.isEmpty(queryOptions)) {
-            params.push(queryOptions);
-        }
-
+        const params: any[] = [minconf, maxconf]; // , addresses, includeUnsafe];
+        // if (!_.isEmpty(queryOptions)) {
+        //    params.push(queryOptions);
+        // }
         return await this.call('listunspent', params);
     }
 
     /**
      *
-     * @param {boolean} unlock
-     * @param {module:resources.Output[]} outputs, [{"txid":"id","vout": n},...]
+     * @param minconf
+     * @param maxconf
+     * @param addresses
+     * @param includeUnsafe
+     * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async lockUnspent(unlock: boolean, outputs: Output[]): Promise<any> {
+    public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
+                                  queryOptions?: any): Promise<RpcUnspentOutput[]> {
 
-        const params: any[] = [unlock, outputs, true];
+        const params: any[] = [minconf]; // [minconf, maxconf, addresses, includeUnsafe];
+
+        if (maxconf !== undefined) {
+            params.push(maxconf);
+        }
+
+        if (addresses !== undefined) {
+            params.push(addresses);
+        }
+
+        if (includeUnsafe !== undefined) {
+            params.push(includeUnsafe);
+        }
+
+        if (!_.isEmpty(queryOptions)) {
+            params.push(queryOptions);
+        }
+        return await this.call('listunspentblind', params);
+    }
+
+    /**
+     *
+     * @param {boolean} unlock
+     * @param prevouts
+     * @param permanent
+     * @returns {Promise<any>}
+     */
+    public async lockUnspent(unlock: boolean, prevouts: Prevout[]/*RpcOutput[]*/, permanent: boolean = true): Promise<boolean> {
+
+        const params: any[] = [unlock, prevouts, permanent];
         return await this.call('lockunspent', params);
     }
 
@@ -454,7 +599,6 @@ export class CoreRpcService {
     /**
      * ﻿Get the current block number
      *
-     * @param {string} account
      * @returns {Promise<any>}
      */
     public async getBlockCount(): Promise<number> {
@@ -497,6 +641,13 @@ export class CoreRpcService {
         return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 
+    /**
+     *
+     * @param method
+     * @param params
+     * @param logCall
+     * @returns {Promise<any>}
+     */
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -587,5 +738,6 @@ export class CoreRpcService {
         const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
         return `http://${host}:${port}${wallet}`;
     }
+
 
 }

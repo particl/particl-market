@@ -2,24 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Order } from './Order';
 import { Bid } from './Bid';
-import { OrderItemObject } from './OrderItemObject';
 
 export class OrderItem extends Bookshelf.Model<OrderItem> {
 
     public static RELATIONS = [
         'Order',
         'Bid',
+        'Bid.BidDatas',
+        'Bid.ChildBids',
         'Bid.ListingItem',
         'Bid.ListingItem.ListingItemTemplate',
         'Bid.ListingItem.PaymentInformation',
         'Bid.ListingItem.PaymentInformation.Escrow',
         'Bid.ListingItem.PaymentInformation.Escrow.Ratio',
-        'Bid.ShippingAddress',
-        'OrderItemObjects'
+        'Bid.ShippingAddress'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<OrderItem> {
@@ -61,9 +60,4 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
     // public ListingItem(): ListingItem {
     //    return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     // }
-
-    public OrderItemObjects(): Collection<OrderItemObject> {
-        return this.hasMany(OrderItemObject, 'order_item_id', 'id');
-    }
-
 }

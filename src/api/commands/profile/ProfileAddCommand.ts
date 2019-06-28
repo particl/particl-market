@@ -6,9 +6,9 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProfileService } from '../../services/ProfileService';
+import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
+import { ProfileCreateRequest } from '../../requests/model/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
@@ -21,7 +21,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.PROFILE_ADD);
         this.log = new Logger(__filename);

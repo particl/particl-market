@@ -7,14 +7,18 @@ declare module 'resources' {
     interface ListingItemTemplate {
         id: number;
         hash: string;
-        createdAt: Date;
-        updatedAt: Date;
+        generatedAt: number;
         ItemInformation: ItemInformation;
         PaymentInformation: PaymentInformation;
         MessagingInformation: MessagingInformation[];
         ListingItemObjects: ListingItemObject[];
         ListingItems: ListingItem[];
         Profile: Profile;
+        ParentListingItemTemplate: ListingItemTemplate;
+        ChildListingItemTemplate: ListingItemTemplate;
+
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

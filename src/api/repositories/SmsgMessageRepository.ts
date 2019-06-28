@@ -9,7 +9,8 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import {ActionDirection} from '../enums/ActionDirection';
 
 
 export class SmsgMessageRepository {
@@ -36,8 +37,10 @@ export class SmsgMessageRepository {
         return this.SmsgMessageModel.fetchById(id, withRelated);
     }
 
-    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<SmsgMessage> {
-        return this.SmsgMessageModel.fetchByMsgId(msgId, withRelated);
+    public async findOneByMsgIdAndDirection(msgId: string,
+                                            direction: ActionDirection = ActionDirection.INCOMING,
+                                            withRelated: boolean = true): Promise<SmsgMessage> {
+        return this.SmsgMessageModel.fetchByMsgIdAndDirection(msgId, direction, withRelated);
     }
 
     public async create(data: any): Promise<SmsgMessage> {
@@ -46,6 +49,7 @@ export class SmsgMessageRepository {
             const smsgMessageCreated = await smsgMessage.save();
             return this.SmsgMessageModel.fetchById(smsgMessageCreated.id);
         } catch (error) {
+            this.log.error(JSON.stringify(error, null, 2));
             throw new DatabaseException('Could not create the smsgMessage!', error);
         }
     }

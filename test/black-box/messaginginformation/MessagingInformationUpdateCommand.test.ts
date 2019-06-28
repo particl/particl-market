@@ -3,13 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('MessagingInformationUpdateCommand', () => {
 
@@ -20,6 +23,8 @@ describe('MessagingInformationUpdateCommand', () => {
 
     const messagingCommand = Commands.MESSAGINGINFORMATION_ROOT.commandName;
     const messagingUpdateCommand = Commands.MESSAGINGINFORMATION_UPDATE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -42,7 +47,11 @@ describe('MessagingInformationUpdateCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
         ]).toParamsArray();
 
         // generate listingItemTemplate
@@ -56,16 +65,17 @@ describe('MessagingInformationUpdateCommand', () => {
     });
 
     const messageInfoData = {
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey2'
     };
 
-    test('Should fail to update MessagingInformation because empty body', async () => {
+    test('Should fail to update MessagingInformation because missing protocol', async () => {
         const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
             listingItemTemplates[0].id
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
     });
 
     test('Should fail to update MessagingInformation because invalid protocol', async () => {
@@ -76,6 +86,7 @@ describe('MessagingInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('protocol').getMessage());
     });
 
     test('Should update the MessagingInformation', async () => {
@@ -93,7 +104,7 @@ describe('MessagingInformationUpdateCommand', () => {
         expect(result.listingItemTemplateId).toBe(listingItemTemplates[0].id);
     });
 
-    test('Should not update the MessagingInformation that has relation to ListingItem', async () => {
+    test('Should not update the MessagingInformation because the ListingItemTemplate has been published', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -104,7 +115,7 @@ describe('MessagingInformationUpdateCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true,    // generateListingItemObjects
+            false,    // generateListingItemObjects
             false,
             null,
             true,
@@ -119,15 +130,32 @@ describe('MessagingInformationUpdateCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
 
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+        // post template
+        const daysRetention = 4;
+        let res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplates[0].id,
+            daysRetention,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        const sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+
+        res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
             listingItemTemplates[0].id,
             messageInfoData.protocol,
             messageInfoData.publicKey
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('MessagingInformation cannot be updated if there is a ListingItem related to ListingItemTemplate.');
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
 
 });

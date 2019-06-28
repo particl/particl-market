@@ -9,21 +9,21 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { FlaggedItemService } from '../../src/api/services/FlaggedItemService';
-import { ProposalService } from '../../src/api/services/ProposalService';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { FlaggedItemCreateRequest } from '../../src/api/requests/FlaggedItemCreateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { FlaggedItemService } from '../../src/api/services/model/FlaggedItemService';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { FlaggedItemCreateRequest } from '../../src/api/requests/model/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../../src/api/models/FlaggedItem';
-import { FlaggedItemUpdateRequest } from '../../src/api/requests/FlaggedItemUpdateRequest';
+import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedItemUpdateRequest';
 
 describe('FlaggedItem', () => {
 
@@ -50,11 +50,11 @@ describe('FlaggedItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        flaggedItemService = app.IoC.getNamed<FlaggedItemService>(Types.Service, Targets.Service.FlaggedItemService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        flaggedItemService = app.IoC.getNamed<FlaggedItemService>(Types.Service, Targets.Service.model.FlaggedItemService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

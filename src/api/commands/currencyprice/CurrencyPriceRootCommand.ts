@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -12,17 +13,16 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
-import { CurrencyPriceService } from '../../services/CurrencyPriceService';
+import { CurrencyPriceService } from '../../services/model/CurrencyPriceService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CurrencyPrice } from '../../models/CurrencyPrice';
-import * as resources from 'resources';
 
 export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandInterface<resources.CurrencyPrice[]> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.CurrencyPriceService) private currencyPriceService: CurrencyPriceService,
+        @inject(Types.Service) @named(Targets.Service.model.CurrencyPriceService) private currencyPriceService: CurrencyPriceService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.CURRENCYPRICE_ROOT);

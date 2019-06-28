@@ -5,15 +5,17 @@
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
-import * as Jimp from 'jimp';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ItemImageAddCommand', () => {
 
@@ -24,17 +26,19 @@ describe('ItemImageAddCommand', () => {
 
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-    let createdImage: resources.Image;
+    let image: resources.Image;
 
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
 
-    let createdListingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let listingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
+    let listingItemTemplate: resources.ListingItemTemplate;
     let itemImages: resources.ItemImageData[];
 
     beforeAll(async () => {
@@ -44,88 +48,96 @@ describe('ItemImageAddCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            false,   // generateItemInformation
-            true,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            false,      // generateItemInformation
+            false,      // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            false,      // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            false,      // generateMessagingInformation
+            false       // generateListingItemObjects
         ]).toParamsArray();
 
-        let listingItemTemplate = await testUtil.generateData(
+        let listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
-        createdListingItemTemplateWithoutItemInformation = listingItemTemplate[0];
+        listingItemTemplateWithoutItemInformation = listingItemTemplates[0];
 
         generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            false,   // generateShippingDestinations
-            true,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            true,       // generateShippingDestinations
+            true,       // generateItemImages
+            true,       // generatePaymentInformation
+            true,       // generateEscrow
+            true,       // generateItemPrice
+            false,      // generateMessagingInformation
+            false       // generateListingItemObjects
         ]).toParamsArray();
 
-        listingItemTemplate = await testUtil.generateData(
+        listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
-        createdListingItemTemplate = listingItemTemplate[0];
+        listingItemTemplate = listingItemTemplates[0];
     });
 
-    test('Should fail to add ItemImage because missing ListingItemTemplate.Id', async () => {
+    test('Should fail to add ItemImage because missing param listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('ListingItemTemplate id can not be null.');
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail to add ItemImage because given ListingItemTemplate does not have ItemInformation', async () => {
-        // add item image
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand, createdListingItemTemplateWithoutItemInformation.id]);
+    test('Should fail to add ItemImage because ListingItemTemplate missing relation to ItemInformation', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplateWithoutItemInformation.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatWide
+        ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Request body is not valid');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ItemInformation').getMessage());
     });
 
     test('Should fail to add ItemImage without ItemImageData', async () => {
-        // add item image
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand, createdListingItemTemplate.id]);
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64'
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Invalid image protocol.');
+        expect(res.error.error.message).toBe(new MissingParamException('data').getMessage());
     });
 
     test('Should fail to add ItemImage because invalid ItemImageData protocol', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand,
-            [itemImageAddCommand, createdListingItemTemplate.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            'INVALID_PROTOCOL',
+            'BASE64',
+            ImageProcessing.milkcat
+        ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Invalid image protocol.');
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('protocol').getMessage());
     });
 
     test('Should add ItemImage with ItemImageData', async () => {
-        // add item image
-        const res: any = await testUtil.rpc(itemImageCommand, [
-            itemImageAddCommand,
-            createdListingItemTemplate.id,
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
             'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
+            ProtocolDSN.LOCAL,
             'BASE64',
             ImageProcessing.milkcatWide
         ]);
@@ -133,23 +145,49 @@ describe('ItemImageAddCommand', () => {
         res.expectStatusCode(200);
         res.expectDataRpc(keys);
         const result: any = res.getBody()['result'];
-        createdImage = result;
+        image = result;
         itemImages = result.ItemImageDatas;
         // TODO: this test is just testing that the command response is 200, its not verifying that the itemimage was actually inserted
 
     });
 
+    test('Should not be able to add ItemImage because ListingItemTemplate is not modifiable', async () => {
+        let res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            2,
+            defaultMarket.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
+
+        await testUtil.waitFor(5);
+
+        res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatWide
+        ]);
+        res.expectJson();
+        expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+    });
+
     // TODO: this is not an api test and should be moved under unit/integration tests
-    test('Should return valid versions of createdImage', async () => {
+    test('Should return valid versions of image', async () => {
 
         expect(itemImages.length).toBe(4);
 
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
+                + '/api/item-images/' + image.id + '/' + imageData.imageVersion;
             expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
+            expect(imageData.protocol).toBe(ProtocolDSN.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
         }
     });

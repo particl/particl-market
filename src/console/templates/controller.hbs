@@ -21,7 +21,7 @@ export class {{name.capitalize}}Controller {
 
     {{#if isResourceTemplate}}
     constructor(
-        @inject(Types.Service) @named(Targets.Service.{{name.capitalize}}Service) private {{name.camelCase}}Service: {{name.capitalize}}Service,
+        @inject(Types.Service) @named(Targets.Service.model.{{name.capitalize}}Service) private {{name.camelCase}}Service: {{name.capitalize}}Service,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }

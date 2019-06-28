@@ -2,23 +2,27 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemLocationService } from '../../services/ItemLocationService';
+import { ItemLocationService } from '../../services/model/ItemLocationService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import * as _ from 'lodash';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
-import {LocationMarkerCreateRequest} from '../../requests/LocationMarkerCreateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -26,8 +30,8 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemLocationService) private itemLocationService: ItemLocationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMLOCATION_ADD);
         this.log = new Logger(__filename);
@@ -35,13 +39,13 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     * [0]: listingItemTemplateId
-     * [1]: countryCode
-     * [2]: address, optional
-     * [3]: gps marker title, optional
-     * [4]: gps marker description, optional
-     * [5]: gps marker latitude, optional
-     * [6]: gps marker longitude, optional
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *  [1]: country (country/countryCode)
+     *  [2]: address, optional
+     *  [3]: gpsMarkerTitle, optional
+     *  [4]: gpsMarkerDescription, optional
+     *  [5]: gpsMarkerLatitude, optional
+     *  [6]: gpsMarkerLongitude, optional
      *
      * @param data
      * @returns {Promise<ItemLocation>}
@@ -49,20 +53,17 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
 
-        const listingItemTemplateId = data.params[0];
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const countryCode = data.params[1];
         const address = data.params[2];
-
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
         let locationMarker: LocationMarkerCreateRequest | undefined;
 
         const allGpsMarketDataParamsExist = data.params[3] && data.params[4] && data.params[5] && data.params[6];
         if (allGpsMarketDataParamsExist) {
             locationMarker = {
-                markerTitle: data.params[3],
-                markerText: data.params[4],
+                title: data.params[3],
+                description: data.params[4],
                 lat: data.params[5],
                 lng: data.params[6]
             } as LocationMarkerCreateRequest;
@@ -70,7 +71,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
         const itemLocation = {
             item_information_id: listingItemTemplate.ItemInformation.id,
-            region: countryCode,
+            country: countryCode,
             address,
             locationMarker
         } as ItemLocationCreateRequest;
@@ -80,78 +81,82 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     * [0]: listingItemTemplateId
-     * [1]: region (country/countryCode)
-     * [2]: address, optional
-     * [3]: gps marker title, optional
-     * [4]: gps marker description, optional
-     * [5]: gps marker latitude, optional
-     * [6]: gps marker longitude, optional
+     *  [0]: listingItemTemplateId
+     *  [1]: country (country/countryCode)
+     *  [2]: address, optional
+     *  [3]: gpsMarkerTitle, optional
+     *  [4]: gpsMarkerDescription, optional
+     *  [5]: gpsMarkerLatitude, optional
+     *  [6]: gpsMarkerLongitude, optional
      *
      * @param data
-     * @returns {Promise<ItemLocation>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
-        }
-        if (data.params.length > 3 && data.params.length !== 7) {
-            throw new MessageException('Missing gps marker data.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('country');
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('Invalid listingItemTemplateId.');
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('country', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('address', 'string');
         }
 
-        if (typeof data.params[1] !== 'string') {
-            throw new MessageException('Invalid region.');
-        } else {
-            // If countryCode is country, convert to countryCode.
-            // If countryCode is country code, validate, and possibly throw error.
-            data.params[1] = ShippingCountries.convertAndValidate(data.params[1]);
-        }
-
-        if (typeof data.params[2] !== 'string') { // address should be string
-            throw new MessageException('Invalid address.');
-        }
-
-        const allGpsMarketDataParamsExist = data.params[3] && data.params[4] && data.params[5] && data.params[6];
-        if (allGpsMarketDataParamsExist) {
+        if (data.params.length > 3 && data.params.length !== 7) {
+            if (data.params.length < 5) {
+                throw new MissingParamException('gpsMarkerDescription');
+            } else if (data.params.length < 6) {
+                throw new MissingParamException('gpsMarkerLatitude');
+            } else if (data.params.length < 7) {
+                throw new MissingParamException('gpsMarkerLongitude');
+            }
 
             if (typeof data.params[3] !== 'string') {
-                throw new MessageException('Invalid title.');
-            }
-            if (typeof data.params[4] !== 'string') {
-                throw new MessageException('Invalid description.');
-            }
-
-            if (typeof data.params[5] !== 'number') {
-                throw new MessageException('Invalid latitude.');
-            }
-            if (typeof data.params[6] !== 'number') {
-                throw new MessageException('Invalid longitude.');
+                throw new InvalidParamException('gpsMarkerTitle', 'string');
+            } else if (typeof data.params[4] !== 'string') {
+                throw new InvalidParamException('gpsMarkerDescription', 'string');
+            } else if (typeof data.params[5] !== 'number') {
+                throw new InvalidParamException('gpsMarkerLatitude', 'number');
+            } else if (typeof data.params[6] !== 'number') {
+                throw new InvalidParamException('gpsMarkerLongitude', 'number');
             }
         }
 
-        // ItemLocation cannot be created if there's a ListingItem related to ItemInformations ItemLocation.
-        // (the item has allready been posted)
-        const listingItemTemplateId = data.params[0];
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        data.params[1] = ShippingCountries.convertAndValidate(data.params[1]);
 
-        if (_.size(listingItemTemplate.ListingItems) > 0) { // listingitems exist
-            throw new MessageException(`ListingItem(s) for the listingItemTemplateId=${listingItemTemplateId} allready exist!`);
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
         }
 
+        // can't add if ItemLocation already exists
         if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) { // templates itemlocation exist
-            throw new MessageException(`ItemLocation for the listingItemTemplateId=${listingItemTemplateId} already exists!`);
+            throw new MessageException(`ItemLocation for the listingItemTemplateId=${listingItemTemplate.id} already exists!`);
         }
+
+        data.params[0] = listingItemTemplate;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <region> [<address> [<gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
+        return this.getName() + ' <listingItemTemplateId> <country> [<address> [<gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
             + ' <gpsMarkerLongitude>]] ';
     }
 
@@ -159,7 +164,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want \n'
             + '                                to associate with this item location. \n'
-            + '    <region>                 - String - Region, i.e. country or country code. \n'
+            + '    <country>                 - String - Country, i.e. country or country code. \n'
             + '    <address>                - String - Address [TODO, what kind of address?]. \n'
             + '    <gpsMarkerTitle>         - String - Gps marker title. \n'
             + '    <gpsMarkerDescription>   - String - Gps marker text. \n'

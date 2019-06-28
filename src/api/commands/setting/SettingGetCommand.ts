@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { SettingService } from '../../services/SettingService';
+import { SettingService } from '../../services/model/SettingService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Setting } from '../../models/Setting';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -14,7 +14,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import { ProfileService } from '../../services/ProfileService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class SettingGetCommand extends BaseCommand implements RpcCommandInterface<Setting> {
 
@@ -22,8 +22,8 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_GET);
         this.log = new Logger(__filename);

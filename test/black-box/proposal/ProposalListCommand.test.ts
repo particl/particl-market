@@ -9,8 +9,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
-import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
-import { ProposalType } from '../../../src/api/enums/ProposalType';
+import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
+import { ProposalCategory } from '../../../src/api/enums/ProposalCategory';
 // tslint:enable:max-line-length
 
 describe('ProposalListCommand', () => {
@@ -104,8 +104,8 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(1);
     });
 
-    test('Should list 3 Proposals with type PUBLIC_VOTE', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.PUBLIC_VOTE]);
+    test('Should list 3 Proposals with category PUBLIC_VOTE', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalCategory.PUBLIC_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -113,8 +113,8 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(3);
     });
 
-    test('Should not list any Proposals with type ITEM_VOTE', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.ITEM_VOTE]);
+    test('Should not list any Proposals with category ITEM_VOTE', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalCategory.ITEM_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);
 

@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
@@ -10,7 +11,6 @@ import { AddressType } from '../../../src/api/enums/AddressType';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('AddressAddCommand', () => {
@@ -75,7 +75,7 @@ describe('AddressAddCommand', () => {
         expect(result.zipCode).toBe(testData.zipCode);
     });
 
-    test('Should fail because we want to create an empty Address without required fields', async () => {
+    test('Should fail to create an empty Address because missing type', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             testData.title,
             testData.firstName,
@@ -88,8 +88,7 @@ describe('AddressAddCommand', () => {
             'test'
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId').getMessage());
     });
 
@@ -107,7 +106,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('zipCode').getMessage());
     });
 
@@ -124,7 +122,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
     });
 
@@ -140,7 +137,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
     });
 
@@ -155,7 +151,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('city').getMessage());
     });
 
@@ -169,7 +164,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
     });
 
@@ -182,7 +176,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('addressLine1').getMessage());
     });
 
@@ -194,7 +187,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('lastName').getMessage());
     });
 
@@ -205,7 +197,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('firstName').getMessage());
     });
 
@@ -215,7 +206,6 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
     });
 
@@ -224,30 +214,10 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to create Address because state is null', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-            null,
-            testData.country,
-            testData.zipCode
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
-    });
-
-    test('Should fail to create Address because state is undefined', async () => {
+    test('Should fail to create Address because missing state', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             defaultProfile.id,
             testData.title,
@@ -261,8 +231,7 @@ describe('AddressAddCommand', () => {
             testData.zipCode
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
     });
 

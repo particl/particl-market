@@ -2,11 +2,11 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { CommandEnumType, Commands } from './CommandEnumType';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
-import * as _ from 'lodash';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class BaseCommand {

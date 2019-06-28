@@ -9,6 +9,7 @@ import { Vote } from '../models/Vote';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import {SmsgMessage} from '../models/SmsgMessage';
 
 export class VoteRepository {
 
@@ -40,6 +41,10 @@ export class VoteRepository {
 
     public async findOneBySignature(signature: string, withRelated: boolean = true): Promise<Vote> {
         return this.VoteModel.fetchBySignature(signature, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Vote> {
+        return this.VoteModel.fetchByMsgId(msgId, withRelated);
     }
 
     public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {

@@ -9,7 +9,7 @@ import { Order } from '../models/Order';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { OrderSearchParams } from '../requests/OrderSearchParams';
+import { OrderSearchParams } from '../requests/search/OrderSearchParams';
 
 export class OrderRepository {
 

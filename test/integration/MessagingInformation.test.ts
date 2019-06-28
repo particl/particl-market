@@ -3,25 +3,25 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessagingInformation } from '../../src/api/models/MessagingInformation';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
-import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { MessagingInformationCreateRequest } from '../../src/api/requests/model/MessagingInformationCreateRequest';
+import { MessagingInformationUpdateRequest } from '../../src/api/requests/model/MessagingInformationUpdateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -42,7 +42,7 @@ describe('MessagingInformation', () => {
 
     const testData = {
         listing_item_template_id: null,
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey1'
     } as MessagingInformationCreateRequest;
 
@@ -54,7 +54,7 @@ describe('MessagingInformation', () => {
 
     const testDataUpdated = {
         listing_item_template_id: null,
-        protocol: MessagingProtocolType.SMSG,
+        protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey2'
     } as MessagingInformationUpdateRequest;
 
@@ -62,9 +62,9 @@ describe('MessagingInformation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.model.MessagingInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -115,13 +115,6 @@ describe('MessagingInformation', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
-        expect.assertions(1);
-        await messagingInformationService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should create a new MessagingInformation for ListingItemTemplate', async () => {
         testData.listing_item_template_id = createdListingItemTemplate.id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
@@ -170,13 +163,6 @@ describe('MessagingInformation', () => {
         expect(result.publicKey).toBe(testData.publicKey);
     });
 
-    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
-        expect.assertions(1);
-        await messagingInformationService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should update the MessagingInformation', async () => {
         testDataUpdated.listing_item_template_id = createdListingItemTemplate.id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.update(createdId, testDataUpdated);
@@ -187,16 +173,10 @@ describe('MessagingInformation', () => {
     });
 
     test('Should delete the MessagingInformation', async () => {
-        expect.assertions(2);
+        expect.assertions(1);
         await messagingInformationService.destroy(createdId);
         await messagingInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
-        );
-
-        // delete listing-item-template
-        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
-        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
         );
     });
 

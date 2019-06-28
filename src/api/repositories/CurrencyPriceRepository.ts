@@ -9,7 +9,7 @@ import { CurrencyPrice } from '../models/CurrencyPrice';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { CurrencyPriceParams } from '../requests/CurrencyPriceParams';
+import { CurrencyPriceSearchParams } from '../requests/search/CurrencyPriceSearchParams';
 
 export class CurrencyPriceRepository {
 
@@ -33,10 +33,10 @@ export class CurrencyPriceRepository {
 
     /**
      *
-     * @param options, CurrencyPriceParams
+     * @param options, CurrencyPriceSearchParams
      * @returns {Promise<CurrencyPrice>}
      */
-    public async search(options: CurrencyPriceParams): Promise<CurrencyPrice> {
+    public async search(options: CurrencyPriceSearchParams): Promise<CurrencyPrice> {
         return this.CurrencyPriceModel.search(options);
     }
 

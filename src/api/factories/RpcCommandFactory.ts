@@ -36,7 +36,7 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
-import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
+import { EscrowCompleteCommand } from '../commands/escrow/EscrowCompleteCommand';
 import { EscrowRemoveCommand } from '../commands/escrow/EscrowRemoveCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
 import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
@@ -99,6 +99,7 @@ import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
 import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
 import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
+import { OrderItemShipCommand } from '../commands/orderitem/OrderItemShipCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
@@ -178,7 +179,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowCompleteCommand) private escrowCompleteCommand: EscrowCompleteCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRemoveCommand) private escrowRemoveCommand: EscrowRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
@@ -239,6 +240,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemShipCommand) private orderItemShipCommand: OrderItemShipCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -327,7 +329,7 @@ export class RpcCommandFactory {
         this.commands.push(dataRootCommand);
 
         this.commands.push(escrowRootCommand);
-        this.commands.push(escrowAddCommand);
+        this.commands.push(escrowCompleteCommand);
         this.commands.push(escrowRemoveCommand);
         this.commands.push(escrowUpdateCommand);
         this.commands.push(escrowLockCommand);
@@ -388,6 +390,7 @@ export class RpcCommandFactory {
 
         this.commands.push(orderItemRootCommand);
         this.commands.push(orderItemStatusCommand);
+        this.commands.push(orderItemShipCommand);
 
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(paymentInformationRootCommand);

@@ -8,17 +8,16 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { ItemImageData } from '../../src/api/models/ItemImageData';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
+import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 describe('ItemImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -38,16 +37,16 @@ describe('ItemImageData', () => {
     // let createdImageDataId;
 
     const testData = {
+        dataId: '',
         imageVersion: ImageVersions.ORIGINAL.propName,
-        dataId: null,
-        protocol: ImageDataProtocolType.LOCAL,
+        protocol: ProtocolDSN.LOCAL,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
     } as ItemImageDataCreateRequest;
 
     const testDataUpdated = {
-        dataId: null,
-        protocol: ImageDataProtocolType.LOCAL,
+        dataId: '',
+        protocol: ProtocolDSN.LOCAL,
         imageVersion: ImageVersions.ORIGINAL.propName,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
@@ -57,11 +56,11 @@ describe('ItemImageData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.ItemImageDataService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

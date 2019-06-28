@@ -12,16 +12,16 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalResult } from '../../src/api/models/ProposalResult';
-import { ProposalResultService } from '../../src/api/services/ProposalResultService';
-import { ProposalResultCreateRequest } from '../../src/api/requests/ProposalResultCreateRequest';
-import { ProposalResultUpdateRequest } from '../../src/api/requests/ProposalResultUpdateRequest';
-import { ProposalService } from '../../src/api/services/ProposalService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { ProposalResultService } from '../../src/api/services/model/ProposalResultService';
+import { ProposalResultCreateRequest } from '../../src/api/requests/model/ProposalResultCreateRequest';
+import { ProposalResultUpdateRequest } from '../../src/api/requests/model/ProposalResultUpdateRequest';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('ProposalResult', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -53,10 +53,10 @@ describe('ProposalResult', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.ProposalResultService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.model.ProposalResultService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

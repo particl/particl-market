@@ -8,14 +8,13 @@ import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
-import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
+import { ListingItemSearchParams } from '../requests/search/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import { ActionMessage } from './ActionMessage';
 import { Proposal } from './Proposal';
 import { Logger as LoggerType } from '../../core/Logger';
 
@@ -44,22 +43,17 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'MessagingInformation',
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
-        'ActionMessages',
-        'ActionMessages.MessageObjects',
-        'ActionMessages.MessageInfo',
-        'ActionMessages.MessageEscrow',
-        'ActionMessages.MessageData',
+        'ListingItemTemplate',
+        'ListingItemTemplate.Profile',
+        'Market',
         'Bids',
         'Bids.BidDatas',
         'Bids.OrderItem',
         'Bids.OrderItem.Order',
-        'Market',
         'FlaggedItem',
         'FlaggedItem.Proposal',
-        'FlaggedItem.Proposal.ProposalOptions',
+        'FlaggedItem.Proposal.ProposalOptions'
         // 'FlaggedItem.Proposal.ProposalResults',
-        'ListingItemTemplate',
-        'ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -79,6 +73,16 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             });
         } else {
             return await ListingItem.where<ListingItem>({ hash: value }).fetch();
+        }
+    }
+
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<ListingItem> {
+        if (withRelated) {
+            return await ListingItem.where<ListingItem>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItem.where<ListingItem>({ msgid: value }).fetch();
         }
     }
 
@@ -176,7 +180,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 // searchBy by item location (country)
                 if (options.country && typeof options.country === 'string') {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
-                    qb.where('item_locations.region', options.country);
+                    qb.where('item_locations.country', options.country);
                     ListingItem.log.debug('...searchBy by location: ', options.country);
                 }
 
@@ -202,10 +206,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
                 }
-                qb.groupBy('listing_items.id');
+                // qb.groupBy('listing_items.id');
 
             })
-            .orderBy('updated_at', options.order)
+            .orderBy('created_at', options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
@@ -228,6 +232,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
+
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
@@ -248,6 +255,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get ReceivedAt(): number { return this.get('receivedAt'); }
     public set ReceivedAt(value: number) { this.set('receivedAt', value); }
+
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -297,9 +307,5 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public ShoppingCartItem(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
-    }
-
-    public ActionMessages(): Collection<ActionMessage> {
-        return this.hasMany(ActionMessage, 'listing_item_id', 'id');
     }
 }

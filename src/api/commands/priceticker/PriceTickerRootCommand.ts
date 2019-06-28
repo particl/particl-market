@@ -9,15 +9,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
-
-import { PriceTickerService } from '../../services/PriceTickerService';
+import { PriceTickerService } from '../../services/model/PriceTickerService';
 import { MessageException } from '../../exceptions/MessageException';
 import { PriceTicker } from '../../models/PriceTicker';
-
 
 export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<PriceTicker>> {
 
@@ -25,7 +22,7 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.PriceTickerService) private priceTickerService: PriceTickerService
+        @inject(Types.Service) @named(Targets.Service.model.PriceTickerService) private priceTickerService: PriceTickerService
     ) {
         super(Commands.PRICETICKER_ROOT);
         this.log = new Logger(__filename);

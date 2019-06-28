@@ -3,15 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
-import { Logger as LoggerType } from '../../../src/core/Logger';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 
@@ -34,6 +35,54 @@ describe('ListingItemTemplateRemoveCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
+
+    });
+
+    test('Should fail to remove ListingItemTemplate because of missing listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateRemoveCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail to remove ListingItemTemplate because of invalid listingItemTemplateId', async () => {
+        const fakeId = 'not a number';
+        const res: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, fakeId]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+    test('Should fail to remove ListingItemTemplate because of a non-existent listingItemTemplate', async () => {
+        const fakeId = 1000000000;
+        const res: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, fakeId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
     test('Should remove ListingItemTemplate', async () => {
@@ -71,10 +120,10 @@ describe('ListingItemTemplateRemoveCommand', () => {
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.success).toBe(false);
-        expect(result.error.error.message).toBe(`Entity with identifier ${listingItemTemplate.id} does not exist`);
+        expect(result.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
-    test('Should fail remove ListingItemTemplate because ListingItemTemplate have related ListingItems', async () => {
+    test('Should fail to remove ListingItemTemplate because ListingItemTemplate has related ListingItems', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -101,25 +150,18 @@ describe('ListingItemTemplateRemoveCommand', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
-        // expect template is related to correct profile and listingitem posted to correct market
+        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+
+        // expect template is related to correct profile and ListingItem posted to correct Market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
-
-        // expect template hash created on the server matches what we create here
-        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
-        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
-        log.debug('generatedTemplateHash:', generatedTemplateHash);
-        expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
-
-        // expect the item hash generated at the same time as template, matches with the templates one
-        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
-        log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
-        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
 
         // remove Listing item template
         const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
         result.expectJson();
-        result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${listingItemTemplate.id}`);
+//        result.expectStatusCode(400);
+        expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+
     });
+
 });

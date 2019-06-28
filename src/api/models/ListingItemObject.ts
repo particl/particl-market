@@ -6,7 +6,7 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
-import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectSearchParams } from '../requests/search/ListingItemObjectSearchParams';
 import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {

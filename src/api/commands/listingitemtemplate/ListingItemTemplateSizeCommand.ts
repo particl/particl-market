@@ -3,17 +3,21 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
-import {MissingParamException} from '../../exceptions/MissingParamException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import {CryptoAddressType} from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -21,7 +25,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_SIZE);
         this.log = new Logger(__filename);
@@ -37,8 +41,25 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<MessageSize> {
 
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => value.toJSON());
+
+        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
+        // add some data to get a more realistic result
+        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
+            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+            listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress = {} as resources.CryptocurrencyAddress;
+
+            if (EscrowType.MAD_CT === listingItemTemplate.PaymentInformation.Escrow.type) {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address
+                    = 'TetbeNoZDWJ6mMzMBy745BXQ84KntsNch58GWz53cqG6X5uupqNojqcoC7vmEguRPfC5QkpJsdbBnEcdXMLgJG2dAtoAinSdKNFWtB';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.STEALTH;
+            } else {
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address = 'pmnK6L2iZx9zLA6GAmd3BUWq6yKa53Lb8H';
+                listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
+            }
+        }
+
         return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
     }
 
@@ -53,6 +74,10 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 
         return data;

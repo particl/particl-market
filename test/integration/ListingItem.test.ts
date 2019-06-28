@@ -3,46 +3,45 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
-import * as _ from 'lodash';
 import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItem } from '../../src/api/models/ListingItem';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
-import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
-import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
+import { ListingItemCreateRequest } from '../../src/api/requests/model/ListingItemCreateRequest';
+import { ItemInformationCreateRequest } from '../../src/api/requests/model/ItemInformationCreateRequest';
+import { PaymentInformationCreateRequest } from '../../src/api/requests/model/PaymentInformationCreateRequest';
+import { MessagingInformationCreateRequest } from '../../src/api/requests/model/MessagingInformationCreateRequest';
+import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { EscrowService } from '../../src/api/services/EscrowService';
-import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
-import { ItemPriceService } from '../../src/api/services/ItemPriceService';
-import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
-import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
-import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
-import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
-import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/model/EscrowService';
+import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
+import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
+import { ShippingPriceService } from '../../src/api/services/model/ShippingPriceService';
+import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
+import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
+import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
+import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
 import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as resources from 'resources';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -86,37 +85,32 @@ describe('ListingItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
-        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
-        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
-        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.EscrowRatioService);
-        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
-        shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.ShippingPriceService);
-        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
-        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
-        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
+        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
+        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
+        shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.model.ShippingPriceService);
+        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
+        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.model.MessagingInformationService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
@@ -158,10 +152,10 @@ describe('ListingItem', () => {
         expect(result.longDescription).toBe(createRequest.longDescription);
         expect(result.ItemCategory.name).toBe(createRequest.itemCategory.name);
         expect(result.ItemCategory.description).toBe(createRequest.itemCategory.description);
-        expect(result.ItemLocation.region).toBe(createRequest.itemLocation.region);
+        expect(result.ItemLocation.country).toBe(createRequest.itemLocation.country);
         expect(result.ItemLocation.address).toBe(createRequest.itemLocation.address);
-        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(createRequest.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemLocation.LocationMarker.markerText).toBe(createRequest.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.title).toBe(createRequest.itemLocation.locationMarker.title);
+        expect(result.ItemLocation.LocationMarker.description).toBe(createRequest.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
@@ -182,12 +176,12 @@ describe('ListingItem', () => {
         expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(createRequest.itemPrice.cryptocurrencyAddress.address);
     };
 
-    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation, createRequest: MessagingInformationCreateRequest) => {
+    const expectMessagingInformationFromCreateRequest = (results: resources.MessagingInformation, createRequest: MessagingInformationCreateRequest[]) => {
         expect(results[0].protocol).toBe(createRequest[0].protocol);
         expect(results[0].publicKey).toBe(createRequest[0].publicKey);
     };
 
-    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObjects, createRequest: ListingItemObjectCreateRequest) => {
+    const expectListingItemObjectsFromCreateRequest = (results: resources.ListingItemObjects, createRequest: ListingItemObjectCreateRequest[]) => {
         expect(results[0].type).toBe(createRequest[0].type);
         expect(results[0].description).toBe(createRequest[0].description);
         expect(results[0].order).toBe(createRequest[0].order);
@@ -321,6 +315,7 @@ describe('ListingItem', () => {
     };
 
     // TODO: missing searchBy tests
+    // TODO: test with images only on the template tests
 
     // -------------------------------
     // TESTS
@@ -336,9 +331,10 @@ describe('ListingItem', () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem1 = listingItemModel.toJSON();
+        createdListingItem1 = await listingItemService.create(testDataToSave)
+            .then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
@@ -376,6 +372,7 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem2 = listingItemModel.toJSON();
@@ -399,7 +396,7 @@ describe('ListingItem', () => {
     }, 600000); // timeout to 600s
 
     test('Should delete the previously updated ListingItem', async () => {
-        expect.assertions(22);
+        expect.assertions(21);
         await listingItemService.destroy(updatedListingItem1.id);
         await expectListingItemWasDeleted(updatedListingItem1);
     });
@@ -414,6 +411,7 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -438,54 +436,18 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem2 = listingItemModel.toJSON();
+        createdListingItem2 = await listingItemService.create(testDataToSave)
+            .then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should delete the ListingItem with ItemInformation and PaymentInformation', async () => {
-        expect.assertions(12);
+        expect.assertions(11);
         await listingItemService.destroy(createdListingItem2.id);
         await expectListingItemWasDeleted(createdListingItem2);
-    });
-
-    test('Should create ListingItem with relation to ListingItemTemplate', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-
-        // create ListingItemTemplate
-        const listingItemTemplateCreateRequest = {
-            profile_id: defaultProfile.id,
-            itemInformation: testDataToSave.itemInformation,
-            paymentInformation: testDataToSave.paymentInformation,
-            messagingInformation: testDataToSave.messagingInformation,
-            listingItemObjects: testDataToSave.listingItemObjects
-        } as ListingItemTemplateCreateRequest;
-
-        // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
-        const listingItemTemplate: ListingItemTemplate = await listingItemTemplateService.create(listingItemTemplateCreateRequest);
-
-        // create ListingItem with relation to ListingItemTemplate
-        testDataToSave.listing_item_template_id = listingItemTemplate.Id;
-        testDataToSave.market_id = defaultMarket.id;
-        testDataToSave.seller = defaultProfile.address;
-        testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = new Date().getTime();
-        testDataToSave.expiredAt = new Date().getTime();
-        testDataToSave.receivedAt = new Date().getTime();
-
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem3 = listingItemModel.toJSON();
-
-        expectListingItemFromCreateRequest(createdListingItem3, testDataToSave);
-        expect(createdListingItem3.ListingItemTemplate.id).toBe(listingItemTemplate.Id);
-    }, 600000); // timeout to 600s
-
-    test('Should delete ListingItem with relation to ListingItemTemplate', async () => {
-        expect.assertions(22);
-        await listingItemService.destroy(createdListingItem3.id);
-        await expectListingItemWasDeleted(createdListingItem3);
     });
 
     test('Should delete expired ListingItem', async () => {
@@ -498,6 +460,8 @@ describe('ListingItem', () => {
 
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
+        testDataToSave.generatedAt = +new Date().getTime();
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const expiredListingItem = listingItemModel.toJSON();

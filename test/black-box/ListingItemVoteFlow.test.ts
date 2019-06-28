@@ -2,20 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ItemVote } from '../../src/api/enums/ItemVote';
-import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
-import {SmsgSendResponse} from '../../src/api/responses/SmsgSendResponse';
-// tslint:enable:max-line-length
+import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
+import { SmsgSendResponse } from '../../src/api/responses/SmsgSendResponse';
+
 
 describe('Happy ListingItem Vote Flow', () => {
 
@@ -37,7 +34,6 @@ describe('Happy ListingItem Vote Flow', () => {
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
@@ -135,21 +131,19 @@ describe('Happy ListingItem Vote Flow', () => {
         ) as resources.ListingItemTemplates[];
         listingItemTemplateNode1 = listingItemTemplates[0];
         expect(listingItemTemplateNode1.id).toBeDefined();
-        expect(listingItemTemplateNode1.hash).toBeDefined();
 
         // we should be also able to get the same template
         const response: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand, listingItemTemplateNode1.id]);
         response.expectJson();
         response.expectStatusCode(200);
         const result: resources.ListingItemTemplate = response.getBody()['result'];
-        expect(result.hash).toBe(listingItemTemplateNode1.hash);
 
     });
 
-    test('Should post ListingItemTemplate to the default marketplace', async () => {
+    test('Should post ListingItemTemplate to the default market', async () => {
 
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_ITEM_ADD');
+        log.debug('Node1 POSTS MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -171,10 +165,9 @@ describe('Happy ListingItem Vote Flow', () => {
         }
         expect(result.result).toEqual('Sent.');
 
-        log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
+        log.debug('==[ post ListingItemTemplate /// seller -> market ]================================');
         log.debug('result.msgid: ' + result.msgid);
         log.debug('item.id: ' + listingItemTemplateNode1.id);
-        log.debug('item.hash: ' + listingItemTemplateNode1.hash);
         log.debug('item.title: ' + listingItemTemplateNode1.ItemInformation.title);
         log.debug('item.desc: ' + listingItemTemplateNode1.ItemInformation.shortDescription);
         log.debug('item.category: [' + listingItemTemplateNode1.ItemInformation.ItemCategory.id + '] '
@@ -183,12 +176,25 @@ describe('Happy ListingItem Vote Flow', () => {
 
     });
 
+    test('Should get the updated ListingItemTemplate with the hash', async () => {
+        const res: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateNode1.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateNode1 = res.getBody()['result'];
+
+        expect(listingItemTemplateNode1.hash).toBeDefined();
+        log.debug('listingItemTemplateSellerNode.hash: ', listingItemTemplateNode1.hash);
+
+    }, 600000); // timeout to 600s
+
     test('Should have created ListingItem on node1', async () => {
 
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_ITEM_ADD');
+        log.debug('Node1 RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         // wait for some time to make sure it's received
@@ -206,13 +212,16 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: resources.ListingItem = response.getBody()['result'];
+
+        log.debug('result: ', JSON.stringify(result, null,  2));
+
         expect(result.hash).toBe(listingItemTemplateNode1.hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplateNode1.hash);
 
         // store ListingItem for later tests
         listingItemNode1 = result;
 
-        log.debug('==> Node1 received MP_ITEM_ADD.');
+        log.debug('==> Node1 received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -221,7 +230,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_ITEM_ADD');
+        log.debug('Node2 RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -243,7 +252,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store ListingItem for later tests
         listingItemNode2 = result;
 
-        log.debug('==> Node2 received MP_ITEM_ADD.');
+        log.debug('==> Node2 received MPA_LISTING_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -253,7 +262,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 FLAGS LISTINGITEM / POSTS MP_PROPOSAL_ADD');
+        log.debug('Node2 FLAGS LISTINGITEM / POSTS MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -273,7 +282,7 @@ describe('Happy ListingItem Vote Flow', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toEqual('Sent.');
-        log.debug('==> Node2 sent MP_PROPOSAL_ADD.');
+        log.debug('==> Node2 sent MPA_PROPOSAL_ADD.');
     });
 
     test('Should have created Proposal on node2', async () => {
@@ -283,7 +292,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node2 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -315,7 +324,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node1 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(5);
@@ -348,7 +357,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store proposalNode1 for later tests
         proposalNode1 = result;
 
-        log.debug('==> Node1 received MP_PROPOSAL_ADD.');
+        log.debug('==> Node1 received MPA_PROPOSAL_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -359,7 +368,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
+        log.debug('Node2 RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
         await testUtilNode2.waitFor(5);
@@ -380,7 +389,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.ProposalOptions[0].description).toBe(proposalNode1.ProposalOptions[0].description);
         expect(result.ProposalOptions[1].description).toBe(proposalNode1.ProposalOptions[1].description);
 
-        log.debug('proposal:', JSON.stringify(result, null, 2));
+        // log.debug('proposal:', JSON.stringify(result, null, 2));
 
         // Proposal should have a minimum of two ProposalResults
         expect(result.ProposalResults.length).toBeGreaterThanOrEqual(2);
@@ -403,7 +412,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // store Proposal for later tests
         proposalNode2 = result;
 
-        log.debug('==> Node2 received MP_PROPOSAL_ADD.');
+        log.debug('==> Node2 received MPA_PROPOSAL_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -414,8 +423,11 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
         expect(proposalNode2).toBeDefined();
 
+        // vote for KEEP
+        expect(proposalNode1.ProposalOptions[0].description).toBe(ItemVote.KEEP);
+
         log.debug('========================================================================================');
-        log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.KEEP)');
+        log.debug('Node1 POSTS MPA_VOTE (ItemVote.KEEP)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpc(voteCommand, [
@@ -449,7 +461,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode2).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Node1 CREATED MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
 
         await testUtilNode1.waitFor(3);
@@ -474,6 +486,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
         voteNode1 = result;
 
+        log.debug('voteNode1: ', JSON.stringify(voteNode1,  null, 2));
+
     });
 
     test('Should have created ProposalResults after receiving Vote1 on node1', async () => {
@@ -485,6 +499,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
         expect(proposalNode2).toBeDefined();
         expect(voteNode1).toBeDefined();
+
+        await testUtilNode1.waitFor(10);
 
         log.debug('========================================================================================');
         log.debug('Node1 ProposalResults recalculated');
@@ -504,14 +520,22 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: resources.ProposalResult = response.getBody()['result'];
+
+        log.debug('vote1AddressCount: ', vote1AddressCount);
+        log.debug('result.ProposalOptionResults[0].voters: ', result.ProposalOptionResults[0].voters);
+        log.debug('voteNode1.weight: ', voteNode1.weight);
+        log.debug('result.ProposalOptionResults[0].weight: ', result.ProposalOptionResults[0].weight);
+
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
-        expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
+        expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
 
         proposalResultNode1 = result;
 
-    });
+        log.debug('proposalResultNode1: ', JSON.stringify(proposalResultNode1,  null, 2));
+
+    }, 600000); // timeout to 600s
 
     test('Should have created ProposalResults after receiving Vote1 on node2', async () => {
 
@@ -522,8 +546,10 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(voteNode1).toBeDefined();
         expect(proposalResultNode1).toBeDefined();
 
+        await testUtilNode1.waitFor(10);
+
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpcWaitFor(
@@ -538,12 +564,18 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: resources.ProposalResult = response.getBody()['result'];
+
+        log.debug('vote1AddressCount: ', vote1AddressCount);
+        log.debug('result.ProposalOptionResults[0].voters: ', result.ProposalOptionResults[0].voters);
+        log.debug('voteNode1.weight: ', voteNode1.weight);
+        log.debug('result.ProposalOptionResults[0].weight: ', result.ProposalOptionResults[0].weight);
+
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
         expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
         expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
-    });
+    }, 600000); // timeout to 600s
 
     test('Should post Vote2 from node2 (voter2)', async () => {
 
@@ -555,7 +587,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Node2 POSTS MPA_VOTE (default profile)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -591,10 +623,10 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: vote get)');
         log.debug('========================================================================================');
 
-        await testUtilNode2.waitFor(3);
+        await testUtilNode2.waitFor(5);
 
         const response: any = await testUtilNode2.rpcWaitFor(
             voteCommand,
@@ -627,8 +659,10 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(voteNode2).toBeDefined();
         expect(proposalResultNode1).toBeDefined();
 
+        await testUtilNode2.waitFor(5);
+
         log.debug('========================================================================================');
-        log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node1 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode1.rpcWaitFor(
@@ -651,7 +685,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
         expect(result.ProposalOptionResults[1].voters).toBe(vote2AddressCount);
         expect(result.ProposalOptionResults[1].weight).toBe(voteNode2.weight);
-    });
+    }, 600000); // timeout to 600s
 
 
     test('Should post Vote2 again from node2 changing the vote optionId', async () => {
@@ -665,7 +699,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_VOTE_ADD (voter2)');
+        log.debug('Node2 POSTS MPA_VOTE (voter2)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
@@ -697,8 +731,10 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(voteNode2).toBeDefined();
         expect(proposalResultNode1).toBeDefined();
 
+        await testUtilNode2.waitFor(5);
+
         log.debug('========================================================================================');
-        log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
+        log.debug('Node2 RECEIVES MPA_VOTE (confirm with: proposal result)');
         log.debug('========================================================================================');
 
         // lets wait for some time to receive the vote otherwise rpcWaitFor will return the previous result
@@ -721,6 +757,6 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight + voteNode2.weight);
         expect(result.ProposalOptionResults[1].voters).toBe(0);
         expect(result.ProposalOptionResults[1].weight).toBe(0);
-    });
+    }, 600000); // timeout to 600s
 
 });

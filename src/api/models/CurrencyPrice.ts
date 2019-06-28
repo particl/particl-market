@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { CurrencyPriceParams } from '../requests/CurrencyPriceParams';
+import { CurrencyPriceSearchParams } from '../requests/search/CurrencyPriceSearchParams';
 
 export class CurrencyPrice extends Bookshelf.Model<CurrencyPrice> {
 
@@ -18,7 +18,7 @@ export class CurrencyPrice extends Bookshelf.Model<CurrencyPrice> {
     }
 
     // find currency price by from currency and to currency
-    public static async search(options: CurrencyPriceParams): Promise<CurrencyPrice> {
+    public static async search(options: CurrencyPriceSearchParams): Promise<CurrencyPrice> {
         return await CurrencyPrice.where<CurrencyPrice>({ from: options.from, to: options.to}).fetch();
     }
 

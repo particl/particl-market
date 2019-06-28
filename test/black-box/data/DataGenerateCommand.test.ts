@@ -5,9 +5,9 @@
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
+import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('DataGenerateCommand', () => {
