@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
@@ -18,7 +18,9 @@ describe('ListingItemFlagCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemFlagCommand = Commands.ITEM_FLAG.commandName;
@@ -27,8 +29,8 @@ describe('ListingItemFlagCommand', () => {
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
 
-    let createdListingItem1: resources.ListingItem;
-    let createdListingItem2: resources.ListingItem;
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
 
 
     beforeAll(async () => {
@@ -61,8 +63,8 @@ describe('ListingItemFlagCommand', () => {
             true,                   // return model
             generateListingItemParams    // what kind of data to generate
         ) as resources.ListingItem[];
-        createdListingItem1 = listingItems[0];
-        createdListingItem2 = listingItems[1];
+        listingItem1 = listingItems[0];
+        listingItem2 = listingItems[1];
 
     });
 
@@ -75,7 +77,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should fail to flag ListingItem because of missing profileId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem1.hash
+            listingItem1.hash
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -90,7 +92,7 @@ describe('ListingItemFlagCommand', () => {
             defaultProfile.id
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemHash', 'string').getMessage());
     });
 
@@ -98,11 +100,11 @@ describe('ListingItemFlagCommand', () => {
         const invalidProfileId = 'INVALID-PROFILE-ID';
 
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem1.hash,
+            listingItem1.hash,
             invalidProfileId
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
@@ -110,7 +112,7 @@ describe('ListingItemFlagCommand', () => {
         const invalidProfileIdNotFound = 0;
 
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem1.hash,
+            listingItem1.hash,
             invalidProfileIdNotFound
         ]);
         res.expectJson();
@@ -131,7 +133,7 @@ describe('ListingItemFlagCommand', () => {
     });
 
     test('Should get empty FlaggedItem relation for the ListingItem, because ListingItem is not flagged yet', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem1.id]);
+        const res = await testUtil.rpc(itemCommand, [itemGetCommand, listingItem1.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -140,7 +142,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should flag the ListingItem using listingItemHash and profileId', async () => {
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem1.hash,
+            listingItem1.hash,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -154,7 +156,7 @@ describe('ListingItemFlagCommand', () => {
 
         res = await testUtil.rpcWaitFor(
             itemCommand,
-            [itemGetCommand, createdListingItem1.id],
+            [itemGetCommand, listingItem1.id],
             8 * 60,
             200,
             'FlaggedItem.reason',
@@ -166,17 +168,17 @@ describe('ListingItemFlagCommand', () => {
         const listingItem: resources.ListingItem = res.getBody()['result'];
         // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
-        expect(listingItem.FlaggedItem.Proposal.title).toBe(createdListingItem1.hash);
+        expect(listingItem.FlaggedItem.Proposal.title).toBe(listingItem.hash);
     }, 600000); // timeout to 600s
 
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            createdListingItem1.hash,
+            listingItem1.hash,
             defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Item is already flagged.');
+        expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
 
 });

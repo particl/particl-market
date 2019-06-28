@@ -38,7 +38,7 @@ describe('{{name.capitalize}}', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        {{name.camelCase}}Service = app.IoC.getNamed<{{name.capitalize}}Service>(Types.Service, Targets.Service.{{name.capitalize}}Service);
+        {{name.camelCase}}Service = app.IoC.getNamed<{{name.capitalize}}Service>(Types.Service, Targets.Service.model.{{name.capitalize}}Service);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

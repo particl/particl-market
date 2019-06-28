@@ -29,9 +29,10 @@ describe('ProposalPostCommand', () => {
     const daysRetention = 2;
     let estimateFee = true;
 
-    const options: string[] = [];
-    options.push('optionA1');
-    options.push('optionB2');
+    const options: string[] = [
+        'optionA1',
+        'optionB2'
+    ];
 
     let sent = false;
 
@@ -118,7 +119,7 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('option2Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid type of profileId', async () => {
+    test('Should fail to post a Proposal because invalid category of profileId', async () => {
 
         const invalidProfileId = 'invalid profile id';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -131,7 +132,7 @@ describe('ProposalPostCommand', () => {
             options[1]
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
@@ -152,7 +153,7 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid type of daysRetention', async () => {
+    test('Should fail to post a Proposal because invalid category of daysRetention', async () => {
 
         const invalidDaysRetention = 'Invalid daysRetention';
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
@@ -165,7 +166,7 @@ describe('ProposalPostCommand', () => {
             options[1]
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
     });
 

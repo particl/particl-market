@@ -11,14 +11,17 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { Proposal } from '../../src/api/models/Proposal';
-import { ProposalService } from '../../src/api/services/ProposalService';
-import { ProposalType } from '../../src/api/enums/ProposalType';
-import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
-import { ProposalUpdateRequest } from '../../src/api/requests/ProposalUpdateRequest';
-import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import { ProposalSearchParams } from '../../src/api/requests/ProposalSearchParams';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
+import { ProposalCreateRequest } from '../../src/api/requests/model/ProposalCreateRequest';
+import { ProposalUpdateRequest } from '../../src/api/requests/model/ProposalUpdateRequest';
+import { ProposalOptionCreateRequest } from '../../src/api/requests/model/ProposalOptionCreateRequest';
+import { ProposalSearchParams } from '../../src/api/requests/search/ProposalSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
+import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableProposalAddMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
+import { HashableProposalAddField, HashableProposalOptionField } from '../../src/api/factories/hashableconfig/HashableField';
+import { HashableProposalOptionMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,7 +39,8 @@ describe('Proposal', () => {
     const time = new Date().getTime();
     const testData = {
         submitter: 'partaddress',
-        type: ProposalType.PUBLIC_VOTE,
+        msgid: 'msgid11111',
+        category: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x',
         timeStart: time,
@@ -54,8 +58,8 @@ describe('Proposal', () => {
     }] as ProposalOptionCreateRequest[];
 
     const testDataUpdated = {
-        submitter: 'pqwer',
-        type: ProposalType.PUBLIC_VOTE,
+        submitter: 'UPDATE',
+        category: ProposalCategory.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y',
         timeStart: time + 200,
@@ -69,10 +73,11 @@ describe('Proposal', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
+
     });
 
     test('Should throw ValidationException because we want to create a empty Proposal', async () => {
@@ -84,10 +89,11 @@ describe('Proposal', () => {
 
     test('Should create a new Proposal without ProposalOptions', async () => {
 
-        const proposalModel: Proposal = await proposalService.create(testData);
-        const result: resources.Proposal = proposalModel.toJSON();
+        // TODO: should use ProposalFactory for to generate it
+        const result: resources.Proposal = await proposalService.create(addHash(testData))
+            .then(value => value.toJSON());
 
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -100,12 +106,12 @@ describe('Proposal', () => {
     });
 
     test('Should list Proposals with our newly created one', async () => {
-        const proposalsModel = await proposalService.findAll();
-        const proposals = proposalsModel.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.findAll()
+            .then(value => value.toJSON());
         expect(proposals.length).toBe(1);
 
         const result = proposals[0];
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -116,10 +122,10 @@ describe('Proposal', () => {
     });
 
     test('Should return one Proposal', async () => {
-        const proposalModel: Proposal = await proposalService.findOne(createdId);
-        const result = proposalModel.toJSON();
+        const result: resources.Proposal = await proposalService.findOne(createdId)
+            .then(value => value.toJSON());
 
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -134,10 +140,10 @@ describe('Proposal', () => {
         testDataUpdated.expiredAt = new Date().getTime() + 100000000;
         testDataUpdated.receivedAt = new Date().getTime();
 
-        const proposalModel: Proposal = await proposalService.update(createdId, testDataUpdated);
-        const result = proposalModel.toJSON();
+        const result: resources.Proposal = await proposalService.update(createdId, addHash(testDataUpdated))
+            .then(value => value.toJSON());
 
-        expect(result.type).toBe(testDataUpdated.type);
+        expect(result.category).toBe(testDataUpdated.category);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
         expect(result.submitter).toBe(testDataUpdated.submitter);
@@ -146,6 +152,7 @@ describe('Proposal', () => {
         expect(result.receivedAt).toBe(testDataUpdated.receivedAt);
         expect(result.expiredAt).toBe(testDataUpdated.expiredAt);
 
+        log.debug('first proposal: ', JSON.stringify(result, null, 2));
     });
 
     test('Should delete the Proposal', async () => {
@@ -165,10 +172,10 @@ describe('Proposal', () => {
 
         testData.options = testDataOptions;
 
-        const proposalModel: Proposal = await proposalService.create(testData);
-        const result = proposalModel.toJSON();
+        createdProposal1 = await proposalService.create(addHash(testData, testDataOptions)).then(value => value.toJSON());
+        const result: resources.Proposal = createdProposal1;
 
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -192,10 +199,10 @@ describe('Proposal', () => {
         testData.receivedAt = time + 110;
         testData.expiredAt = time + 150;
 
-        const proposalModel: Proposal = await proposalService.create(testData);
-        const result = proposalModel.toJSON();
+        const result: resources.Proposal = await proposalService.create(addHash(testData, testDataOptions))
+            .then(value => value.toJSON());
 
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -216,11 +223,11 @@ describe('Proposal', () => {
             timeStart: createdProposal2.postedAt,
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(1);
     });
 
@@ -231,11 +238,11 @@ describe('Proposal', () => {
             timeStart,
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(0);
     });
 
@@ -245,11 +252,11 @@ describe('Proposal', () => {
             timeStart: '*',
             timeEnd: createdProposal2.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(2);
     });
 
@@ -259,11 +266,11 @@ describe('Proposal', () => {
             timeStart: '*',
             timeEnd: createdProposal1.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(1);
     });
 
@@ -273,24 +280,24 @@ describe('Proposal', () => {
             timeStart: createdProposal1.startTime,
             timeEnd: createdProposal2.expiredAt,
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(2);
     });
 
-    test('Should create another Proposal with type ITEM_VOTE', async () => {
+    test('Should create another Proposal with category ITEM_VOTE', async () => {
 
-        testData.type = ProposalType.ITEM_VOTE;
+        testData.category = ProposalCategory.ITEM_VOTE;
+        testData.title = 'Changing the title again.';
 
-        const proposalModel: Proposal = await proposalService.create(testData);
-        createdId = proposalModel.Id;
+        const result: resources.Proposal = await proposalService.create(addHash(testData, testDataOptions))
+            .then(value => value.toJSON());
+        createdId = result.id;
 
-        const result = proposalModel.toJSON();
-
-        expect(result.type).toBe(testData.type);
+        expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.submitter).toBe(testData.submitter);
@@ -303,17 +310,57 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toHaveLength(3);
     });
 
-    test('Should searchBy Proposals with type ITEM_VOTE', async () => {
+    test('Should searchBy Proposals with category ITEM_VOTE', async () => {
 
         const searchParams = {
             timeStart: '*',
             timeEnd: '*',
-            order: SearchOrder.ASC, type: ProposalType.ITEM_VOTE
+            order: SearchOrder.ASC,
+            category: ProposalCategory.ITEM_VOTE
         } as ProposalSearchParams;
 
-        const proposalCollection = await proposalService.search(searchParams, true);
-        const proposals = proposalCollection.toJSON();
+        const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
+            .then(value => value.toJSON());
         expect(proposals).toHaveLength(1);
     });
 
+    const addHash = (proposalCreateRequest: any, optionsCreateRequests?: ProposalOptionCreateRequest[]) => {
+
+        // hash the proposal
+        let hashableOptions = '';
+        if (optionsCreateRequests) {
+            const optionsList: resources.ProposalOption[] = createOptionsList(optionsCreateRequests);
+            for (const option of optionsList) {
+                hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
+                option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
+                    value: proposalCreateRequest.hash,
+                    to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
+                }]));
+            }
+            proposalCreateRequest.options = optionsList;
+        }
+        proposalCreateRequest.hash = ConfigurableHasher.hash(proposalCreateRequest, new HashableProposalAddMessageConfig([{
+            value: hashableOptions,
+            to: HashableProposalAddField.PROPOSAL_OPTIONS
+        }]));
+
+        log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+
+        return proposalCreateRequest;
+    };
+
+    const createOptionsList = (options: resources.ProposalOptionCreateRequest[]) => {
+        const optionsList: ProposalOptionCreateRequest[] = [];
+
+        for (const proposalOption of options) {
+            const option = {
+                optionId: proposalOption.optionId,
+                description: proposalOption.description
+            } as ProposalOptionCreateRequest;
+            optionsList.push(option);
+        }
+        optionsList.sort(((a, b) => a.optionId > b.optionId ? 1 : -1));
+
+        return optionsList;
+    };
 });

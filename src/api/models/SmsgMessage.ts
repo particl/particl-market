@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import {Bookshelf as Database, Bookshelf} from '../../config/Database';
-import { Collection, Model } from 'bookshelf';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import {Collection, Model} from 'bookshelf';
+import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
 import * as _ from 'lodash';
 import {Logger as LoggerType} from '../../core/Logger';
-import {ListingItem} from './ListingItem';
+import {ActionDirection} from '../enums/ActionDirection';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -37,6 +37,10 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
                 if (!_.isEmpty(options.status)) {
                     qb.where('smsg_messages.status', '=', options.status.toString());
+                }
+
+                if (!_.isEmpty(options.direction)) {
+                    qb.where('smsg_messages.direction', '=', options.direction.toString());
                 }
 
                 if (!_.isEmpty(options.types)) {
@@ -71,13 +75,15 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
         }
     }
 
-    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<SmsgMessage> {
+    public static async fetchByMsgIdAndDirection(value: string,
+                                                 direction: ActionDirection = ActionDirection.INCOMING,
+                                                 withRelated: boolean = true): Promise<SmsgMessage> {
         if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch({
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch();
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch();
         }
     }
 
@@ -92,6 +98,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public get Status(): string { return this.get('status'); }
     public set Status(value: string) { this.set('status', value); }
+
+    public get Direction(): string { return this.get('direction'); }
+    public set Direction(value: string) { this.set('direction', value); }
+
+    public get Target(): string { return this.get('target'); }
+    public set Target(value: string) { this.set('target', value); }
 
     public get Msgid(): string { return this.get('msgid'); }
     public set Msgid(value: string) { this.set('msgid', value); }

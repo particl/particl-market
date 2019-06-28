@@ -8,20 +8,23 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ProfileService } from '../../services/ProfileService';
-import { MarketService } from '../../services/MarketService';
-import { ProposalActionService } from '../../services/ProposalActionService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MarketService } from '../../services/model/MarketService';
+import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -29,10 +32,10 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);
@@ -40,9 +43,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: listingItemHash
-     *  [1]: profileId
-     *  [2]: reason, optional
+     *  [0]: listingItem: resources.ListingItem
+     *  [1]: profile: resources.Profile
+     *  [2]: reason
      *  [3]: expiryTime (set in validate)
      *
      * @param data
@@ -51,32 +54,34 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const listingItemHash = data.params[0];
-        const profileId = data.params[1];
-        const proposalDescription = data.params[2];
+        const listingItem: resources.ListingItem = data.params[0];
+        const profile: resources.Profile = data.params[1];
+        const title = listingItem.hash;
+        const description = data.params[2];
         const daysRetention = data.params[3];
+        const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
-        const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
-        const proposalTitle = listingItemHash;
-        const profileModel = await this.profileService.findOne(profileId);
-        const profile: resources.Profile = profileModel.toJSON();
+        // get the ListingItem market
+        const market: resources.Market = listingItem.Market;
 
-        // Get the default market.
-        // TODO: this should be a command parameter
-        const marketModel = await this.marketService.getDefault(); // throws if not found
-        const market: resources.Market = marketModel.toJSON();
+        // send from the template profiles address
+        const fromAddress = profile.address;
 
-        return await this.proposalActionService.send(
-            proposalTitle,
-            proposalDescription,
-            daysRetention,
-            optionsList,
-            profile,
+        // send to given market address
+        const toAddress = market.address;
+
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),
+            sender: profile,
             market,
-            listingItemHash,
-            false
-        );
+            category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
+            title,
+            description,
+            options,
+            itemHash: listingItem.hash
+        } as ProposalAddRequest;
 
+        return await this.proposalAddActionService.post(postRequest);
     }
 
     /**
@@ -102,31 +107,30 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('profileId', 'number');
         }
 
-        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
             });
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
         // check if item is already flagged
         if (!_.isEmpty(listingItem.FlaggedItem)) {
-            this.log.error('Item is already flagged.');
-            throw new MessageException('Item is already flagged.');
+            this.log.error('ListingItem is already flagged.');
+            throw new MessageException('ListingItem is already flagged.');
         }
 
-        // hash is what we need in execute()
-        data.params[0] = listingItem.hash;  // set to hash
-
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[1])
+        const profile: resources.Profile = await this.profileService.findOne(data.params[1]).then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
             });
 
-        data.params[2] = data.params.length >= 3 ? data.params[2] : 'This ListingItem should be removed.';
-
         const daysRetention = Math.ceil((listingItem.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+
+        data.params[0] = listingItem;
+        data.params[1] = profile;
+        data.params[2] = data.params[2] ? data.params[2] : 'This ListingItem should be removed.';
         data.params[3] = daysRetention;
 
         return data;

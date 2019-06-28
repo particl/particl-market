@@ -11,7 +11,6 @@ import { RpcCommandInterface } from './RpcCommandInterface';
 import { Commands} from './CommandEnumType';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { BaseCommand } from './BaseCommand';
-import { Command } from './Command';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {

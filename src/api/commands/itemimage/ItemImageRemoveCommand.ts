@@ -8,14 +8,16 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/ItemImageService';
+import { ItemImageService } from '../../services/model/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -23,7 +25,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMIMAGE_REMOVE);
         this.log = new Logger(__filename);
@@ -37,7 +40,6 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-
         return this.itemImageService.destroy(data.params[0]);
     }
 
@@ -58,12 +60,29 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('itemImageId', 'number');
         }
 
-        const itemImageModel = await this.itemImageService.findOne(data.params[0]);
-        const itemImage = itemImageModel.toJSON();
+        const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[0]).then(value => value.toJSON());
+
+        this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
 
         // check if item already been posted
-        if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
-            throw new MessageException('Can\'t delete ItemImage because the ListingItemTemplate has already been posted!');
+        if (!_.isEmpty(itemImage.ItemInformation.ListingItemTemplate)) {
+            // make sure ListingItemTemplate with the id exists
+            const templateId = itemImage.ItemInformation.ListingItemTemplate.id;
+            const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(templateId)
+                .then(value => {
+                    return value.toJSON();
+                })
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItemTemplate');
+                });
+
+            const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+            if (!isModifiable) {
+                throw new ModelNotModifiableException('ListingItemTemplate');
+            }
+
+        } else {
+            throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         return data;

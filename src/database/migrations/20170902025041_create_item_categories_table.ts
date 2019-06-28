@@ -11,7 +11,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('key').nullable().unique();
-            table.string('name').nullable();
+            table.string('name').notNullable();
             table.text('description').nullable();
 
             table.integer('parent_item_category_id').unsigned().nullable();

@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProposalService } from '../../services/ProposalService';
+import { ProposalService } from '../../services/model/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Proposal } from '../../models/Proposal';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -22,7 +22,7 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService
     ) {
         super(Commands.PROPOSAL_GET);
         this.log = new Logger(__filename);

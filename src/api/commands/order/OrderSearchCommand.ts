@@ -7,14 +7,14 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { OrderService } from '../../services/OrderService';
+import { OrderService } from '../../services/model/OrderService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { Order } from '../../models/Order';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { OrderSearchParams } from '../../requests/OrderSearchParams';
+import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 
 export class OrderSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
@@ -22,7 +22,7 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService
+        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService
     ) {
         super(Commands.ORDER_SEARCH);
         this.log = new Logger(__filename);
@@ -31,7 +31,7 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      * [0]: itemhash, optional
-     * [1]: status, optional
+     * [1]: OrderItemStatus, optional
      * [2]: buyerAddress, optional
      * [3]: sellerAddress, optional
      * [4]: ordering, optional
@@ -60,6 +60,12 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
         } as OrderSearchParams;
 
         return await this.orderService.search(searchArgs);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // todo: validations
+
+        return data;
     }
 
     public usage(): string {

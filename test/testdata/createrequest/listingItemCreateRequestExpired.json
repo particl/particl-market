@@ -3,6 +3,7 @@
     "postedAt": 1436786316653,
     "expiredAt": 1436886316653,
     "receivedAt": 1436786317653,
+    "generatedAt": 1536786317653,
     "itemInformation": {
         "title": "Small Soft Gloves",
         "shortDescription": "Ergonomic Tuna",
@@ -13,11 +14,11 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "FI",
+            "country": "FI",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": 12.1234,
                 "lng": 23.2314
             }
@@ -34,7 +35,7 @@
         }],
         "itemImages": [{
             "hash": "75ea10ae-9f4c-40e8-930a-7b9d170737f9",
-            "datas": [{
+            "data": [{
                 "protocol": "LOCAL",
                 "encoding": "BASE64",
                 "imageVersion": "ORIGINAL",
@@ -43,7 +44,7 @@
             }]
         }, {
             "hash": "1ffea63a-13df-4d58-85b2-d95ada46eae2",
-            "datas": [{
+            "data": [{
                 "protocol": "LOCAL",
                 "encoding": "BASE64",
                 "imageVersion": "ORIGINAL",
@@ -62,11 +63,11 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
-            "basePrice": 76.31903702293027,
+            "currency": "PART",
+            "basePrice": 1,
             "shippingPrice": {
-                "domestic": 2.13268661244928,
-                "international": 8.76915941696489
+                "domestic": 2,
+                "international": 3
             },
             "cryptocurrencyAddress": {
                 "type": "NORMAL",
@@ -123,25 +124,6 @@
                     "value": "#103584"
                 }
             ]
-        }
-    ],
-    "actionMessages": [
-        {
-            "action": "MP_ITEM_ADD",
-            "objects": [
-                {
-                    "dataId": "seller",
-                    "dataValue": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx"
-                }
-            ],
-            "data": {
-                "msgid": "fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6",
-                "version": "0300",
-                "received": "2018-03-31T03:57:16+0200",
-                "sent": "2018-03-31T03:57:16+0200",
-                "from": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx",
-                "to": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA"
-            }
         }
     ]
 }

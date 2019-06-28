@@ -13,15 +13,15 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Vote } from '../../src/api/models/Vote';
-import { VoteService } from '../../src/api/services/VoteService';
-import { VoteCreateRequest } from '../../src/api/requests/VoteCreateRequest';
-import { VoteUpdateRequest } from '../../src/api/requests/VoteUpdateRequest';
-import { ProposalService } from '../../src/api/services/ProposalService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { VoteService } from '../../src/api/services/model/VoteService';
+import { VoteCreateRequest } from '../../src/api/requests/model/VoteCreateRequest';
+import { VoteUpdateRequest } from '../../src/api/requests/model/VoteUpdateRequest';
+import { ProposalService } from '../../src/api/services/model/ProposalService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('Vote', () => {
@@ -46,10 +46,10 @@ describe('Vote', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.VoteService);
-        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.model.VoteService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

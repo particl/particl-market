@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as _ from 'lodash';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { SearchOrder } from '../../enums/SearchOrder';
@@ -15,9 +15,8 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessage } from '../../models/SmsgMessage';
-import { SmsgMessageService } from '../../services/SmsgMessageService';
-import { SmsgMessageSearchParams } from '../../requests/SmsgMessageSearchParams';
-import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
+import { SmsgMessageService } from '../../services/model/SmsgMessageService';
+import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 
 export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 
@@ -26,7 +25,7 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService
     ) {
         super(Commands.SMSG_SEARCH);
         this.log = new Logger(__filename);

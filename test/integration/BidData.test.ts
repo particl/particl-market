@@ -3,28 +3,27 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { BidData } from '../../src/api/models/BidData';
-import { BidDataService } from '../../src/api/services/BidDataService';
-import { BidService } from '../../src/api/services/BidService';
-import { MarketService } from '../../src/api/services/MarketService';
+import { BidDataService } from '../../src/api/services/model/BidDataService';
+import { BidService } from '../../src/api/services/model/BidService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
-import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { BidDataCreateRequest } from '../../src/api/requests/model/BidDataCreateRequest';
+import { BidDataUpdateRequest } from '../../src/api/requests/model/BidDataUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import * as resources from 'resources';
-import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
-import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
+import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -45,17 +44,16 @@ describe('BidDatas', () => {
 
     let createdListingItem: resources.ListingItem;
     let createdBid: resources.Bid;
-
-    let createdId;
+    let createdBidData: resources.BidData;
 
     const testData = {
-        dataId: 'color',
-        dataValue: 'black'
+        key: 'color',
+        value: 'black'
     } as BidDataCreateRequest;
 
     const testDataUpdated = {
-        dataId: 'color',
-        dataValue: 'black'
+        key: 'color',
+        value: 'black'
     } as BidDataUpdateRequest;
 
 
@@ -63,17 +61,17 @@ describe('BidDatas', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
+        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.model.BidDataService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         // generate seller profile
         const sellerProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
@@ -85,9 +83,6 @@ describe('BidDatas', () => {
         } as TestDataGenerateRequest);
         sellerProfile = profiles[0];
 
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation
             true,                               // generateItemLocation
@@ -97,7 +92,8 @@ describe('BidDatas', () => {
             true,                               // generateEscrow
             true,                               // generateItemPrice
             true,                               // generateMessagingInformation
-            false                               // generateListingItemObjects
+            false,                              // generateListingItemObjects
+            false                               // generateObjectDatas
         ]).toParamsArray();
 
         const listingItems = await testDataService.generate({
@@ -113,9 +109,9 @@ describe('BidDatas', () => {
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             createdListingItem.hash,    // listingItemhash
-            BidMessageType.MPA_BID,     // action
+            MPAction.MPA_BID,           // type
             defaultProfile.address,     // bidder
-            sellerProfile.address       // listingItemSeller
+            sellerProfile.address       // seller
         ]).toParamsArray();
 
         const bids = await testDataService.generate({
@@ -142,12 +138,12 @@ describe('BidDatas', () => {
         testData.bid_id = createdBid.id;
 
         log.debug('testData:', JSON.stringify(testData, null, 2));
-        const bidDataModel: BidData = await bidDataService.create(testData);
-        createdId = bidDataModel.Id;
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.create(testData).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
+
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should throw ValidationException because we want to create an empty BidData', async () => {
@@ -158,50 +154,50 @@ describe('BidDatas', () => {
     });
 
     test('Should list BidDatas with our new create one', async () => {
-        const bidDataCollection = await bidDataService.findAll();
-        const bidData = bidDataCollection.toJSON();
+        const bidDatas = await bidDataService.findAll().then(value => value.toJSON());
 
-        log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
-        expect(bidData.length).toBe(18);
-        const result = bidData[17];
+        log.debug('biddatas: ', JSON.stringify(bidDatas, null, 2));
+        expect(bidDatas.length).toBe(3); // generate creates two
+        createdBidData = bidDatas[2];
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should return one bid data', async () => {
-        const bidDataModel: BidData = await bidDataService.findOne(createdId);
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.findOne(createdBidData.id).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should throw ValidationException because we want to update with out bid_id', async () => {
         expect.assertions(1);
-        await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest).catch(e =>
+        await bidDataService.update(createdBidData.id, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should update the bid data', async () => {
         testDataUpdated.bid_id = createdBid.id;
-        const bidDataModel: BidData = await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest);
-        const result = bidDataModel.toJSON();
+        createdBidData = await bidDataService.update(createdBidData.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.BidData = createdBidData;
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.dataId);
-        expect(result.dataValue).toBe(testDataUpdated.dataValue);
+        expect(result.key).toBe(testDataUpdated.key);
+        expect(result.value).toBe(testDataUpdated.value);
     });
 
     test('Should delete the bid data', async () => {
         expect.assertions(3);
         // delete created bid data
-        await bidDataService.destroy(createdId);
-        await bidDataService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await bidDataService.destroy(createdBidData.id);
+        await bidDataService.findOne(createdBidData.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdBidData.id))
         );
         // delete created bid
         await bidService.destroy(createdBid.id);

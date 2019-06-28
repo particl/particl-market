@@ -7,7 +7,7 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ListingItemTemplateGetCommand', () => {
@@ -76,11 +76,11 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.ItemInformation.ItemCategory.key).toBe(listingItemTemplate.ItemInformation.ItemCategory.key);
         expect(result.ItemInformation.ItemCategory.name).toBe(listingItemTemplate.ItemInformation.ItemCategory.name);
         expect(result.ItemInformation.ItemCategory.description).toBe(listingItemTemplate.ItemInformation.ItemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(listingItemTemplate.ItemInformation.ItemLocation.region);
+        expect(result.ItemInformation.ItemLocation.country).toBe(listingItemTemplate.ItemInformation.ItemLocation.country);
         expect(result.ItemInformation.ItemLocation.address).toBe(listingItemTemplate.ItemInformation.ItemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle)
-            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.title)
+            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();

@@ -3,30 +3,38 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import { inject, multiInject, named } from 'inversify';
+import * as resources from 'resources';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
-
+import { Core, Targets, Types } from '../../constants';
 import { EventEmitter } from '../../core/api/events';
-
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessageType } from '../enums/BidMessageType';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import * as resources from 'resources';
-import { SmsgMessageService } from '../services/SmsgMessageService';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
-import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageService } from '../services/model/SmsgMessageService';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
-import {SmsgMessage} from '../models/SmsgMessage';
-import {MessageException} from '../exceptions/MessageException';
-
-type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { MessageException } from '../exceptions/MessageException';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import { MPActionExtended } from '../enums/MPActionExtended';
+import { ActionDirection } from '../enums/ActionDirection';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
+import { BidActionListener } from '../listeners/action/BidActionListener';
+import { BidAcceptActionListener } from '../listeners/action/BidAcceptActionListener';
+import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
+import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
+import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
+import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
+import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
+import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
+import { VoteActionListener } from '../listeners/action/VoteActionListener';
+import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
+import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -37,16 +45,17 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private DEFAULT_INTERVAL = 5 * 1000;
 
-    private LISTINGITEM_MESSAGES = [ListingItemMessageType.MP_ITEM_ADD];
-    private BID_MESSAGES = [BidMessageType.MPA_BID, BidMessageType.MPA_ACCEPT, BidMessageType.MPA_REJECT, BidMessageType.MPA_CANCEL];
-    private ESCROW_MESSAGES = [EscrowMessageType.MPA_LOCK, EscrowMessageType.MPA_RELEASE, EscrowMessageType.MPA_REQUEST_REFUND, EscrowMessageType.MPA_REFUND];
-    private PROPOSAL_MESSAGES = [ProposalMessageType.MP_PROPOSAL_ADD];
-    private VOTE_MESSAGES = [VoteMessageType.MP_VOTE];
+    private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
+    private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
+    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND,
+        MPActionExtended.MPA_COMPLETE, MPActionExtended.MPA_SHIP];
+    private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
+    private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -58,7 +67,7 @@ export class MessageProcessor implements MessageProcessorInterface {
      * main messageprocessor, ...
      *
      * @param {module:resources.SmsgMessage[]} smsgMessages
-     * @param {boolean} emitEvent
+     * @param {boolean} emitEvent, used for testing
      * @returns {Promise<void>}
      */
     public async process(smsgMessages: resources.SmsgMessage[], emitEvent: boolean = true): Promise<void> {
@@ -67,56 +76,107 @@ export class MessageProcessor implements MessageProcessorInterface {
 
             this.log.debug('PROCESSING: ', smsgMessage.msgid);
 
-            // this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+            this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
 
-            // TODO: throw instead of returning null
-            const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage);
-            const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
+            const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage)
+                .then(value => value)
+                .catch(async reason => {
+                    this.log.error('Could not parse the MarketplaceMessage.');
+                    return null;
+                });
+
+            // const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
 
             // this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
             // this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
             // this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
-            if (marketplaceMessage !== null && eventType !== null) {
+            if (marketplaceMessage !== null && smsgMessage.type !== null && emitEvent) {
 
-                if (emitEvent) {
-                    // todo: check if this is actually necessary?
-                    marketplaceMessage.market = smsgMessage.to;
+                if (MPAction.MPA_LISTING_ADD === smsgMessage.type) {
+                    // no need to store the listing data "twice"
                     smsgMessage.text = '';
-
-                    const marketplaceEvent: MarketplaceEvent = {
-                        smsgMessage,
-                        marketplaceMessage
-                    };
-
-                    this.log.debug('SMSGMESSAGE: '
-                        + smsgMessage.from + ' => ' + smsgMessage.to
-                        + ' : ' + smsgMessage.type
-                        + ' : ' + smsgMessage.status
-                        + ' : ' + smsgMessage.msgid);
-
-                    // this.log.debug('SENDING: ', eventType);
-
-                    // send event to the eventTypes processor
-                    this.eventEmitter.emit(eventType, marketplaceEvent);
-
-                    // send event to cli
-                    // todo: send marketplaceEvent
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: eventType,
-                        data: marketplaceMessage
-                    });
                 }
 
+                const marketplaceEvent: MarketplaceMessageEvent = {
+                    smsgMessage,
+                    marketplaceMessage
+                };
+
+                this.log.debug('SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
+
+                // send event to the eventTypes processor
+                switch (smsgMessage.type) {
+                    case MPAction.MPA_LISTING_ADD:
+                        this.log.debug('SENDING: ', ListingItemAddActionListener.Event.toString());
+                        this.eventEmitter.emit(ListingItemAddActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_BID:
+                        this.log.debug('SENDING: ', BidActionListener.Event.toString());
+                        this.eventEmitter.emit(BidActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_ACCEPT:
+                        this.log.debug('SENDING: ', BidAcceptActionListener.Event.toString());
+                        this.eventEmitter.emit(BidAcceptActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_CANCEL:
+                        this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
+                        this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_REJECT:
+                        this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
+                        this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPAction.MPA_LOCK:
+                        this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPActionExtended.MPA_COMPLETE:
+                        this.log.debug('SENDING: ', EscrowCompleteActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowCompleteActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPActionExtended.MPA_SHIP:
+                        this.log.debug('SENDING: ', OrderItemShipActionListener.Event.toString());
+                        this.eventEmitter.emit(OrderItemShipActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPActionExtended.MPA_RELEASE:
+                        this.log.debug('SENDING: ', EscrowReleaseActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowReleaseActionListener.Event, marketplaceEvent);
+                        break;
+                    case MPActionExtended.MPA_REFUND:
+                        this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
+                        this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
+                        break;
+                    case GovernanceAction.MPA_PROPOSAL_ADD:
+                        this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
+                        this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
+                        break;
+                    case GovernanceAction.MPA_VOTE:
+                        this.log.debug('SENDING: ', VoteActionListener.Event.toString());
+                        this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
+                        break;
+                    default:
+                        this.log.error('ERROR: Received a message type thats missing a Listener.');
+                        throw new NotImplementedException();
+                }
+                // send event to cli
+                // todo: fix the cli at some point
+                // this.eventEmitter.emit(Events.Cli, {
+                //    message: eventType,
+                //    data: marketplaceMessage
+                // });
+
             } else {
-
-                this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
-                this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
-                this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
-
-                this.log.debug('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
-
-                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+                // parsing failed, log some error data and update the smsgMessage
+                this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+                this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
+                this.log.error('emitEvent:', JSON.stringify(emitEvent, null, 2));
+                this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
+                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
             }
         }
     }
@@ -129,26 +189,16 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     public schedulePoll(pollingInterval: number = this.DEFAULT_INTERVAL): void {
-
-        // this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
-
-/*
-        this.timeout = setTimeout(
-            async () => {
-                pollingInterval = await this.poll();
-                this.schedulePoll(pollingInterval);
-                this.log.debug('schedulePoll(), done: ', timeout);
-            },
-            pollingInterval
-        );
-*/
-
         this.interval = setInterval(() => {
 
             clearInterval(this.interval);
-            this.poll().then(interval => {
-                this.schedulePoll(interval); // re-run
-            });
+            this.poll()
+                .then(interval => {
+                    this.schedulePoll(interval); // re-run
+                })
+                .catch(reason => {
+                    this.log.error('POLLING FAILED!');
+                });
 
         }, pollingInterval);
 
@@ -189,6 +239,9 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (fetchNext) {
                 // this.log.debug('MessageProcessor.poll #' + this.pollCount + ': find: ' + JSON.stringify(params));
 
+                // todo: we need to handle reprocessing of messages better..
+                // need to add read times for failed messages, then order by read times or something?
+
                 fetchNext = await this.getSmsgMessages(params.types, params.status, params.amount)
                     .then( async smsgMessages => {
 
@@ -199,8 +252,9 @@ export class MessageProcessor implements MessageProcessorInterface {
                             this.log.debug('poll(), smsgMessages.length: ' + smsgMessages.length);
 
                             for (const smsgMessage of smsgMessages) {
-                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING)
+                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PROCESSING)
                                     .then(value => {
+                                        // this.log.debug('poll(), updated smsgMessage.status: ' + SmsgMessageStatus.PROCESSING);
                                         const msg: resources.SmsgMessage = value.toJSON();
                                         if (msg.status !== SmsgMessageStatus.PROCESSING) {
                                             throw new MessageException('Failed to set SmsgMessageStatus.');
@@ -225,9 +279,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.error('Messageprocessor.poll(), ERROR: ', reason);
                         return true;
                     });
-
                 // this.log.debug('Messageprocessor.poll(), fetchNext: ', fetchNext);
-
             }
         }
 
@@ -244,12 +296,13 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {number} amount
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    private async getSmsgMessages(types: any[], // ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType,
+    private async getSmsgMessages(types: ActionMessageTypes[],
                                   status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
+            direction: ActionDirection.INCOMING,
             status,
             types,
             page: 0,
@@ -257,45 +310,11 @@ export class MessageProcessor implements MessageProcessorInterface {
             age: 1000 * 20
         } as SmsgMessageSearchParams;
 
-        const messagesModel = await this.smsgMessageService.searchBy(searchParams);
-        const messages = messagesModel.toJSON();
+        const messages: resources.SmsgMessage[] = await this.smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         if (messages.length > 0) {
             this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);
         }
         return messages;
-    }
-
-    private async getEventForMessageType(
-        messageType: AllowedMessageTypes):
-        Promise<string | null> {
-
-        switch (messageType) {
-            case BidMessageType.MPA_BID:
-                return Events.BidReceivedEvent;
-            case BidMessageType.MPA_ACCEPT:
-                return Events.AcceptBidReceivedEvent;
-            case BidMessageType.MPA_REJECT:
-                return Events.RejectBidReceivedEvent;
-            case BidMessageType.MPA_CANCEL:
-                return Events.CancelBidReceivedEvent;
-            case EscrowMessageType.MPA_LOCK:
-                return Events.LockEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-                return Events.RequestRefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REFUND:
-                return Events.RefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_RELEASE:
-                return Events.ReleaseEscrowReceivedEvent;
-            case ProposalMessageType.MP_PROPOSAL_ADD:
-                return Events.ProposalReceivedEvent;
-            case VoteMessageType.MP_VOTE:
-                return Events.VoteReceivedEvent;
-            case ListingItemMessageType.MP_ITEM_ADD:
-                return Events.ListingItemReceivedEvent;
-            case ListingItemMessageType.UNKNOWN:
-            default:
-                return null;
-        }
     }
 }

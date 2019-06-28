@@ -1,6 +1,8 @@
 {{#if isResourceTemplate}}
 import * as Bookshelf from 'bookshelf';
 {{/if}}
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
 {{#unless isResourceTemplate}}

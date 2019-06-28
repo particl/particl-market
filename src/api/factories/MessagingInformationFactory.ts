@@ -3,13 +3,10 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { inject, named } from 'inversify';
-import * as crypto from 'crypto-js';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessagingInformation } from '../models/MessagingInformation';
-
-import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 
 export class MessagingInformationFactory {
 

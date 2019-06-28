@@ -4,7 +4,7 @@
 
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { UserService } from '../services/UserService';
+import { UserService } from '../services/model/UserService';
 import { Types, Core, Targets } from '../../constants';
 
 
@@ -14,7 +14,7 @@ export class PopulateUserMiddleware implements interfaces.Middleware {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.UserService) private userService: UserService
+        @inject(Types.Service) @named(Targets.Service.model.UserService) private userService: UserService
     ) {
         this.log = new Logger(__filename);
     }

@@ -8,7 +8,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { AddressService } from '../../services/AddressService';
+import { AddressService } from '../../services/model/AddressService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -21,7 +21,7 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService
+        @inject(Types.Service) @named(Targets.Service.model.AddressService) public addressService: AddressService
     ) {
         super(Commands.ADDRESS_REMOVE);
         this.log = new Logger(__filename);

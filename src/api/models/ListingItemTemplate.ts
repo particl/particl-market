@@ -11,8 +11,8 @@ import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
 import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
-import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-import {Logger as LoggerType} from '../../core/Logger';
+import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -40,6 +40,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
+        'ListingItems.Market',
         'ListingItems.PaymentInformation',
         'ListingItems.PaymentInformation.ItemPrice',
         'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',
@@ -51,7 +52,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ShippingDestinations',
-        'Profile'
+        'Profile',
+        'ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
+        'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
+        'ChildListingItemTemplate'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
@@ -147,6 +153,9 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
@@ -175,6 +184,19 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
     public Profile(): Profile {
         return this.belongsTo(Profile, 'profile_id', 'id');
+    }
+
+    // ListingItemTemplate can haz a parent ListingItemTemplate
+    public ParentListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    }
+
+    // public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
+    //    return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    // }
+
+    public ChildListingItemTemplate(): ListingItemTemplate {
+        return this.hasOne(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
 }

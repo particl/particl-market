@@ -3,22 +3,17 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ShippingDestinationService } from '../../services/ShippingDestinationService';
-import { ListingItemService } from '../../services/ListingItemService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ShippingDestination } from '../../models/ShippingDestination';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
-import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
-import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
@@ -27,8 +22,8 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHIPPINGDESTINATION_LIST);

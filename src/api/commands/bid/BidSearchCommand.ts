@@ -3,23 +3,23 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as _ from 'lodash';
-import { BidService } from '../../services/BidService';
-import { ListingItemService } from '../../services/ListingItemService';
+import { BidService } from '../../services/model/BidService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { BidSearchParams } from '../../requests/BidSearchParams';
+import { BidSearchParams } from '../../requests/search/BidSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidMessageType } from '../../enums/BidMessageType';
-import { OrderStatus} from '../../enums/OrderStatus';
+import { OrderItemStatus} from '../../enums/OrderItemStatus';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -28,8 +28,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);
@@ -42,7 +42,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: pageLimit, number, default=10, optional
      *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
-     *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     *  [4]: status/type, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
      *  [5]: searchString, string, * for anything, optional
      *  [6...]: bidder: particl address, optional
@@ -57,7 +57,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const pageLimit = data.params[1];
         const ordering = data.params[2];
         const listingItemHash = data.params[3];
-        const status = data.params[4];
+        const type = data.params[4];
         const searchString = data.params[5];
 
         // TODO: also maybe we should add support for bid expiry at some point
@@ -80,7 +80,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             pageLimit,
             ordering,
             listingItemHash,
-            status,
+            type,
             searchString,
             bidders: data.params
         } as BidSearchParams;
@@ -97,7 +97,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: pageLimit, number, default=10, optional
      *  [2]: ordering ASC/DESC, orders by updatedAt, optional
      *  [3]: ListingItem hash, string, * for all, optional
-     *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     *  [4]: status/type, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
      *  [5]: searchString, string, * for anything, optional
      *  [6...]: bidder: particl address, optional
@@ -163,24 +163,26 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             + ' MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
 
-    private getStatus(status: string): BidMessageType | OrderStatus | undefined {
+    private getStatus(status: string): MPAction | OrderItemStatus | undefined {
         switch (status) {
             case 'MPA_BID':
-                return BidMessageType.MPA_BID;
+                return MPAction.MPA_BID;
             case 'MPA_ACCEPT':
-                return BidMessageType.MPA_ACCEPT;
+                return MPAction.MPA_ACCEPT;
             case 'MPA_REJECT':
-                return BidMessageType.MPA_REJECT;
+                return MPAction.MPA_REJECT;
             case 'MPA_CANCEL':
-                return BidMessageType.MPA_CANCEL;
+                return MPAction.MPA_CANCEL;
             case 'AWAITING_ESCROW':
-                return OrderStatus.AWAITING_ESCROW;
+                return OrderItemStatus.AWAITING_ESCROW;
             case 'ESCROW_LOCKED':
-                return OrderStatus.ESCROW_LOCKED;
+                return OrderItemStatus.ESCROW_LOCKED;
+            case 'ESCROW_COMPLETED':
+                return OrderItemStatus.ESCROW_COMPLETED;
             case 'SHIPPING':
-                return OrderStatus.SHIPPING;
+                return OrderItemStatus.SHIPPING;
             case 'COMPLETE':
-                return OrderStatus.COMPLETE;
+                return OrderItemStatus.COMPLETE;
             case '*':
                 return undefined;
             default:

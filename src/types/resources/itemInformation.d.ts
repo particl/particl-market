@@ -15,6 +15,8 @@ declare module 'resources' {
         ItemCategory: ItemCategory;
         ItemImages: ItemImage[];
         ItemLocation: ItemLocation;
+        ListingItem: ListingItem;
+        ListingItemTemplate: ListingItemTemplate;
     }
 
 }

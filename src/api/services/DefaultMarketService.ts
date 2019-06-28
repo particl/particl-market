@@ -7,20 +7,19 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Market } from '../models/Market';
-import { MarketService } from './MarketService';
-import { MarketCreateRequest } from '../requests/MarketCreateRequest';
-import { MarketUpdateRequest } from '../requests/MarketUpdateRequest';
+import { MarketService } from './model/MarketService';
+import { MarketCreateRequest } from '../requests/model/MarketCreateRequest';
+import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
-
 
 export class DefaultMarketService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType

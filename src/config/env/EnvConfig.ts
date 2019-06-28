@@ -39,7 +39,7 @@ export class EnvConfig {
         EXPRESS_ENABLED: true,
         SOCKETIO_ENABLED: true,
         LOG_LEVEL: 'debug',
-        LOG_PATH:  'marketplace.log', // todo: separate log_path and log_file
+        LOG_PATH:  'market.log', // todo: separate log_path and log_file
         LOG_ADAPTER: 'winston',
         API_INFO_ENABLED: true,
         API_INFO_ROUTE: '/info',

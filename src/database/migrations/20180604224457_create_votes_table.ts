@@ -10,6 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('votes', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('msgid'); // .notNullable().unique();
+
             table.integer('proposal_option_id').unsigned().notNullable();
             table.foreign('proposal_option_id').references('id')
                 .inTable('proposal_options').onDelete('cascade');

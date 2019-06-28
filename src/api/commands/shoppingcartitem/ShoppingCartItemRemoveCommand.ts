@@ -10,8 +10,8 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItemService } from '../../services/ShoppingCartItemService';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 
 export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -19,8 +19,8 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCARTITEM_REMOVE);

@@ -9,11 +9,11 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "CV",
+            "country": "CV",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": 12.1234,
                 "lng": 23.2314
             }
@@ -27,7 +27,7 @@
         "itemImages": [
             {
                 "hash": "75ea10ae-9f4c-40e8-930a-7b9d170737f9",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",
@@ -39,7 +39,7 @@
             },
             {
                 "hash": "e56eaa7c-c00d-4eca-9145-4d5142aba0cf",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",
@@ -61,8 +61,8 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
-            "basePrice": 1000,
+            "currency": "PART",
+            "basePrice": 1,
             "shippingPrice": {
                 "domestic": 2,
                 "international": 3

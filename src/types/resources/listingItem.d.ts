@@ -6,11 +6,12 @@ declare module 'resources' {
 
     interface ListingItem {
         id: number;
+        msgid: string;
         hash: string;
         seller: string;
         expiryTime: number;
+        generatedAt: number;
         removed: boolean;
-
         receivedAt: number;
         postedAt: number;
         expiredAt: number;
@@ -21,7 +22,6 @@ declare module 'resources' {
         ListingItemObjects: ListingItemObject[];
         Market: Market;
         Bids: Bid[];
-        ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
         FlaggedItem: FlaggedItem;
 

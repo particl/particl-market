@@ -20,8 +20,7 @@ import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
 import { Environment } from './helpers/Environment';
-import {MessageException} from '../api/exceptions/MessageException';
-
+import { MessageException } from '../api/exceptions/MessageException';
 
 export interface Configurable {
     configure(app: App): void;
@@ -94,7 +93,7 @@ export class App {
         }
 
         // Perform database migrations
-        // TODO: migrate fails when db is created from the desktop and when run from the marketplace project and vice versa
+        // TODO: migrate fails when db is created from the desktop and when run from the market project and vice versa
         if (Environment.isTruthy(process.env.MIGRATE)) {
             const result = await databaseMigrate.migrate()
                 .catch(reason => {

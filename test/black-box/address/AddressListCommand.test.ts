@@ -8,7 +8,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
+import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('AddressListCommand', () => {

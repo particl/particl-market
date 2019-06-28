@@ -5,9 +5,9 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ItemCategoryService } from '../services/ItemCategoryService';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
+import { ItemCategoryService } from './model/ItemCategoryService';
+import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../models/ItemCategory';
 
 export class DefaultItemCategoryService {
@@ -15,7 +15,7 @@ export class DefaultItemCategoryService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

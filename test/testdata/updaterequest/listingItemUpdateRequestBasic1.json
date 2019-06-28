@@ -3,6 +3,7 @@
     "postedAt": 1536786316653,
     "expiredAt": 1536886316653,
     "receivedAt": 1536786317653,
+    "generatedAt": 1536786317653,
     "itemInformation": {
         "title": "Small Soft Gloves UPDATED",
         "shortDescription": "UPDATED",
@@ -13,11 +14,11 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "FINLAND",
+            "country": "FINLAND",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": 33.333,
                 "lng": 44.333
             }
@@ -31,7 +32,7 @@
         "itemImages": [
             {
                 "hash": "75ea10ae-9f4c-40e8-930a-7b9d170737f9",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",
@@ -43,7 +44,7 @@
             },
             {
                 "hash": "e56eaa7c-c00d-4eca-9145-4d5142aba0cf",
-                "datas": [
+                "data": [
                     {
                         "protocol": "LOCAL",
                         "encoding": "BASE64",
@@ -65,11 +66,11 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
-            "basePrice": 76.31903702293027,
+            "currency": "PART",
+            "basePrice": 1,
             "shippingPrice": {
-                "domestic": 2.13268661244928,
-                "international": 8.76915941696489
+                "domestic": 2,
+                "international": 3
             },
             "cryptocurrencyAddress": {
                 "type": "NORMAL",

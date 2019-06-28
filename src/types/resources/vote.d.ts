@@ -6,8 +6,10 @@ declare module 'resources' {
 
     interface Vote {
         id: number;
+        msgid: string;
         voter: string;
         weight: number;
+        signature: string;
 
         postedAt: number;
         receivedAt: number;

@@ -74,12 +74,12 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        const databaseFile = path.join(this.getDatabasePath(), 'marketplace.db');
+        const databaseFile = path.join(this.getDatabasePath(), 'market.db');
         return databaseFile;
     }
 
     public static getLogFile(): string {
-        return path.join(this.getDataDirPath(), process.env.LOG_PATH || 'marketplace.log');
+        return path.join(this.getDataDirPath(), process.env.LOG_PATH || 'market.log');
     }
 
     public static checkIfExists(dir: string, expectFailure?: boolean): boolean {

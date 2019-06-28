@@ -9,25 +9,25 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { AddressService } from '../../src/api/services/AddressService';
-import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
-import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
-import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { AddressService } from '../../src/api/services/model/AddressService';
+import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
+import { FavoriteItemService } from '../../src/api/services/model/FavoriteItemService';
+import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Profile } from '../../src/api/models/Profile';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
-import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
-import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
+import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import * as resources from 'resources';
 
 describe('Profile', () => {
@@ -87,13 +87,13 @@ describe('Profile', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
-        cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
-        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.ShoppingCartService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
+        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

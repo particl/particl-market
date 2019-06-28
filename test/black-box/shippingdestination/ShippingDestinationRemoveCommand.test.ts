@@ -3,24 +3,18 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as countryList from 'iso3166-2-db/countryList/en.json';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as countryList from 'iso3166-2-db/countryList/en.json';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
-/**
- * shipping destination can be removed using following params:
- * [0]: shippingDestinationId
- * or
- * [0]: listing_item_template_id
- * [1]: country/countryCode
- * [2]: shipping availability (ShippingAvailability enum)
- *
- */
+
 describe('ShippingDestinationRemoveCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,6 +25,8 @@ describe('ShippingDestinationRemoveCommand', () => {
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const shippingDestinationRemoveCommand = Commands.SHIPPINGDESTINATION_REMOVE.commandName;
     const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -120,15 +116,15 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(res.error.error.message).toBe(`Country code INVALID-COUNTRY-CODE was not found!`);
     });
 
-    test('Should fail to remove ShippingDestination using invalid itemTemplateId', async () => {
-        const invalidTemplateId = 0;
+    test('Should fail to remove ShippingDestination using invalid listingItemTemplateId', async () => {
+        const invalidTemplateId = 'INVALID';
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
             invalidTemplateId,
             countryList.ZA.iso
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Entity with identifier 0 does not exist');
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Should remove ShippingDestination from ListingItemTemplate', async () => {
@@ -140,7 +136,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         res.expectStatusCode(200);
     });
 
-    test('Should fail to remove ShippingDestination from ListingItemTemplate because it already removed', async () => {
+    test('Should fail to remove ShippingDestination from ListingItemTemplate because its already removed', async () => {
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
             listingItemTemplate.id,
             countryList.ZA.iso
@@ -150,16 +146,60 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(res.error.error.message).toBe('ShippingDestination not found.');
     });
 
-    test('Should fail to remove ShippingDestination because ListingItem exists', async () => {
-        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
-            listingItemTemplateWithListingItem.id,
-            listingItemTemplateWithListingItem.ListingItems[0].ItemInformation.ShippingDestinations[0].country
+    test('Should fail to add the ShippingDestination because the ListingItemTemplate has been published', async () => {
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,    // generateListingItemObjects
+            false,
+            null,
+            true,
+            defaultMarket.id
+        ]).toParamsArray();
+
+        // generate listingItemTemplate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplates[];
+        listingItemTemplate = listingItemTemplates[0];
+
+        // post template
+        const daysRetention = 4;
+        let res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplates[0].id,
+            daysRetention,
+            defaultMarket.id
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Can\'t delete ShippingDestination, because the ListingItemTemplate has allready been posted!');
-    });
 
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        const sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+
+        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplate.id,
+            'South Africa',
+            ShippingAvailability.SHIPS
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
+    });
 });
 
 

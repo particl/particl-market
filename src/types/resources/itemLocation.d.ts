@@ -6,8 +6,9 @@ declare module 'resources' {
 
     interface ItemLocation {
         id: number;
-        region: string;
+        country: string;
         address: string;
+        description: string;
         createdAt: Date;
         updatedAt: Date;
         LocationMarker: LocationMarker;

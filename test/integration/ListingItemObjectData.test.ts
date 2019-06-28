@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -11,25 +12,19 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
-import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import {MarketService} from '../../src/api/services/MarketService';
-import * as resources from "resources";
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {ListingItemObject} from '../../src/api/models/ListingItemObject';
-import {ListingItemObjectService} from '../../src/api/services/ListingItemObjectService';
-import {ListingItemObjectType} from '../../src/api/enums/ListingItemObjectType';
-import {ListingItemObjectCreateRequest} from '../../src/api/requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
+import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/model/ListingItemObjectDataUpdateRequest';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { ListingItemObject } from '../../src/api/models/ListingItemObject';
+import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
+import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -63,26 +58,18 @@ describe('ListingItemObjectData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
-        const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = ObjectHash.getHash(templateData, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
-        templateData.profile_id = defaultProfile.Id;
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
 
         // generate template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -117,8 +104,7 @@ describe('ListingItemObjectData', () => {
             order: 0
         } as ListingItemObjectCreateRequest;
 
-        const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(listingItemObjectCreateRequest);
-        createdListingItemObject = listingItemObjectModel.toJSON();
+        createdListingItemObject = await listingItemObjectService.create(listingItemObjectCreateRequest).then(value => value.toJSON());
 
     });
 
@@ -130,8 +116,7 @@ describe('ListingItemObjectData', () => {
     test('Should create a new ListingItemObjectData', async () => {
 
         testData.listing_item_object_id = createdListingItemObject.id;
-        const listingItemObjectDataModel: ListingItemObjectData = await listingItemObjectDataService.create(testData);
-        createdListingItemObjectData = listingItemObjectDataModel.toJSON();
+        createdListingItemObjectData = await listingItemObjectDataService.create(testData).then(value => value.toJSON());
 
         const result = createdListingItemObjectData;
         expect(result.key).toBe(testData.key);
@@ -147,8 +132,7 @@ describe('ListingItemObjectData', () => {
     });
 
     test('Should list ListingItemObjectDatas with our new create one', async () => {
-        const listingItemObjectDataCollection = await listingItemObjectDataService.findAll();
-        const listingItemObjectDatas = listingItemObjectDataCollection.toJSON();
+        const listingItemObjectDatas: resources.ListingItemObjectData[] = await listingItemObjectDataService.findAll().then(value => value.toJSON());
         expect(listingItemObjectDatas.length).toBe(1);
 
         const result = listingItemObjectDatas[0];
@@ -158,10 +142,9 @@ describe('ListingItemObjectData', () => {
     });
 
     test('Should return one ListingItemObjectData', async () => {
-        const listingItemObjectDataModel: ListingItemObjectData
-            = await listingItemObjectDataService.findOne(createdListingItemObjectData.id);
+        createdListingItemObjectData = await listingItemObjectDataService.findOne(createdListingItemObjectData.id).then(value => value.toJSON());
 
-        const result = listingItemObjectDataModel.toJSON();
+        const result = createdListingItemObjectData;
         expect(result.key).toBe(testData.key);
         expect(result.value).toBe(testData.value);
         expect(result.listingItemObjectId).toBe(testData.listing_item_object_id);
@@ -169,10 +152,10 @@ describe('ListingItemObjectData', () => {
 
     test('Should update the ListingItemObjectData', async () => {
         testDataUpdated.listing_item_object_id = createdListingItemObject.id;
-        const listingItemObjectDataModel: ListingItemObjectData
-            = await listingItemObjectDataService.update(createdListingItemObjectData.id, testDataUpdated);
+        createdListingItemObjectData = await listingItemObjectDataService.update(createdListingItemObjectData.id, testDataUpdated)
+            .then(value => value.toJSON());
 
-        const result = listingItemObjectDataModel.toJSON();
+        const result = createdListingItemObjectData;
         expect(result.key).toBe(testDataUpdated.key);
         expect(result.value).toBe(testDataUpdated.value);
         expect(result.listingItemObjectId).toBe(testDataUpdated.listing_item_object_id);

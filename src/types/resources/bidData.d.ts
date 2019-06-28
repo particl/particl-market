@@ -6,8 +6,8 @@ declare module 'resources' {
 
     interface BidData {
         id: number;
-        dataValue: string;
-        dataId: string;
+        key: string;
+        value: string;
         createdAt: Date;
         updatedAt: Date;
     }

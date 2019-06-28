@@ -10,9 +10,9 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { PriceTickerService } from '../../src/api/services/PriceTickerService';
-import { PriceTickerCreateRequest } from '../../src/api/requests/PriceTickerCreateRequest';
-import { PriceTickerUpdateRequest } from '../../src/api/requests/PriceTickerUpdateRequest';
+import { PriceTickerService } from '../../src/api/services/model/PriceTickerService';
+import { PriceTickerCreateRequest } from '../../src/api/requests/model/PriceTickerCreateRequest';
+import { PriceTickerUpdateRequest } from '../../src/api/requests/model/PriceTickerUpdateRequest';
 import { PriceTicker } from '../../src/api/models/PriceTicker';
 
 describe('PriceTicker', () => {
@@ -73,7 +73,7 @@ describe('PriceTicker', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        priceTickerService = app.IoC.getNamed<PriceTickerService>(Types.Service, Targets.Service.PriceTickerService);
+        priceTickerService = app.IoC.getNamed<PriceTickerService>(Types.Service, Targets.Service.model.PriceTickerService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

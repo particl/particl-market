@@ -13,8 +13,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ProfileService } from '../../services/ProfileService';
-import { FavoriteItemService } from '../../services/FavoriteItemService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { FavoriteItemService } from '../../services/model/FavoriteItemService';
 
 /*
  * Get a list of all favorites for profile
@@ -25,8 +25,8 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.FavoriteItemService) private favoriteItemService: FavoriteItemService
     ) {
         super(Commands.FAVORITE_LIST);
         this.log = new Logger(__filename);

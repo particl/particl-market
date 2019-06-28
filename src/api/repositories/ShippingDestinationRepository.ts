@@ -9,7 +9,7 @@ import { ShippingDestination } from '../models/ShippingDestination';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationSearchParams } from '../requests/search/ShippingDestinationSearchParams';
 
 export class ShippingDestinationRepository {
 

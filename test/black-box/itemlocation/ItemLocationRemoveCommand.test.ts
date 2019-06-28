@@ -3,12 +3,16 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ItemLocationRemoveCommand', () => {
 
@@ -20,131 +24,109 @@ describe('ItemLocationRemoveCommand', () => {
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationRemoveCommand = Commands.ITEMLOCATION_REMOVE.commandName;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            listingItemId: null,
-            itemLocation: {
-                region: 'South Africa',
-                address: 'asdf, asdf, asdf',
-                locationMarker: {
-                    markerTitle: 'Helsinki',
-                    markerText: 'Helsinki',
-                    lat: 12.1234,
-                    lng: 23.2314
-                }
-            }
-        }
-    };
-    const testDataListingItemTemplate2 = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Title2',
-            shortDescription: 'SDescription2',
-            longDescription: 'LDescription2',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            listingItemId: null,
-            itemLocation: {
-                region: 'Australia',
-                address: 'fdsa fdsa fdsa fdsa',
-                locationMarker: {
-                    markerTitle: 'Adelaide',
-                    markerText: 'Adelaide',
-                    lat: 34.9228,
-                    lng: 138.6019
-                }
-            }
-        }
-    };
-
-    let createdTemplateId;
-    let createdlistingitemId;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        const generateListingItemParams = new GenerateListingItemParams([
+        // profile & market
+        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
+        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
+    });
+
+    test('Should fail to remove ItemLocation because of missing listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail to remove ItemLocation because of invalid listingItemTemplateId', async () => {
+        const fakeId = 'not a number';
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, fakeId]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+    test('Should fail to remove ItemLocation because of a non-existent listingItemTemplate', async () => {
+        const fakeId = 1000000000;
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, fakeId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
+    });
+
+    test('Should fail to remove ItemLocation because it doesnt exist', async () => {
+        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
+        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             false,   // generateItemInformation
             false,   // generateItemLocation
             false,   // generateShippingDestinations
-            false,   // generateItemImages
+            false,  // generateItemImages
             false,   // generatePaymentInformation
             false,   // generateEscrow
             false,   // generateItemPrice
             false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,  // generateListingItem
+            defaultMarket.id   // marketId
         ]).toParamsArray();
 
-        // get profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
+        const templatesWithoutItemInformation: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+        const template = templatesWithoutItemInformation[0];
 
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        createdTemplateId = addListingItemTempRes.id;
-
-        // create listing item
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM, // what to generate
-            1,                                  // how many to generate
-            true,                               // return model
-            generateListingItemParams   // what kind of data to generate
-        ) as resources.ListingItemTemplate[];
-        createdlistingitemId = listingItems[0].id;
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, template.id]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ItemLocation').getMessage());
     });
 
     test('Should remove ItemLocation', async () => {
-        // remove item location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, createdTemplateId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, listingItemTemplate.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
     });
 
     test('Should fail to remove ItemLocation because its already removed', async () => {
-        // remove item location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, listingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
-    });
-
-    test('Should not remove ItemLocation because ItemInformation is related with ListingItem', async () => {
-        // set listing item id in item information
-        testDataListingItemTemplate.itemInformation.listingItemId = createdlistingitemId;
-
-        testDataListingItemTemplate2.profile_id = testDataListingItemTemplate.profile_id;
-        testDataListingItemTemplate2.itemInformation.listingItemId = createdlistingitemId;
-
-        // create new item template
-        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
-
-        // remove item location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, newListingItemTemplate.id]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be removed because the ListingItem has allready been posted!');
-    });
-
-    test('Should fail to remove ItemLocation if ItemInformation not exist', async () => {
-        // create new item template
-        delete testDataListingItemTemplate.itemInformation;
-        // const addListingItemTempRes = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 1, true);
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const templateId = addListingItemTempRes.id;
-        // remove item location
-        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, templateId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('ItemInformation or ItemLocation with the listingItemTemplateId=' + templateId + ' was not found!');
     });
 
 });

@@ -6,12 +6,12 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Proposal } from '../models/Proposal';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SearchOrder } from '../enums/SearchOrder';
-import { ProposalType } from '../enums/ProposalType';
+import { ProposalCategory } from '../enums/ProposalCategory';
 
 export class ProposalRepository {
 
@@ -39,7 +39,7 @@ export class ProposalRepository {
             timeStart: '*',
             timeEnd: '*',
             order: SearchOrder.ASC,
-            type: ProposalType.PUBLIC_VOTE
+            category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
         return await this.search(searchParams, withRelated);
     }
@@ -50,6 +50,10 @@ export class ProposalRepository {
 
     public async findOneByItemHash(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
         return this.ProposalModel.fetchByItemHash(itemHash, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByMsgId(msgId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {

@@ -9,7 +9,7 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
 
 export class ListingItemTemplateRepository {
 

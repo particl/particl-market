@@ -6,7 +6,7 @@
  * ListingItem searchBy type
  *
  */
-
+// TODO: deprecated, remove
 export enum ListingItemSearchType {
 
     FLAGGED = 'FLAGGED',

@@ -2,22 +2,22 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ShippingDestinationService } from '../../services/ShippingDestinationService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ShippingDestinationService } from '../../services/model/ShippingDestinationService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { NotFoundException } from '../../exceptions/NotFoundException';
-import { MessageException } from '../../exceptions/MessageException';
-import * as _ from 'lodash';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -25,8 +25,8 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.SHIPPINGDESTINATION_REMOVE);
         this.log = new Logger(__filename);
@@ -34,29 +34,36 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_id
-     *  [1]: country/countryCode
-     *  [2]: shippingDestinationId
+     *  [0]: shippingDestination: resources.ShippingDestination
      *
      * @param data
      * @returns {Promise<ShippingDestination>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.shippingDestinationService.destroy(data.params[2]);
+        const shippingDestination: resources.ShippingDestination = data.params[0];
+        return this.shippingDestinationService.destroy(shippingDestination.id);
     }
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_id
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: country/countryCode
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('country');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('country', 'string');
         }
 
         const listingItemTemplateId: number = data.params[0];
@@ -66,12 +73,18 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
         // If countryCode is country code, validate, and possibly throw error.
         countryCode = ShippingCountries.convertAndValidate(countryCode);
 
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
 
-        if (listingItemTemplate.ListingItems && listingItemTemplate.ListingItems.length > 0) {
-            this.log.warn(`Can't delete ShippingDestination, because the ListingItemTemplate has allready been posted!`);
-            throw new MessageException(`Can't delete ShippingDestination, because the ListingItemTemplate has allready been posted!`);
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
         }
 
         if (!_.isEmpty(listingItemTemplate.ItemInformation.ShippingDestinations)) {
@@ -79,13 +92,13 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
                 return destination.country === countryCode;
             });
 
-            if (shippingDestination === undefined) {
-                throw new MessageException('ShippingDestination not found.');
+            if (!shippingDestination) {
+                throw new ModelNotFoundException('ShippingDestination');
             } else {
-                data.params[2] = shippingDestination.id;
+                data.params[0] = shippingDestination;
             }
         } else {
-            throw new MessageException('ShippingDestination not found.');
+            throw new ModelNotFoundException('ShippingDestination');
         }
 
         return data;
