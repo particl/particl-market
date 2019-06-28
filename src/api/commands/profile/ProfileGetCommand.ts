@@ -12,6 +12,7 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -44,6 +45,10 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('profileId|profileName', 'number|string');
+        }
+
         if (data.params.length === 0) {
             data.params[0] = 'DEFAULT';
         }
@@ -56,9 +61,9 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - [optional] Numeric - The ID of the profile we want to \n'
+            + '    <profileId>              - [optional] Numeric - The ID of the Profile we want to \n'
             + '                                retrieve. \n'
-            + '    <profileName>            - [optional] String - The name of the profile we want to \n'
+            + '    <profileName>            - [optional] String - The name of the Profile we want to \n'
             + '                                retrieve. ';
     }
 

@@ -79,7 +79,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <profileID>              -  That profile ID of the profile we want to destroy. \n';
+            + '    <profileID>              -  The ID of the Profile we want to destroy. \n';
     }
 
     public description(): string {
