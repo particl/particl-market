@@ -390,17 +390,14 @@ export class TestDataService {
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // const fromAddress = await this.coreRpcService.getNewAddress();
-            const marketModel = await this.marketService.getDefault();
-            const market = marketModel.toJSON();
+            // const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
 
             this.log.debug('create listingitem start');
-            const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
+                .then(value => value.toJSON());
             this.log.debug('create listingitem end');
 
-            // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
-            const result = savedListingItemModel.toJSON();
-            items.push(result);
-
+            items.push(savedListingItem);
         }
         // this.log.debug('items: ', items);
 

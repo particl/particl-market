@@ -35,7 +35,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     /**
      * data.params[]:
      *  [0]: itemImageId
-     * todo: we should propably switch to use hashes
+     * todo: we should propably switch to use hashes?
      *
      */
     @validate()
@@ -61,8 +61,6 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         }
 
         const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[0]).then(value => value.toJSON());
-
-        this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
 
         // check if item already been posted
         if (!_.isEmpty(itemImage.ItemInformation.ListingItemTemplate)) {

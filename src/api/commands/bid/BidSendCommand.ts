@@ -27,7 +27,6 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
-import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
