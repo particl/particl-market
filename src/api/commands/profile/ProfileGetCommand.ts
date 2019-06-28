@@ -63,7 +63,7 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Get profile by profile id or profile name';
+        return 'Get Profile by id or name';
     }
 
     public example(): string {
