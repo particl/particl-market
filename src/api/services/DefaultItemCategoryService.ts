@@ -124,18 +124,14 @@ export class DefaultItemCategoryService {
     }
     // tslint:enable:max-line-length
 
-    public async insertOrUpdateCategory(category: ItemCategoryCreateRequest): Promise<ItemCategory> {
-
-        let newItemCategory = await this.itemCategoryService.findOneByKey(category.key);
-        if (newItemCategory === null) {
-            newItemCategory = await this.itemCategoryService.create(category);
-
-        } else {
-            const categoryUpdate: any = category;
-            categoryUpdate.id = newItemCategory.Id;
-            newItemCategory = await this.itemCategoryService.update(newItemCategory.Id, categoryUpdate as ItemCategoryUpdateRequest);
-        }
-        return newItemCategory;
+    public async insertOrUpdateCategory(categoryRequest: ItemCategoryCreateRequest | ItemCategoryUpdateRequest): Promise<ItemCategory> {
+        return await this.itemCategoryService.findOneByKey(categoryRequest.key)
+            .then(async categoryModel => {
+                return await this.itemCategoryService.update(categoryModel.Id, categoryRequest);
+            })
+            .catch(async reason => {
+                return await this.itemCategoryService.create(categoryRequest);
+            });
     }
 
     public async getPath(category: ItemCategory): Promise<string> {

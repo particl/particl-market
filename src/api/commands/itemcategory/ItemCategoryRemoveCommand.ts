@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { request, validate } from '../../../core/api/Validate';
@@ -20,8 +21,7 @@ import { ListingItemSearchParams } from '../../requests/search/ListingItemSearch
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SearchOrderField } from '../../enums/SearchOrderField';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import * as resources from 'resources';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 

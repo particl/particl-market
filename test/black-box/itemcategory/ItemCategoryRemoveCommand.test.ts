@@ -9,6 +9,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ItemCategoryRemoveCommand', () => {
 
@@ -44,7 +46,7 @@ describe('ItemCategoryRemoveCommand', () => {
         res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
             'customcategoryname',
             'description',
-            rootCategory.key
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -56,6 +58,21 @@ describe('ItemCategoryRemoveCommand', () => {
         log.debug('rootCategory.id: ', rootCategory.id);
 
         // TODO: categories should be related to market
+    });
+
+    test('Should not delete ItemCategory because invalid categoryId', async () => {
+        const invalidCategoryId = 'INVALID_CATEGORY_DOESNT_EXIST';
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, invalidCategoryId]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should not delete ItemCategory because it cant be found', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, -1]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
     test('Should delete the ItemCategory', async () => {
@@ -75,7 +92,7 @@ describe('ItemCategoryRemoveCommand', () => {
         let res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
             'customcategoryname2',
             'description',
-            rootCategory.key
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -99,7 +116,6 @@ describe('ItemCategoryRemoveCommand', () => {
             null,               // seller
             customCategory.id  // categoryId
         ]).toParamsArray();
-
 
         // create listing item for testing
         const listingItems = await testUtil.generateData(

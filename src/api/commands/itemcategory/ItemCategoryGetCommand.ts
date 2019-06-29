@@ -12,6 +12,8 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -29,8 +31,6 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: id or key
      *
-     * when data.params[0] is number then findById, else findOneByKey
-     *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
@@ -43,20 +43,40 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    /**
+     * data.params[]:
+     *  [0]: id or key
+     *
+     * when data.params[0] is number then findById, else findOneByKey
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('categoryId|categoryKey');
+        }
+
+        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('categoryId/categoryKey', 'number|string');
+        }
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (<categoryId>|<categoryKey>) ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID belonging to the category we \n'
+            + '    <categoryId>                  - Numeric - The ID belonging to the ItemCategory we \n'
             + '                                     want to retrive. \n'
-            + '    <categoryKey>                 - String - The key that identifies the category \n'
+            + '    <categoryKey>                 - String - The key that identifies the ItemCategory \n'
             + '                                     we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Command for getting an item category associated with category Id or key';
+        return 'Command for getting an ItemCategory associated with id or key';
     }
 
     public example(): string {

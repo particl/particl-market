@@ -30,9 +30,12 @@ export class ItemCategoryService {
         return this.itemCategoryRepo.findAll();
     }
 
-    // TODO: findOneXXX should always throw if not found
     public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
+        if (itemCategory === null) {
+            this.log.warn(`ItemCategory with the key=${key} was not found!`);
+            throw new NotFoundException(key);
+        }
         return itemCategory;
     }
 
@@ -53,19 +56,10 @@ export class ItemCategoryService {
         return await this.itemCategoryRepo.findByName(name, withRelated);
     }
 
-    // todo: rename as categoryExists
-    // find by name and parent_item_category_id
-    public async isCategoryExists(categoryName: string, parentCategory: ItemCategory): Promise<ItemCategory> {
-        let parentCategoryId = null;
-        if (!_.isEmpty(parentCategory)) {
-            parentCategoryId = parentCategory.id;
-        }
-        return await this.itemCategoryRepo.isCategoryExists(categoryName, parentCategoryId);
-    }
-
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
 
+        // todo: wtf?
         if (body.parent_item_category_id === 0) {
             delete body.parent_item_category_id;
         }
@@ -112,6 +106,7 @@ export class ItemCategoryService {
         // this.log.debug('categoryArray', categoryArray);
         for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
 
+            // todo: findChildCategoryByKeyOrName throws, propably doesnt work very well
             let existingCategory = await this.findChildCategoryByKeyOrName(rootCategoryToSearchFrom, categoryKeyOrName);
 
             if (!existingCategory) {
@@ -162,20 +157,4 @@ export class ItemCategoryService {
         }
     }
 
-    /**
-     * function to return category id
-     *
-     * @param data
-     * @returns {Promise<number>}
-     */
-    public async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
-        let parentItemCategoryId;
-        if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
-        } else { // get category id by key
-            parentItemCategory = await this.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
-        }
-        return parentItemCategoryId;
-    }
 }

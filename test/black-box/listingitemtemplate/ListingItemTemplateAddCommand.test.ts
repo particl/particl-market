@@ -34,7 +34,7 @@ describe('ListingItemTemplateAddCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         // todo: test with existing category, not a custom one
-        const categoryResult = await testUtil.rpc(categoryCommand, [categoryAddCommand, 'templateCategory', 'category for Template', 'cat_ROOT']);
+        const categoryResult = await testUtil.rpc(categoryCommand, [categoryAddCommand, 'templateCategory', 'category for Template', 0]);
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);
         category = categoryResult.getBody()['result'];
