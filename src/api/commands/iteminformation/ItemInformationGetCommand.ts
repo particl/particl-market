@@ -57,7 +57,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
             throw new MissingParamException('listingItemTemplateId');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        if (typeof data.params[0] !== 'number' || data.params[0] <= 0) {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 

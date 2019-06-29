@@ -7,8 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {NotImplementedException} from '../../../src/api/exceptions/NotImplementedException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('DataAddCommand', () => {
 

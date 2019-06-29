@@ -9,8 +9,7 @@ import { GenerateProfileParams } from '../../../src/api/requests/testdata/Genera
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {NotImplementedException} from '../../../src/api/exceptions/NotImplementedException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('DataGenerateCommand', () => {
 

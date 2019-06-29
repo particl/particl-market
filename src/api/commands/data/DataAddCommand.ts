@@ -14,11 +14,9 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { TestDataService } from '../../services/TestDataService';
 import { TestDataCreateRequest } from '../../requests/testdata/TestDataCreateRequest';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CreatableModel } from '../../enums/CreatableModel';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import {SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import {EnumHelper} from '../../../core/helpers/EnumHelper';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
