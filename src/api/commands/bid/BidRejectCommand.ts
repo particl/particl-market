@@ -22,7 +22,6 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidRejectReason } from '../../enums/BidRejectReason';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -41,7 +40,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bid, resources.Bid
-     * [1]: reason: BidRejectReason
+     * [1]: reason: BidRejectReason, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<SmsgSendResponse>}
@@ -70,7 +69,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bidId
-     * [1]: reason: BidRejectReason
+     * [1]: reason: BidRejectReason, optional
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */

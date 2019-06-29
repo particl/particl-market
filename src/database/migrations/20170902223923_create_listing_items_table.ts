@@ -4,7 +4,6 @@
 
 import * as Knex from 'knex';
 
-
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.createTable('listing_items', (table: Knex.CreateTableBuilder) => {

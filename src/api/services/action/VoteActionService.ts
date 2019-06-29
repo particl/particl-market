@@ -31,11 +31,11 @@ import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreat
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
-import {RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import { RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
-import {ListingItemUpdateRequest} from '../../requests/model/ListingItemUpdateRequest';
+import { ListingItemUpdateRequest } from '../../requests/model/ListingItemUpdateRequest';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
