@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) 2017-2019, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
@@ -19,6 +20,7 @@ export const Targets = {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
+        Comment: 'Comment',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
@@ -61,6 +63,7 @@ export const Targets = {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
+        CommentRepository: 'CommentRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         CurrencyPriceRepository: 'CurrencyPriceRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
@@ -106,6 +109,7 @@ export const Targets = {
             BidAcceptActionService: 'BidAcceptActionService',
             BidCancelActionService: 'BidCancelActionService',
             BidRejectActionService: 'BidRejectActionService',
+            CommentActionService: 'CommentActionService',
             EscrowLockActionService: 'EscrowLockActionService',
             EscrowReleaseActionService: 'EscrowReleaseActionService',
             EscrowRefundActionService: 'EscrowRefundActionService',
@@ -119,6 +123,7 @@ export const Targets = {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
             BidService: 'BidService',
+            CommentService: 'CommentService',
             CryptocurrencyAddressService: 'CryptocurrencyAddressService',
             CurrencyPriceService: 'CurrencyPriceService',
             EscrowRatioService: 'EscrowRatioService',
@@ -189,6 +194,12 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        comment: {
+            CommentGetCommand: 'CommentGetCommand',
+            CommentPostCommand: 'CommentPostCommand',
+            CommentSearchCommand: 'CommentSearchCommand',
+            CommentRootCommand: 'CommentRootCommand'
+        },
         currencyprice: {
             CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         },
@@ -361,6 +372,7 @@ export const Targets = {
         MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
             BidFactory: 'BidFactory',
+            CommentFactory: 'CommentFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             ModelCreateParams: 'ModelCreateParams',

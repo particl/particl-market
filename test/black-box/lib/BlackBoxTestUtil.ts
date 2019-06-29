@@ -65,7 +65,7 @@ export class BlackBoxTestUtil {
      * @param generateParams
      * @returns {Promise<any>}
      */
-    public async generateData(model: CreatableModel, amount: number = 1, withRelated: boolean = true, generateParams: boolean[] = []): Promise<any> {
+    public async generateData(model: CreatableModel, amount: number = 1, withRelated: boolean = true, generateParams: any[] = []): Promise<any> {
         const params = [Commands.DATA_GENERATE.commandName, model.toString(), amount, withRelated]
             .concat(generateParams);
         const res: any = await this.rpc(Commands.DATA_ROOT.commandName, params);
