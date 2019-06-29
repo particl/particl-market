@@ -4,6 +4,7 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
+import { Logger as LoggerType } from '../../core/Logger';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
@@ -16,7 +17,6 @@ import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { Proposal } from './Proposal';
-import { Logger as LoggerType } from '../../core/Logger';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 

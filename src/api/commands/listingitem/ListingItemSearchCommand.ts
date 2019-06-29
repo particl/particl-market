@@ -136,7 +136,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     public usage(): string {
         return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
             '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination>' +
-            ' [<searchString> [<flagged> ]]]]]]]]]]]';
+            ' [<searchString> [<flagged>]]]]]]]]]]]';
     }
 
     public help(): string {

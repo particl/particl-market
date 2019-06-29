@@ -35,6 +35,7 @@ import {RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
+import {ListingItemUpdateRequest} from '../../requests/model/ListingItemUpdateRequest';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -228,6 +229,20 @@ export class VoteActionService extends BaseActionService {
 
         if (msgids.length === 0) {
             throw new MessageException('Wallet has no usable addresses for voting.');
+        }
+
+
+        // once we have posted the votes and if we're voting to remove an item, mark it as removed so it doesnt show up in searches anymore
+        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
+            listingItem.removed = true;
+
+            // todo: market_id and seller are not something we should be updating here
+            await this.listingItemService.update(listingItem.id, {
+                seller: listingItem.seller,
+                market_id: listingItem.Market.id,
+                removed: listingItem.removed
+            } as ListingItemUpdateRequest);
         }
 
         const result = {
