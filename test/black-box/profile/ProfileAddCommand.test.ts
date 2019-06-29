@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ProfileAddCommand', () => {
 

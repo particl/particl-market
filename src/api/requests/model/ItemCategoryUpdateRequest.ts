@@ -11,7 +11,7 @@ export class ItemCategoryUpdateRequest extends RequestBody implements ModelReque
 
     public parent_item_category_id: number;
 
-    // public id: number;
+    public id: number;
     public key: string;
     public name: string;
     public description: string;

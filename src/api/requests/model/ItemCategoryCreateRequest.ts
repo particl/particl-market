@@ -13,7 +13,7 @@ export class ItemCategoryCreateRequest extends RequestBody implements ModelReque
     public parent_item_category_id: number;
 
     public key: string;
-    // public id: number;
+    public id: number;
 
     @IsNotEmpty()
     public name: string;
