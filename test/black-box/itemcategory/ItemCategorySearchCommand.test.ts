@@ -69,7 +69,7 @@ describe('ItemCategorySearchCommand', () => {
     test('Should fail to searchBy ItemCategories because missing searchBy string', async () => {
         const res = await testUtil.rpc(categoryCommand, [categorySearchCommand]);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new MissingParamException('searchBy').getMessage());
     });
 
