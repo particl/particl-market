@@ -114,8 +114,9 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
         // TODO: refactor validation
 
         if (BaseActionListenr.validate(event.marketplaceMessage)) {
+            const isValid = await this.isValidSequence(event.marketplaceMessage);
 
-            if (!this.isValidSequence(event.marketplaceMessage)) {
+            if (!isValid) {
                 // if the sequence is not valid, then wait to process again later
                 // todo: we should propably add processingCount or something for the SmsgMessage
                 this.log.error('event.marketplaceMessage validation failed: invalid sequence. msgid: ', event.smsgMessage.msgid);
