@@ -16,8 +16,8 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import {EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
-import {CryptoAddressType} from 'omp-lib/dist/interfaces/crypto';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -33,7 +33,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -41,8 +41,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<MessageSize> {
 
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
         // add some data to get a more realistic result
@@ -72,13 +71,18 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         }
 
+        // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         }
+
+        // make sure required data exists and fetch it
+        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
 
         return data;
     }

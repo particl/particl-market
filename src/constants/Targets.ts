@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {OrderItemShipActionListener} from '../api/listeners/action/OrderItemShipActionListener';
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -36,7 +34,6 @@ export const Targets = {
         ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
-        LockedOutput: 'LockedOutput',
         Market: 'Market',
         MessagingInformation: 'MessagingInformation',
         Order: 'Order',
@@ -78,7 +75,6 @@ export const Targets = {
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
         LocationMarkerRepository: 'LocationMarkerRepository',
-        LockedOutputRepository: 'LockedOutputRepository',
         MarketRepository: 'MarketRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         OrderItemRepository: 'OrderItemRepository',
@@ -101,20 +97,27 @@ export const Targets = {
     },
     Service:     {
         action: {
+            ActionServiceInterface: 'ActionServiceInterface',
             BaseActionService: 'BaseActionService',
-            BidActionService: 'BidActionService',
             BidAcceptActionService: 'BidAcceptActionService',
+            BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
             BidRejectActionService: 'BidRejectActionService',
-            EscrowLockActionService: 'EscrowLockActionService',
-            EscrowReleaseActionService: 'EscrowReleaseActionService',
-            EscrowRefundActionService: 'EscrowRefundActionService',
             EscrowCompleteActionService: 'EscrowCompleteActionService',
+            EscrowLockActionService: 'EscrowLockActionService',
+            EscrowRefundActionService: 'EscrowRefundActionService',
+            EscrowReleaseActionService: 'EscrowReleaseActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
             OrderItemShipActionService: 'OrderItemShipActionService',
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
+        CoreCookieService: 'CoreCookieService',
+        CoreRpcService: 'CoreRpcService',
+        DefaultItemCategoryService: 'DefaultItemCategoryService',
+        DefaultMarketService: 'DefaultMarketService',
+        DefaultProfileService: 'DefaultProfileService',
+        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
@@ -136,7 +139,6 @@ export const Targets = {
             ListingItemService: 'ListingItemService',
             ListingItemTemplateService: 'ListingItemTemplateService',
             LocationMarkerService: 'LocationMarkerService',
-            LockedOutputService: 'LockedOutputService',
             MarketService: 'MarketService',
             MessagingInformationService: 'MessagingInformationService',
             OrderItemService: 'OrderItemService',
@@ -157,12 +159,6 @@ export const Targets = {
             UserService: 'UserService',
             VoteService: 'VoteService'
         },
-        CoreCookieService: 'CoreCookieService',
-        CoreRpcService: 'CoreRpcService',
-        DefaultItemCategoryService: 'DefaultItemCategoryService',
-        DefaultMarketService: 'DefaultMarketService',
-        DefaultProfileService: 'DefaultProfileService',
-        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService'
@@ -256,6 +252,7 @@ export const Targets = {
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
             ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
@@ -264,6 +261,7 @@ export const Targets = {
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
+        ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -279,8 +277,8 @@ export const Targets = {
         },
         orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand',
-            OrderItemShipCommand: 'OrderItemShipCommand'
+            OrderItemShipCommand: 'OrderItemShipCommand',
+            OrderItemStatusCommand: 'OrderItemStatusCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -345,15 +343,35 @@ export const Targets = {
         }
     },
     Factory:     {
+        hashableconfig: {
+            createrequest: {
+                HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
+                HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
+                HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
+                HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
+                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
+            },
+            HashableField: 'HashableField',
+            message: {
+                HashableBidMessageConfig: 'HashableBidMessageConfig',
+                HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
+                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
+            },
+            model: {
+                HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
+            }
+        },
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         message: {
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
-            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
+            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
+            MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'
@@ -388,20 +406,21 @@ export const Targets = {
     },
     Listener:     {
         action: {
-            ListingItemAddActionListener: 'ListingItemAddActionListener',
-            BidActionListener: 'BidActionListener',
             BidAcceptActionListener: 'BidAcceptActionListener',
+            BidActionListener: 'BidActionListener',
             BidCancelActionListener: 'BidCancelActionListener',
             BidRejectActionListener: 'BidRejectActionListener',
             EscrowCompleteActionListener: 'EscrowCompleteActionListener',
             EscrowLockActionListener: 'EscrowLockActionListener',
             EscrowRefundActionListener: 'EscrowRefundActionListener',
             EscrowReleaseActionListener: 'EscrowReleaseActionListener',
+            ListingItemAddActionListener: 'ListingItemAddActionListener',
             OrderItemShipActionListener: 'OrderItemShipActionListener',
             ProposalAddActionListener: 'ProposalAddActionListener',
             VoteActionListener: 'VoteActionListener'
         },
-        // BaseActionListener: 'BaseActionListener',
+        ActionListenerInterface: 'ActionListenerInterface',
+        BaseActionListenr: 'BaseActionListenr',
         ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {

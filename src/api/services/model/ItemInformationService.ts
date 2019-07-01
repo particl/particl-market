@@ -19,9 +19,8 @@ import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
-import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
-import {ItemCategoryCreateRequest} from '../../requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 
 export class ItemInformationService {
 
@@ -83,9 +82,11 @@ export class ItemInformationService {
         delete body.shippingDestinations;
         delete body.itemImages;
 
-        // get existing item category or create new one
-        const existingItemCategory = await this.getOrCreateItemCategory(itemCategory);
-        body.item_category_id = existingItemCategory.Id;
+        if (!body.item_category_id) {
+            // get existing ItemCategory or create new one
+            const existingItemCategory = await this.getOrCreateItemCategory(itemCategory);
+            body.item_category_id = existingItemCategory.Id;
+        }
 
         // ready to save, if the request body was valid, create the itemInformation
         const itemInformation = await this.itemInformationRepo.create(body);
@@ -183,7 +184,7 @@ export class ItemInformationService {
      * @param itemCategory
      * @returns {Promise<ItemCategory>}
      */
-    private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): Promise<ItemCategory> {
+    private async getOrCreateItemCategory(itemCategory: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
         if (itemCategory.key) {
             result = await this.itemCategoryService.findOneByKey(itemCategory.key);

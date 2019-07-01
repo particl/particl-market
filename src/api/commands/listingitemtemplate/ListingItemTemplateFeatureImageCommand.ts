@@ -34,23 +34,23 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: itemImageId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: itemImage: resources.ItemImage
      * @param data
      * @returns {Promise<ItemImage>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
-        // find the listing item template
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const itemImage: resources.ItemImage = data.params[0];
 
         const itemImages = listingItemTemplate.ItemInformation.ItemImages;
         if (!itemImages.find((img) => img.id === data.params[1])) {
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
             throw new MessageException('imageId doesnt exist on template');
         }
-        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, data.params[1]);
+        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, itemImage.id);
     }
 
     /**
@@ -75,6 +75,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             throw new InvalidParamException('itemImageId', 'number');
         }
 
+        // make sure required data exists and fetch it
         const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[1])
             .then(value => value.toJSON());
         // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
@@ -83,6 +84,9 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
             throw new MessageException(`Can't set featured flag on ItemImage because the ListingItemTemplate has already been posted!`);
         }
+
+        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[1] = itemImage;
 
         return data;
     }

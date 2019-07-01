@@ -134,7 +134,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [13]: parent_listing_item_template_id (optional)
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
