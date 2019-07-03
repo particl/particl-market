@@ -82,7 +82,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result).hasOwnProperty('ListingItemObjects');
         expect(result).hasOwnProperty('ListingItems');
 
-        expect(result.ParentListingItemTemplate.id).toBe(listingItemTemplate.id);
+        expect(result.ParentListingItemTemplate).toBeUndefined();
 
         expect(result.Profile.id).toBe(listingItemTemplate.Profile.id);
         expect(result.ItemInformation.title).toBe(listingItemTemplate.ItemInformation.title);

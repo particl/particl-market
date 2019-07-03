@@ -235,12 +235,13 @@ export class VoteActionService extends BaseActionService {
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
             && voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
-            listingItem.removed = true;
-
             await this.listingItemService.setRemovedFlag(listingItem.hash, true);
+
         } else if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
             && voteRequest.proposalOption.description === ItemVote.KEEP.toString()) {
-            // set keep flag?
+            // we might be changing our vote, so set the flag false
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
+            await this.listingItemService.setRemovedFlag(listingItem.hash, false);
         }
 
         const result = {
