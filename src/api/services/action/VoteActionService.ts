@@ -231,18 +231,16 @@ export class VoteActionService extends BaseActionService {
             throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
-
         // once we have posted the votes and if we're voting to remove an item, mark it as removed so it doesnt show up in searches anymore
-        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
+        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
+            && voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
             listingItem.removed = true;
 
-            // todo: market_id and seller are not something we should be updating here
-            await this.listingItemService.update(listingItem.id, {
-                seller: listingItem.seller,
-                market_id: listingItem.Market.id,
-                removed: listingItem.removed
-            } as ListingItemUpdateRequest);
+            await this.listingItemService.setRemovedFlag(listingItem.hash, true);
+        } else if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
+            && voteRequest.proposalOption.description === ItemVote.KEEP.toString()) {
+            // set keep flag?
         }
 
         const result = {
