@@ -10,8 +10,8 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
-import {ActionDirection} from '../enums/ActionDirection';
-import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
 
 
 export class SmsgMessageRepository {
