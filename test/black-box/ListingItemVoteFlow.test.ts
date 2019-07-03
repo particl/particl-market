@@ -526,6 +526,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
         const result: resources.ProposalResult = response.getBody()['result'];
 
+        log.debug('result.ProposalOptionResults ', JSON.stringify(result.ProposalOptionResults, null, 2));
+
         log.debug('vote1AddressCount: ', vote1AddressCount);
         log.debug('result.ProposalOptionResults[0].voters: ', result.ProposalOptionResults[0].voters);
         log.debug('voteNode1.weight: ', voteNode1.weight);
@@ -533,8 +535,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
         expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
-        expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
-        expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(0);
+        expect(result.ProposalOptionResults[1].weight).toBe(0);
 
         proposalResultNode1 = result;
 
@@ -578,8 +580,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
         expect(result.ProposalOptionResults[0].voters).toBe(vote1AddressCount);
         expect(result.ProposalOptionResults[0].weight).toBe(voteNode1.weight);
-        expect(result.ProposalOptionResults[1].voters).toBeGreaterThan(0);
-        expect(result.ProposalOptionResults[1].weight).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(0);
+        expect(result.ProposalOptionResults[1].weight).toBe(0);
     }, 600000); // timeout to 600s
 
     test('Should post Vote2 from node2 (voter2)', async () => {
