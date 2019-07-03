@@ -196,12 +196,12 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 if (options.flagged) {
-                    // ListingItems having FlaggedItem and ignore whether or not FlaggedItem has the removed flag.
+                    // ListingItems having FlaggedItem
                     qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
-                } else {
-                    // Show all listingitems, but dont include the ones having ListingItem.FlaggedItem.removed
-                    qb.where('listing_items.removed', '=', false);
                 }
+
+                // Show all listingitems, but dont include the ones having ListingItem.removed
+                qb.where('listing_items.removed', '=', false);
 
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
