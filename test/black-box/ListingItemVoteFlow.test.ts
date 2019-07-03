@@ -137,6 +137,7 @@ describe('Happy ListingItem Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
         const result: resources.ListingItemTemplate = response.getBody()['result'];
+        expect(result.id).toBe(listingItemTemplateNode1.id);
 
     });
 
@@ -177,6 +178,9 @@ describe('Happy ListingItem Vote Flow', () => {
     });
 
     test('Should get the updated ListingItemTemplate with the hash', async () => {
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
         const res: any = await testUtilNode1.rpc(templateCommand, [templateGetCommand,
             listingItemTemplateNode1.id
         ]);
@@ -185,13 +189,14 @@ describe('Happy ListingItem Vote Flow', () => {
         listingItemTemplateNode1 = res.getBody()['result'];
 
         expect(listingItemTemplateNode1.hash).toBeDefined();
-        log.debug('listingItemTemplateSellerNode.hash: ', listingItemTemplateNode1.hash);
+        log.debug('listingItemTemplateNode1.hash: ', listingItemTemplateNode1.hash);
 
     }, 600000); // timeout to 600s
 
     test('Should have created ListingItem on node1', async () => {
 
         expect(sent).toBeTruthy();
+        expect(listingItemTemplateNode1.hash).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MPA_LISTING_ADD');
@@ -203,7 +208,7 @@ describe('Happy ListingItem Vote Flow', () => {
         const response: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplateNode1.hash],
-            8 * 60,
+            15 * 60,
             200,
             'hash',
             listingItemTemplateNode1.hash
