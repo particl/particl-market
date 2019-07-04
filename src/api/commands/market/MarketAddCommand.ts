@@ -112,7 +112,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         if (!EnumHelper.containsName(MarketType, data.params[2])) {
-            throw new InvalidParamException('model', 'MarketType');
+            throw new InvalidParamException('type', 'MarketType');
         }
 
         // make sure Profile with the id exists
