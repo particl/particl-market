@@ -19,6 +19,8 @@ import { MarketType } from '../../enums/MarketType';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -26,7 +28,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);
@@ -111,6 +114,16 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         if (!EnumHelper.containsName(MarketType, data.params[2])) {
             throw new InvalidParamException('model', 'MarketType');
         }
+
+        // make sure Profile with the id exists
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+        data.params[0] = profile;
 
         data.params[5] = data.params[5] ? data.params[5] : data.params[3];
         data.params[6] = data.params[6] ? data.params[6] : data.params[4];
