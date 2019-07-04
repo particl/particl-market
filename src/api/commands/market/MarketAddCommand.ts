@@ -115,6 +115,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('type', 'MarketType');
         }
 
+        // TODO: check for duplicate name?
+
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
             .then(value => {
@@ -131,14 +133,15 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <name> <type> <receiveKey> <receiveAddress>'; //  [publishKey] [publishAddress] ';
+        return this.getName() + ' <profileId> <name> <type> <receiveKey> <receiveAddress>'; //  [publishKey] [publishAddress] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <name>                   - String - The unique name of the market being created. \n'
+            + '    <profileId>              - Number - The ID of the Profile for which the Market is added. \n'
+            + '    <name>                   - String - The unique name of the Market being created. \n'
             + '    <type>                   - MarketType - MARKETPLACE \n'
-            + '    <receiveKey>             - String - The receive private key of the market. \n'
+            + '    <receiveKey>             - String - The receive private key of the Market. \n'
             + '    <receiveAddress>         - String - The receive address matching the receive private key';
             // + '    <publishKey>             - String - The publish private key of the market. \n'
             // + '    <publishAddress>         - String - The publish address matching the receive private key';
@@ -149,7 +152,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public example(): string {
-        return 'market ' + this.getName() + ' market add \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
+        return 'market ' + this.getName() + ' market add 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
             '\'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' ';
     }
 }

@@ -252,5 +252,19 @@ describe('MarketAddCommand', () => {
         expect(result.publishAddress).toBe(marketData.publishAddress);
     });
 
+    test('Should fail to create Market because duplicate name', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            defaultProfile.id,
+            marketData.name,
+            marketData.type,
+            marketData.receiveKey,
+            marketData.receiveAddress,
+            marketData.publishKey,
+            marketData.publishAddress
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe('Could not create the market!');
+    });
 
 });

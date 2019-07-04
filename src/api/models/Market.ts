@@ -4,8 +4,29 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
+import {Collection, Model} from 'bookshelf';
 
 export class Market extends Bookshelf.Model<Market> {
+
+    public static RELATIONS = [
+        'Profile'
+    ];
+
+    public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Market>> {
+        const MarketCollection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await MarketCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await MarketCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
