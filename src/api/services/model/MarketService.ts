@@ -46,8 +46,8 @@ export class MarketService {
         return market;
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.findOneByAddress(address, withRelated);
+    public async findOneByReceiveAddress(address: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByReceiveAddress(address, withRelated);
         if (market === null) {
             this.log.warn(`Market with the address=${address} was not found!`);
             throw new NotFoundException(address);
@@ -56,7 +56,11 @@ export class MarketService {
     }
 
     @validate()
-    public async create( @request(MarketCreateRequest) body: MarketCreateRequest): Promise<Market> {
+    public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the market
         const market = await this.marketRepo.create(body);
@@ -74,6 +78,7 @@ export class MarketService {
 
         // set new values
         market.Name = body.name;
+        market.Type = body.type;
         market.ReceiveKey = body.receiveKey;
         market.ReceiveAddress = body.receiveAddress;
         market.PublishKey = body.publishKey;

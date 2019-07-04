@@ -73,7 +73,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const fromAddress = listingItemTemplate.Profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {

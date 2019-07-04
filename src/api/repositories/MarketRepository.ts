@@ -34,8 +34,8 @@ export class MarketRepository {
         return await this.MarketModel.fetchById(id, withRelated);
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByAddress(address, withRelated);
+    public async findOneByReceiveAddress(address: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByReceiveAddress(address, withRelated);
     }
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Market> {
@@ -48,6 +48,7 @@ export class MarketRepository {
             const marketCreated = await market.save();
             return await this.MarketModel.fetchById(marketCreated.id);
         } catch (error) {
+            this.log.error('ERROR: ', error);
             throw new DatabaseException('Could not create the market!', error);
         }
     }

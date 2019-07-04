@@ -115,9 +115,9 @@ describe('Market', () => {
         expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
     });
 
-    // findOneByAddress
+    // findOneByReceiveAddress
     test('Should find market by address', async () => {
-        const marketModel: Market = await marketService.findOneByAddress(testDataUpdated.address);
+        const marketModel: Market = await marketService.findOneByReceiveAddress(testDataUpdated.address);
         const result: resources.Market = marketModel.toJSON();
 
         // test the values
