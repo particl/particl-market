@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -43,32 +44,45 @@ export class DefaultMarketService {
 
         const defaultMarket = {
             name: MARKETPLACE_NAME,
-            private_key: MARKETPLACE_PRIVATE_KEY,
-            address: MARKETPLACE_ADDRESS
+            receiveKey: MARKETPLACE_PRIVATE_KEY,
+            receiveAddress: MARKETPLACE_ADDRESS,
+            publishKey: MARKETPLACE_PRIVATE_KEY,
+            publishAddress: MARKETPLACE_ADDRESS
         } as MarketCreateRequest;
+
         await this.insertOrUpdateMarket(defaultMarket);
         return;
     }
 
     public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        let newMarketModel = await this.marketService.findByAddress(market.address);
-        if (newMarketModel === null) {
-            newMarketModel = await this.marketService.create(market);
-            this.log.debug('created new default Market: ', JSON.stringify(newMarketModel, null, 2));
-        } else {
-            newMarketModel = await this.marketService.update(newMarketModel.Id, market as MarketUpdateRequest);
-            this.log.debug('updated new default Market: ', JSON.stringify(newMarketModel, null, 2));
-        }
-        const newMarket = newMarketModel.toJSON();
+        const newMarketModel = await this.marketService.findOneByAddress(market.receiveAddress)
+            .then(async (found) => {
+                this.log.debug('FOUND!');
+                return await this.marketService.update(found.Id, market as MarketUpdateRequest);
+            })
+            .catch(async (reason) => {
+                this.log.debug('NOT FOUND!');
+                return await this.marketService.create(market);
+            });
+        const newMarket: resources.Market = newMarketModel.toJSON();
+        this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
 
-        // import market private key
-        if ( await this.smsgService.smsgImportPrivKey(newMarket.privateKey) ) {
+        await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
+        if (newMarket.publishKey && newMarket.publishAddress) {
+            await this.importMarketPrivateKey(newMarket.publishKey, newMarket.publishAddress);
+        }
+
+        return newMarketModel;
+    }
+
+    private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
+        if ( await this.smsgService.smsgImportPrivKey(privateKey) ) {
             // get market public key
-            const publicKey = await this.getPublicKeyForAddress(newMarket.address);
+            const publicKey = await this.getPublicKeyForAddress(address);
             this.log.debug('default Market publicKey: ', publicKey);
             // add market address
             if (publicKey) {
-                await this.smsgService.smsgAddAddress(newMarket.address, publicKey);
+                await this.smsgService.smsgAddAddress(address, publicKey);
             } else {
                 throw new InternalServerException('Error while adding public key to db.');
             }
@@ -76,7 +90,6 @@ export class DefaultMarketService {
             this.log.error('Error while importing market private key to db.');
             // todo: throw exception, and do not allow market to run before its properly set up
         }
-        return newMarket;
     }
 
     private async getPublicKeyForAddress(address: string): Promise<string|null> {

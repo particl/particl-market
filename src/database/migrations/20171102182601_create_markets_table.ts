@@ -10,8 +10,11 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
             table.string('name').notNullable().unique();
-            table.string('private_key').notNullable();
-            table.string('address').notNullable();
+            table.string('type').notNullable();
+            table.string('receive_key').notNullable();
+            table.string('receive_address').notNullable();
+            table.string('publish_key').nullable();
+            table.string('publish_address').nullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
