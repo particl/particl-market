@@ -66,7 +66,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 
-        return await this.marketService.findOneByAddress(smsgMessage.to)
+        return await this.marketService.findOneByReceiveAddress(smsgMessage.to)
             .then(async marketModel => {
                 const market: resources.Market = marketModel.toJSON();
                 const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);

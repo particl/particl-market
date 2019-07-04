@@ -14,6 +14,7 @@ import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
+import { MarketType } from '../enums/MarketType';
 
 export class DefaultMarketService {
 
@@ -44,6 +45,7 @@ export class DefaultMarketService {
 
         const defaultMarket = {
             name: MARKETPLACE_NAME,
+            type: MarketType.MARKETPLACE,
             receiveKey: MARKETPLACE_PRIVATE_KEY,
             receiveAddress: MARKETPLACE_ADDRESS,
             publishKey: MARKETPLACE_PRIVATE_KEY,
@@ -55,7 +57,7 @@ export class DefaultMarketService {
     }
 
     public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        const newMarketModel = await this.marketService.findOneByAddress(market.receiveAddress)
+        const newMarketModel = await this.marketService.findOneByReceiveAddress(market.receiveAddress)
             .then(async (found) => {
                 this.log.debug('FOUND!');
                 return await this.marketService.update(found.Id, market as MarketUpdateRequest);

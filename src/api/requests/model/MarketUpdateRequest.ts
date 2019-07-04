@@ -5,11 +5,15 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import { MarketType } from '../../enums/MarketType';
 
 // tslint:disable:variable-name
 export class MarketUpdateRequest extends RequestBody implements ModelRequestInterface {
     @IsNotEmpty()
     public name: string;
+
+    @IsNotEmpty()
+    public type: MarketType;
 
     @IsNotEmpty()
     public receiveKey: string;

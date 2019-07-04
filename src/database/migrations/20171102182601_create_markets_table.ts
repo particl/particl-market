@@ -18,6 +18,11 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
+            table.integer('profile_id').unsigned().notNullable();
+            table.foreign('profile_id').references('id')
+                .inTable('profiles').onDelete('cascade');
+
         })
     ]);
 };

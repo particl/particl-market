@@ -68,7 +68,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),

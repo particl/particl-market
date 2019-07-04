@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
+import {Profile} from './Profile';
 
 export class Market extends Bookshelf.Model<Market> {
 
@@ -17,14 +18,14 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
-    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Market> {
+    public static async fetchByReceiveAddress(value: string, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
-            return await Market.where<Market>({ address: value }).fetch({
+            return await Market.where<Market>({ receive_address: value }).fetch({
                 withRelated: [
                 ]
             });
         } else {
-            return await Market.where<Market>({ address: value }).fetch();
+            return await Market.where<Market>({ receive_address: value }).fetch();
         }
     }
 
@@ -48,17 +49,20 @@ export class Market extends Bookshelf.Model<Market> {
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
 
-    public get ReceiveKey(): string { return this.get('receive_key'); }
-    public set ReceiveKey(value: string) { this.set('receive_key', value); }
+    public get Type(): string { return this.get('type'); }
+    public set Type(value: string) { this.set('type', value); }
 
-    public get ReceiveAddress(): string { return this.get('receive_address'); }
-    public set ReceiveAddress(value: string) { this.set('receive_address', value); }
+    public get ReceiveKey(): string { return this.get('receiveKey'); }
+    public set ReceiveKey(value: string) { this.set('receiveKey', value); }
 
-    public get PublishKey(): string { return this.get('publish_key'); }
-    public set PublishKey(value: string) { this.set('publish_key', value); }
+    public get ReceiveAddress(): string { return this.get('receiveAddress'); }
+    public set ReceiveAddress(value: string) { this.set('receiveAddress', value); }
 
-    public get PublishAddress(): string { return this.get('publish_address'); }
-    public set PublishAddress(value: string) { this.set('publish_address', value); }
+    public get PublishKey(): string { return this.get('publishKey'); }
+    public set PublishKey(value: string) { this.set('publishKey', value); }
+
+    public get PublishAddress(): string { return this.get('publishAddress'); }
+    public set PublishAddress(value: string) { this.set('publishAddress', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -66,4 +70,7 @@ export class Market extends Bookshelf.Model<Market> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
+    }
 }
