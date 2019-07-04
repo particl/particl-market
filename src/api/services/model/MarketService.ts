@@ -37,6 +37,10 @@ export class MarketService {
         return this.marketRepo.findAll();
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return this.marketRepo.findAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
