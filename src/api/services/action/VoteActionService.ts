@@ -217,6 +217,7 @@ export class VoteActionService extends BaseActionService {
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
                 voteRequest.sendParams.fromAddress = addressInfo.address;
+                voteRequest.sendParams.paidMessage = false; // vote messages should be free
                 voteRequest.addressInfo = addressInfo;
                 await this.post(voteRequest)
                     .then(smsgSendResponse => {

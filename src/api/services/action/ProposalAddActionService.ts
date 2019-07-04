@@ -143,6 +143,8 @@ export class ProposalAddActionService extends BaseActionService {
                     proposalOption
                 } as VoteRequest;
 
+                postRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
+
                 this.log.debug('afterPost(), sending votes...');
 
                 // send the VoteMessages from each of senderProfiles addresses
