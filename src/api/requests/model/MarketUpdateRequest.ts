@@ -12,9 +12,12 @@ export class MarketUpdateRequest extends RequestBody implements ModelRequestInte
     public name: string;
 
     @IsNotEmpty()
-    public private_key: string;
+    public receiveKey: string;
 
     @IsNotEmpty()
-    public address: string;
+    public receiveAddress: string;
+
+    public publishKey: string;
+    public publishAddress: string;
 }
 // tslint:enable:variable-name

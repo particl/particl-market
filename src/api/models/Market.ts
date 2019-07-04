@@ -48,11 +48,17 @@ export class Market extends Bookshelf.Model<Market> {
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
 
-    public get PrivateKey(): string { return this.get('private_key'); }
-    public set PrivateKey(value: string) { this.set('private_key', value); }
+    public get ReceiveKey(): string { return this.get('receive_key'); }
+    public set ReceiveKey(value: string) { this.set('receive_key', value); }
 
-    public get Address(): string { return this.get('address'); }
-    public set Address(value: string) { this.set('address', value); }
+    public get ReceiveAddress(): string { return this.get('receive_address'); }
+    public set ReceiveAddress(value: string) { this.set('receive_address', value); }
+
+    public get PublishKey(): string { return this.get('publish_key'); }
+    public set PublishKey(value: string) { this.set('publish_key', value); }
+
+    public get PublishAddress(): string { return this.get('publish_address'); }
+    public set PublishAddress(value: string) { this.set('publish_address', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

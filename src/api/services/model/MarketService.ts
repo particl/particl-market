@@ -46,8 +46,13 @@ export class MarketService {
         return market;
     }
 
-    public async findByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        return await this.marketRepo.findOneByAddress(address, withRelated);
+    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByAddress(address, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
+        return market;
     }
 
     @validate()
@@ -69,12 +74,12 @@ export class MarketService {
 
         // set new values
         market.Name = body.name;
-        market.PrivateKey = body.private_key;
-        market.Address = body.address;
-        // update market record
-        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
+        market.ReceiveKey = body.receiveKey;
+        market.ReceiveAddress = body.receiveAddress;
+        market.PublishKey = body.publishKey;
+        market.PublishAddress = body.publishAddress;
 
-        // return newMarket;
+        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
         return updatedMarket;
     }
 

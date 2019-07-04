@@ -7,8 +7,11 @@ declare module 'resources' {
     interface Market {
         id: number;
         name: string;
-        privateKey: string;
-        address: string;
+        receiveKey: string;
+        receiveAddress: string;
+        publishKey: string;
+        publishAddress: string;
+
         createdAt: Date;
         updatedAt: Date;
     }
