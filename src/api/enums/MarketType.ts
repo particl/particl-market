@@ -9,7 +9,7 @@
 
 export enum MarketType {
 
-    MARKETPLACE = 'MARKETPLACE',
-    STOREFRONT = 'STOREFRONT'
+    MARKETPLACE = 'MARKETPLACE'
+    // STOREFRONT = 'STOREFRONT'
 
 }

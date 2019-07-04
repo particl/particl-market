@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,13 +15,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MarketType} from '../../enums/MarketType';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import * as resources from "resources";
-import * as _ from 'lodash';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {MessageException} from '../../exceptions/MessageException';
+import { MarketType } from '../../enums/MarketType';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -35,108 +34,101 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     *  [0]: name
-     *  [1]: type
-     *  [2]: receiveKey
-     *  [3]: receiveAddress
-     *  [4]: publishKey, optional
-     *  [5]: publishAddress, optional
+     *  [0]: profile: resources.Profile
+     *  [1]: name
+     *  [2]: type: MarketType
+     *  [3]: receiveKey
+     *  [4]: receiveAddress
+     *  [5]: publishKey
+     *  [6]: publishAddress
      *
      * @param data
      * @returns {Promise<Market>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
+        const profile: resources.Profile = data.params[0];
+
         return this.marketService.create({
-            name : data.params[0],
-            private_key : data.params[1],
-            address : data.params[2]
+            profile_id: profile.id,
+            name : data.params[1],
+            type : data.params[2],
+            receiveKey : data.params[3],
+            receiveAddress : data.params[4],
+            publishKey : data.params[5],
+            publishAddress : data.params[6]
         } as MarketCreateRequest);
     }
 
     /**
      * data.params[]:
-     *  [0]: name
-     *  [1]: type
-     *  [2]: receiveKey
-     *  [3]: receiveAddress
-     *  [4]: publishKey, optional
-     *  [5]: publishAddress, optional
+     *  [0]: profileId
+     *  [1]: name
+     *  [2]: type: MarketType
+     *  [3]: receiveKey
+     *  [4]: receiveAddress
+     *  [5]: publishKey
+     *  [6]: publishAddress
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // TODO: generate the address from the pk
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('name');
+            throw new MissingParamException('profileId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('type');
+            throw new MissingParamException('name');
         } else if (data.params.length < 3) {
-            throw new MissingParamException('receiveKey');
+            throw new MissingParamException('type');
         } else if (data.params.length < 4) {
+            throw new MissingParamException('receiveKey');
+        } else if (data.params.length < 5) {
             throw new MissingParamException('receiveAddress');
+        } else if (data.params.length === 6) {
+            throw new MissingParamException('publishAddress');
         }
 
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('name', 'string');
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
         } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('type', 'string');
+            throw new InvalidParamException('name', 'string');
         } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('receiveKey', 'string');
+            throw new InvalidParamException('type', 'string');
         } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('receiveKey', 'string');
+        } else if (typeof data.params[4] !== 'string') {
             throw new InvalidParamException('receiveAddress', 'string');
-        } else if (data.params[4] && typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('publishKey', 'string');
         } else if (data.params[5] && typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('publishKey', 'string');
+        } else if (data.params[6] && typeof data.params[6] !== 'string') {
             throw new InvalidParamException('publishAddress', 'string');
         }
 
-        // make sure required data exists and fetch it
-        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON()); // throws if not found
-
-        // make sure the ListingItemTemplate has a paymentAddress and generate and update it, if it doesn't
-        // paymentAddress is part of the hash, so it needs to be created before the hash (unless it already exists)
-
-        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
-            throw new ModelNotFoundException('PaymentInformation');
-        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
-            throw new ModelNotFoundException('ItemPrice');
+        if (!EnumHelper.containsName(MarketType, data.params[2])) {
+            throw new InvalidParamException('model', 'MarketType');
         }
 
-        // update the paymentAddress in case it's not generated yet
-        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
-            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-            listingItemTemplate = await this.updatePaymentAddress(listingItemTemplate);
-        }
-
-        const market: resources.Market = await this.marketService.findOne(data.params[2])
-            .then(value => value.toJSON()); // throws if not found
-
-        // check size limit
-        const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
-        if (!templateMessageDataSize.fits) {
-            throw new MessageException('ListingItemTemplate information exceeds message size limitations');
-        }
-
-        data.params[0] = listingItemTemplate;
-        data.params[2] = market;
-
+        data.params[5] = data.params[5] ? data.params[5] : data.params[3];
+        data.params[6] = data.params[6] ? data.params[6] : data.params[4];
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <name> <privateKey> <address> ';
+        return this.getName() + ' <name> <type> <receiveKey> <receiveAddress>'; //  [publishKey] [publishAddress] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <name>                   - String - The unique name of the market being created. \n'
-            + '    <privateKey>             - String - The private key of the market being creted. \n'
-            + '    <address>                - String - [TODO] ';
+            + '    <type>                   - MarketType - MARKETPLACE \n'
+            + '    <receiveKey>             - String - The receive private key of the market. \n'
+            + '    <receiveAddress>         - String - The receive address matching the receive private key';
+            // + '    <publishKey>             - String - The publish private key of the market. \n'
+            // + '    <publishAddress>         - String - The publish address matching the receive private key';
     }
 
     public description(): string {
@@ -144,6 +136,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public example(): string {
-        return 'market ' + this.getName() + ' market add \'Dream Market\' \'InY0uRdr34M5\' \'lchudifyeqm4ldjj\' ';
+        return 'market ' + this.getName() + ' market add \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
+            '\'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' ';
     }
 }

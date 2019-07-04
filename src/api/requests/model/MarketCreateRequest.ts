@@ -9,6 +9,10 @@ import { MarketType } from '../../enums/MarketType';
 
 // tslint:disable:variable-name
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
+
+    @IsNotEmpty()
+    public profile_id: number;
+
     @IsNotEmpty()
     public name: string;
 

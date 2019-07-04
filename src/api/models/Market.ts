@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import {Profile} from './Profile';
+import { Profile } from './Profile';
 
 export class Market extends Bookshelf.Model<Market> {
 

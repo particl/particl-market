@@ -15,12 +15,14 @@ import { CoreRpcService } from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
+import { ProfileService } from './model/ProfileService';
 
 export class DefaultMarketService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -43,7 +45,10 @@ export class DefaultMarketService {
                                             ? process.env.DEFAULT_MARKETPLACE_ADDRESS
                                             : 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA';
 
+        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+
         const defaultMarket = {
+            profile_id: profile.id,
             name: MARKETPLACE_NAME,
             type: MarketType.MARKETPLACE,
             receiveKey: MARKETPLACE_PRIVATE_KEY,
