@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
-import * as resources from "resources";
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,9 +18,6 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 
-/*
- * Get a list of all markets
- */
 export class MarketListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
     public log: LoggerType;
@@ -44,7 +41,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
         const profile: resources.Profile = data.params[0];
-        return this.marketService.findAllByProfileId(profile.id, false);
+        return await this.marketService.findAllByProfileId(profile.id, false);
     }
 
     /**

@@ -25,6 +25,7 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidService } from '../../services/model/BidService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -36,6 +37,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -66,7 +68,11 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 
-        return await this.marketService.findOneByReceiveAddress(smsgMessage.to)
+        // TODO: replace ListingItem.marketId with Market.receiveAddress?
+        // TODO: ...until then this is just a temp fix
+        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+
+        return await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, smsgMessage.to)
             .then(async marketModel => {
                 const market: resources.Market = marketModel.toJSON();
                 const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);

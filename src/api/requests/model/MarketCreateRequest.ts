@@ -27,5 +27,6 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
 
     public publishKey: string;
     public publishAddress: string;
+    public wallet: string;
 }
 // tslint:enable:variable-name

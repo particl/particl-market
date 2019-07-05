@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -12,6 +13,7 @@ import { MarketRepository } from '../../repositories/MarketRepository';
 import { Market } from '../../models/Market';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
+import { ProfileService } from './ProfileService';
 
 export class MarketService {
 
@@ -19,13 +21,16 @@ export class MarketService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.getDefault(withRelated);
+        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+
+        const market = await this.marketRepo.getDefault(profile.id, withRelated);
         if (market === null) {
             this.log.warn(`Default Market was not found!`);
             throw new NotFoundException(process.env.DEFAULT_MARKETPLACE_NAME);
@@ -50,11 +55,20 @@ export class MarketService {
         return market;
     }
 
-    public async findOneByReceiveAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.findOneByReceiveAddress(address, withRelated);
+    public async findOneByProfileIdAndReceiveAddress(profileId: number, address: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, address, withRelated);
         if (market === null) {
             this.log.warn(`Market with the address=${address} was not found!`);
             throw new NotFoundException(address);
+        }
+        return market;
+    }
+
+    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByProfileIdAndName(profileId, name, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the name=${name} was not found!`);
+            throw new NotFoundException(name);
         }
         return market;
     }
@@ -87,6 +101,7 @@ export class MarketService {
         market.ReceiveAddress = body.receiveAddress;
         market.PublishKey = body.publishKey;
         market.PublishAddress = body.publishAddress;
+        market.Wallet = body.wallet;
 
         const updatedMarket = await this.marketRepo.update(id, market.toJSON());
         return updatedMarket;

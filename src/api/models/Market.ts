@@ -4,7 +4,7 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
-import {Collection, Model} from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 
 export class Market extends Bookshelf.Model<Market> {
 
@@ -31,33 +31,33 @@ export class Market extends Bookshelf.Model<Market> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
             return await Market.where<Market>({ id: value }).fetch({
-                withRelated: [
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Market.where<Market>({ id: value }).fetch();
         }
     }
 
-    public static async fetchByReceiveAddress(value: string, withRelated: boolean = true): Promise<Market> {
+    public static async fetchByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
-            return await Market.where<Market>({ receive_address: value }).fetch({
-                withRelated: [
-                ]
+            return await Market.where<Market>({ profile_id: profileId, receive_address: receiveAddress }).fetch({
+                withRelated: this.RELATIONS
             });
         } else {
-            return await Market.where<Market>({ receive_address: value }).fetch();
+            return await Market.where<Market>({
+                profile_id: profileId,
+                receive_address: receiveAddress
+            }).fetch();
         }
     }
 
-    public static async fetchByName(value: string, withRelated: boolean = true): Promise<Market> {
+    public static async fetchByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
-            return await Market.where<Market>({ name: value }).fetch({
-                withRelated: [
-                ]
+            return await Market.where<Market>({ profile_id: profileId, name }).fetch({
+                withRelated: this.RELATIONS
             });
         } else {
-            return await Market.where<Market>({ name: value }).fetch();
+            return await Market.where<Market>({ profile_id: profileId, name }).fetch();
         }
     }
 
@@ -84,6 +84,9 @@ export class Market extends Bookshelf.Model<Market> {
 
     public get PublishAddress(): string { return this.get('publishAddress'); }
     public set PublishAddress(value: string) { this.set('publishAddress', value); }
+
+    public get Wallet(): string { return this.get('wallet'); }
+    public set Wallet(value: string) { this.set('wallet', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

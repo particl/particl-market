@@ -15,6 +15,7 @@ import { Market } from '../../src/api/models/Market';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRequest';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -24,7 +25,9 @@ describe('Market', () => {
 
     let testDataService: TestDataService;
     let marketService: MarketService;
+    let profileService: ProfileService;
 
+    let defaultProfile: resources.Profile;
     let createdId;
 
     const testData = {
@@ -44,10 +47,12 @@ describe('Market', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        defaultProfile = profileService.getDefault().then(value => value.toJSON());
     });
 
     // fetchByName
@@ -115,10 +120,10 @@ describe('Market', () => {
         expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
     });
 
-    // findOneByReceiveAddress
     test('Should find market by address', async () => {
-        const marketModel: Market = await marketService.findOneByReceiveAddress(testDataUpdated.address);
-        const result: resources.Market = marketModel.toJSON();
+        const result: resources.Market = await marketService.findOneByProfileIdAndReceiveAddress(
+            defaultProfile.id, testDataUpdated.receiveAddress)
+            .then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe(testDataUpdated.name);
