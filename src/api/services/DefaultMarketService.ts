@@ -54,15 +54,16 @@ export class DefaultMarketService {
             receiveKey: MARKETPLACE_PRIVATE_KEY,
             receiveAddress: MARKETPLACE_ADDRESS,
             publishKey: MARKETPLACE_PRIVATE_KEY,
-            publishAddress: MARKETPLACE_ADDRESS
+            publishAddress: MARKETPLACE_ADDRESS,
+            wallet: 'market.dat'
         } as MarketCreateRequest;
 
-        await this.insertOrUpdateMarket(defaultMarket);
+        await this.insertOrUpdateMarket(defaultMarket, profile);
         return;
     }
 
-    public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        const newMarketModel = await this.marketService.findOneByReceiveAddress(market.receiveAddress)
+    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
+        const newMarketModel = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {
                 this.log.debug('FOUND!');
                 return await this.marketService.update(found.Id, market as MarketUpdateRequest);

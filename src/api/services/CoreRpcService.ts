@@ -81,6 +81,24 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * Result:
+     * {
+     *   "wallets" : [{               (json array of objects)
+     *       "name" : "name"          (string) The wallet name
+     *     }
+     *     ,...
+     *   ]
+     * }
+     *
+     */
+/*
+    public async listWalletDir(): Promise<any> {
+        return await this.call('listwalletdir', [], false);
+    }
+*/
+    /**
      * returns the particld version:
      * 16000400: 0.16.0.4,
      * 16000700: 0.16.0.7, ...

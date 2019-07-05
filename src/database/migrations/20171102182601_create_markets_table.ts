@@ -9,12 +9,14 @@ exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
-            table.string('name').notNullable().unique();
+            table.string('name').notNullable();
             table.string('type').notNullable();
             table.string('receive_key').notNullable();
             table.string('receive_address').notNullable();
             table.string('publish_key').nullable();
             table.string('publish_address').nullable();
+
+            table.string('wallet').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
@@ -23,6 +25,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('cascade');
 
+            // table.unique(['name', 'profile_id']);
+            // table.unique(['receive_address', 'profile_id']);
         })
     ]);
 };

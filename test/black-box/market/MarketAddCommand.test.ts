@@ -2,21 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from "resources";
-import {MarketType} from '../../../src/api/enums/MarketType';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { MarketType } from '../../../src/api/enums/MarketType';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('MarketAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+    const testUtil = new BlackBoxTestUtil(0);
+    const testUtil2 = new BlackBoxTestUtil(1);
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
     const marketAddCommand = Commands.MARKET_ADD.commandName;
@@ -25,6 +27,7 @@ describe('MarketAddCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        await testUtil2.cleanDb();
 
         defaultProfile = await testUtil.getDefaultProfile();
 
@@ -36,7 +39,8 @@ describe('MarketAddCommand', () => {
         receiveKey: 'receiveKey',
         receiveAddress: 'receiveAddress',
         publishKey: 'publishKey',
-        publishAddress: 'publishAddress'
+        publishAddress: 'publishAddress',
+        wallet: 'market.dat'
     };
 
     test('Should fail to create Market because missing profileId', async () => {
@@ -111,7 +115,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -127,7 +132,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -143,7 +149,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -159,7 +166,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -175,7 +183,8 @@ describe('MarketAddCommand', () => {
             0,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -191,7 +200,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             0,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -207,7 +217,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             true,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -223,7 +234,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            true
+            true,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -239,7 +251,8 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -260,11 +273,12 @@ describe('MarketAddCommand', () => {
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
-            marketData.publishAddress
+            marketData.publishAddress,
+            marketData.wallet
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe('Could not create the market!');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Market with the name: ' + marketData.name + ' already exists.').getMessage());
     });
 
 });

@@ -2,13 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MarketType} from '../../../src/api/enums/MarketType';
-import * as resources from "resources";
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { MarketType } from '../../../src/api/enums/MarketType';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('MarketListCommand', () => {
 
