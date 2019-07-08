@@ -303,30 +303,6 @@ export class ListingItemService {
         return await this.findOne(id);
     }
 
-    public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
-
-        let listingItem = await this.findOne(id, false);
-        const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
-            .then(value => {
-                const template = value.toJSON();
-                // this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
-                return template.id;
-            })
-            .catch(reason => {
-                // this.log.debug('matching ListingItemTemplate for ListingItem not found.');
-            });
-
-        if (templateId) {
-            this.log.debug('updating ListingItem relation to ListingItemTemplate.');
-            listingItem.set('listingItemTemplateId', templateId);
-            await this.listingItemRepo.update(id, listingItem.toJSON());
-        }
-
-        listingItem = await this.findOne(id);
-
-        return listingItem;
-    }
-
     /**
      *
      * @param {number} id
@@ -372,9 +348,9 @@ export class ListingItemService {
      *
      * @returns {Promise<void>}
      */
-    public async setRemovedFlag(itemHash: string, flag: boolean): Promise<void> {
+    public async setRemovedFlag(itemHash: string, removed: boolean): Promise<void> {
         const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
-        await this.listingItemRepo.update(listingItem.id, { removed: flag });
+        await this.listingItemRepo.update(listingItem.id, { removed });
      }
 
     /**

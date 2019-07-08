@@ -8,6 +8,7 @@ import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParam
 import * as _ from 'lodash';
 import {Logger as LoggerType} from '../../core/Logger';
 import {ActionDirection} from '../enums/ActionDirection';
+import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -15,7 +16,7 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static RELATIONS = [];
 
-    public static async createAll(datas: any[]): Promise<string[]> {
+    public static async createAll(datas: SmsgMessageCreateRequest[]): Promise<string[]> {
         await Database.knex
                 .insert(datas, 'id')
                 .into('smsg_messages');

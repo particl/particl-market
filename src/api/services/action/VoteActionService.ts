@@ -217,6 +217,7 @@ export class VoteActionService extends BaseActionService {
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
                 voteRequest.sendParams.fromAddress = addressInfo.address;
+                voteRequest.sendParams.paidMessage = false; // vote messages should be free
                 voteRequest.addressInfo = addressInfo;
                 await this.post(voteRequest)
                     .then(smsgSendResponse => {
@@ -231,18 +232,10 @@ export class VoteActionService extends BaseActionService {
             throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
-
-        // once we have posted the votes and if we're voting to remove an item, mark it as removed so it doesnt show up in searches anymore
+        // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
-            listingItem.removed = true;
-
-            // todo: market_id and seller are not something we should be updating here
-            await this.listingItemService.update(listingItem.id, {
-                seller: listingItem.seller,
-                market_id: listingItem.Market.id,
-                removed: listingItem.removed
-            } as ListingItemUpdateRequest);
+            await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
         }
 
         const result = {

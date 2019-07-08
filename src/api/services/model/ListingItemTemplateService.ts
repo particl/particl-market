@@ -31,7 +31,7 @@ import { MessageSize } from '../../responses/MessageSize';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ImageFactory } from '../../factories/ImageFactory';
 import { ItemImage } from '../../models/ItemImage';
-import {EscrowType, ompVersion} from 'omp-lib/dist/omp';
+import { ompVersion} from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ItemInformationService } from './ItemInformationService';
@@ -42,7 +42,15 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import {CryptoAddressType} from 'omp-lib/dist/interfaces/crypto';
+import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
+import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
+import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
+import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
+import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
+import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 
 export class ListingItemTemplateService {
 
@@ -126,8 +134,7 @@ export class ListingItemTemplateService {
         delete body.listingItemObjects;
 
         // then create the listingItemTemplate
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body)
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
 
         // create related models
         if (!_.isEmpty(itemInformation)) {
@@ -162,6 +169,19 @@ export class ListingItemTemplateService {
             }
         }
 
+        return await this.findOne(listingItemTemplate.id);
+    }
+
+    /**
+     * clone a ListingItemTemplate
+     *
+     * @param id
+     * @param setAsParent
+     */
+    public async clone(id: number, setAsParent: boolean = false): Promise<ListingItemTemplate> {
+        let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
+        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setAsParent);
+        listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
         return await this.findOne(listingItemTemplate.id);
     }
 
@@ -465,4 +485,133 @@ export class ListingItemTemplateService {
         );
         return compressedImage;
     }
+
+    /**
+     *
+     * @param listingItemTemplate
+     * @param setAsParent
+     */
+    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setAsParent: boolean = false):
+        Promise<ListingItemTemplateCreateRequest> {
+
+        let shippingDestinations: ShippingDestinationCreateRequest[] = [];
+
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.ShippingDestinations)) {
+            shippingDestinations = _.map(listingItemTemplate.ItemInformation.ShippingDestinations, (destination) => {
+                return _.assign({} as ShippingDestinationCreateRequest, {
+                    country: destination.country,
+                    shippingAvailability: destination.shippingAvailability
+                });
+            });
+        }
+
+        let itemImages: ItemImageCreateRequest[] = [];
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+
+            itemImages = await Promise.all(_.map(listingItemTemplate.ItemInformation.ItemImages, async (image) => {
+
+                // for each image, get the data from ORIGINAL and create a new ItemImageCreateRequest based on that data
+                const itemImageDataOriginal: resources.ItemImageData = _.find(image.ItemImageDatas, (imageData) => {
+                    return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+                })!;
+
+                // load the image data
+                itemImageDataOriginal.data = await this.itemImageDataService.loadImageFile(image.hash, itemImageDataOriginal.imageVersion);
+
+                return _.assign({} as ItemImageCreateRequest, {
+                    data: [{
+                        dataId: itemImageDataOriginal.dataId,
+                        protocol: itemImageDataOriginal.protocol,
+                        encoding: itemImageDataOriginal.encoding,
+                        data: itemImageDataOriginal.data,
+                        imageVersion: ImageVersions.ORIGINAL.propName,
+                        originalMime: itemImageDataOriginal.originalMime,
+                        originalName: itemImageDataOriginal.originalName
+                    }] as ItemImageDataCreateRequest[],
+                    featured: itemImageDataOriginal.featured
+                } as ItemImageCreateRequest);
+            }));
+        }
+
+        let messagingInformation: MessagingInformationCreateRequest[] = [];
+        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
+            messagingInformation = _.map(listingItemTemplate.MessagingInformation, (msgInfo) => {
+                return _.assign({} as MessagingInformationCreateRequest, {
+                    protocol: msgInfo.protocol,
+                    publicKey: msgInfo.publicKey
+                });
+            });
+        }
+
+        let listingItemObjects: ListingItemObjectCreateRequest[] = [];
+        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
+            listingItemObjects = _.map(listingItemTemplate.ListingItemObjects, (liObject) => {
+                // this.log.debug('liObject.ListingItemObjectDatas: ', JSON.stringify(liObject.ListingItemObjectDatas, null, 2));
+                const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = _.map(liObject.ListingItemObjectDatas, (liObjectData) => {
+                    this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
+                    return _.assign({} as ListingItemObjectCreateRequest, {
+                        key: liObjectData.key,
+                        value: liObjectData.value
+                    } as ListingItemObjectDataCreateRequest);
+                });
+                // this.log.debug('listingItemObjectDatas: ', JSON.stringify(listingItemObjectDatas, null, 2));
+
+                return _.assign({} as ListingItemObjectCreateRequest, {
+                    type: liObject.type,
+                    description: liObject.description,
+                    order: liObject.order,
+                    listingItemObjectDatas
+                } as ListingItemObjectCreateRequest);
+            });
+            // this.log.debug('listingItemObjects: ', JSON.stringify(listingItemObjects, null, 2));
+        }
+
+        return {
+            parent_listing_item_template_id: setAsParent ? listingItemTemplate.id : undefined,
+            profile_id: listingItemTemplate.Profile.id,
+            generatedAt: +new Date().getTime(),
+
+            itemInformation: {
+                title: listingItemTemplate.ItemInformation.title,
+                shortDescription: listingItemTemplate.ItemInformation.shortDescription,
+                longDescription: listingItemTemplate.ItemInformation.longDescription,
+                item_category_id: listingItemTemplate.ItemInformation.ItemCategory.id,
+                shippingDestinations,
+                itemImages,
+                itemLocation: {
+                    country: listingItemTemplate.ItemInformation.ItemLocation.country,
+                    address: listingItemTemplate.ItemInformation.ItemLocation.address,
+                    description: listingItemTemplate.ItemInformation.ItemLocation.description,
+                    locationMarker: {
+                        lat: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat,
+                        lng: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng,
+                        title: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title,
+                        description: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description
+                    } as LocationMarkerCreateRequest
+                } as ItemLocationCreateRequest
+            } as ItemInformationCreateRequest,
+            paymentInformation: {
+                type: listingItemTemplate.PaymentInformation.type,
+                itemPrice: {
+                    currency: listingItemTemplate.PaymentInformation.ItemPrice.currency,
+                    basePrice: listingItemTemplate.PaymentInformation.ItemPrice.basePrice,
+                    shippingPrice: {
+                        domestic: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic,
+                        international: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international
+                    } as ShippingPriceCreateRequest
+                } as ItemPriceCreateRequest,
+                escrow: {
+                    type: listingItemTemplate.PaymentInformation.Escrow.type,
+                    secondsToLock: listingItemTemplate.PaymentInformation.Escrow.secondsToLock,
+                    ratio: {
+                        buyer: listingItemTemplate.PaymentInformation.Escrow.Ratio.buyer,
+                        seller: listingItemTemplate.PaymentInformation.Escrow.Ratio.seller
+                    } as EscrowRatioCreateRequest
+                } as EscrowCreateRequest
+            } as PaymentInformationCreateRequest,
+            messagingInformation,
+            listingItemObjects
+        } as ListingItemTemplateCreateRequest;
+    }
+
 }

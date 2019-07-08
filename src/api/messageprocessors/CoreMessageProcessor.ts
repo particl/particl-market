@@ -85,7 +85,12 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                     this.log.debug('process(): Parsing individual messages');
                     for (const smsgMessageCreateRequest of smsgMessageCreateRequests) {
                         await this.smsgMessageService.create(smsgMessageCreateRequest)
-                            .then(message => this.log.debug(`Created single message ${smsgMessageCreateRequest.msgid}`))
+                            .then(async message => {
+                                this.log.debug(`Created single message ${smsgMessageCreateRequest.msgid}`);
+                                await this.smsgService.smsg(smsgMessageCreateRequest.msgid, true, true)
+                                    .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
+                                    .catch((reason2) => this.log.error('ERROR: ', reason2));
+                            })
                             .catch(err => this.log.debug(`Failed processing single message ${smsgMessageCreateRequest.msgid}`));
                     }
                 }

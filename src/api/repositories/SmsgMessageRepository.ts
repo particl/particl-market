@@ -10,7 +10,8 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
-import {ActionDirection} from '../enums/ActionDirection';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
 
 
 export class SmsgMessageRepository {
@@ -59,7 +60,7 @@ export class SmsgMessageRepository {
      *
      * @param datas
      */
-    public async createAll(datas: any[]): Promise<string[]> {
+    public async createAll(datas: SmsgMessageCreateRequest[]): Promise<string[]> {
         return await SmsgMessage.createAll(datas);
     }
 

@@ -8,14 +8,15 @@ import * as Knex from 'knex';
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.createTable('smsg_messages', (table: Knex.CreateTableBuilder) => {
-            table.increments('id').primary();
+
+            table.increments('id').notNullable().primary();
 
             table.string('type').notNullable();
             table.string('status').notNullable();
             table.string('direction').notNullable();
             table.string('target').nullable();
 
-            table.string('msgid').notNullable(); // .unique(); cant be unique if we are also saving the outgoing smsgs
+            table.string('msgid').notNullable();
             table.string('version').notNullable();
             table.boolean('read').nullable();
             table.boolean('paid').nullable();
@@ -32,6 +33,8 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
+            table.unique(['msgid', 'direction']);
         })
     ]);
 };

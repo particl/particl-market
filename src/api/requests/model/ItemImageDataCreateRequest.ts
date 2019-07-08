@@ -28,5 +28,6 @@ export class ItemImageDataCreateRequest extends RequestBody implements ModelRequ
     public data: string;
     public originalMime: string;
     public originalName: string;
+
 }
 // tslint:enable:variable-name

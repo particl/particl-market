@@ -143,6 +143,8 @@ export class ProposalAddActionService extends BaseActionService {
                     proposalOption
                 } as VoteRequest;
 
+                postRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
+
                 this.log.debug('afterPost(), sending votes...');
 
                 // send the VoteMessages from each of senderProfiles addresses
@@ -165,13 +167,20 @@ export class ProposalAddActionService extends BaseActionService {
     public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
 
-        const flaggedItemCreateRequest = {
-            listing_item_id: listingItem.id,
-            proposal_id: proposal.id,
-            reason: proposal.description
-        } as FlaggedItemCreateRequest;
+        // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
+        // create if FlaggedItem doesnt already exist
+        if (_.isEmpty(listingItem.FlaggedItem)) {
+            const flaggedItemCreateRequest = {
+                listing_item_id: listingItem.id,
+                proposal_id: proposal.id,
+                reason: proposal.description
+            } as FlaggedItemCreateRequest;
 
-        return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+            return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+        } else {
+            // else just return the existing
+            return this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
+        }
     }
 
     /**

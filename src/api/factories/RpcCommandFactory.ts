@@ -89,6 +89,7 @@ import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/
 import { ListingItemTemplateSizeCommand } from '../commands/listingitemtemplate/ListingItemTemplateSizeCommand';
 import { ListingItemTemplateCompressCommand } from '../commands/listingitemtemplate/ListingItemTemplateCompressCommand';
 import { ListingItemTemplateFeatureImageCommand } from '../commands/listingitemtemplate/ListingItemTemplateFeatureImageCommand';
+import { ListingItemTemplateCloneCommand } from '../commands/listingitemtemplate/ListingItemTemplateCloneCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
@@ -236,6 +237,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSizeCommand) private listingItemTemplateSizeCommand: ListingItemTemplateSizeCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCompressCommand) private listingItemTemplateCompressCommand: ListingItemTemplateCompressCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateFeatureImageCommand) private listingItemTemplateFeatureImageCommand: ListingItemTemplateFeatureImageCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCloneCommand) private listingItemTemplateCloneCommand: ListingItemTemplateCloneCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
@@ -391,6 +393,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateSearchCommand);
         this.commands.push(listingItemTemplateSizeCommand);
         this.commands.push(listingItemTemplateCompressCommand);
+        this.commands.push(listingItemTemplateCloneCommand);
         this.commands.push(listingItemTemplateRootCommand);
 
         this.commands.push(marketAddCommand);

@@ -169,7 +169,7 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    test('Get the updated ListingItemTemplate to get the hash', async () => {
+    test('Should get the updated ListingItemTemplate to get the hash', async () => {
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
@@ -190,7 +190,8 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created and matched with the existing ListingItemTemplate');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand,
+        let response: any = await testUtilSellerNode.rpcWaitFor(
+            listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesSellerNode[0].hash],
             15 * 60,
             200,

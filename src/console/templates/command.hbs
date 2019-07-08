@@ -11,7 +11,7 @@ import { BaseCommand } from './BaseCommand';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 
-export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}> {
+export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}Model> {
 
     public log: LoggerType;
 
@@ -25,19 +25,70 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
     /**
      * command description
      *
+     * data.params[]:
+     *  [0]: param1
+     *  [1]: param2
+     *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
-     * @returns {Promise<any>}
+     * @returns {Promise<{{name.capitalize}}Model>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<{{name.capitalize}}Model> {
         throw new NotImplementedException();
         // root commands:
         // return await this.executeNext(data, rpcCommandFactory);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: param1
+     *  [1]: param2
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('param1');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('param2');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('param1', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('param2', 'string');
+        }
+
+        // check for valid enum
+        // if (!EnumHelper.containsName(SomeEnum, data.params[0])) {
+        //    throw new InvalidParamException('param1', 'SomeEnum');
+        // }
+
+        // make sure Model with the id exists
+        const model: resources.Model = await this.modelService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Model');
+            });
+
+        data.params[0] = model; // replace, so we dont need to fetch again
+        return data;
+    }
+
+    public usage(): string {
+        return this.getName() + ' TODO: <param1> [param2]';
+    }
+
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <param1>                    - number - example \n'
+            + '    <param2>                    - string, optional - example \n';
     }
 
     public description(): string {
@@ -45,6 +96,6 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return 'command subcommand param1 param2 - does something.';
     }
 }
