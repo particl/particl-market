@@ -16,6 +16,7 @@ import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
 import { ProfileService } from './model/ProfileService';
+import {RpcWallet} from 'omp-lib/dist/interfaces/rpc';
 
 export class DefaultMarketService {
 
@@ -59,28 +60,53 @@ export class DefaultMarketService {
         } as MarketCreateRequest;
 
         await this.insertOrUpdateMarket(defaultMarket, profile);
+
         return;
     }
 
-    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
-        const newMarketModel = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
+    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<resources.Market> {
+
+        const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {
-                this.log.debug('FOUND!');
-                return await this.marketService.update(found.Id, market as MarketUpdateRequest);
+                return await this.marketService.update(found.Id, market as MarketUpdateRequest).then(value => value.toJSON());
             })
             .catch(async (reason) => {
-                this.log.debug('NOT FOUND!');
-                return await this.marketService.create(market);
+                return await this.marketService.create(market).then(value => value.toJSON());
             });
-        const newMarket: resources.Market = newMarketModel.toJSON();
         this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
 
+        // if wallet with the name doesnt exists, then create one
+        const exists = await this.coreRpcService.walletExists(market.wallet);
+        if (!exists) {
+            await this.coreRpcService.createAndLoadWallet(market.wallet)
+                .then(result => {
+                    this.log.debug('created wallet: ', result.name);
+                })
+                .catch(reason => {
+                    this.log.debug('wallet: ' + market.name + ' already exists.');
+                });
+        } else {
+            // load the wallet unless already loaded
+            await this.coreRpcService.walletLoaded(market.wallet).
+                then(async isLoaded => {
+                    if (!isLoaded) {
+                        await this.coreRpcService.loadWallet(market.wallet)
+                            .catch(reason => {
+                                this.log.debug('wallet: ' + market.name + ' already loaded.');
+                            });
+                    }
+                });
+        }
+
         await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
-        if (newMarket.publishKey && newMarket.publishAddress) {
+        if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
             await this.importMarketPrivateKey(newMarket.publishKey, newMarket.publishAddress);
         }
 
-        return newMarketModel;
+        // set secure messaging to use the default wallet
+        await this.coreRpcService.smsgSetWallet(newMarket.wallet);
+
+        return newMarket;
     }
 
     private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
