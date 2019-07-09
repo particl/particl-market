@@ -83,7 +83,7 @@
     "faker": "^4.1.0",
     "figlet": "^1.2.0",
     "glob": "^7.1.2",
-    "handlebars": "^4.0.10",
+    "handlebars": "4.1.2",
     "helmet": "^3.6.1",
     "inquirer": "^3.2.0",
     "inversify": "^4.11.0",
