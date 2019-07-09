@@ -113,6 +113,7 @@
     "serve-favicon": "^2.4.3",
     "socket.io": "^2.0.4",
     "sqlite3": "https://github.com/particl/sqlite3-offline.git",
+    "sshpk": "^1.13.2",
     "stringstream": "0.0.6",
     "swagger-jsdoc": "1.10.3",
     "swagger-ui-express": "^2.0.1",
