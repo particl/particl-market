@@ -20,7 +20,7 @@ describe('getnetworkinfo', () => {
             params: [],
             jsonrpc: '2.0'
         };
-        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const host = 'http://' + process.env.RPCHOSTNAME;
         const port = 52935;
 

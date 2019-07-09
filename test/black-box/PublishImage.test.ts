@@ -109,7 +109,7 @@ describe('/publish-image', () => {
     test('POST  /item-images/template/:listingItemTemplateId        Should POST new ItemImage', async () => {
         expect.assertions(14); // 2 [basic expects] + 4 [image types] * 3 [expects in the loop]
 
-        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             host: httpOptions.host,
             port: httpOptions.port,
@@ -148,7 +148,7 @@ describe('/publish-image', () => {
     test('POST  /item-images/template/:listingItemTemplateId        Should POST two new ItemImages at the same time', async () => {
         expect.assertions(26); // 2 [basic expects] + 2 [images] * 4 [image types] * 3 [expects in the loop]
 
-        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             host: httpOptions.host,
             port: httpOptions.port,
