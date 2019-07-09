@@ -109,7 +109,7 @@
     "postal-codes-js": "^1.0.0",
     "prepend": "^1.0.2",
     "reflect-metadata": "^0.1.10",
-    "request": "^2.88.0",
+    "request": "2.81.0",
     "request-promise": "^4.2.1",
     "serve-favicon": "^2.4.3",
     "socket.io": "^2.0.4",
