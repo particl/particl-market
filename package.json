@@ -110,7 +110,7 @@
     "socket.io": "^2.0.4",
     "sqlite3": "https://github.com/particl/sqlite3-offline.git",
     "stringstream": "0.0.6",
-    "swagger-jsdoc": "^1.9.6",
+    "swagger-jsdoc": "1.10.3",
     "swagger-ui-express": "^2.0.1",
     "sync-fs": "^1.0.1",
     "ts-enums": "0.0.6",
