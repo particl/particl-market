@@ -80,9 +80,10 @@ export class ListingItemAddActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }

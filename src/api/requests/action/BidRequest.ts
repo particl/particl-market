@@ -18,6 +18,4 @@ export class BidRequest extends RequestBody implements ActionRequestInterface {
     @IsNotEmpty()
     public address: AddressCreateRequest;       // bidder delivery address
 
-    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
-
 }

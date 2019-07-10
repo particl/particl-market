@@ -36,6 +36,9 @@ import { OrderFactory } from '../../factories/model/OrderFactory';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableOrderCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableOrderCreateRequestConfig';
 
 export class BidActionService extends BaseActionService {
 
@@ -99,50 +102,35 @@ export class BidActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * - create the bidCreateRequest to save the Bid in the Database
-     * - call createBid to create the Bid and other related models
+     * - create a hash for the Order so it can be sent to the seller
      *
      * @param params
      * @param marketplaceMessage
      */
     public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
-        // msgid is not set here, its updated in the afterPost
-        const bidCreateParams = {
-            listingItem: params.listingItem,
-            address: params.address,
-            bidder: params.sendParams.fromAddress
-            // parentBid: undefined
-        } as BidCreateParams;
+        const orderHash = ConfigurableHasher.hash({
+            buyer: params.sendParams.fromAddress,
+            seller: params.listingItem.seller,
+            generatedAt: +new Date().getTime()
+        } as OrderCreateRequest, new HashableOrderCreateRequestConfig());
 
-        // this.log.debug('beforePost(), bidCreateParams: ', JSON.stringify(bidCreateParams, null, 2));
+        // add the created orderHash to the marketplaceMessage.action.objects to be sent to the seller
+        marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
+        marketplaceMessage.action.objects.push({
+            key: ActionMessageObjects.ORDER_HASH,
+            value: orderHash
+        } as KVS);
 
-        // TODO: should we set the parentBid in the case the previous Bid was cancelled or rejected?
+        return marketplaceMessage;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
-            .then(async bidCreateRequest => {
-
-                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
-                return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
-                    .then(async bid => {
-
-                        // add order.hash to the BidMessage to be sent to the seller
-                        const bidMessage = marketplaceMessage.action as BidMessage;
-                        bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                        bidMessage.objects.push({
-                            // note: Bid was already saved, so this is not stored in the BidData
-                            key: ActionMessageObjects.ORDER_HASH,
-                            value: bid.OrderItem.Order.hash
-                        } as KVS);
-
-                        params.createdBid = bid;
-                        return marketplaceMessage;
-                    });
-            });
     }
 
     /**
      * called after post is executed and message is sent
+     *
+     * - create the bidCreateRequest to save the Bid in the Database
+     * - call createBid to create the Bid and other related models
      *
      * @param params
      * @param marketplaceMessage
@@ -151,7 +139,19 @@ export class BidActionService extends BaseActionService {
      */
     public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        await this.bidService.updateMsgId(params.createdBid.id, smsgMessage.msgid);
+
+        const bidCreateParams = {
+            listingItem: params.listingItem,
+            address: params.address,
+            bidder: params.sendParams.fromAddress
+            // parentBid: undefined
+        } as BidCreateParams;
+
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage, smsgMessage)
+            .then(async bidCreateRequest => {
+                return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest);
+            });
+
         return smsgSendResponse;
     }
 
@@ -175,7 +175,8 @@ export class BidActionService extends BaseActionService {
 
                 this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
-                // if we're the seller, we should have received the order hash from the buyer (if we're the buyer, the factory generates it)
+                // if we're the buyer, Order hash was generated before posting the BidMessage to the seller
+                // if we're the seller, we should have received the Order hash from the buyer in the message
                 bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
                 const orderHash = _.find(bidMessage.objects, (kvs: KVS) => {
                     return kvs.key === ActionMessageObjects.ORDER_HASH;
@@ -183,23 +184,22 @@ export class BidActionService extends BaseActionService {
 
                 this.log.debug('createBid(), orderHash: ', orderHash);
 
-                // note: when implementing support for multiple orderItems, we're using generatedAt from the Bid which will then affect the Order.hash
                 const orderCreateParams = {
                     bids: [bid],
                     addressId: bid.ShippingAddress.id,
                     buyer: bid.bidder,
                     seller: bid.ListingItem.seller,
-                    status: OrderStatus.PROCESSING,
+                    status: OrderStatus.SENT,
                     generatedAt: bid.generatedAt,
-                    hash: orderHash ? orderHash.value : undefined
+                    hash: orderHash!.value
                 } as OrderCreateParams;
 
-                this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
+                // this.log.debug('createBid(), orderCreateParams: ', JSON.stringify(orderCreateParams, null, 2));
 
                 // OrderFactory creates also the OrderItemCreateRequests
                 return await this.orderFactory.get(orderCreateParams/*, bidMessage*/)
                     .then(async orderCreateRequest => {
-                        this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
+                        // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
 
                         return await this.orderService.create(orderCreateRequest)
                             .then(async orderModel => {
@@ -210,4 +210,5 @@ export class BidActionService extends BaseActionService {
                     });
             });
     }
+
 }

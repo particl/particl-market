@@ -102,35 +102,19 @@ export class BidAcceptActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * - create the bidCreateRequest to save the Bid (MPA_ACCEPT) in the Database
-     *   - the previous Bid should be added as parentBid to create the relation
-     * - call createBid to create the Bid and update Order and OrderItem statuses
-     *
      * @param params
      * @param marketplaceMessage, omp generated MPA_ACCEPT
      */
     public async beforePost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-
-        // msgid is not set here, its updated in the afterPost
-        const bidCreateParams = {
-            listingItem: params.bid.ListingItem,
-            bidder: params.bid.bidder,
-            parentBid: params.bid
-        } as BidCreateParams;
-
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage)
-            .then(async bidCreateRequest => {
-                // this.log.debug('bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
-                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest)
-                    .then(value => {
-                        params.createdBid = value;
-                        return marketplaceMessage;
-                    });
-            });
+        return marketplaceMessage;
     }
 
     /**
      * called after post is executed and message is sent
+     *
+     * - create the bidCreateRequest to save the Bid (MPA_ACCEPT) in the Database
+     *   - the previous Bid should be added as parentBid to create the relation
+     * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
      * @param marketplaceMessage
@@ -139,7 +123,18 @@ export class BidAcceptActionService extends BaseActionService {
      */
     public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        await this.bidService.updateMsgId(params.createdBid.id, smsgMessage.msgid);
+
+        const bidCreateParams = {
+            listingItem: params.bid.ListingItem,
+            bidder: params.bid.bidder,
+            parentBid: params.bid
+        } as BidCreateParams;
+
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidAcceptMessage, smsgMessage)
+            .then(async bidCreateRequest => {
+                return await this.createBid(marketplaceMessage.action as BidAcceptMessage, bidCreateRequest);
+            });
+
         return smsgSendResponse;
     }
 
