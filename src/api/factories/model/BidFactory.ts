@@ -82,9 +82,12 @@ export class BidFactory implements ModelFactoryInterface {
             });
             this.log.debug('get(), bidDatas:', JSON.stringify(bidDatas, null, 2));
 
+            // use the msgid from smsgMessage if it exists
+            const msgid = smsgMessage ? smsgMessage.msgid : params.msgid;
+
             // create and return the request that can be used to create the bid
             const createRequest = {
-                msgid: params.msgid,
+                msgid,
                 listing_item_id: params.listingItem.id,
                 generatedAt: bidMessage.generated,
                 type: bidMessage.type,

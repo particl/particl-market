@@ -226,6 +226,7 @@ export class BidService {
         await this.bidRepo.destroy(id);
     }
 
+    // deprecated
     public async updateMsgId(id: number, msgid: string): Promise<Bid> {
         const bid = await this.findOne(id, false);
         bid.Msgid = msgid;

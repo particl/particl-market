@@ -77,7 +77,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {
-            // no need to update if we are just estimating
+
+            // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
+            // since ListingItemTemplates with hash should not (CANT) be modified anymore.
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
             listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
                 .then(value => value.toJSON());

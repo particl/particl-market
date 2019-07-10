@@ -8,6 +8,7 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgService } from '../SmsgService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import * as resources from "resources";
 
 /**
  * ActionServiceInterface defines how the Service classes for the different Actions should be implemented
@@ -47,9 +48,11 @@ export interface ActionServiceInterface {
      * called after post is executed and message is sent
      * @param params
      * @param message
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+              smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network

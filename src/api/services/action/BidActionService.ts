@@ -73,11 +73,13 @@ export class BidActionService extends BaseActionService {
             listingItem: params.listingItem
         } as ListingItemAddRequest);
 
+        // todo: cryptocurrency hardcoded to PART for now
+        // todo: ...and propably hardcoded already on the Command level, so could be passed with the BidRequest params
         const config: BidConfiguration = {
-            cryptocurrency: Cryptocurrency.PART,    // todo: hardcoded to PART for now
+            cryptocurrency: Cryptocurrency.PART,
             escrow: params.listingItem.PaymentInformation.Escrow.type,
             shippingAddress: params.address as ShippingAddress
-            // objects: KVS[] // product variations etc bid related params
+            // objects: KVS[]       // todo: product variations etc bid related params
         };
 
         // use omp to generate BidMessage
@@ -91,22 +93,33 @@ export class BidActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        this.log.debug('validateMessage(), bidMessage: ', JSON.stringify(marketplaceMessage.action, null, 2));
         const isValid = BidValidator.isValid(marketplaceMessage);
-        this.log.debug('validateMessage(), isValid: ', isValid);
         return isValid;
     }
 
     /**
      * called after createMessage and before post is executed and message is sent
      *
+     * @param params
+     * @param marketplaceMessage
+     */
+    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        return marketplaceMessage;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
      * - create the bidCreateRequest to save the Bid in the Database
      * - call createBid to create the Bid and other related models
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
      */
-    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
         // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
@@ -117,13 +130,11 @@ export class BidActionService extends BaseActionService {
         } as BidCreateParams;
 
         // this.log.debug('beforePost(), bidCreateParams: ', JSON.stringify(bidCreateParams, null, 2));
-
         // TODO: should we set the parentBid in the case the previous Bid was cancelled or rejected?
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage, smsgMessage)
             .then(async bidCreateRequest => {
 
-                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
                 return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
                     .then(async bid => {
 
@@ -140,20 +151,7 @@ export class BidActionService extends BaseActionService {
                         return marketplaceMessage;
                     });
             });
-    }
 
-    /**
-     * called after post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     * @param smsgSendResponse
-     */
-    public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 

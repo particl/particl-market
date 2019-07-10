@@ -101,7 +101,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         const smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
 
         // do whatever needs to be done after sending the message, extending class should implement
-        smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgSendResponse);
+        smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgMessage, smsgSendResponse);
 
         return smsgSendResponse;
     }
@@ -119,9 +119,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * called after post is executed and message is sent
      * @param params
      * @param message
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                                    smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      * finds the CoreSmsgMessage and saves it into the database as SmsgMessage
