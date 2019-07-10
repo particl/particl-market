@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as path from 'path';
+import * as interfaces from '../types/interfaces';
 
 /**
  * core.log.Log

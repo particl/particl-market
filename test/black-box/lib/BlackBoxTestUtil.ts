@@ -134,7 +134,7 @@ export class BlackBoxTestUtil {
         }, function (e,r,b) {
             const type    = r.headers['content-type'];
             const prefix  = 'data:' + type + ';base64,';
-            const base64  = new Buffer(b, 'binary').toString('base64');
+            const base64  = Buffer.from(b, 'binary').toString('base64');
             const dataURI = prefix + base64;
             return dataURI;
         });
@@ -143,7 +143,7 @@ export class BlackBoxTestUtil {
 
         const result = await request.get('https://picsum.photos/200/300/?random', (error, response, body) => {
             if (!error && response.statusCode === 200) {
-                return 'data:' + response.headers['content-type'] + ';base64,' + new Buffer(body).toString('base64');
+                return 'data:' + response.headers['content-type'] + ';base64,' + Buffer.from(body).toString('base64');
             }
         });
         return result;

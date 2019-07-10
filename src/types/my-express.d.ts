@@ -22,8 +22,6 @@ declare namespace myExpress {
     }
 
     interface Request extends expressLib.Request {
-        tokeninfo: auth0.User;
-        user: resources.User;
     }
 
     interface Response extends expressLib.Response {

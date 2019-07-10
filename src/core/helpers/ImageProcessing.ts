@@ -4,11 +4,7 @@
 
 import * as Jimp from 'jimp';
 import { ImageVersion } from './ImageVersion';
-import { MessageException } from '../../api/exceptions/MessageException';
 import { Logger } from '../Logger';
-
-declare const Buffer;
-
 
 export class ImageProcessing {
 
