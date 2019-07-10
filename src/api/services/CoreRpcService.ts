@@ -44,6 +44,32 @@ export interface BlockchainInfo {
     // todo: add pruning and softfork related data when needed
 }
 
+export interface RpcWalletInfo {
+    walletname: string;                 // the wallet name
+    walletversion: number;              // the wallet version
+    total_balance: number;              // the total balance of the wallet in PART
+    balance: number;                    // the total confirmed balance of the wallet in PART
+    blind_balance: number;              // the total confirmed blinded balance of the wallet in PART
+    anon_balance: number;               // the total confirmed anon balance of the wallet in PART
+    staked_balance: number;             // the total staked balance of the wallet in PART (non-spendable until maturity)
+    unconfirmed_balance: number;        // the total unconfirmed balance of the wallet in PART
+    immature_balance: number;           // the total immature balance of the wallet in PART
+    immature_anon_balance: number;      // the total immature anon balance of the wallet in PART
+    reserve: number;                    // the reserve balance of the wallet in PART
+    txcount: number;                    // the total number of transactions in the wallet
+    keypoololdest: number;              // the timestamp (seconds since Unix epoch) of the oldest pre-generated key in the key pool
+    keypoolsize: number;                // how many new keys are pre-generated (only counts external keys)
+    keypoolsize_hd_internal: number;    // how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is
+                                        // using this feature, otherwise external keys are used)
+    encryptionstatus: string;           // unencrypted/locked/unlocked
+    unlocked_until: number;             // the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers,
+                                        // or 0 if the wallet is locked
+    paytxfee: number;                   // the transaction fee configuration, set in PART/kB
+    hdseedid?: string;                  // the Hash160 of the HD account pubkey (only present when HD is enabled)
+    private_keys_enabled: boolean;      // false if privatekeys are disabled for this wallet (enforced watch-only wallet)
+}
+
+
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
 export class CoreRpcService extends CtRpc {
@@ -74,7 +100,10 @@ export class CoreRpcService extends CtRpc {
 
     public async hasWallet(): Promise<boolean> {
         return await this.getWalletInfo()
-            .then(response => (response && response.hdseedid))
+            .then(response => {
+                // the Hash160 of the HD account pubkey (only present when HD is enabled)
+                return response.hdseedid !== undefined;
+            })
             .catch(error => {
                 return false;
             });
@@ -104,7 +133,7 @@ export class CoreRpcService extends CtRpc {
     /**
      *
      */
-    public async getWalletInfo(): Promise<any> {
+    public async getWalletInfo(): Promise<RpcWalletInfo> {
         return await this.call('getwalletinfo');
     }
 
