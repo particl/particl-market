@@ -201,7 +201,7 @@ export class VoteActionService extends BaseActionService {
      */
     public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
 
-        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos();
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(0);
 
         this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
         if (_.isEmpty(addressInfos)) {
@@ -229,14 +229,14 @@ export class VoteActionService extends BaseActionService {
             }
         }
 
-        if (msgids.length === 0) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
-        }
-
         // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
             await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+        }
+
+        if (msgids.length === 0) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
         const result = {
@@ -386,11 +386,11 @@ export class VoteActionService extends BaseActionService {
      *
      * the profile param is not used for anything yet, but included already while we wait and build multiwallet support
      *
-     * @param addresses
+     * @param minconf
      */
-    private async getPublicWalletAddressInfos(/*addresses: string[] = []*/): Promise<AddressInfo[]> {
+    private async getPublicWalletAddressInfos(minconf: number = 0): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
-        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(OutputType.PART, 1); // , 9999999, addresses);
+        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(OutputType.PART, minconf); // , 9999999, addresses);
 
         this.log.debug('getPublicWalletAddressInfos(), outputs.length: ', outputs.length);
 
