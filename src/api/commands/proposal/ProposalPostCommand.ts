@@ -13,14 +13,16 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { ProposalActionService } from '../../services/ProposalActionService';
-import { ProfileService } from '../../services/ProfileService';
-import { MarketService } from '../../services/MarketService';
-import { ProposalType } from '../../enums/ProposalType';
+import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MarketService } from '../../services/model/MarketService';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -28,9 +30,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService
     ) {
         super(Commands.PROPOSAL_POST);
         this.log = new Logger(__filename);
@@ -38,12 +40,13 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
-     * [0] profileId
-     * [1] proposalTitle
-     * [2] proposalDescription
-     * [3] daysRetention
-     * [4] estimateFee
-     * [5] option1Description
+     * [0] market: resources.Market
+     * [1] profile: resources.Profile
+     * [2] proposalTitle
+     * [3] proposalDescription
+     * [4] daysRetention
+     * [5] estimateFee
+     * [6] option1Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -53,30 +56,39 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-        const type = ProposalType.PUBLIC_VOTE;
-        const profileId = data.params.shift();
-        const proposalTitle = data.params.shift();
-        const proposalDescription = data.params.shift();
+        const market: resources.Market = data.params.shift();
+        const profile: resources.Profile = data.params.shift();
+        const title = data.params.shift();
+        const description = data.params.shift();
         const daysRetention = data.params.shift();
         const estimateFee = data.params.shift();
 
-        const profileModel = await this.profileService.findOne(profileId);
-        const profile = profileModel.toJSON();
-
-        // Get the default market.
-        // TODO: Might want to let users specify this later.
-        const marketModel = await this.marketService.getDefault();
-        const market: resources.Market = marketModel.toJSON();
-
         // rest of the data.params are option descriptions, and there are minimum of 2 of those
-        const optionsList: string[] = data.params;
+        const options: string[] = data.params;
 
-        return await this.proposalActionService.send(proposalTitle, proposalDescription,
-            daysRetention, optionsList, profile, market, undefined, estimateFee);
+        // send from the template profiles address
+        const fromAddress = profile.address;
+
+        // send to given market address
+        const toAddress = market.address;
+
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
+            sender: profile,
+            market,
+            category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
+            title,
+            description,
+            options
+        } as ProposalAddRequest;
+
+        return await this.proposalAddActionService.post(postRequest);
     }
 
     /**
      * command description
+     * TODO: add marketId
+     *
      * [0] profileId
      * [1] proposalTitle
      * [2] proposalDescription
@@ -90,7 +102,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // TODO: set the max expiration for proposals of type PUBLIC_VOTE
+        // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages
 
         if (data.params.length < 1) {
@@ -118,12 +130,16 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         }
 
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[0])
+        data.params[0] = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
             .catch(reason => {
-                this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
             });
 
+        // get the default market.
+        // TODO: Might want to let users specify this later.
+        const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
+
+        data.params.unshift(market);
         return data;
     }
 

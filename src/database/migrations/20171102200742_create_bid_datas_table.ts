@@ -10,8 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('bid_datas', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('data_value');
-            table.string('data_id');
+            table.string('key');
+            table.string('value');
             table.integer('bid_id').unsigned().notNullable();
             table.foreign('bid_id').references('id')
                 .inTable('bids').onDelete('cascade');

@@ -12,8 +12,8 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import { SettingService } from '../../services/SettingService';
-import { ProfileService } from '../../services/ProfileService';
+import { SettingService } from '../../services/model/SettingService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class SettingRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -21,8 +21,8 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_REMOVE);
         this.log = new Logger(__filename);

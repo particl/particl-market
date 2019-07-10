@@ -2,24 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {Logger as LoggerType} from '../../../core/Logger';
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Core, Targets, Types} from '../../../constants';
-import {ItemCategoryService} from '../../services/ItemCategoryService';
-import {ListingItemService} from '../../services/ListingItemService';
-import {ListingItemTemplateService} from '../../services/ListingItemTemplateService';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {MessageException} from '../../exceptions/MessageException';
-import {ListingItemTemplateSearchParams} from '../../requests/ListingItemTemplateSearchParams';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {ListingItemSearchParams} from '../../requests/ListingItemSearchParams';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {SearchOrderField} from '../../enums/SearchOrderField';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { inject, named } from 'inversify';
+import { request, validate } from '../../../core/api/Validate';
+import { Core, Targets, Types } from '../../../constants';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { MessageException } from '../../exceptions/MessageException';
+import { ListingItemTemplateSearchParams } from '../../requests/search/ListingItemTemplateSearchParams';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { SearchOrderField } from '../../enums/SearchOrderField';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -27,9 +29,9 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.CATEGORY_REMOVE);
         this.log = new Logger(__filename);
@@ -38,16 +40,15 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     /**
      * remove user defined category
      * data.params[]:
-     *  [0]: categoryId
+     *  [0]: itemCategory: resources.ItemCategory
      *
      * @param data
      * @returns {Promise<void>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-
-        const categoryId = data.params[0];
-        return await this.itemCategoryService.destroy(categoryId);
+        const category: resources.ItemCategory = data.params[0];
+        return await this.itemCategoryService.destroy(category.id);
     }
 
     /**
@@ -62,19 +63,24 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         if (!data.params[0]) {
             throw new MissingParamException('categoryId');
         }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        }
         const categoryId = data.params[0];
 
-        await this.itemCategoryService.findOne(categoryId)
+        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(categoryId)
             .then(value => {
-                const itemCategory = value.toJSON();
-                if (itemCategory.key) {
+                const category = value.toJSON();
+                if (category.key) {
                     throw new MessageException('Default Category cant be removed.');
                 }
+                return category;
             })
             .catch(reason => {
-                this.log.error(new InvalidParamException('categoryId').getMessage());
-                throw new InvalidParamException('categoryId');
+                throw new ModelNotFoundException('ItemCategory');
             });
+        data.params[0] = itemCategory;
 
         const searchParams = {
             page: 0,
@@ -91,7 +97,6 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
             .then(values => {
                 const listingItemTemplates = values.toJSON();
                 if (listingItemTemplates.length > 0) {
-                    this.log.error('Category associated with ListingItemTemplate.');
                     throw new MessageException(`Category associated with ListingItemTemplate can't be deleted. id= ${categoryId}`);
                 }
             });
@@ -105,10 +110,8 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         // check listingItem related with category
         await this.listingItemService.search(defaultListingItemSearchParams)
             .then(values => {
-                this.log.debug('values:', JSON.stringify(values, null, 2));
                 const listingItems = values.toJSON();
                 if (listingItems.length > 0) {
-                    this.log.error('Category associated with ListingItem.');
                     throw new MessageException(`Category associated with ListingItem can't be deleted. id= ${categoryId}`);
                 }
             });

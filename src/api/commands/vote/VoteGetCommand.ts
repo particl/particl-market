@@ -7,8 +7,8 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProfileService } from '../../services/ProfileService';
-import { ProposalService } from '../../services/ProposalService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { ProposalService } from '../../services/model/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
@@ -17,16 +17,16 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { VoteActionService } from '../../services/VoteActionService';
+import { VoteActionService } from '../../services/action/VoteActionService';
 
 export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.VOTE_GET);
@@ -35,8 +35,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
 
     /**
      * command description
-     *  [0]: profileId
-     *  [1]: proposalHash
+     *  [0]: profile: resources.Profile
+     *  [1]: proposal: resources.Proposal
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -45,14 +45,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
 
-        const profileId = data.params[0];
-        const proposalHash = data.params[1];
-
-        const profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON());
-
-        const proposal = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => value.toJSON());
+        const profile: resources.Profile = data.params[0];
+        const proposal: resources.Proposal = data.params[1];
 
         return await this.voteActionService.getCombinedVote(profile, proposal);
     }
@@ -79,18 +73,23 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         }
 
         // make sure profile with the id exists
-        await this.profileService.findOne(data.params[0])
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Profile not found. ' + reason);
                 throw new ModelNotFoundException('Profile');
             });
 
         // make sure proposal with the hash exists
-        await this.proposalService.findOneByHash(data.params[1])
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);
                 throw new ModelNotFoundException('Proposal');
             });
+
+        data.params[0] = profile;
+        data.params[1] = proposal;
 
         return data;
     }

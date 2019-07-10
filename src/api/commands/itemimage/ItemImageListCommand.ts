@@ -2,29 +2,30 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemImage } from '../../models/ItemImage';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
-export class ItemImageListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
+export class ItemImageListCommand extends BaseCommand implements RpcCommandInterface<resources.ItemImage[]> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.ITEMIMAGE_LIST);
@@ -34,32 +35,62 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
     /**
      * data.params[]:
      *  [0]: 'template' or 'item'
-     *  [1]: listingItemTemplateId or listingItemId
+     *  [1]: listingItemTemplate: resources.ListingItemTemplate
+     *    or listingItem: resources.ListingItem
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemImage>> {
-        if ( data.params.length !== 2 ) {
-            throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ItemImage[]> {
+        return data.params[1].ItemInformation.ItemImages;
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: 'template' or 'item'
+     *  [1]: listingItemTemplateId or listingItemId
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('template/item');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('listingItemTemplateId/listingItemId');
         }
 
-        if (typeof data.params[1] !== 'number') {
-            this.log.error('Second arg must be numeric.');
-            throw new MessageException('Second arg must be numeric.');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('template/item', 'string');
         }
 
-        const idType = data.params[0];
-        if ( idType === 'template' ) {
-            const listingItemTemplateId = data.params[1];
-            const retval: ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId, true);
-            return retval.toJSON().ItemInformation.ItemImages;
+        const typeSpecifier = data.params[0];
+        if (typeSpecifier === 'template') {
+            if (typeof data.params[1] !== 'number') {
+                throw new InvalidParamException('listingItemTemplateId', 'number');
+            }
 
-        } else if ( idType === 'item' ) {
-            const listingItemId = data.params[1];
-            const retval: ListingItem = await this.listingItemService.findOne(listingItemId, true);
-            return retval.toJSON().ItemInformation.ItemImages;
+            // make sure required data exists and fetch it
+            data.params[1] = await this.listingItemTemplateService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItemTemplate');
+                });
+
+        } else if (typeSpecifier === 'item') {
+            if (typeof data.params[1] !== 'number') {
+                throw new InvalidParamException('listingItemId', 'number');
+            }
+
+            // make sure required data exists and fetch it
+            data.params[1] = await this.listingItemService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+
         } else {
-            throw new MessageException(`Invalid ID type detected <${idType}>. Expected 'template' or 'item'.`);
+            throw new InvalidParamException('typeSpecifier', 'template/item');
         }
+        return data;
     }
 
     public usage(): string {
@@ -73,10 +104,10 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Return all images for listing item.';
+        return 'Return all Images for ListingItem or ListingItemTemplate.';
     }
 
     public example(): string {
-        return 'image ' + this.getName() + ' 1 1 ';
+        return 'image ' + this.getName() + ' template 1 ';
     }
 }

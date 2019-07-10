@@ -3,13 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
-import * as resources from 'resources';
 
 describe('AddressUpdateCommand', () => {
 
@@ -75,140 +75,131 @@ describe('AddressUpdateCommand', () => {
         createdAddress = res.getBody()['result'];
     });
 
-        test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-            testData.state,
-            testData.country,
-        ]);
+    test('Should fail to update because missing addressId', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('zipCode').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('addressId').getMessage());
     });
 
-    test('Should fail because we want to create an empty Address without required fields', async () => {
+    test('Should fail to update because missing title', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-            testData.state,
+            defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('city').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
-    });
-
-        test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('addressLine1').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-            testData.firstName,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('lastName').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-            testData.title,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('firstName').getMessage());
-    });
-
-    test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
     });
 
-    test('Should fail because we want to create an empty Address without required fields', async () => {
+    test('Should fail to update because missing firstName', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(new MissingParamException('addressId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('firstName').getMessage());
     });
+
+    test('Should fail to update because missing lastName', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('lastName').getMessage());
+    });
+
+    test('Should fail to update because missing addressLine1', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('addressLine1').getMessage());
+    });
+
+    test('Should fail to update because missing addressLine2', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+         expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
+    });
+
+    test('Should fail to update because missing city', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('city').getMessage());
+    });
+
+    test('Should fail to update because missing state', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('state').getMessage());
+    });
+
+    test('Should fail to update because missing country', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
+    });
+
+    test('Should fail to update because missing zipCode', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('zipCode').getMessage());
+    });
+
+    // TODO: missing invalid param tests
 
     test('Should update the Address', async () => {
 
@@ -240,60 +231,7 @@ describe('AddressUpdateCommand', () => {
 
     });
 
-    test('Should fail because we want to update without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            testDataUpdated.title,
-            testDataUpdated.firstName,
-            testDataUpdated.lastName,
-            testDataUpdated.addressLine1,
-            testDataUpdated.addressLine2,
-            testDataUpdated.city,
-            testDataUpdated.state,
-            testDataUpdated.country,
-            'test'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new InvalidParamException('addressId').getMessage());
-    });
-
-    test('Should fail because we want to update with null state field', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
-            testDataUpdated.title,
-            testDataUpdated.firstName,
-            testDataUpdated.lastName,
-            testDataUpdated.addressLine1,
-            testDataUpdated.addressLine2,
-            testDataUpdated.city,
-            null,
-            testDataUpdated.country,
-            testDataUpdated.zipCode
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
-    });
-
-    test('Should fail because we want to update with undefined state field', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
-            testDataUpdated.title,
-            testDataUpdated.firstName,
-            testDataUpdated.lastName,
-            testDataUpdated.addressLine1,
-            testDataUpdated.addressLine2,
-            testDataUpdated.city,
-            undefined,
-            testDataUpdated.country,
-            testDataUpdated.zipCode
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
-    });
-
-    test('Should update the address with blank state field', async () => {
+    test('Should update the Address with blank state field', async () => {
         // update address
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
             createdAddress.id,
@@ -321,7 +259,7 @@ describe('AddressUpdateCommand', () => {
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
     });
 
-    test('Should check countryCode validation - fail with country code not found', async () => {
+    test('Should fail to update because invalid countryCode', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
             createdAddress.id,
             testDataUpdated.title,
@@ -339,8 +277,7 @@ describe('AddressUpdateCommand', () => {
         expect(res.error.error.message).toBe(new CountryCodeNotFoundException('WW').getMessage());
     });
 
-
-    test('Should check countryName validation', async () => {
+    test('Should fail to update because invalid country', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
             createdAddress.id,
             testDataUpdated.title,

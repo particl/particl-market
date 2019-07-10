@@ -7,6 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('DataAddCommand', () => {
 
@@ -28,27 +29,42 @@ describe('DataAddCommand', () => {
         address: 'test-address'
     };
 
-    const testActionMessage = {
-        action: 'MP_ITEM_ADD',
-        objects: [{
-            dataId: 'seller',
-            dataValue: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx'
-        }],
-        data: {
-            msgid: 'fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6',
-            version: '0300',
-            received: '2018-03-31T03:57:16+0200',
-            sent: '2018-03-31T03:57:16+0200',
-            from: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx',
-            to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA'
-        },
-        listing_item_id: 33
-    };
+    test('Should fail to create test data for Profile due to invalid model', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand,
+            'INVALID',
+            JSON.stringify(testProfileData)
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('model', 'CreatableModel').getMessage());
+    });
 
-    // TODO: missing negative tests
+    test('Should fail to create test data for Profile due to invalid json', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand,
+            CreatableModel.PROFILE,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('json', 'string').getMessage());
+    });
+
+    test('Should fail to create test data for Profile due to invalid withRelated', async () => {
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand,
+            CreatableModel.PROFILE,
+            JSON.stringify(testProfileData),
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('withRelated', 'boolean').getMessage());
+    });
 
     test('Should create test data for Profile', async () => {
-        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, JSON.stringify(testProfileData)]);
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand,
+            CreatableModel.PROFILE,
+            JSON.stringify(testProfileData)]
+        );
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -56,17 +72,5 @@ describe('DataAddCommand', () => {
         expect(result.address).toBe(testProfileData.address);
     });
 
-    test('Should create test data for ActionMessage', async () => {
-
-        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
-        testActionMessage.listing_item_id = listingItem[0].id;
-
-        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.ACTIONMESSAGE, JSON.stringify(testActionMessage)]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.action).toBe(testActionMessage.action);
-        expect(result.MessageObjects[0].dataId).toBe(testActionMessage.objects[0].dataId);
-    });
-
 });
+

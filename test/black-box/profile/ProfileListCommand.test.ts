@@ -22,7 +22,7 @@ describe('ProfileListCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should return no Profile', async () => {
+    test('Should return the default Profile', async () => {
         const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -30,9 +30,9 @@ describe('ProfileListCommand', () => {
         expect(result).toHaveLength(1); // getting default one
     });
 
-    test('Should return one Profile', async () => {
+    test('Should return one more Profile', async () => {
         // generate single profile
-        const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 1);
+        await testUtil.generateData(CreatableModel.PROFILE, 1);
 
         const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();
@@ -41,9 +41,9 @@ describe('ProfileListCommand', () => {
         expect(result).toHaveLength(2);
     });
 
-    test('Should return 4 Profiles', async () => {
+    test('Should return 5 Profiles', async () => {
         // generate three more profile
-        const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 3);
+        await testUtil.generateData(CreatableModel.PROFILE, 3);
 
         const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();

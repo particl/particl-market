@@ -9,14 +9,17 @@ import { ItemInformation } from './ItemInformation';
 
 export class ItemImage extends Bookshelf.Model<ItemImage> {
 
+    public static RELATIONS = [
+        'ItemImageDatas',
+        'ItemInformation',
+        'ItemInformation.ListingItem',
+        'ItemInformation.ListingItemTemplate'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImage> {
         if (withRelated) {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
-                withRelated: [
-                    'ItemImageDatas',
-                    'ItemInformation',
-                    'ItemInformation.ListingItem'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemImage.where<ItemImage>({ id: value }).fetch();

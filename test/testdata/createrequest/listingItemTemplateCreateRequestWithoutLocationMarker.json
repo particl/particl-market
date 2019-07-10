@@ -9,7 +9,7 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "CV",
+            "country": "CV",
             "address": "92656 Morar Turnpike"
         },
         "shippingDestinations": [
@@ -55,8 +55,8 @@
             }
         },
         "itemPrice": {
-            "currency": "PARTICL",
-            "basePrice": 1000,
+            "currency": "PART",
+            "basePrice": 1,
             "shippingPrice": {
                 "domestic": 2,
                 "international": 3

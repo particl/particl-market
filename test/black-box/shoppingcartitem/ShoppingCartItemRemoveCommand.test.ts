@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import * as resources from 'resources';
 
 describe('ShoppingCartItemRemoveCommand', () => {

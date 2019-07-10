@@ -3,26 +3,26 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
-import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
+import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
-import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
-import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingItemObjectUpdateRequest';
+import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
+import { ListingItemObjectUpdateRequest } from '../../src/api/requests/model/ListingItemObjectUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as resources from 'resources';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { MarketService } from '../../src/api/services/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('ListingItemObject', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -65,11 +65,11 @@ describe('ListingItemObject', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

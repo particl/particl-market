@@ -7,16 +7,17 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
-import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
+import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
@@ -24,7 +25,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.ITEM_SEARCH);
         this.log = new Logger(__filename);
@@ -37,6 +38,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [2]: order, SearchOrder
      *  [3]: category, number|string, if string, try to find using key, can be null
      *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
+     *  TODO: type is deprecated, remove!!
      *  [5]: profileId, (NUMBER | OWN | ALL | *)
      *  [6]: minPrice, number to searchBy item basePrice between 2 range
      *  [7]: maxPrice, number to searchBy item basePrice between 2 range
@@ -51,48 +53,90 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItem>> {
-        const type = data.params[4] || 'ALL';
-        const profileId = data.params[5] || 'ALL';
-
-        // check valid searchBy type
-        if (!ListingItemSearchType[type]) {
-            throw new MessageException('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
-        }
-
-        // check valid profile profileId searchBy params
-        if (typeof profileId !== 'number' && profileId !== 'OWN' && profileId !== 'ALL' && profileId !== '*') {
-            throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
-        }
-
-        let countryCode: string | null = null;
-        if (data.params[8]) {
-            countryCode = ShippingCountries.convertAndValidate(data.params[8]);
-        }
-
-        let shippingCountryCode: string | null = null;
-        if (data.params[9]) {
-            shippingCountryCode = ShippingCountries.convertAndValidate(data.params[9]);
-        }
 
         return await this.listingItemService.search({
             page: data.params[0] || 0,
             pageLimit: data.params[1] || 10, // default page limit 10
             order: data.params[2] || 'ASC',
             category: data.params[3],
-            profileId,
+            profileId: data.params[5],
             minPrice: data.params[6],
             maxPrice: data.params[7],
-            country: countryCode,
-            shippingDestination: shippingCountryCode,
+            country: data.params[8],
+            shippingDestination: data.params[9],
             searchString: data.params[10] || '',
             flagged: data.params[11]
         } as ListingItemSearchParams, data.params[12]);
     }
 
-    // tslint:disable:max-line-length
+    /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: category, number|string, if string, try to find using key, can be null
+     *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
+     *  TODO: type is deprecated, remove!!
+     *  [5]: profileId, (NUMBER | OWN | ALL | *)
+     *  [6]: minPrice, number to searchBy item basePrice between 2 range
+     *  [7]: maxPrice, number to searchBy item basePrice between 2 range
+     *  [8]: country, string, can be null
+     *  [9]: shippingDestination, string, can be null
+     *  [10]: searchString, string, can be null
+     *  [11]: flagged, boolean, can be null
+     *  [12]: withRelated, boolean
+     *
+     * TODO: add orderField
+     *
+     * @param data
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('page');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('pageLimit');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('order');
+        }
+
+        // make sure the params are of correct type
+        if (data.params[0] && typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('page', 'number');
+        } else if (data.params[1] && typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('pageLimit', 'number');
+        } else if (data.params[2] && typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('order', 'string');
+        } else if (data.params[3] && typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('type', 'string');
+        } else if (data.params[6] && typeof data.params[6] !== 'number') {
+            throw new InvalidParamException('minPrice', 'number');
+        } else if (data.params[7] && typeof data.params[7] !== 'number') {
+            throw new InvalidParamException('maxPrice', 'number');
+        }
+
+        // check valid profile profileId searchBy params
+        if (typeof data.params[5] !== 'number' && data.params[5] !== 'OWN' && data.params[5] !== 'ALL' && data.params[5] !== '*') {
+            throw new MessageException('Value needs to be number | OWN | ALL.');
+        }
+
+        data.params[5] = data.params[5] || 'ALL';
+
+        if (data.params[8]) {
+            data.params[8] = ShippingCountries.convertAndValidate(data.params[8]);
+        }
+
+        if (data.params[9]) {
+            data.params[9] = ShippingCountries.convertAndValidate(data.params[9]);
+        }
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
-        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString> [<flagged> ]]]]]]]]]]]';
+            '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination>' +
+            ' [<searchString> [<flagged>]]]]]]]]]]]';
     }
 
     public help(): string {
@@ -107,7 +151,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                with the listing items we want to searchBy for. \n'
             + '    <type>                  -  ENUM{FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL} \n'
             + '                                 FLAGGED = ListingItems you have flagged \n'
-            + '                                 PENDING = ListingItemTemplates posted to marketplace\n'
+            + '                                 PENDING = ListingItemTemplates posted to market\n'
             + '                                           but not yet received as ListingItem \n'
             + '                                 IN_ESCROW = ListingItems that are escrow \n'
             + '                                 SHIPPED = ListingItems that have been shipped \n'
@@ -133,7 +177,6 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
     }
 
-    // tslint:enable:max-line-length
 
     public description(): string {
         return 'Search listing items with pagination by category id or'

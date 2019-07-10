@@ -7,11 +7,11 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemObjectService } from '../../services/ListingItemObjectService';
+import { ListingItemObjectService } from '../../services/model/ListingItemObjectService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemObject } from '../../models/ListingItemObject';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectSearchParams } from '../../requests/search/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -22,7 +22,7 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService
     ) {
         super(Commands.ITEMOBJECT_SEARCH);
         this.log = new Logger(__filename);

@@ -10,10 +10,12 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('proposals', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('msgid').nullable();   // first created without, later updated
+
             table.string('submitter').notNullable();
             table.string('hash').notNullable().unique();
-            table.string('item').nullable();   // item hash
-            table.string('type').notNullable();
+            table.string('item').nullable();    // item hash
+            table.string('category').notNullable();
             table.text('title').nullable();
             table.text('description').nullable();
 

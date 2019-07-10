@@ -3,13 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { SmsgMessageStatus } from '../../api/enums/SmsgMessageStatus';
-import {EscrowMessageType} from '../../api/enums/EscrowMessageType';
-import {BidMessageType} from '../../api/enums/BidMessageType';
-import {VoteMessageType} from '../../api/enums/VoteMessageType';
-import {ListingItemMessageType} from '../../api/enums/ListingItemMessageType';
-import {ProposalMessageType} from '../../api/enums/ProposalMessageType';
-
-type AllowedMessageTypes = ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType;
+import { ActionMessageTypes } from '../../api/enums/ActionMessageTypes';
+import { ActionDirection } from '../../api/enums/ActionDirection';
 
 declare module 'resources' {
 
@@ -30,8 +25,10 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: AllowedMessageTypes; // | string;
+        type: ActionMessageTypes;
         status: SmsgMessageStatus;
+        direction: ActionDirection;
+        target: string;
 
         createdAt: Date;
         updatedAt: Date;

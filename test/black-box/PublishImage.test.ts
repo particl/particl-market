@@ -9,7 +9,7 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 describe('/publish-image', () => {
@@ -17,7 +17,7 @@ describe('/publish-image', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+    const testUtil = new BlackBoxTestUtil(0);
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -64,6 +64,7 @@ describe('/publish-image', () => {
     test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: LARGE', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.LARGE.propName;
+        log.debug('call:' + `/api/item-images/${itemImageId}/${imageVersion}`);
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
@@ -71,6 +72,7 @@ describe('/publish-image', () => {
     test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: MEDIUM', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.MEDIUM.propName;
+        log.debug('call:' + `/api/item-images/${itemImageId}/${imageVersion}`);
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
@@ -78,6 +80,7 @@ describe('/publish-image', () => {
     test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: THUMBNAIL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.THUMBNAIL.propName;
+        log.debug('call:' + `/api/item-images/${itemImageId}/${imageVersion}`);
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
@@ -85,6 +88,7 @@ describe('/publish-image', () => {
     test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImage, version: ORIGINAL', async () => {
         const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
         const imageVersion = ImageVersions.ORIGINAL.propName;
+        log.debug('call:' + `/api/item-images/${itemImageId}/${imageVersion}`);
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(200);
     });
@@ -92,7 +96,7 @@ describe('/publish-image', () => {
     test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImage because of invalid itemImageId', async () => {
         const itemImageId = 0;
         const imageVersion = ImageVersions.LARGE.propName;
-
+        log.debug('call:' + `/api/item-images/${itemImageId}/${imageVersion}`);
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`, httpOptions);
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Entity with identifier ' + itemImageId + ' does not exist');
@@ -109,7 +113,7 @@ describe('/publish-image', () => {
     test('POST  /item-images/template/:listingItemTemplateId        Should POST new ItemImage', async () => {
         expect.assertions(14); // 2 [basic expects] + 4 [image types] * 3 [expects in the loop]
 
-        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             host: httpOptions.host,
             port: httpOptions.port,
@@ -148,7 +152,7 @@ describe('/publish-image', () => {
     test('POST  /item-images/template/:listingItemTemplateId        Should POST two new ItemImages at the same time', async () => {
         expect.assertions(26); // 2 [basic expects] + 2 [images] * 4 [image types] * 3 [expects in the loop]
 
-        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             host: httpOptions.host,
             port: httpOptions.port,

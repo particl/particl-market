@@ -7,15 +7,17 @@ import { Collection, Model } from 'bookshelf';
 import { OrderItem } from './OrderItem';
 import { Address } from './Address';
 import { SearchOrder } from '../enums/SearchOrder';
-import { OrderSearchParams } from '../requests/OrderSearchParams';
+import { OrderSearchParams } from '../requests/search/OrderSearchParams';
 
 export class Order extends Bookshelf.Model<Order> {
 
     public static RELATIONS = [
         'OrderItems',
         'OrderItems.Bid',
+        'OrderItems.Bid.BidDatas',
+        'OrderItems.Bid.ChildBids',
+        'OrderItems.Bid.ChildBids.BidDatas',
         'OrderItems.Bid.ListingItem',
-        'OrderItems.OrderItemObjects',
         'OrderItems.Bid.ListingItem.ListingItemTemplate',
         'OrderItems.Bid.ListingItem.PaymentInformation',
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow',
@@ -43,11 +45,17 @@ export class Order extends Bookshelf.Model<Order> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Status(): string { return this.get('status'); }
+    public set Status(value: string) { this.set('status', value); }
+
     public get Buyer(): string { return this.get('buyer'); }
     public set Buyer(value: string) { this.set('buyer', value); }
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
+
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -64,6 +72,7 @@ export class Order extends Bookshelf.Model<Order> {
         const orderCollection = Order.forge<Model<Order>>()
             .query( qb => {
                 qb.join('order_items', 'orders.id', 'order_items.order_id');
+
                 if (options.listingItemId) {
                     qb.join('bids', 'order_items.bid_id', 'bids.id');
                     qb.where('bids.listing_item_id', '=', options.listingItemId);

@@ -7,13 +7,14 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryService } from '../../services/ItemCategoryService';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
 export class ItemCategorySearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
@@ -21,7 +22,7 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
         super(Commands.CATEGORY_SEARCH);
         this.log = new Logger(__filename);
@@ -29,19 +30,26 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: searchString, string, can't be null
+     *  [0]: searchBy, string, can't be null
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemCategory>> {
+        return await this.itemCategoryService.findByName(data.params[0]);
+    }
 
-        if (!data.params[0]) {
-            throw new MessageException('SearchString can not be null');
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('searchBy');
         }
 
-        return await this.itemCategoryService.findByName(data.params[0]);
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('searchBy', 'string');
+        }
+
+        return data;
     }
 
     public usage(): string {
@@ -50,7 +58,7 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <searchString>                - String - A searchBy string for finding \n'
+            + '    <searchBy>                - String - A searchBy string for finding \n'
             + '                                     categories by name. ';
     }
 

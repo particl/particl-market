@@ -57,8 +57,8 @@
         "createdAt": 1520294533385,
         "ItemPrice": {
             "id": 4,
-            "currency": "PARTICL",
-            "basePrice": 76.31903702293027,
+            "currency": "PART",
+            "basePrice": 1,
             "paymentInformationId": 4,
             "cryptocurrencyAddressId": 4,
             "updatedAt": 1520294533415,
@@ -73,8 +73,8 @@
             },
             "ShippingPrice": {
                 "id": 4,
-                "domestic": 2.13268661244928,
-                "international": 8.76915941696489,
+                "domestic": 2,
+                "international": 3,
                 "itemPriceId": 4,
                 "updatedAt": 1520294533423,
                 "createdAt": 1520294533423
@@ -147,15 +147,15 @@
         },
         "ItemLocation": {
             "id": 4,
-            "region": "CAPE VERDE",
+            "country": "CAPE VERDE",
             "address": "92656 Morar Turnpike",
             "itemInformationId": 4,
             "updatedAt": 1520294532477,
             "createdAt": 1520294532477,
             "LocationMarker": {
                 "id": 4,
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
+                "title": "saepe",
+                "description": "Commodi ut ex.",
                 "lat": -42.7463,
                 "lng": 88.9405,
                 "itemLocationId": 4,

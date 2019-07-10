@@ -12,18 +12,13 @@ import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor } from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
-import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
-import { ListingItemActionService } from '../services/ListingItemActionService';
-import { BidActionService } from '../services/BidActionService';
-import { EscrowActionService } from '../services/EscrowActionService';
-import { ProposalActionService } from '../services/ProposalActionService';
-import { VoteActionService } from '../services/VoteActionService';
+import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ServerStartedListener implements interfaces.Listener {
 
     public static Event = Symbol('ServerStartedListenerEvent');
-    public static ServerReadyEvent = Symbol('ServerReadyListenerEvent');
 
     public log: LoggerType;
     public isAppReady = false;
@@ -36,23 +31,16 @@ export class ServerStartedListener implements interfaces.Listener {
     // tslint:disable:max-line-length
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: SmsgMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) public bidActionService: BidActionService,
-        @inject(Types.Service) @named(Targets.Service.EscrowActionService) public escrowActionService: EscrowActionService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
-        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        // ActionServices need to be injected here to start the event listeners when testing
-
         this.log = new Logger(__filename);
     }
     // tslint:enable:max-line-length
@@ -106,13 +94,14 @@ export class ServerStartedListener implements interfaces.Listener {
                     // seed the default Profile
                     await this.defaultProfileService.seedDefaultProfile();
 
-                    // start expiredListingItemProcessor
-                    this.expiredListingItemProcessor.scheduleProcess();
-                    this.proposalResultProcessor.scheduleProcess();
+                    // start message polling and other stuff, unless we're running integration tests
+                    if (process.env.NODE_ENV !== 'test') {
+                        this.expiredListingItemProcessor.scheduleProcess();
+                        this.proposalResultProcessor.scheduleProcess();
+                        this.coreMessageProcessor.schedulePoll();
+                        this.messageProcessor.schedulePoll();
+                    }
 
-                    // start message polling, unless we're running tests
-                    this.smsgMessageProcessor.schedulePoll();
-                    this.messageProcessor.schedulePoll();
                     this.interval = 10000;
                 } else {
                     this.log.error('wallet not initialized yet, retrying in ' + this.interval + 'ms.');

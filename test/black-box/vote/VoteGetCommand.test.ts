@@ -8,14 +8,17 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
+import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 
 describe('VoteGetCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    // const randomBoolean: boolean = Math.random() >= 0.5;
+    // const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtil = new BlackBoxTestUtil(0);
 
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;

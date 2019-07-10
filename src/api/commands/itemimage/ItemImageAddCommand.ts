@@ -2,20 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/ItemImageService';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ItemImageService } from '../../services/model/ItemImageService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
+import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -23,8 +29,8 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMIMAGE_ADD);
         this.log = new Logger(__filename);
@@ -32,7 +38,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_id
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: dataId
      *  [2]: protocol
      *  [3]: encoding
@@ -45,18 +51,12 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
 
-        // check listingItemTemplate id present in params
-        if (!data.params[0]) {
-            throw new MessageException('ListingItemTemplate id can not be null.');
-        }
-        // find listing item template
-        let listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        let listingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // create item images
         const itemImage = await this.itemImageService.create({
             item_information_id: listingItemTemplate.ItemInformation.id,
-            datas: [{
+            data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],
@@ -65,15 +65,80 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             }]
         } as ItemImageCreateRequest);
 
-        // after upload create also the resized template images
-        listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
-        listingItemTemplate = listingItemTemplateModel.toJSON();
-
         if (!data.params[5]) {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
         }
 
         return itemImage;
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: dataId
+     *  [2]: protocol
+     *  [3]: encoding
+     *  [4]: data
+     *  [5]: skipResize, optional, default false
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('listingItemTemplateId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('dataId');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('protocol');
+        } else if (data.params.length < 4) {
+            throw new MissingParamException('encoding');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('data');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('dataId', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('protocol', 'string');
+        } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('encoding', 'string');
+        } else if (typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('data', 'string');
+        } else if (data.params[5] && typeof data.params[5] !== 'boolean') {
+            throw new InvalidParamException('skipResize', 'boolean');
+        }
+
+        const validProtocolTypes = [ProtocolDSN.IPFS, ProtocolDSN.LOCAL, ProtocolDSN.SMSG, ProtocolDSN.URL];
+        if (validProtocolTypes.indexOf(data.params[2]) === -1) {
+            throw new InvalidParamException('protocol');
+        }
+
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // make sure ItemInformation exists
+        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+            throw new ModelNotFoundException('ItemInformation');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {

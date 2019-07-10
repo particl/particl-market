@@ -12,15 +12,14 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
-import { ShoppingCartItemService } from '../../services/ShoppingCartItemService';
-import { MessageException } from '../../exceptions/MessageException';
+import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
 
 export class ShoppingCartItemListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ShoppingCartItem>> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCARTITEM_LIST);

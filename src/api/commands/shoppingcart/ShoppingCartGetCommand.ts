@@ -10,7 +10,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartService } from '../../services/ShoppingCartService';
+import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 import { ShoppingCart } from '../../models/ShoppingCart';
 
 export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInterface<ShoppingCart> {
@@ -18,7 +18,7 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartService) private shoppingCartService: ShoppingCartService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_GET);

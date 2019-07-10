@@ -8,16 +8,15 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ListingItemFactory } from '../../factories/ListingItemFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ItemImageDataService } from '../../services/ItemImageDataService';
+import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
 
@@ -25,9 +24,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private itemImageDataService: ItemImageDataService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_GET);
         this.log = new Logger(__filename);
@@ -35,10 +33,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: listingItemTemplateId
      *  [1]: returnImageData (optional)
-     *
-     * when data.params[0] is number then findById, else findOneByHash
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -46,15 +42,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItemTemplate> {
 
-        let listingItemTemplate: resources.ListingItemTemplate;
-
-        if (data.params[0] && typeof data.params[0] === 'number') {
-            listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-                .then(value => value.toJSON());
-        } else {
-            listingItemTemplate = await this.listingItemTemplateService.findOneByHash(data.params[0])
-                .then(value => value.toJSON());
-        }
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => value.toJSON()); // throws if not found
 
         if (data.params[1]) {
             for (const image of listingItemTemplate.ItemInformation.ItemImages) {
@@ -69,7 +58,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: listingItemTemplateId
      *  [1]: returnImageData (optional)
      *
      * when data.params[0] is number then findById, else findOneByHash
@@ -80,14 +69,12 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('id or hash');
+            throw new MissingParamException('listingItemTemplateId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'string' && typeof data.params[0] !== 'number' ) {
-            throw new InvalidParamException('id or hash', 'number or string');
-        }
-
-        if (data.params[1] && typeof data.params[1] !== 'boolean') {
+        if (typeof data.params[0] !== 'number' ) {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        } else if (data.params[1] && typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('returnImageData', 'boolean');
         }
 

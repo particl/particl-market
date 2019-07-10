@@ -5,7 +5,7 @@
 import * from 'jest';
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
-import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';
+import { ItemCategoryCreateRequest } from '../../../../src/api/requests/model/ItemCategoryCreateRequest';
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryWithRelated5levels from '../../../testdata/model/listingItemCategoryWithRelated5levels.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
@@ -19,8 +19,8 @@ describe('ItemCategoryFactory', () => {
         itemCategoryFactory = new ItemCategoryFactory(LogMock);
     });
 
-    // getModel tests
-    test('Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel', async () => {
+    // get tests
+    test('Should get the ItemCategoryCreateRequest from itemCategoryFactory.get', async () => {
         const categoryArray = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
         const result: ItemCategoryCreateRequest = await itemCategoryFactory.getModel(categoryArray, listingItemCategoryRootWithRelated);
         expect(result.name).toBe('Business / Corporate');

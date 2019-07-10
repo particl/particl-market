@@ -3,15 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidParams';
-import * as resources from 'resources';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBidParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('BidSearchCommand', () => {
 
@@ -26,6 +26,7 @@ describe('BidSearchCommand', () => {
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
     let listingItems: resources.ListingItem[];
+    let bid: resources.Bid;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -38,7 +39,7 @@ describe('BidSearchCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
-       // create listing item
+        // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -51,7 +52,6 @@ describe('BidSearchCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // create listing item for testing
         listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                      // how many to generate
@@ -97,8 +97,10 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItem.hash
-            BidMessageType.MPA_BID,     // action
-            defaultProfile.address      // bidder
+            MPAction.MPA_BID,           // type
+            defaultProfile.address,     // bidder
+            undefined,                  // seller
+            undefined                   // parentBidId
         ]).toParamsArray();
 
         // generate bid
@@ -114,22 +116,33 @@ describe('BidSearchCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Bid[] = res.getBody()['result'];
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
+        bid = result[0];
 
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
 
     });
 
     test('Should generate a second Bid and return two Bids when searchBy by ListingItem.hash', async () => {
+
+        log.debug('bid.id: ', bid.id);
+
         // create second bid
         const bidGenerateParams = new GenerateBidParams([
             false,                       // generateListingItemTemplate
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItemhash
-            BidMessageType.MPA_ACCEPT,  // action
-            defaultProfile.address      // bidder
+            MPAction.MPA_ACCEPT,        // type
+            defaultProfile.address,     // bidder
+            undefined,                  // seller
+            bid.id                      // parentBidId
         ]).toParamsArray();
+
+        log.debug('bidGenerateParams: ', bidGenerateParams);
 
         // generate bid
         const bids: any = await testUtil.generateData(
@@ -144,9 +157,9 @@ describe('BidSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -156,9 +169,9 @@ describe('BidSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
-        expect(result[1].action).toBe(BidMessageType.MPA_BID);
+        expect(result[1].type).toBe(MPAction.MPA_BID);
         expect(result[1].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -167,13 +180,13 @@ describe('BidSearchCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
-            BidMessageType.MPA_BID
+            MPAction.MPA_BID
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
@@ -182,7 +195,7 @@ describe('BidSearchCommand', () => {
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
-            BidMessageType.MPA_BID,
+            MPAction.MPA_BID,
             '*',
             defaultProfile.address
         ];
@@ -193,11 +206,11 @@ describe('BidSearchCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
-    test('Should fail to searchBy Bids because invalid BidMessageType enum', async () => {
+    test('Should fail to searchBy Bids because invalid MPAction enum', async () => {
         // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
@@ -214,7 +227,7 @@ describe('BidSearchCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
-            BidMessageType.MPA_REJECT
+            MPAction.MPA_REJECT
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -223,7 +236,7 @@ describe('BidSearchCommand', () => {
     });
 
 
-    // TODO: missing tests for OrderStatus
+    // TODO: missing tests for OrderItemStatus
     // TODO: missing tests for searching using searchString
     // TODO: missing tests for searching using bidder
     // TODO: missing tests for searching using multiple bidders

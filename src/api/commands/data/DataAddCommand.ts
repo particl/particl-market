@@ -11,9 +11,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import {TestDataService} from '../../services/TestDataService';
-import {TestDataCreateRequest} from '../../requests/TestDataCreateRequest';
-import {MessageException} from '../../exceptions/MessageException';
+import { TestDataService } from '../../services/TestDataService';
+import { TestDataCreateRequest } from '../../requests/testdata/TestDataCreateRequest';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { CreatableModel } from '../../enums/CreatableModel';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -48,11 +51,28 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MessageException('Missing model.');
+            throw new MissingParamException('model');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('json');
         }
-        if (data.params.length < 2) {
-            throw new MessageException('Missing json.');
+
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('model', 'CreatableModel');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('json', 'string');
         }
+
+        if (data.params.length > 2) {
+            const withRelated = data.params[2];
+            if (typeof withRelated !== 'boolean') {
+                throw new InvalidParamException('withRelated', 'boolean');
+            }
+        }
+
+        if (!EnumHelper.containsName(CreatableModel, data.params[0])) {
+            throw new InvalidParamException('model', 'CreatableModel');
+        }
+
         return data;
     }
 

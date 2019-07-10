@@ -42,10 +42,6 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchAllByName(name, withRelated);
     }
 
-    public async isCategoryExists(categoryName: string, parentCategoryId: number | null): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchCategoryByNameAndParentID(categoryName, parentCategoryId);
-    }
-
     public async create(data: any): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>(data);
         try {

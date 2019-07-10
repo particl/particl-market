@@ -3,29 +3,29 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { EscrowService } from '../../src/api/services/EscrowService';
+import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { EscrowRatio } from '../../src/api/models/EscrowRatio';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { EscrowRatioCreateRequest } from '../../src/api/requests/EscrowRatioCreateRequest';
-import { EscrowRatioUpdateRequest } from '../../src/api/requests/EscrowRatioUpdateRequest';
-import { MarketService } from '../../src/api/services/MarketService';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
+import { EscrowRatioUpdateRequest } from '../../src/api/requests/model/EscrowRatioUpdateRequest';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import * as resources from 'resources';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { Escrow } from '../../src/api/models/Escrow';
-import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
+import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
+import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 describe('EscrowRatio', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -61,12 +61,12 @@ describe('EscrowRatio', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.EscrowRatioService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
-        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
+        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

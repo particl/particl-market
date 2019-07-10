@@ -42,8 +42,10 @@ export class CommandEnumType extends Enum<Command> {
     public ESCROW_LOCK: Command     = new Command('escrowlock', 'lock', false);
     public ESCROW_REFUND: Command   = new Command('escrowrefund', 'refund', false);
     public ESCROW_RELEASE: Command  = new Command('escrowrelease', 'release', false);
+    public ESCROW_COMPLETE: Command = new Command('escrowcomplete', 'complete', false);
     public ESCROW_ROOT: Command     = new Command('escrow', 'escrow', true,
-        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_REMOVE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE], EnvironmentType.ALL);
+        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_REMOVE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE,
+            this.ESCROW_COMPLETE], EnvironmentType.ALL);
 
     public PAYMENTINFORMATION_UPDATE: Command   = new Command('paymentinformationupdate', 'update', false);
     public PAYMENTINFORMATION_ROOT: Command     = new Command('paymentinformation', 'payment', true,
@@ -85,11 +87,12 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_SIZE: Command           = new Command('templatesize', 'size', false);
     public TEMPLATE_COMPRESS: Command       = new Command('templatecompress', 'compress', false);
     public TEMPLATE_FEATURED_IMAGE: Command = new Command('templatefeatured', 'featured', false);
+    public TEMPLATE_CLONE: Command          = new Command('templateclone', 'clone', false);
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
         [this.TEMPLATE_SEARCH, this.TEMPLATE_GET, this.TEMPLATE_ADD, this.TEMPLATE_REMOVE, this.TEMPLATE_POST,
-            this.TEMPLATE_IMPORT, this.TEMPLATE_SIZE, this.TEMPLATE_COMPRESS, this.ITEMINFORMATION_ROOT, this.TEMPLATE_FEATURED_IMAGE,
-            this.ITEMIMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT, this.MESSAGINGINFORMATION_ROOT,
-            this.PAYMENTINFORMATION_ROOT, this.ESCROW_ROOT],
+            this.TEMPLATE_IMPORT, this.TEMPLATE_SIZE, this.TEMPLATE_COMPRESS, this.TEMPLATE_CLONE, this.ITEMINFORMATION_ROOT,
+            this.TEMPLATE_FEATURED_IMAGE, this.ITEMIMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
+            this.MESSAGINGINFORMATION_ROOT, this.PAYMENTINFORMATION_ROOT, this.ESCROW_ROOT],
         EnvironmentType.ALL);
 
     public CATEGORY_LIST: Command       = new Command('categorylist', 'list', false);
@@ -162,8 +165,9 @@ export class CommandEnumType extends Enum<Command> {
         [this.ORDER_SEARCH], EnvironmentType.ALL);
 
     public ORDERITEM_STATUS: Command         = new Command('orderitemstatus', 'status', false);
+    public ORDERITEM_SHIP: Command         = new Command('orderitemship', 'ship', false);
     public ORDERITEM_ROOT: Command           = new Command('orderitem', 'orderitem', true,
-        [this.ORDERITEM_STATUS], EnvironmentType.ALL);
+        [this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
 
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 

@@ -3,11 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ItemCategoryUpdateCommand', () => {
 
@@ -19,6 +21,7 @@ describe('ItemCategoryUpdateCommand', () => {
     const categoryCommand = Commands.CATEGORY_ROOT.commandName;
     const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
     const categoryUpdateCommand = Commands.CATEGORY_UPDATE.commandName;
+    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
 
     let rootCategory: resources.ItemCategory;
     let childCategory1: resources.ItemCategory;
@@ -29,12 +32,11 @@ describe('ItemCategoryUpdateCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        rootCategory = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
-            key: 'cat_DEFAULT_TESTING_CATEGORY',
-            name: 'ROOT CATEGORY NAME',
-            description: 'root category description',
-            parent_item_category_id: 0
-        });
+        // first get the rootCategory
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        rootCategory = res.getBody()['result'];
 
         // add child1 category
         let response = await testUtil.rpc(categoryCommand, [categoryAddCommand,
@@ -75,6 +77,89 @@ describe('ItemCategoryUpdateCommand', () => {
 
     });
 
+    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            defaultCategory.id,
+            'newname',
+            'newdesc',
+            childCategory2.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
+    });
+
+    test('Should fail to update, because missing categoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
+    });
+
+    test('Should fail to update, because missing categoryName', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryName').getMessage());
+    });
+
+    test('Should fail to update, because missing description', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id,
+            'newname'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('description').getMessage());
+    });
+
+    test('Should not update ItemCategory, because invalid categoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            'INVALIDID',
+            'newname',
+            'newdesc'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+    });
+
+    test('Should not update ItemCategory, because invalid categoryName', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id,
+            0,
+            'newdesc'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('categoryName', 'string').getMessage());
+    });
+
+    test('Should not update ItemCategory, because invalid description', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id,
+            'newname',
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('description', 'string').getMessage());
+    });
+
+    test('Should not update ItemCategory, because invalid parentCategoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id,
+            'newname',
+            'newdesc',
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('parentCategoryId', 'number').getMessage());
+    });
+
     test('Should update the ItemCategory with new name, description and parent using id', async () => {
 
         const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
@@ -89,33 +174,8 @@ describe('ItemCategoryUpdateCommand', () => {
 
         expect(result.name).toBe('newname');
         expect(result.description).toBe('newdesc');
-        expect(result.parentItemCategoryId).toBe(childCategory2.id);
+        expect(result.ParentItemCategory.id).toBe(childCategory2.id);
         expect(result.ParentItemCategory.name).toBe(childCategory2.name);
-    });
-
-    test('Should not update ItemCategory, because missing params', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
-            defaultCategory.id,
-            'newname',
-            'newdesc'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Missing parameters.');
-    });
-
-    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
-            defaultCategory.id,
-            'newname',
-            'newdesc',
-            childCategory2.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 
 });

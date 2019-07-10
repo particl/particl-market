@@ -2,20 +2,30 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ActionMessageInterface } from './ActionMessageInterface';
-import { ListingItemMessageInterface } from './ListingItemMessageInterface';
-import {ProposalMessageInterface} from './ProposalMessageInterface';
-import {VoteMessageInterface} from './VoteMessageInterface';
+// tslint:disable:variable-name
+import { MPM } from 'omp-lib/dist/interfaces/omp';
+import { ActionMessageInterface } from './action/ActionMessageInterface';
 
-export class MarketplaceMessage {
-    public version: string;
-    public mpaction?: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface;
-    public item?: ListingItemMessageInterface;
-    public market?: string;
-    // todo: market is defined here, but it is not required on the message as the market address will be taken
-    // from the message recipient field. the market is set later after message is received to make message
-    // processing easier.
-    // todo: we might anyway want to add this to OMP specs and perhaps check that market here matches the market
-    // that we are sending the message to.
-
+/**
+ * MPMExtension defines how the MPM will be extended
+ * (adds support for ActionMessageInterface which adds support for actions other than just the MPAction)
+ */
+interface MPMExtension {
+    action: ActionMessageInterface;
 }
+
+/**
+ * MPMExtended is the result of overewriting the MPM with MPMExtension
+ */
+interface MPMExtended extends Overwrite<MPM, MPMExtension> {}
+
+/**
+ * MarketplaceMessage is the type of message the market listens to
+ */
+export class MarketplaceMessage implements MPMExtended {
+    public version: string;
+    public action: ActionMessageInterface;
+    // tslint:disable-next-line:variable-name
+    public _rawtx?: string;
+}
+// tslint:enable:variable-name

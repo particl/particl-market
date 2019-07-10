@@ -3,20 +3,27 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import * as resources from 'resources';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { BidActionService } from '../../services/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { BidService } from '../../services/BidService';
+import { BidService } from '../../services/model/BidService';
+import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import {BidAcceptRequest} from '../../requests/action/BidAcceptRequest';
+import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -24,9 +31,9 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) private bidAcceptActionService: BidAcceptActionService
     ) {
         super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
@@ -34,7 +41,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: bidId
+     * [0]: bid, resources.Bid
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -42,17 +49,31 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const bidId = data.params[0];
-        const bid: resources.Bid = await this.bidService.findOne(bidId)
-            .then(value => {
-                return value.toJSON();
-            });
-        return this.bidActionService.accept(bid);
+        const bid: resources.Bid = data.params[0];
+
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
+        const profile: resources.Profile = listingItem.ListingItemTemplate.Profile;
+
+        const fromAddress = profile.address;    // we are the seller, send from the profiles address which posted the item being bidded for
+        const toAddress = bid.bidder;           // send to the address that sent the bid
+
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
+
+        const postRequest = {
+            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            bid
+        } as BidAcceptRequest;
+
+        return this.bidAcceptActionService.post(postRequest);
     }
 
     /**
      * data.params[]:
      * [0]: bidId
+     *
+     * TODO: instead of bidId, use bid.hash?
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -60,30 +81,29 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MessageException('Missing bidId.');
+            throw new MissingParamException('bidId');
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('bidId should be a number.');
+            throw new InvalidParamException('bidId', 'number');
         }
 
-        const bidId = data.params[0];
-        const bid: resources.Bid = await this.bidService.findOne(bidId)
-            .then(value => {
-                return value.toJSON();
-            });
+        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[0] = bid;
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
             this.log.error('ListingItem not found.');
-            throw new MessageException('ListingItem not found.');
+            throw new ModelNotFoundException('ListingItem');
         }
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(bid.ListingItem.ListingItemTemplate)) {
             this.log.error('Not your ListingItem.');
-            throw new MessageException('Not your ListingItem.');
+            throw new ModelNotFoundException('ListingItemTemplate');
         }
+
+        // TODO: check that we are the seller
 
         return data;
     }
@@ -94,7 +114,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <bidId>                  - number - The id of the item we want to accept. ';
+            + '    <bidId>                  - number - The id of the bid we want to accept. ';
     }
 
     public description(): string {

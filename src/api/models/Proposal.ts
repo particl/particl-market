@@ -6,7 +6,7 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
@@ -34,9 +34,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         const proposalCollection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
-                if (options.type) {
+                if (options.category) {
                     // searchBy all
-                    qb.where('proposals.type', '=', options.type.toString());
+                    qb.where('proposals.category', '=', options.category.toString());
                 }
 
                 if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
@@ -86,6 +86,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Proposal> {
+        if (withRelated) {
+            return await Proposal.where<Proposal>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Proposal.where<Proposal>({ msgid: value }).fetch();
+        }
+    }
+
     public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
         if (withRelated) {
             return await Proposal.where<Proposal>({ item: value }).fetch({
@@ -102,6 +112,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
+    public get Msgid(): string { return this.get('msgid'); }
+    public set Msgid(value: string) { this.set('msgid', value); }
+
     public get Submitter(): string { return this.get('submitter'); }
     public set Submitter(value: string) { this.set('submitter', value); }
 
@@ -111,8 +124,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Item(): string { return this.get('item'); }
     public set Item(value: string) { this.set('item', value); }
 
-    public get Type(): string { return this.get('type'); }
-    public set Type(value: string) { this.set('type', value); }
+    public get Category(): string { return this.get('category'); }
+    public set Category(value: string) { this.set('category', value); }
 
     public get Title(): string { return this.get('title'); }
     public set Title(value: string) { this.set('title', value); }

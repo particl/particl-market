@@ -9,7 +9,8 @@ import { ListingItem } from '../models/ListingItem';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
+import { ListingItemSearchParams } from '../requests/search/ListingItemSearchParams';
+import {Proposal} from '../models/Proposal';
 
 export class ListingItemRepository {
 
@@ -37,6 +38,10 @@ export class ListingItemRepository {
 
     public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
         return this.ListingItemModel.fetchExpired();
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByMsgId(msgId, withRelated);
     }
 
 

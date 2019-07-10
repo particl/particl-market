@@ -24,7 +24,7 @@ export class AuthenticateMiddleware implements interfaces.Middleware {
             return next();
         } else {
             if (req.headers.authorization && req.headers.authorization.search('Basic ') === 0) {
-                const authentication = new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString();
+                const authentication = Buffer.from(req.headers.authorization.split(' ')[1], 'base64').toString();
                 // this.log.debug('auth:' + authentication + '===' + process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD);
 
                 if (authentication === process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD) {

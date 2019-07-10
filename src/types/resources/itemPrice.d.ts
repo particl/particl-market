@@ -2,11 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+
 declare module 'resources' {
 
     interface ItemPrice {
         id: number;
-        currency: string;
+        currency: Cryptocurrency;
         basePrice: number;
         createdAt: Date;
         updatedAt: Date;

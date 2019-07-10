@@ -6,14 +6,15 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProfileService } from '../../services/ProfileService';
+import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
+import { ProfileCreateRequest } from '../../requests/model/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -21,7 +22,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.PROFILE_ADD);
         this.log = new Logger(__filename);
@@ -46,7 +47,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MessageException('Missing name.');
+            throw new MissingParamException('name');
         }
 
         // check if profile already exist for the given name
@@ -73,17 +74,14 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <profileName>            - The name of the profile we want to create. \n'
-            + '    <profileAddress>         - [optional] the particl address of this profile. \n'
-            + '                                This is the address that\'s used in the particl \n'
-            + '                                messaging system. Will be automatically generated \n'
-            + '                                if omitted. ';
+            + '    <profileAddress>         - [optional] the particl address of this profile. \n';
     }
 
     public description(): string {
-        return 'Create a new profile.';
+        return 'Create a new Profile.';
     }
 
     public example(): string {
-        return 'profile ' + this.getName() + ' myProfile PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+        return 'profile ' + this.getName() + ' myProfile';
     }
 }

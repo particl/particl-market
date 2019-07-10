@@ -2,18 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { EscrowService } from '../../services/EscrowService';
+import { EscrowService } from '../../services/model/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import * as resources from 'resources';
+import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -21,8 +26,8 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.EscrowService) private escrowService: EscrowService
     ) {
         super(Commands.ESCROW_REMOVE);
         this.log = new Logger(__filename);
@@ -30,27 +35,64 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     *  [0]: ListingItemTemplate.id
-     * @param data
-     * @returns {Promise<Escrow>}
+     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
+    }
+
+    /**
+     * data.params[]:
+     * [0]: listingItemTemplateId
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MessageException('Expected ListingItemTemplate id but received no params.');
+            throw new MissingParamException('listingItemTemplateId');
         }
 
-        const listingItemTemplateId = data.params[0];
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId', 'number');
+        }
 
-        // template allready has listingitems so for now, it cannot be modified
+        // make sure ListingItemTemplate with the id exists
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
+
+        // template already has listingitems, so it cannot be modified
         if (listingItemTemplate.ListingItems.length > 0) {
-            throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
+            throw new MessageException(`Escrow cannot be deleted because ListingItems already exist for the ListingItemTemplate.`);
         }
 
-        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
+        // make sure PaymentInformation exists
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+        }
+
+        // make sure Escrow exists
+        if (_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
+            throw new ModelNotFoundException('Escrow');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
+        data.params[0] = listingItemTemplate;
+
+        return data;
     }
 
     public usage(): string {

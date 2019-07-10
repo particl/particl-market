@@ -8,7 +8,7 @@ set -e
 if (( $# == 0 )); then
     echo "usage: port command params..."
     echo ""
-    echo "example: marketplace-cli.sh 3000 help"
+    echo "example: market-cli.sh 3000 help"
     exit
 elif (( $# == 1 )); then
     PORT="$1"

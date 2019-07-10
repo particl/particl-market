@@ -10,10 +10,11 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('item_locations', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('region'); // .notNullable();
-            table.string('address'); // .notNullable();
+            table.string('country').nullable();
+            table.string('address').nullable();
+            table.string('description').nullable();
 
-            table.integer('item_information_id').unsigned().nullable();
+            table.integer('item_information_id').unsigned().notNullable();
             table.foreign('item_information_id').references('id')
                 .inTable('item_informations').onDelete('cascade');
 

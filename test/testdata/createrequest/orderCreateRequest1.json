@@ -5,12 +5,7 @@
     "orderItems": [{
         "itemHash": "SETTHEITEMHASHFROMBID",
         "bid_id": 0,
-        "status": "AWAITING_ESCROW",
-        "orderItemObjects": [{
-            "dataId": "testid",
-            "dataValue": "testdata"
-        }]
-    }],
+        "status": "AWAITING_ESCROW"
     "address": {
         "REPLACE_WITH_SHIPPING_ADDRESS_FROM_BID": 0
     }

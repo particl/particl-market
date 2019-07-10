@@ -7,14 +7,13 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ProposalService } from '../services/ProposalService';
-import { ProposalSearchParams } from '../requests/ProposalSearchParams';
-import { ProposalType } from '../enums/ProposalType';
-import { ProposalResultService } from '../services/ProposalResultService';
-import { ListingItemService } from '../services/ListingItemService';
-import {catchClause} from 'babel-types';
-import {errorComparator} from 'tslint/lib/verify/lintError';
-import {MessageException} from '../exceptions/MessageException';
+import { ProposalService } from '../services/model/ProposalService';
+import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
+import { ProposalCategory } from '../enums/ProposalCategory';
+import { ProposalResultService } from '../services/model/ProposalResultService';
+import { ListingItemService } from '../services/model/ListingItemService';
+
+// TODO: this should be refactored, this is not a MessageProcessor!
 
 export class ProposalResultProcessor implements MessageProcessorInterface {
 
@@ -27,19 +26,18 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService
     ) {
         this.log = new Logger(__filename);
     }
-
 
     public async process(): Promise<void> {
 
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
-            // type: ProposalType.ITEM_VOTE,
+            // category: ProposalCategory.ITEM_VOTE,
             timeStart: Date.now(),
             timeEnd: '*'
         } as ProposalSearchParams;
@@ -68,9 +66,9 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                         this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
 
                         await this.proposalService.recalculateProposalResult(proposal);
-                        // after recalculating the ProposalResult, if proposal is of type ITEM_VOTE,
+                        // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                         // we can now check whether the ListingItem should be removed or not
-                        if (proposal.type === ProposalType.ITEM_VOTE) {
+                        if (proposal.category === ProposalCategory.ITEM_VOTE) {
                             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
                                 .then(value => value.toJSON());
                             await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
