@@ -96,15 +96,6 @@ export class ProposalAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-
-        if (!params.sendParams.estimateFee) {
-            // processProposal "processes" the Proposal, creating or updating the Proposal.
-            // called from both beforePost() and onEvent()
-            await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
-        } else {
-            // if we're just estimating the price, dont save the Proposal
-        }
-
         return marketplaceMessage;
     }
 
@@ -113,10 +104,19 @@ export class ProposalAddActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+    public async afterPost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
+        // processProposal "processes" the Proposal, creating or updating the Proposal.
+        // called from both beforePost() and onEvent()
+        // TODO: currently do not pass smsgMessage to the processProposal as that would set the values from smsgMessage
+        // TODO: add received or similar flag instead of this
+        await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
+
+        // TODO: what is this supposed to test?
         if (smsgSendResponse.msgid) {
             const proposal: resources.Proposal = await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid)
                 .then(value => value.toJSON());

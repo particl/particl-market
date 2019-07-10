@@ -112,13 +112,12 @@ export class BidCancelActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
+        await this.bidService.updateMsgId(params.createdBid.id, smsgMessage.msgid);
         return smsgSendResponse;
     }
 

@@ -71,7 +71,7 @@ export class BidAcceptActionService extends BaseActionService {
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
-                this.log.debug('createMessage(), listingItemAddMPM:', JSON.stringify(listingItemAddMPM, null, 2));
+                // this.log.debug('createMessage(), listingItemAddMPM:', JSON.stringify(listingItemAddMPM, null, 2));
 
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
@@ -134,13 +134,12 @@ export class BidAcceptActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: BidAcceptRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
+        await this.bidService.updateMsgId(params.createdBid.id, smsgMessage.msgid);
         return smsgSendResponse;
     }
 
@@ -157,13 +156,12 @@ export class BidAcceptActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
-                let bid: resources.Bid = value.toJSON();
-                bid = await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
-                this.log.debug('bid: ', JSON.stringify(bid, null, 2));
 
+                const bid: resources.Bid = value.toJSON();
                 this.log.debug('bid.ParentBid.OrderItem.id: ', bid.ParentBid.OrderItem.id);
                 this.log.debug('bid.ParentBid.OrderItem.Order.id: ', bid.ParentBid.OrderItem.Order.id);
                 this.log.debug('bid.id: ', bid.id);
+
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
 

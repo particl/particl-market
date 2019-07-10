@@ -93,33 +93,19 @@ export class BidActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        const isValid = BidValidator.isValid(marketplaceMessage);
-        return isValid;
+        return BidValidator.isValid(marketplaceMessage);
     }
 
     /**
      * called after createMessage and before post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     */
-    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-        return marketplaceMessage;
-    }
-
-    /**
-     * called after post is executed and message is sent
      *
      * - create the bidCreateRequest to save the Bid in the Database
      * - call createBid to create the Bid and other related models
      *
      * @param params
      * @param marketplaceMessage
-     * @param smsgMessage
-     * @param smsgSendResponse
      */
-    public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+    public async beforePost(params: BidRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
         // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
@@ -130,11 +116,13 @@ export class BidActionService extends BaseActionService {
         } as BidCreateParams;
 
         // this.log.debug('beforePost(), bidCreateParams: ', JSON.stringify(bidCreateParams, null, 2));
+
         // TODO: should we set the parentBid in the case the previous Bid was cancelled or rejected?
 
-        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage, smsgMessage)
+        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidMessage)
             .then(async bidCreateRequest => {
 
+                // this.log.debug('beforePost(), bidCreateRequest: ', JSON.stringify(bidCreateRequest, null, 2));
                 return await this.createBid(marketplaceMessage.action as BidMessage, bidCreateRequest)
                     .then(async bid => {
 
@@ -151,7 +139,19 @@ export class BidActionService extends BaseActionService {
                         return marketplaceMessage;
                     });
             });
+    }
 
+    /**
+     * called after post is executed and message is sent
+     *
+     * @param params
+     * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: BidRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        await this.bidService.updateMsgId(params.createdBid.id, smsgMessage.msgid);
         return smsgSendResponse;
     }
 
