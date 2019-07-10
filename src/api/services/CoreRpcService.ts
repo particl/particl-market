@@ -16,7 +16,7 @@ import { Rpc } from 'omp-lib';
 import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
-import { BlindPrevout, CryptoAddress, CryptoAddressType, Prevout } from 'omp-lib/dist/interfaces/crypto';
+import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 
 declare function escape(s: string): string;
@@ -243,17 +243,20 @@ export class CoreRpcService extends CtRpc {
         } as CryptoAddress;
     }
 
-//    public async getBlindPrevouts(satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-//        return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
-//    }
+/*
     public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // omp-lib: const type = (this.network === 'testnet') ? 'anon' : 'blind';
-        // todo: why send anon type to blind on testnet?
-        // todo: also without anon funds, failing with: Insufficient anon funds
-        // todo: create an enum for the type
-
-        this.log.debug('getBlindPrevouts(), type: blind, satoshis: ' + satoshis + ', blind: ' + blind);
-        return [await this.createBlindPrevoutFrom('blind', /* type, */satoshis, blind)];
+        // todo: create an enum for the outputtype
+        this.log.debug('getBlindPrevouts(), type: ' + type + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
+    }
+*/
+    public async getPrevouts(typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+        // todo: create an enum for the outputtype
+        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeIn: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        const prevOuts: BlindPrevout[] = [];
+        const newPrevOut = await this.createPrevoutFrom(typeIn, typeOut, satoshis, blind);
+        prevOuts.push(newPrevOut);
+        return prevOuts;
     }
 
     /**
@@ -404,16 +407,12 @@ export class CoreRpcService extends CtRpc {
     /**
      * Send part to multiple outputs.
      *
-     * @param typeIn        (string, required) part/blind/anon
-     * @param typeOut       (string, required) part/blind/anon
+     * @param typeIn        (OutputType, required) part/blind/anon
+     * @param typeOut       (OutputType, required) part/blind/anon
      * @param outputs       (json array, required) A json array of json objects
      */
-    public async sendTypeTo(typeIn: string, typeOut: string, outputs: RpcBlindSendToOutput[]): Promise<string> {
-        // for (const output of outputs) {
-        //    output['subfee'] = false;
-        // }
-        // this.log.debug('outputs: ', outputs);
-        const txid = await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+    public async sendTypeTo(typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
+        const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs]);
         this.log.debug('txid: ', txid);
         return txid;
     }
@@ -523,21 +522,30 @@ export class CoreRpcService extends CtRpc {
      * with between minconf and maxconf (inclusive) confirmations.
      * Optionally filter to only include txouts paid to specified addresses.
      *
+     * @param type
      * @param {number} minconf
      * @param {number} maxconf
-     * @param {string[]} addresses
-     * @param {boolean} includeUnsafe
-     * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number = 1, maxconf: number = 9999999/*, addresses: string[] = [], includeUnsafe: boolean = true,
+    public async listUnspent(type: OutputType, minconf: number = 1, maxconf: number = 9999999
+                             /*, addresses: string[] = [], includeUnsafe: boolean = true,
                              queryOptions: any = {}*/): Promise<RpcUnspentOutput[]> {
-
         const params: any[] = [minconf, maxconf]; // , addresses, includeUnsafe];
+
+        switch (type) {
+            case OutputType.ANON:
+                return await this.call('listunspentanon', params);
+            case OutputType.BLIND:
+                return await this.call('listunspentblind', params);
+            case OutputType.PART:
+                return await this.call('listunspent', params);
+            default:
+                throw Error('Invalid Output type.');
+        }
+
         // if (!_.isEmpty(queryOptions)) {
         //    params.push(queryOptions);
         // }
-        return await this.call('listunspent', params);
     }
 
     /**
@@ -549,6 +557,7 @@ export class CoreRpcService extends CtRpc {
      * @param queryOptions
      * @returns {Promise<any>}
      */
+/*
     public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
                                   queryOptions?: any): Promise<RpcUnspentOutput[]> {
 
@@ -571,7 +580,7 @@ export class CoreRpcService extends CtRpc {
         }
         return await this.call('listunspentblind', params);
     }
-
+*/
     /**
      *
      * @param {boolean} unlock
@@ -738,6 +747,5 @@ export class CoreRpcService extends CtRpc {
         const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
         return `http://${host}:${port}${wallet}`;
     }
-
 
 }

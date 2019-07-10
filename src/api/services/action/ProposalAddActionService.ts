@@ -135,6 +135,7 @@ export class ProposalAddActionService extends BaseActionService {
                     throw error;
                 }
 
+                // prepare the VoteRequest for sending votes
                 const postRequest = {
                     sendParams: params.sendParams,
                     sender: params.sender,
