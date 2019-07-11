@@ -40,8 +40,11 @@ export class SmsgService {
      * @param sendParams
      */
     public async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+        const estimateFee = sendParams.estimateFee;
         sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
-        return await this.sendMessage(marketplaceMessage, sendParams);
+        const smsgSendResponse = await this.sendMessage(marketplaceMessage, sendParams);
+        sendParams.estimateFee = estimateFee;
+        return smsgSendResponse;
     }
 
     /**

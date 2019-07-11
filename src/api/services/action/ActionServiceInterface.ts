@@ -2,13 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgService } from '../SmsgService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import * as resources from "resources";
 
 /**
  * ActionServiceInterface defines how the Service classes for the different Actions should be implemented

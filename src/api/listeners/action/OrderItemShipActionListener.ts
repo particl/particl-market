@@ -70,9 +70,9 @@ export class OrderItemShipActionListener extends BaseActionListenr implements in
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as OrderItemShipMessage)
+                        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
                             .then(async orderItemShipRequest => {
-                                return await this.orderItemShipActionService.createBid(marketplaceMessage.action as OrderItemShipMessage, orderItemShipRequest)
+                                return await this.orderItemShipActionService.createBid(actionMessage, orderItemShipRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })

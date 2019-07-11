@@ -94,7 +94,7 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
                 } as BidCreateParams;
 
                 // note: factory makes sure the hashes match
-                return await this.bidFactory.get(bidCreateParams, actionMessage)
+                return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
                     .then(async bidCreateRequest => {
                         return await this.bidActionService.createBid(actionMessage, bidCreateRequest)
                             .then(value => {

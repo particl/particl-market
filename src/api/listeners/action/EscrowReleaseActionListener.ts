@@ -70,9 +70,9 @@ export class EscrowReleaseActionListener extends BaseActionListenr implements in
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowReleaseMessage)
+                        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
                             .then(async escrowReleaseRequest => {
-                                return await this.escrowReleaseActionService.createBid(marketplaceMessage.action as EscrowReleaseMessage, escrowReleaseRequest)
+                                return await this.escrowReleaseActionService.createBid(actionMessage, escrowReleaseRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })
