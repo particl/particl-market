@@ -49,11 +49,6 @@ export class ListingItemAddActionService extends BaseActionService {
             // cryptoAddress, we could override the payment address here
         } as ListingItemAddMessageCreateParams);
 
-        // hash should not be saved until just before the ListingItemTemplate is posted,
-        // since ListingItemTemplates with hash should not be modified anymore
-        // createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
-
-        // this.log.debug('resulting actionMessage:', JSON.stringify(actionMessage, null, 2));
         return {
             version: ompVersion(),
             action: actionMessage
@@ -85,9 +80,10 @@ export class ListingItemAddActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage,
+    public async afterPost(params: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         return smsgSendResponse;
     }

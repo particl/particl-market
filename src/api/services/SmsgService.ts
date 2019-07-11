@@ -5,11 +5,12 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { CoreRpcService } from './CoreRpcService';
+import {CoreRpcService, RpcWalletInfo} from './CoreRpcService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MessageException } from '../exceptions/MessageException';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import {SmsgSendParams} from '../requests/action/SmsgSendParams';
 
 export class SmsgService {
 
@@ -20,6 +21,40 @@ export class SmsgService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param sendParams
+     */
+    public async canAffordToSendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<boolean> {
+        const estimate: SmsgSendResponse = await this.estimateFee(marketplaceMessage, sendParams);
+        const wallet: RpcWalletInfo = await this.coreRpcService.getWalletInfo();
+        return (wallet.balance > estimate.fee! || wallet.blind_balance > estimate.fee! || wallet.anon_balance > estimate.fee!);
+    }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param sendParams
+     */
+    public async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+        const estimateFee = sendParams.estimateFee;
+        sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
+        const smsgSendResponse = await this.sendMessage(marketplaceMessage, sendParams);
+        sendParams.estimateFee = estimateFee;
+        return smsgSendResponse;
+    }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param sendParams
+     */
+    public async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+        return await this.smsgSend(sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
+            sendParams.daysRetention, sendParams.estimateFee);
     }
 
     /**
@@ -108,6 +143,7 @@ export class SmsgService {
         }
         return response;
     }
+
 
     /**
      * List and manage keys.

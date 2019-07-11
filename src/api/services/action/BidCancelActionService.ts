@@ -8,11 +8,9 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { SmsgService } from '../SmsgService';
-import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
@@ -80,45 +78,39 @@ export class BidCancelActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
+     * @param params
+     * @param marketplaceMessage, generated MPA_CANCEL
+     */
+    public async beforePost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        return marketplaceMessage;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
      * - create the bidCreateRequest to save the Bid (MPA_CANCEL) in the Database
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
-     * @param marketplaceMessage, generated MPA_CANCEL
+     * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
      */
-    public async beforePost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async afterPost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
-        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidCancelMessage)
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidCancelMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as BidCancelMessage, bidCreateRequest)
-                    .then(value => {
-
-                        params.createdBid = value;
-                        return marketplaceMessage;
-                    });
+                return await this.createBid(marketplaceMessage.action as BidCancelMessage, bidCreateRequest);
             });
-    }
 
-    /**
-     * called after post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     * @param smsgSendResponse
-     */
-    public async afterPost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 
@@ -132,7 +124,6 @@ export class BidCancelActionService extends BaseActionService {
      */
     public async createBid(bidCancelMessage: BidCancelMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();

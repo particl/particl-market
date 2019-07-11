@@ -111,15 +111,6 @@ export class VoteActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(params: VoteRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-
-        if (!params.sendParams.estimateFee) {
-            // processVote "processes" the Vote, creating or updating the Vote.
-            // called from send() and onEvent()
-            await this.processVote(marketplaceMessage.action as VoteMessage);
-        } else {
-            // if we're just estimating the price, dont save the Vote
-        }
-
         return marketplaceMessage;
     }
 
@@ -129,9 +120,17 @@ export class VoteActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: VoteRequest, marketplaceMessage: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+    public async afterPost(params: VoteRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+
+        // processVote "processes" the Vote, creating or updating the Vote.
+        // called from both beforePost() and onEvent()
+        // TODO: currently do not pass smsgMessage to the processVote here as that would set the values from smsgMessage
+        // TODO: maybe add received or similar flag instead of this
+        await this.processVote(marketplaceMessage.action as VoteMessage);
 
         if (smsgSendResponse.msgid) {
             await this.voteService.updateMsgId((marketplaceMessage.action as VoteMessage).signature, smsgSendResponse.msgid);

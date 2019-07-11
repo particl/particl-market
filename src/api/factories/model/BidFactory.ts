@@ -25,7 +25,7 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 import { HashableBidBasicCreateRequestConfig } from '../hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { HashableBidReleaseField } from '../hashableconfig/HashableField';
-import {OrderItemShipMessage} from '../../messages/action/OrderItemShipMessage';
+import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 
 export type BidMessageTypes = BidMessage | BidAcceptMessage | BidRejectMessage | BidCancelMessage
     | EscrowLockMessage | EscrowReleaseMessage | EscrowRefundMessage | EscrowCompleteMessage | OrderItemShipMessage;
@@ -46,16 +46,14 @@ export class BidFactory implements ModelFactoryInterface {
 
     /**
      * create a BidCreateRequest
-     * todo: implement part address validator and validate
-     * todo: remove smsgMessage? it's optional and not used
      *
      * @param params
      * @param bidMessage
      * @param smsgMessage
      */
-    public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage?: resources.SmsgMessage): Promise<BidCreateRequest> {
+    public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage: resources.SmsgMessage): Promise<BidCreateRequest> {
 
-        // check that the bidAction is valid, throw if not
+        // check that the bidAction is valid
         if (this.checkBidMessageActionValidity(bidMessage, params.parentBid)) {
             const bidDataValues = {};
 
@@ -80,11 +78,10 @@ export class BidFactory implements ModelFactoryInterface {
                     value: bidDataValues[key]
                 } as BidDataCreateRequest;
             });
-            this.log.debug('get(), bidDatas:', JSON.stringify(bidDatas, null, 2));
 
             // create and return the request that can be used to create the bid
             const createRequest = {
-                msgid: params.msgid,
+                msgid: smsgMessage.msgid,
                 listing_item_id: params.listingItem.id,
                 generatedAt: bidMessage.generated,
                 type: bidMessage.type,
@@ -120,6 +117,7 @@ export class BidFactory implements ModelFactoryInterface {
             this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
             this.log.debug('bidMessage.hash:', bidMessage.hash);
             this.log.debug('createRequest.hash:', createRequest.hash);
+
             // todo: when called from beforePost(), we dont have the bidMessage.hash
             // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
             // if (bidMessage.hash !== createRequest.hash) {

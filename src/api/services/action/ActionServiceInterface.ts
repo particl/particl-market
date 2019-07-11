@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
@@ -47,9 +48,11 @@ export interface ActionServiceInterface {
      * called after post is executed and message is sent
      * @param params
      * @param message
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+              smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network

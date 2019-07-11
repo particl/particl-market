@@ -35,13 +35,17 @@ export abstract class BaseActionService implements ActionServiceInterface {
     }
 
     /**
-     * create the MarketplaceMessage to which is to be posted to the network
+     * Create the MarketplaceMessage to which is to be posted to the network.
+     * Called first after call to post().
+     *
      * @param params
      */
     public abstract async createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
-     * validate the MarketplaceMessage to which is to be posted to the network
+     * Validate the MarketplaceMessage to which is to be posted to the network.
+     * Called after the call to createMessage().
+     *
      * @param marketplaceMessage
      */
     public abstract async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean>;
@@ -49,7 +53,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
     /**
      * - create the marketplaceMessage, extending class should implement
      * - validate it, extending class should implement
-     * - return estimate, if thats what was requested
+     * - return smsg fee estimate, if thats what was requested
      * - strip marketplaceMessage
      * - send marketplaceMessage
      * - save outgoing marketplaceMessage to database
@@ -57,41 +61,49 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param params
      */
     public async post(params: ActionRequestInterface): Promise<SmsgSendResponse> {
-        return await this.createMessage(params)
-            .then(async marketplaceMessage => {
 
-                // each message has objects?: KVS[] for extending messages, add those to the message here
-                if (!_.isEmpty(params.objects)) {
-                    marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
-                    marketplaceMessage.action.objects.push(...(params.objects ? params.objects : []));
-                }
+        // create the marketplaceMessage, extending class should implement
+        let marketplaceMessage = await this.createMessage(params);
 
-                const validated = await this.validateMessage(marketplaceMessage);
-                if (validated) {
-                    if (params.sendParams.estimateFee) {
-                        return await this.estimateFee(marketplaceMessage, params.sendParams);
-                    } else {
-                        marketplaceMessage = await this.beforePost(params, marketplaceMessage);
-                        marketplaceMessage = strip(marketplaceMessage);
-                        return await this.sendMessage(marketplaceMessage, params.sendParams)
-                            .then(async smsgSendResponse => {
+        // each message has objects?: KVS[] for extending messages, add those to the message here
+        if (!_.isEmpty(params.objects)) {
+            marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
+            marketplaceMessage.action.objects.push(...(params.objects ? params.objects : []));
+        }
 
-                                smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgSendResponse);
-                                // todo: get rid of this if, its only here because smsgSendResponse.msgid is optional
-                                // because in one special case we return msgids, so they're both optional
-                                if (smsgSendResponse.msgid) {
-                                    await this.saveOutgoingMessage(smsgSendResponse.msgid);
-                                    return smsgSendResponse;
-                                } else {
-                                    // we should never end up here.
-                                    throw new MessageException('No smsgSendResponse.msgid.');
-                                }
-                            });
-                    }
-                } else {
-                    throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
-                }
-            });
+        // validate it, extending class should implement
+        const validated = await this.validateMessage(marketplaceMessage).catch(reason => false);
+        if (!validated) {
+            throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
+        }
+
+        // if message is paid, make sure we have enough balance to pay for it
+        if (params.sendParams.paidMessage) {
+            const canAfford = await this.smsgService.canAffordToSendMessage(marketplaceMessage, params.sendParams);
+            if (!canAfford) {
+                throw new MessageException('Not enough balance to send the message.');
+            }
+        }
+
+        // return smsg fee estimate, if thats what was requested
+        if (params.sendParams.estimateFee) {
+            return await this.smsgService.estimateFee(marketplaceMessage, params.sendParams);
+        }
+
+        // do whatever still needs to be done before sending the message, extending class should implement
+        marketplaceMessage = await this.beforePost(params, marketplaceMessage);
+        marketplaceMessage = strip(marketplaceMessage);
+
+        // finally send the message
+        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, params.sendParams);
+
+        // save the outgoing message to database as SmsgMessage
+        const smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
+
+        // do whatever needs to be done after sending the message, extending class should implement
+        smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgMessage, smsgSendResponse);
+
+        return smsgSendResponse;
     }
 
     /**
@@ -107,29 +119,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * called after post is executed and message is sent
      * @param params
      * @param message
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
-
-    /**
-     *
-     * @param marketplaceMessage
-     * @param sendParams
-     */
-    private async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
-        return await this.sendMessage(marketplaceMessage, sendParams);
-    }
-
-    /**
-     *
-     * @param marketplaceMessage
-     * @param sendParams
-     */
-    private async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        return await this.smsgService.smsgSend(sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
-            sendParams.daysRetention, sendParams.estimateFee);
-    }
+    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                                    smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
     /**
      * finds the CoreSmsgMessage and saves it into the database as SmsgMessage

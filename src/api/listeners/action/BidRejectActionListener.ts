@@ -70,9 +70,9 @@ export class BidRejectActionListener extends BaseActionListenr implements interf
                             parentBid
                         } as BidCreateParams;
 
-                        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidRejectMessage)
+                        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
                             .then(async bidCreateRequest => {
-                                return await this.bidRejectActionService.createBid(marketplaceMessage.action as BidRejectMessage, bidCreateRequest)
+                                return await this.bidRejectActionService.createBid(actionMessage, bidCreateRequest)
                                     .then(value => {
                                         return SmsgMessageStatus.PROCESSED;
                                     })

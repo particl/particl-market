@@ -226,11 +226,4 @@ export class BidService {
         await this.bidRepo.destroy(id);
     }
 
-    public async updateMsgId(id: number, msgid: string): Promise<Bid> {
-        const bid = await this.findOne(id, false);
-        bid.Msgid = msgid;
-        const updated = await this.bidRepo.update(id, bid.toJSON());
-        this.log.debug('updated Bid ' + id + ' msgid to: ' + updated.Msgid);
-        return updated;
-    }
 }
