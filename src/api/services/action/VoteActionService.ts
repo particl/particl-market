@@ -36,6 +36,7 @@ import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
 import { ListingItemUpdateRequest } from '../../requests/model/ListingItemUpdateRequest';
+import {OutputType} from 'omp-lib/dist/interfaces/crypto';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -148,8 +149,8 @@ export class VoteActionService extends BaseActionService {
      */
     public async getCombinedVote(profile: resources.Profile, proposal: resources.Proposal): Promise<resources.Vote> {
 
-        // TODO: move this and getWalletAddressInfos elsewhere, maybe VoteService
-        const addressInfos: AddressInfo[] = await this.getWalletAddressInfos();
+        // TODO: move this and getPublicWalletAddressInfos elsewhere, maybe VoteService
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos();
         this.log.debug('getCombinedVote(), addressInfos:', JSON.stringify(addressInfos, null, 2));
 
         const addresses = addressInfos.map(addressInfo => {
@@ -200,7 +201,7 @@ export class VoteActionService extends BaseActionService {
      */
     public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
 
-        const addressInfos: AddressInfo[] = await this.getWalletAddressInfos();
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(0);
 
         this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
         if (_.isEmpty(addressInfos)) {
@@ -228,14 +229,14 @@ export class VoteActionService extends BaseActionService {
             }
         }
 
-        if (msgids.length === 0) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
-        }
-
         // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
             await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+        }
+
+        if (msgids.length === 0) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
         }
 
         const result = {
@@ -381,17 +382,17 @@ export class VoteActionService extends BaseActionService {
 
     /**
      * get the Profiles wallets addresses
-     * minimum 3 confirmations, ones without balance not included
+     * minimum 1 confirmations, ones without balance not included
      *
      * the profile param is not used for anything yet, but included already while we wait and build multiwallet support
      *
-     * @param addresses
+     * @param minconf
      */
-    private async getWalletAddressInfos(/*addresses: string[] = []*/): Promise<AddressInfo[]> {
+    private async getPublicWalletAddressInfos(minconf: number = 0): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
-        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(1, 9999999); // , addresses);
+        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(OutputType.PART, minconf); // , 9999999, addresses);
 
-        this.log.debug('getWalletAddressInfos(), outputs.length: ', outputs.length);
+        this.log.debug('getPublicWalletAddressInfos(), outputs.length: ', outputs.length);
 
         for (const output of outputs) {
             if (output.spendable && output.solvable && output.safe && output.amount > 0) {
