@@ -96,7 +96,7 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
                 // note: factory makes sure the hashes match
                 return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
                     .then(async bidCreateRequest => {
-                        return await this.bidActionService.createBid(actionMessage, bidCreateRequest)
+                        return await this.bidActionService.createBid(actionMessage, bidCreateRequest, smsgMessage)
                             .then(value => {
                                 this.log.debug('bid created: ', value.id);
                                 return SmsgMessageStatus.PROCESSED;
