@@ -24,7 +24,7 @@ export class DefaultProfileService {
     }
 
     // TODO: if something goes wrong here and default profile does not get created, the application should stop
-    public async seedDefaultProfile(): Promise<void> {
+    public async seedDefaultProfile(): Promise<Profile> {
         const defaultProfile = {
             name: 'DEFAULT'
         } as ProfileCreateRequest;
@@ -32,7 +32,7 @@ export class DefaultProfileService {
         const newProfile = await this.insertOrUpdateProfile(defaultProfile);
 
         this.log.debug('default Profile: ', JSON.stringify(newProfile.toJSON(), null, 2));
-        return;
+        return newProfile;
     }
 
     public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
