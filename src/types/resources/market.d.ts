@@ -6,6 +6,7 @@ import { MarketType } from '../../api/enums/MarketType';
 
 declare module 'resources' {
 
+
     interface Market {
         id: number;
         name: string;
