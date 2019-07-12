@@ -145,18 +145,26 @@ export class TestDataService {
 
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories()
-                .catch( reason => {
-                    this.log.debug('failed seeding default categories: ' + reason);
-                });
-            await this.defaultProfileService.seedDefaultProfile()
+            // seed the default Profile
+            const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
-            await this.defaultMarketService.seedDefaultMarket()
+
+            // seed the default market
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default market: ' + reason);
                 });
+
+            // seed the default categories
+            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress)
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+
         }
 
         this.log.info('cleanup & default seeds done.');
