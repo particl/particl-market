@@ -72,10 +72,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
                      listingItemAddMessage: ListingItemAddMessage,
                      smsgMessage: resources.SmsgMessage): Promise<ListingItemCreateRequest> {
 
-
         const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
-
-        // todo: only handles escrows for now
         const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
 
@@ -87,7 +84,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const createRequest = {
             msgid: params.msgid,
             seller: smsgMessage.from,
-            market_id: params.marketId,
+            market: params.market,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,
             expiredAt: smsgMessage.expiration,

@@ -202,16 +202,16 @@ describe('FavoriteItem', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.id).toBe(createdListingItem2.id);
+        expect(result[0].ListingItem.market).toBeDefined();
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
         expect(result[0].ListingItem.hash).not.toBeNull();
         expect(result[0].ListingItem.listingItemTemplateId).toBeNull();
-        expect(result[0].ListingItem.marketId).toBe(defaultMarket.id);
+        expect(result[0].ListingItem.market).toBe(defaultMarket.receiveAddress);
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(defaultProfile.id);
     });

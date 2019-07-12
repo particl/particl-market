@@ -85,14 +85,14 @@ export class ServerStartedListener implements interfaces.Listener {
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
 
+                    // seed the default Profile
+                    await this.defaultProfileService.seedDefaultProfile();
+
                     // seed the default market
                     await this.defaultMarketService.seedDefaultMarket();
 
                     // seed the default categories
                     await this.defaultItemCategoryService.seedDefaultCategories();
-
-                    // seed the default Profile
-                    await this.defaultProfileService.seedDefaultProfile();
 
                     // start message polling and other stuff, unless we're running integration tests
                     if (process.env.NODE_ENV !== 'test') {

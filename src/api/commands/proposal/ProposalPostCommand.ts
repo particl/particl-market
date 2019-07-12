@@ -70,7 +70,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),

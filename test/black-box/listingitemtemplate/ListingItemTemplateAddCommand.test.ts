@@ -42,6 +42,9 @@ describe('ListingItemTemplateAddCommand', () => {
 
     });
 
+    // TODO: validate params, check for missing and invalid ones
+
+
     test('Should fail because we want to create an empty ListingItemTemplate', async () => {
         const testData = [templateAddCommand];
         const res = await testUtil.rpc(templateCommand, testData);

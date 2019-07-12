@@ -21,8 +21,9 @@ export class MarketRepository {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(withRelated: boolean = true): Promise<Market> {
-        return await this.findOneByName(process.env.DEFAULT_MARKETPLACE_NAME, withRelated);
+    public async getDefault(profileId: number, withRelated: boolean = true): Promise<Market> {
+        // TODO: instead of DEFAULT_MARKETPLACE_NAME, use the private key
+        return await this.findOneByProfileIdAndName(profileId, process.env.DEFAULT_MARKETPLACE_NAME, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
@@ -30,16 +31,20 @@ export class MarketRepository {
         return list as Bookshelf.Collection<Market>;
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchById(id, withRelated);
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByAddress(address, withRelated);
+    public async findOneByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByName(name, withRelated);
+    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByProfileIdAndName(profileId, name, withRelated);
     }
 
     public async create(data: any): Promise<Market> {
@@ -48,6 +53,7 @@ export class MarketRepository {
             const marketCreated = await market.save();
             return await this.MarketModel.fetchById(marketCreated.id);
         } catch (error) {
+            this.log.error('ERROR: ', error);
             throw new DatabaseException('Could not create the market!', error);
         }
     }

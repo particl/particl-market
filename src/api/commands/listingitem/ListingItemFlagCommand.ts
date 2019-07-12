@@ -62,13 +62,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // get the ListingItem market
-        const market: resources.Market = listingItem.Market;
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, listingItem.market)
+            .then(value => value.toJSON()); // throws if not found
 
         // send from the template profiles address
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),

@@ -13,7 +13,7 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import {RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir} from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
@@ -82,6 +82,8 @@ export class CoreRpcService extends CtRpc {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
+    private activeWallet: string;
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
@@ -107,6 +109,101 @@ export class CoreRpcService extends CtRpc {
             .catch(error => {
                 return false;
             });
+    }
+
+    public async setActiveWallet(wallet: string): Promise<void> {
+        this.activeWallet = wallet;
+    }
+
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listLoadedWallets(): Promise<string[]> {
+        return await this.call('listwallets');
+    }
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listWalletDir(): Promise<RpcWalletDir> {
+        return await this.call('listwalletdir');
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletLoaded(name: string): Promise<boolean> {
+        this.log.debug('walletLoaded: ', name);
+        return await this.listLoadedWallets()
+            .then(result => {
+                this.log.debug('listLoadedWallets: ', JSON.stringify(result, null, 2));
+                const found = _.find(result, wallet => {
+                    this.log.debug(wallet + ' === ' + name + ': ' + (wallet === name));
+                    return wallet === name;
+                });
+                const loaded = found ? true : false;
+                this.log.debug('loaded: ', loaded);
+                return loaded;
+            });
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletExists(name: string): Promise<boolean> {
+        this.log.debug('walletExists: ', name);
+        return await this.listWalletDir()
+            .then(result => {
+                this.log.debug('listWalletDir: ', JSON.stringify(result, null, 2));
+                const found = _.find(result.wallets, wallet => {
+                    this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
+                    return wallet.name === name;
+                });
+                const exists = found ? true : false;
+                this.log.debug('exists: ', exists);
+                return exists;
+            });
+    }
+
+    /**
+     * Creates and loads a new wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async createWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.call('createwallet', [name, disablePrivateKeys, blank]);
+    }
+
+    // for clarity
+    public async createAndLoadWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.createWallet(name, disablePrivateKeys, blank);
+    }
+
+    /**
+     * Loads a wallet from a wallet file or directory.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async loadWallet(name: string): Promise<RpcWallet> {
+        return await this.call('loadwallet', [name]);
+    }
+
+    /**
+     * Set secure messaging to use the specified wallet.
+     * SMSG can only be enabled on one wallet.
+     * Call with no parameters to unset the active wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async smsgSetWallet(name?: string): Promise<RpcWallet> {
+        return await this.call('smsgsetwallet', [name]);
     }
 
     /**
@@ -736,6 +833,7 @@ export class CoreRpcService extends CtRpc {
             });
 
     }
+
 
     private getOptions(): any {
 

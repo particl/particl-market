@@ -85,12 +85,12 @@ describe('FavoriteListCommand', () => {
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.id).toBe(listingItem1.id);
+        expect(result[0].ListingItem.market).toBeDefined();
 
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
@@ -113,12 +113,12 @@ describe('FavoriteListCommand', () => {
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.id).toBe(listingItem1.id);
+        expect(result[0].ListingItem.market).toBeDefined();
 
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
@@ -159,11 +159,11 @@ describe('FavoriteListCommand', () => {
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.id).toBe(listingItem1.id);
+        expect(result[0].ListingItem.market).toBeDefined();
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
 
@@ -173,11 +173,11 @@ describe('FavoriteListCommand', () => {
         expect(result[1].Profile.id).toBe(defaultProfile.id);
         expect(result[1].ListingItem).toBeDefined();
         expect(result[1].ListingItem.id).toBe(listingItem2.id);
+        expect(result[1].ListingItem.market).toBeDefined();
         expect(result[1].ListingItem.Bids).toBeDefined();
         expect(result[1].ListingItem.FlaggedItem).toBeDefined();
         expect(result[1].ListingItem.ItemInformation).toBeDefined();
         expect(result[1].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[1].ListingItem.Market).toBeDefined();
         expect(result[1].ListingItem.MessagingInformation).toBeDefined();
         expect(result[1].ListingItem.PaymentInformation).toBeDefined();
 
