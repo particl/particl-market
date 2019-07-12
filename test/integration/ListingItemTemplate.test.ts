@@ -43,9 +43,6 @@ import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updatereque
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
-import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
 import { ConfigurableHasher, hash } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../src/api/factories/hashableconfig/model/HashableListingItemTemplateConfig';
 

@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -11,9 +12,10 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ItemCategoryService } from '../../src/api/services/model/ItemCategoryService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ItemCategory } from '../../src/api/models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCategoryUpdateRequest';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('ItemCategory', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -23,12 +25,15 @@ describe('ItemCategory', () => {
 
     let testDataService: TestDataService;
     let itemCategoryService: ItemCategoryService;
+    let profileService: ProfileService;
+    let marketService: MarketService;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     let rootId;
     let createdId;
     let createdIdChild;
-    let nullKeyId1;
-    let nullKeyId2;
 
     const rootData = {
         parent_item_category_id: 0,
@@ -69,9 +74,17 @@ describe('ItemCategory', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.model.ItemCategoryService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean(false);
+
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+
+
     });
 
     afterAll(async () => {
@@ -83,61 +96,41 @@ describe('ItemCategory', () => {
         await itemCategoryService.create({
             parent_item_category_id: 0,
             key: 'cat_ele',
-            description: 'Electronics'
+            description: 'Electronics',
+            market: defaultMarket.receiveAddress
         } as ItemCategoryCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a root ItemCategory', async () => {
-        const itemCategoryModel: ItemCategory = await itemCategoryService.create(rootData);
-        rootId = itemCategoryModel.Id;
-
-        const result = itemCategoryModel.toJSON();
+        const result: resources.ItemCategory = await itemCategoryService.create(rootData).then(value => value.toJSON());
+        rootId = result.id;
 
         expect(result.name).toBe(rootData.name);
         expect(result.description).toBe(rootData.description);
     });
 
     test('Should create a new ItemCategory', async () => {
-        testData['parent_item_category_id'] = rootId;
-        const itemCategoryModel: ItemCategory = await itemCategoryService.create(testData);
-        createdId = itemCategoryModel.Id;
-
-        const result = itemCategoryModel.toJSON();
+        testData.parent_item_category_id = rootId;
+        testData.market = defaultMarket.receiveAddress;
+        const result: resources.ItemCategory = await itemCategoryService.create(testData).then(value => value.toJSON());
+        createdId = result.id;
 
         expect(result.name).toBe(testData.name);
         expect(result.description).toBe(testData.description);
     });
 
     test('Should create a new child ItemCategory', async () => {
-        testDataChild['parent_item_category_id'] = createdId;
-        const itemCategoryModel: ItemCategory = await itemCategoryService.create(testDataChild);
-        createdIdChild = itemCategoryModel.Id;
-
-        const result = itemCategoryModel.toJSON();
+        testDataChild.parent_item_category_id = createdId;
+        testDataChild.market = defaultMarket.receiveAddress;
+        const result: resources.ItemCategory = await itemCategoryService.create(testDataChild).then(value => value.toJSON());
+        createdIdChild = result.id;
 
         expect(result.name).toBe(testDataChild.name);
         expect(result.description).toBe(testDataChild.description);
         expect(result.ParentItemCategory.id).toBe(testDataChild['parent_item_category_id']);
         expect(result.ParentItemCategory.ParentItemCategory.id).toBe(testData['parent_item_category_id']);
-    });
-
-    test('Should create a two ItemCategories with null keys', async () => {
-        testDataNullKey['parent_item_category_id'] = createdId;
-        const itemCategoryModel1: ItemCategory = await itemCategoryService.create(testDataNullKey);
-        nullKeyId1 = itemCategoryModel1.Id;
-        const result1 = itemCategoryModel1.toJSON();
-        expect(result1.key).toBe(null);
-        expect(result1.name).toBe(testDataNullKey.name);
-        expect(result1.description).toBe(testDataNullKey.description);
-
-        const itemCategoryModel2: ItemCategory = await itemCategoryService.create(testDataNullKey);
-        nullKeyId2 = itemCategoryModel2.Id;
-        const result2 = itemCategoryModel2.toJSON();
-        expect(result2.key).toBe(null);
-        expect(result2.name).toBe(testDataNullKey.name);
-        expect(result2.description).toBe(testDataNullKey.description);
     });
 
     test('Should throw ValidationException because we want to create a empty ItemCategory', async () => {
@@ -148,34 +141,21 @@ describe('ItemCategory', () => {
     });
 
     test('Should return one ItemCategory', async () => {
-        const itemCategoryModel: ItemCategory = await itemCategoryService.findOne(createdId);
-        const result = itemCategoryModel.toJSON();
+        const result: resources.ItemCategory = await itemCategoryService.findOne(createdId).then(value => value.toJSON());
 
         expect(result.name).toBe(testData.name);
         expect(result.description).toBe(testData.description);
     });
 
     test('Should update the ItemCategory', async () => {
-        testDataUpdated['parent_item_category_id'] = 0;
-        const itemCategoryModel: ItemCategory = await itemCategoryService.update(createdId, testDataUpdated as ItemCategoryUpdateRequest);
-        const result = itemCategoryModel.toJSON();
+        const result: resources.ItemCategory = await itemCategoryService.update(createdId, testDataUpdated).then(value => value.toJSON());
 
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.description).toBe(testDataUpdated.description);
     });
 
     test('Should delete the ItemCategory', async () => {
-        expect.assertions(6);
-        await itemCategoryService.destroy(nullKeyId2);
-        await itemCategoryService.findOne(nullKeyId2).catch(e =>
-            expect(e).toEqual(new NotFoundException(nullKeyId2))
-        );
-
-        await itemCategoryService.destroy(nullKeyId1);
-        await itemCategoryService.findOne(nullKeyId1).catch(e =>
-            expect(e).toEqual(new NotFoundException(nullKeyId1))
-        );
-
+        expect.assertions(4);
         await itemCategoryService.destroy(createdIdChild);
         await itemCategoryService.findOne(createdIdChild).catch(e =>
             expect(e).toEqual(new NotFoundException(createdIdChild))
@@ -191,9 +171,8 @@ describe('ItemCategory', () => {
             expect(e).toEqual(new NotFoundException(rootId))
         );
 
-        const itemCategoryCollection = await itemCategoryService.findAll();
-        const itemCategory = itemCategoryCollection.toJSON();
-        expect(itemCategory.length).toBe(0);
+        const itemCategories: resources.ItemCategory[] = await itemCategoryService.findAll().then(value => value.toJSON());
+        expect(itemCategories.length).toBe(0);
     }, 600000); // timeout to 600s
 
 });

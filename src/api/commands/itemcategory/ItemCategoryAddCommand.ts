@@ -16,6 +16,9 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MarketService } from '../../services/model/MarketService';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -23,19 +26,21 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
         super(Commands.CATEGORY_ADD);
         this.log = new Logger(__filename);
     }
 
     /**
-     * creates a new user defined category, these don't have a key and they always need to have a parent_item_category_id
+     * creates a new user defined category
      *
      * data.params[]:
-     *  [0]: categoryName
-     *  [1]: description
-     *  [2]: parentItemCategory: resources.ItemCategory
+     *  [0]: market: resources.Market
+     *  [1]: categoryName
+     *  [2]: description
+     *  [3]: parentItemCategory: resources.ItemCategory
      *
      * @param data
      * @returns {Promise<ItemCategory>}
@@ -43,42 +48,53 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
 
+        const market: resources.Market = data.params[0];
         const parentItemCategory: resources.ItemCategory = data.params[2];
 
-        return await this.itemCategoryService.create({
+        const createRequest = {
             name: data.params[0],
             description: data.params[1],
+            market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
-        } as ItemCategoryCreateRequest);
+        } as ItemCategoryCreateRequest;
+        createRequest.key = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateConfig());
+
+        return await this.itemCategoryService.create(createRequest);
     }
 
     /**
      * data.params[]:
-     *  [0]: categoryName
-     *  [1]: description
-     *  [2]: parentItemCategoryId
+     *  [0]: marketId
+     *  [1]: categoryName
+     *  [2]: description
+     *  [3]: parentItemCategoryId
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MissingParamException('categoryName');
+            throw new MissingParamException('marketId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('description');
+            throw new MissingParamException('categoryName');
         } else if (data.params.length < 3) {
+            throw new MissingParamException('description');
+        } else if (data.params.length < 4) {
             throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
         }
 
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('categoryName', 'string');
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('marketId', 'number');
         } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('categoryName', 'string');
+        } else if (typeof data.params[2] !== 'string') {
             throw new InvalidParamException('description', 'string');
-        } else if (typeof data.params[2] !== 'number') {
+        } else if (typeof data.params[3] !== 'number') {
             throw new InvalidParamException('parentItemCategoryId', 'number');
         }
 
-        data.params[2] = await this.itemCategoryService.findOne(data.params[2]).then(value => value.toJSON());
+        data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
 
         return data;
     }
@@ -89,9 +105,9 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <marketId>                    - number - Market ID. '
             + '    <categoryName>                - String - The name of the category to create. \n'
-            + '    <description>                 - String - A description of the category to \n'
-            + '                                     create. \n'
+            + '    <description>                 - String - A description of the category to create. \n'
             + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the \n'
             + '                                     category we\'re creating. \n'
             + '    <parentItemCategoryKey>       - String - The identifying key of the parent \n'

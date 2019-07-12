@@ -67,8 +67,9 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         // - if there's a matching ListingItemTemplate, create a relation
 
 
-        // todo: custom categories not supported and needs to be refactored
-        const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
+        // todo: custom categories not supported yet, this propably needs to be refactored
+        const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
+            smsgMessage.to, actionMessage.item.information.category);
         const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
 
         const listingItemCreateRequest = await this.listingItemFactory.get({

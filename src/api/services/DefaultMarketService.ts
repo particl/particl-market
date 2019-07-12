@@ -34,7 +34,7 @@ export class DefaultMarketService {
 
     // TODO: if something goes wrong here and default profile does not get created, the application should stop
 
-    public async seedDefaultMarket(): Promise<void> {
+    public async seedDefaultMarket(profile: resources.Profile): Promise<Market> {
 
         const MARKETPLACE_NAME          = process.env.DEFAULT_MARKETPLACE_NAME
                                             ? process.env.DEFAULT_MARKETPLACE_NAME
@@ -45,8 +45,6 @@ export class DefaultMarketService {
         const MARKETPLACE_ADDRESS       = process.env.DEFAULT_MARKETPLACE_ADDRESS
                                             ? process.env.DEFAULT_MARKETPLACE_ADDRESS
                                             : 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA';
-
-        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         const defaultMarket = {
             profile_id: profile.id,
@@ -59,12 +57,10 @@ export class DefaultMarketService {
             wallet: 'market.dat'
         } as MarketCreateRequest;
 
-        await this.insertOrUpdateMarket(defaultMarket, profile);
-
-        return;
+        return await this.insertOrUpdateMarket(defaultMarket, profile);
     }
 
-    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<resources.Market> {
+    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
         const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {
@@ -106,7 +102,7 @@ export class DefaultMarketService {
         // set secure messaging to use the default wallet
         await this.coreRpcService.smsgSetWallet(newMarket.wallet);
 
-        return newMarket;
+        return await this.marketService.findOne(newMarket.id);
     }
 
     private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
