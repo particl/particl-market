@@ -57,7 +57,6 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
-
         createRequest.key = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateConfig());
 
         return await this.itemCategoryService.create(createRequest);
