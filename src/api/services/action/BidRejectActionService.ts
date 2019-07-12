@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -17,9 +16,7 @@ import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
@@ -87,44 +84,39 @@ export class BidRejectActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
+     * @param params
+     * @param marketplaceMessage, generated MPA_REJECT
+     */
+    public async beforePost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        return marketplaceMessage;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
      * - create the bidCreateRequest to save the Bid (MPA_REJECT) in the Database
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
-     * @param marketplaceMessage, generated MPA_REJECT
+     * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
      */
-    public async beforePost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async afterPost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
-        // msgid is not set here, its updated in the afterPost
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidRejectMessage)
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidRejectMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as BidRejectMessage, bidCreateRequest)
-                    .then(value => {
-                        params.createdBid = value;
-                        return marketplaceMessage;
-                    });
+                return await this.createBid(marketplaceMessage.action as BidRejectMessage, bidCreateRequest);
             });
-    }
 
-    /**
-     * called after post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     * @param smsgSendResponse
-     */
-    public async afterPost(params: BidRejectRequest, marketplaceMessage: MarketplaceMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 
@@ -138,7 +130,6 @@ export class BidRejectActionService extends BaseActionService {
      */
     public async createBid(bidRejectMessage: BidRejectMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();

@@ -10,6 +10,9 @@
 
 export enum OrderStatus {
 
+    SENT = 'SENT',              // order sent to seller @buyer
+    RECEIVED = 'RECEIVED',      // order received and created @seller
+
     PROCESSING = 'PROCESSING',
     SHIPPING = 'SHIPPING',
     COMPLETE = 'COMPLETE',

@@ -146,9 +146,6 @@ export class EscrowCompleteActionService extends BaseActionService {
      * - get the completetx generated using omp-lib from the actionMessage (the temp _values will be removed automatically before message is sent)
      * - store the txid in the actionMessage
      * - and then send the rawtx
-     * - create the bidCreateRequest to save the Bid (MPA_COMPLETE) in the Database
-     *   - the previous Bid should be added as parentBid to create the relation
-     * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
      * @param marketplaceMessage, MPA_COMPLETE
@@ -166,35 +163,35 @@ export class EscrowCompleteActionService extends BaseActionService {
             value: txid
         } as KVS);
 
-        // msgid is not set here, its updated in the afterPost
+        return marketplaceMessage;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
+     * - create the bidCreateRequest to save the Bid (MPA_COMPLETE) in the Database
+     *   - the previous Bid should be added as parentBid to create the relation
+     * - call createBid to create the Bid and update Order and OrderItem statuses
+     *
+     * @param params
+     * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: EscrowCompleteRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowCompleteMessage)
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowCompleteMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as EscrowCompleteMessage, bidCreateRequest)
-                    .then(async value => {
-                        params.createdBid = value;
-                        return marketplaceMessage;
-                    });
+                return await this.createBid(marketplaceMessage.action as EscrowCompleteMessage, bidCreateRequest);
             });
-    }
 
-    /**
-     * called after post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     * @param smsgSendResponse
-     */
-    public async afterPost(params: EscrowCompleteRequest, marketplaceMessage: MarketplaceMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 
@@ -208,12 +205,9 @@ export class EscrowCompleteActionService extends BaseActionService {
      */
     public async createBid(escrowCompleteMessage: EscrowCompleteMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
-
-                // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_COMPLETED);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
