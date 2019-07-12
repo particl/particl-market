@@ -245,8 +245,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
 
-    public get Market(): string { return this.get('seller'); }
-    public set Market(value: string) { this.set('seller', value); }
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }

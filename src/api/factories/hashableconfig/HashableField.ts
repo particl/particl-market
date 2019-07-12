@@ -38,3 +38,8 @@ export enum HashableItemImageField {
     IMAGE_DATA = 'itemImageData'
 }
 
+export enum HashableItemCategoryField {
+    CATEGORY_NAME = 'categoryName',
+    CATEGORY_MARKET = 'categoryMarket'
+}
+
