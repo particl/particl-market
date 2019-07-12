@@ -414,7 +414,7 @@ describe('ListingItemTemplate', async () => {
                 expect(generatedListingItemTemplate.id).toBe(generatedListingItem.ListingItemTemplate.id);
 
                 // expect the listingitem to be posted to the correct market
-                expect(generatedListingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
+                expect(generatedListingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
                 // expect the item hash generated at the same time as template, matches with the templates one
                 // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
@@ -622,7 +622,7 @@ describe('ListingItemTemplate', async () => {
 
         // create ListingItem with relation to ListingItemTemplate
         testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.expiryTime = 4;
         testDataToSave.postedAt = new Date().getTime();

@@ -118,7 +118,6 @@ describe('ListingItem', () => {
         expect(result.id).not.toBeNull();
         expect(result.hash).not.toBeNull();
         expect(result.seller).toBe(createRequest.seller);
-        expect(result.Market.id).toBe(createRequest.market_id);
 
         if (!_.isEmpty(createRequest.itemInformation)) {
             expectItemInformationFromCreateRequest(result.ItemInformation, createRequest.itemInformation);
@@ -329,7 +328,7 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
@@ -370,7 +369,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
@@ -383,7 +382,7 @@ describe('ListingItem', () => {
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
 
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.update(createdListingItem2.id, testDataToSave);
@@ -409,7 +408,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
@@ -434,7 +433,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
@@ -458,7 +457,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddresss;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
         testDataToSave.generatedAt = +new Date().getTime();

@@ -60,47 +60,36 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // - first get the Market, fail if it doesn't exist
-        //   - todo: this shouldnt really happen, but if it does, make sure the msg will not be reprocessed?
         // - if ListingItem contains a custom category, create them
         // - fetch the root category with related to create the listingItemCreateRequest
         // - create the ListingItem locally with the listingItemCreateRequest
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 
-        // TODO: replace ListingItem.marketId with Market.receiveAddress?
-        // TODO: ...until then this is just a temp fix
-        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+        // todo: custom categories not supported and needs to be refactored
+        const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
+        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
 
-        return await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, smsgMessage.to)
-            .then(async marketModel => {
-                const market: resources.Market = marketModel.toJSON();
-                const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
-                const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+        const listingItemCreateRequest = await this.listingItemFactory.get({
+                msgid: smsgMessage.msgid,
+                market: smsgMessage.to,
+                rootCategory
+            } as ListingItemCreateParams,
+            actionMessage,
+            smsgMessage);
 
-                const listingItemCreateRequest = await this.listingItemFactory.get({
-                        msgid: smsgMessage.msgid,
-                        marketId: market.id,
-                        rootCategory
-                    } as ListingItemCreateParams,
-                    actionMessage,
-                    smsgMessage);
+        return await this.listingItemService.create(listingItemCreateRequest)
+            .then(async value => {
+                const listingItem: resources.ListingItem = value.toJSON();
 
-                return await this.listingItemService.create(listingItemCreateRequest)
-                    .then(async value => {
-                        const listingItem: resources.ListingItem = value.toJSON();
-                        await this.createFlaggedItemIfNeeded(listingItem);
-                        await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
-                        this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+                await this.createFlaggedItemIfNeeded(listingItem);
+                await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+
+                this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('PROCESSING ERROR: ', reason);
+                this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

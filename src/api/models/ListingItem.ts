@@ -45,7 +45,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItemTemplate',
         'ListingItemTemplate.Profile',
-        'Market',
         'Bids',
         'Bids.BidDatas',
         'Bids.OrderItem',
@@ -246,6 +245,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
 
+    public get Market(): string { return this.get('seller'); }
+    public set Market(value: string) { this.set('seller', value); }
+
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }
 
@@ -297,10 +299,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public Bids(): Collection<Bid> {
         return this.hasMany(Bid, 'listing_item_id', 'id');
-    }
-
-    public Market(): Market {
-        return this.belongsTo(Market, 'market_id', 'id');
     }
 
     public FlaggedItem(): FlaggedItem {

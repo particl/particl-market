@@ -343,7 +343,7 @@ export class TestDataService {
 
                 const listingItemCreateRequest = {
                     seller: listingItemTemplate.Profile.address,
-                    market_id: market.id,
+                    market: market.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
@@ -939,7 +939,7 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id,
+            market: defaultMarket.receiveAddress,
             msgid: '' + new Date().getTime(),
             expiryTime: 4,
             postedAt: new Date().getTime(),

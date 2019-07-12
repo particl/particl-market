@@ -9,6 +9,7 @@ declare module 'resources' {
         msgid: string;
         hash: string;
         seller: string;
+        market: string;
         expiryTime: number;
         generatedAt: number;
         removed: boolean;
@@ -20,7 +21,6 @@ declare module 'resources' {
         PaymentInformation: PaymentInformation;
         MessagingInformation: MessagingInformation[];
         ListingItemObjects: ListingItemObject[];
-        Market: Market;
         Bids: Bid[];
         ListingItemTemplate: ListingItemTemplate;
         FlaggedItem: FlaggedItem;

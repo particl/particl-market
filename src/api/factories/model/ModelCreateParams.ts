@@ -36,7 +36,7 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {
-    marketId: number;
+    market: string;
     rootCategory: resources.ItemCategory;
     msgid: string;
 }
