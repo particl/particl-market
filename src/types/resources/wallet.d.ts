@@ -1,4 +1,3 @@
-import {WalletType} from '../../api/enums/WalletType';
 
 declare module 'resources' {
 
