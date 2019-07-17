@@ -114,17 +114,17 @@ export class ProfileService {
         // then create related models
         for (const address of shippingAddresses) {
             address.profile_id = profile.Id;
-            await this.addressService.create(address as AddressCreateRequest);
+            await this.addressService.create(address);
         }
 
         for (const cryptoAddress of cryptocurrencyAddresses) {
             cryptoAddress.profile_id = profile.Id;
-            await this.cryptocurrencyAddressService.create(cryptoAddress as CryptocurrencyAddressCreateRequest);
+            await this.cryptocurrencyAddressService.create(cryptoAddress);
         }
 
         for (const setting of settings) {
             setting.profile_id = profile.Id;
-            await this.settingService.create(setting as SettingCreateRequest);
+            await this.settingService.create(setting);
         }
 
         if (!_.isEmpty(wallet)) {
