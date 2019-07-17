@@ -41,9 +41,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: profile: resources.Profile
-     *  [1]: proposalHash: resources.Proposal
-     *  [2]: proposalOptionId: resources.ProposalOption
+     *  [0]: market: resources.Market
+     *  [2]: profile: resources.Profile
+     *  [3]: proposalHash: resources.Proposal
+     *  [4]: proposalOptionId: resources.ProposalOption
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory

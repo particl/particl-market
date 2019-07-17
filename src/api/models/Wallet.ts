@@ -1,6 +1,6 @@
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
 
 
@@ -10,6 +10,22 @@ export class Wallet extends Bookshelf.Model<Wallet> {
         'Markets',
         'Profile'
     ];
+
+    public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Wallet>> {
+        const WalletCollection = Wallet.forge<Model<Wallet>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await WalletCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await WalletCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Wallet> {
         if (withRelated) {

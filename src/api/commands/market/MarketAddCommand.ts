@@ -23,6 +23,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../../services/CoreRpcService';
+import { WalletService } from '../../services/model/WalletService';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -31,6 +32,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
     ) {
@@ -47,7 +49,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: receiveAddress
      *  [5]: publishKey
      *  [6]: publishAddress
-     *  [7]: wallet
+     *  [7]: wallet: resources.Wallet;
      *
      * @param data
      * @returns {Promise<Market>}
@@ -55,7 +57,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
+        const wallet: resources.Wallet = data.params[7];
 
+        /*
         // if wallet with the name doesnt exists, then create one
         const exists = await this.coreRpcService.walletExists(data.params[7]);
         if (!exists) {
@@ -67,16 +71,17 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                     this.log.debug('wallet: ' + data.params[7] + ' already exists.');
                 });
         }
+        */
 
         return await this.marketService.create({
             profile_id: profile.id,
+            wallet_id: wallet.id,
             name : data.params[1],
             type : data.params[2],
             receiveKey : data.params[3],
             receiveAddress : data.params[4],
             publishKey : data.params[5],
-            publishAddress : data.params[6],
-            wallet: data.params[7]
+            publishAddress : data.params[6]
         } as MarketCreateRequest);
     }
 
@@ -89,7 +94,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: receiveAddress
      *  [5]: publishKey
      *  [6]: publishAddress
-     *  [7]: wallet
+     *  [7]: walletId, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -127,16 +132,12 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('publishKey', 'string');
         } else if (data.params[6] && typeof data.params[6] !== 'string') {
             throw new InvalidParamException('publishAddress', 'string');
-        } else if (data.params[7] && typeof data.params[7] !== 'string') {
-            throw new InvalidParamException('wallet', 'string');
+        } else if (data.params[7] && typeof data.params[7] !== 'number') {
+            throw new InvalidParamException('walletId', 'number');
         }
 
         if (!EnumHelper.containsName(MarketType, data.params[2])) {
             throw new InvalidParamException('type', 'MarketType');
-        }
-
-        if (data.params[7] === 'wallet.dat') {
-            throw new MessageException('Invalid wallet.');
         }
 
         // make sure Profile with the id exists
@@ -155,6 +156,24 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         if (!_.isEmpty(market)) {
             throw new MessageException('Market with the name: ' + data.params[1] + ' already exists.');
+        }
+
+        let wallet: resources.Wallet;
+
+        if (!_.isEmpty(data.params[7])) {
+            // make sure Wallet with the id exists
+            wallet = await this.walletService.findOne(data.params[7])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Wallet');
+                });
+
+            if (wallet.Profile.id !== profile.id) {
+                throw new MessageException('Wallet does not belong to the Profile.');
+            }
+
+        } else {
+            wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
         }
 
         // make sure Market with the same receiveAddress doesnt exists
@@ -176,6 +195,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         data.params[0] = profile;
         data.params[5] = data.params[5] ? data.params[5] : data.params[3];
         data.params[6] = data.params[6] ? data.params[6] : data.params[4];
+        data.params[7] = wallet;
         return data;
     }
 

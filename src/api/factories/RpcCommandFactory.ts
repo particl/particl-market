@@ -148,7 +148,11 @@ import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
+import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
+
+import { WalletListCommand } from '../commands/wallet/WalletListCommand';
+import { WalletRootCommand } from '../commands/wallet/WalletRootCommand';
 
 import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
 import { SettingListCommand } from '../commands/setting/SettingListCommand';
@@ -304,7 +308,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgRemoveCommand) private smsgRemoveCommand: SmsgRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.wallet.WalletListCommand) private walletListCommand: WalletListCommand,
+        @inject(Types.Command) @named(Targets.Command.wallet.WalletRootCommand) private walletRootCommand: WalletRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -457,7 +465,11 @@ export class RpcCommandFactory {
         this.commands.push(voteRootCommand);
 
         this.commands.push(smsgSearchCommand);
+        this.commands.push(smsgRemoveCommand);
         this.commands.push(smsgRootCommand);
+
+        this.commands.push(walletListCommand);
+        this.commands.push(walletRootCommand);
 
         this.commands.push(helpCommand);
 

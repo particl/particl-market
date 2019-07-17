@@ -3,47 +3,51 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { BaseCommand } from '../BaseCommand';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCart } from '../../models/ShoppingCart';
-import { ShoppingCartService } from '../../services/model/ShoppingCartService';
-import { ProfileService } from '../../services/model/ProfileService';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { Wallet } from '../../models/Wallet';
+import { ProfileService } from '../../services/model/ProfileService';
+import { WalletService } from '../../services/model/WalletService';
+import { Collection } from 'bookshelf';
 
-export class ShoppingCartListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ShoppingCart>> {
+export class WalletListCommand extends BaseCommand implements RpcCommandInterface<Collection<Wallet>> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
+        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.SHOPPINGCART_LIST);
+        super(Commands.WALLET_LIST);
         this.log = new Logger(__filename);
     }
 
     /**
+     * command description
+     *
      * data.params[]:
      *  [0]: profile: resources.Profile
      *
-     * @param data
-     * @returns {Promise<Bookshelf.Collection<ShoppingCart>>}
+     * @param data, RpcRequest
+     * @param rpcCommandFactory, RpcCommandFactory
+     * @returns {Promise<Wallet>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCart>> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Collection<Wallet>> {
 
         const profile: resources.Profile = data.params[0];
-        return await this.shoppingCartService.findAllByProfileId(profile.id);
+        return await this.walletService.findAllByProfileId(profile.id);
     }
 
     /**
@@ -75,19 +79,20 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> ';
+        return this.getName() + ' <profileId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to searchBy for. \n';
+            + '    <profileId>                 - number - Id of the Profile. \n';
     }
 
     public description(): string {
-        return 'List the all ShoppingCarts associated with the Profile.';
+        return 'Command for listing Profiles Wallets.';
     }
 
     public example(): string {
-        return 'cart ' + this.getName() + ' 1 ';
+        return 'wallet ' + this.getName() + ' 1';
     }
+
 }

@@ -333,15 +333,19 @@ export const Targets = {
         },
         smsg: {
             SmsgRootCommand: 'SmsgRootCommand',
+            SmsgRemoveCommand: 'SmsgRemoveCommand',
             SmsgSearchCommand: 'SmsgSearchCommand'
+        },
+        wallet: {
+            WalletRootCommand: 'WalletRootCommand',
+            WalletListCommand: 'WalletListCommand'
         },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
-        },
-        WalletCommand: 'WalletCommand'
+        }
     },
     Factory:     {
         hashableconfig: {

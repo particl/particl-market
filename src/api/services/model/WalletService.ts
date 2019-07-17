@@ -55,20 +55,15 @@ export class WalletService {
         return this.walletRepo.findAll();
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Wallet>> {
+        return await this.walletRepo.findAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Wallet> {
         const wallet = await this.walletRepo.findOne(id, withRelated);
         if (wallet === null) {
             this.log.warn(`Wallet with the id=${id} was not found!`);
             throw new NotFoundException(id);
-        }
-        return wallet;
-    }
-
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<Wallet> {
-        const wallet = await this.walletRepo.findOneByName(name, withRelated);
-        if (wallet === null) {
-            this.log.warn(`Wallet with the name=${name} was not found!`);
-            throw new NotFoundException(name);
         }
         return wallet;
     }

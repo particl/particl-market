@@ -26,8 +26,8 @@ export class WalletRepository {
         return await this.WalletModel.fetchById(id, withRelated);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<Wallet> {
-        return await this.WalletModel.fetchByName(name, withRelated);
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Wallet>> {
+        return await this.WalletModel.fetchAllByProfileId(profileId, withRelated);
     }
 
     public async create(data: any): Promise<Wallet> {
