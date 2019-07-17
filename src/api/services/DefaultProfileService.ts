@@ -2,7 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -10,6 +11,9 @@ import { Profile } from '../models/Profile';
 import { ProfileService } from './model/ProfileService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
+import { SettingService } from './model/SettingService';
+import { SettingValue } from '../enums/SettingValue';
+import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 
 export class DefaultProfileService {
 
@@ -18,42 +22,45 @@ export class DefaultProfileService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
-    // TODO: if something goes wrong here and default profile does not get created, the application should stop
     public async seedDefaultProfile(): Promise<Profile> {
-        const defaultProfile = {
-            name: 'DEFAULT'
-        } as ProfileCreateRequest;
 
-        const newProfile = await this.insertOrUpdateProfile(defaultProfile);
+        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+            .then(value => value.toJSON());
+        const defaultProfileSetting = defaultProfileSettings[0];
 
-        this.log.debug('default Profile: ', JSON.stringify(newProfile.toJSON(), null, 2));
-        return newProfile;
+        // not set yet
+        if (_.isEmpty(defaultProfileSetting)) {
+            // if some profile exists, set that one as the default
+            let profile: resources.Profile;
+            const profiles = await this.profileService.findAll().then(value => value.toJSON());
+            if (profiles.length > 0) {
+                profile = profiles[0];
+            } else {
+                const address = await this.profileService.getNewAddress();
+                const defaultProfileRequest = {
+                    name: 'DEFAULT',
+                    address
+                } as ProfileCreateRequest;
+
+                profile = await this.profileService.create(defaultProfileRequest).then(value => value.toJSON());
+            }
+
+            // create the default profile setting
+            await this.settingService.create({
+                key: SettingValue.DEFAULT_PROFILE_ID.toString(),
+                value: '' + profile.id
+            } as SettingCreateRequest);
+
+            return await this.profileService.findOne(profile.id, true);
+        } else {
+            return await this.profileService.findOne(+defaultProfileSetting.value, true);
+        }
     }
 
-    public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
-
-        // check if profile already exist for the given name
-        return await this.profileService.findOneByName(profile.name)
-            .then(async value => {
-                const newProfile = value.toJSON();
-                // it does, update
-                if (newProfile.address === 'ERROR_NO_ADDRESS') {
-                    this.log.debug('updating default profile');
-                    newProfile.address = await this.profileService.getNewAddress();
-                    return await this.profileService.update(newProfile.id, newProfile);
-                } else {
-                    return value;
-                }
-            })
-            .catch(async reason => {
-                // it doesnt, create
-                this.log.debug('creating new default profile');
-                return await this.profileService.create(profile);
-            });
-    }
 }

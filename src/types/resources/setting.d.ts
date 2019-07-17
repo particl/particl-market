@@ -9,6 +9,7 @@ declare module 'resources' {
         key: string;
         value: string;
         Profile: Profile;
+        Market: Market;
 
         createdAt: Date;
         updatedAt: Date;

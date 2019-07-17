@@ -90,6 +90,7 @@ import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/
 
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
+import { MarketRemoveCommand } from '../commands/market/MarketRemoveCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
@@ -165,12 +166,12 @@ export class RpcCommandFactory {
     constructor(
         @inject(Types.Command) @named(Targets.Command.daemon.DaemonRootCommand) private daemonRootCommand: DaemonRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidAcceptCommand) private bidAcceptCommand: BidAcceptCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
 
@@ -179,18 +180,18 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCompleteCommand) private escrowCompleteCommand: EscrowCompleteCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRemoveCommand) private escrowRemoveCommand: EscrowRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteListCommand) private favoriteListCommand: FavoriteListCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryAddCommand) private itemCategoryAddCommand: ItemCategoryAddCommand,
@@ -200,10 +201,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRootCommand) private itemImageRootCommand: ItemImageRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageListCommand) private itemImageListCommand: ItemImageListCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRootCommand) private itemImageRootCommand: ItemImageRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
@@ -231,27 +232,28 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
-        @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketRemoveCommand) private marketRemoveCommand: MarketRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationRootCommand) private messagingInformationRootCommand: MessagingInformationRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemShipCommand) private orderItemShipCommand: OrderItemShipCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressAddCommand) private addressAddCommand: AddressAddCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRemoveCommand) private addressRemoveCommand: AddressRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.profile.ProfileAddCommand) private profileAddCommand: ProfileAddCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileRemoveCommand) private profileRemoveCommand: ProfileRemoveCommand,
@@ -260,13 +262,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.profile.ProfileListCommand) private profileListCommand: ProfileListCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileRootCommand) private profileRootCommand: ProfileRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRootCommand) private shippingDestinationRootCommand: ShippingDestinationRootCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationListCommand) private shippingDestinationListCommand: ShippingDestinationListCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRootCommand) private shippingDestinationRootCommand: ShippingDestinationRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.setting.SettingGetCommand) private settingGetCommand: SettingGetCommand,
         @inject(Types.Command) @named(Targets.Command.setting.SettingListCommand) private settingListCommand: SettingListCommand,
@@ -382,8 +384,9 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateRootCommand);
 
         this.commands.push(marketAddCommand);
-        this.commands.push(marketRootCommand);
         this.commands.push(marketListCommand);
+        this.commands.push(marketRemoveCommand);
+        this.commands.push(marketRootCommand);
 
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(messagingInformationRootCommand);

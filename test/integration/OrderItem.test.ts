@@ -57,8 +57,8 @@ describe('OrderItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
         buyerProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(buyerProfile.id).then(value => value.toJSON());
 
         // generate a seller profile in addition to the default one used for buyer
         const generateProfileParams = new GenerateProfileParams().toParamsArray();

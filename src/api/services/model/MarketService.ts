@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -14,6 +15,9 @@ import { Market } from '../../models/Market';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
 import { ProfileService } from './ProfileService';
+import { SettingService } from './SettingService';
+import { SettingValue } from '../../enums/SettingValue';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class MarketService {
 
@@ -22,18 +26,31 @@ export class MarketService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(withRelated: boolean = true): Promise<Market> {
-        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+    public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
 
-        const market = await this.marketRepo.getDefault(profile.id, withRelated);
+        // const profile: resources.Profile = await this.profileService.getDefaultForProfile().then(value => value.toJSON());
+
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
+        const marketAddressSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
+
+        if (_.isEmpty(marketAddressSetting)) {
+            throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.');
+        }
+
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated)
+            .then(value => value.toJSON());
+
         if (market === null) {
-            this.log.warn(`Default Market was not found!`);
-            throw new NotFoundException(process.env.DEFAULT_MARKETPLACE_NAME);
+            this.log.error(`Default Market was not found!`);
+            throw new NotFoundException(marketAddressSetting!.value);
         }
         return market;
     }

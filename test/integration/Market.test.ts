@@ -57,8 +57,7 @@ describe('Market', () => {
 
     // fetchByName
     it('Should get default market', async () => {
-        const marketModel: Market = await marketService.getDefault();
-        const result = marketModel.toJSON();
+        const result: resources.Market = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe('DEFAULT');

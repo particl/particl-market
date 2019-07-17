@@ -27,22 +27,34 @@ export class SettingRepository {
     }
 
     public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
-        return this.SettingModel.fetchAllByProfileId(profileId, withRelated);
+        return await this.SettingModel.fetchAllByProfileId(profileId, withRelated);
+    }
+
+    public async findAllByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.SettingModel.fetchAllByKeyAndProfileId(key, profileId, withRelated);
+    }
+
+    public async findAllByKey(key: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.SettingModel.fetchAllByKey(key, withRelated);
+    }
+
+    public async findAllByProfileIdAndMarketId(profileId: number, marketId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.SettingModel.fetchAllByProfileIdAndMarketId(profileId, marketId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Setting> {
-        return this.SettingModel.fetchById(id, withRelated);
+        return await this.SettingModel.fetchById(id, withRelated);
     }
 
-    public async findOneByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Setting> {
-        return this.SettingModel.fetchByKeyAndProfileId(key, profileId, withRelated);
+    public async findOneByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number, withRelated: boolean = true): Promise<Setting> {
+        return await this.SettingModel.fetchByKeyAndProfileIdAndMarketId(key, profileId, marketId, withRelated);
     }
 
     public async create(data: any): Promise<Setting> {
         const setting = this.SettingModel.forge<Setting>(data);
         try {
             const settingCreated = await setting.save();
-            return this.SettingModel.fetchById(settingCreated.id);
+            return await this.SettingModel.fetchById(settingCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the setting!', error);
         }
@@ -52,7 +64,7 @@ export class SettingRepository {
         const setting = this.SettingModel.forge<Setting>({ id });
         try {
             const settingUpdated = await setting.save(data, { patch: true });
-            return this.SettingModel.fetchById(settingUpdated.id);
+            return await this.SettingModel.fetchById(settingUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the setting!', error);
         }

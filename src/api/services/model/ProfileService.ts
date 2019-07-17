@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -22,6 +23,7 @@ import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/Cryptoc
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
 import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
+import { SettingValue } from '../../enums/SettingValue';
 
 export class ProfileService {
 
@@ -40,16 +42,21 @@ export class ProfileService {
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.getDefault(withRelated);
+
+        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+            .then(value => value.toJSON());
+        const defaultProfileSetting = defaultProfileSettings[0];
+
+        const profile = await this.findOne(+defaultProfileSetting.value, withRelated);
         if (profile === null) {
             this.log.warn(`Default Profile was not found!`);
-            throw new NotFoundException('DEFAULT');
+            throw new NotFoundException(defaultProfileSetting.value);
         }
         return profile;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
-        return this.profileRepo.findAll();
+        return await this.profileRepo.findAll();
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Profile> {

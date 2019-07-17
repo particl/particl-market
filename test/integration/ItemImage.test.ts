@@ -90,7 +90,7 @@ describe('ItemImage', () => {
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         const generateParams = new GenerateListingItemParams([
             true,                               // generateItemInformation

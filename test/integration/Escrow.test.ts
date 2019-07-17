@@ -75,7 +75,7 @@ describe('Escrow', () => {
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // generate ListingItemTemplate without Escrow
         const templateGenerateParams = new GenerateListingItemTemplateParams([

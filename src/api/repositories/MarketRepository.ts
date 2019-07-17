@@ -21,11 +21,6 @@ export class MarketRepository {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(profileId: number, withRelated: boolean = true): Promise<Market> {
-        // TODO: instead of DEFAULT_MARKETPLACE_NAME, use the private key
-        return await this.findOneByProfileIdAndName(profileId, process.env.DEFAULT_MARKETPLACE_NAME, withRelated);
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
         const list = await this.MarketModel.fetchAll();
         return list as Bookshelf.Collection<Market>;

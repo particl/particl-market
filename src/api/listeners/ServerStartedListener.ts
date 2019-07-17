@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as interfaces from '../../types/interfaces';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -15,6 +16,7 @@ import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
+import { DefaultSettingService } from '../services/DefaultSettingService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -37,6 +39,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -88,6 +91,8 @@ export class ServerStartedListener implements interfaces.Listener {
                     // seed the default Profile
                     const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
                         .then(value => value.toJSON());
+
+                    await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
                     // seed the default market
                     const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)

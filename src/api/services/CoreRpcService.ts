@@ -676,39 +676,6 @@ export class CoreRpcService extends CtRpc {
 
     /**
      *
-     * @param minconf
-     * @param maxconf
-     * @param addresses
-     * @param includeUnsafe
-     * @param queryOptions
-     * @returns {Promise<any>}
-     */
-/*
-    public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
-                                  queryOptions?: any): Promise<RpcUnspentOutput[]> {
-
-        const params: any[] = [minconf]; // [minconf, maxconf, addresses, includeUnsafe];
-
-        if (maxconf !== undefined) {
-            params.push(maxconf);
-        }
-
-        if (addresses !== undefined) {
-            params.push(addresses);
-        }
-
-        if (includeUnsafe !== undefined) {
-            params.push(includeUnsafe);
-        }
-
-        if (!_.isEmpty(queryOptions)) {
-            params.push(queryOptions);
-        }
-        return await this.call('listunspentblind', params);
-    }
-*/
-    /**
-     *
      * @param {boolean} unlock
      * @param prevouts
      * @param permanent

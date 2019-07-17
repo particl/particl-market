@@ -62,7 +62,7 @@ describe('ItemPrice', () => {
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile().then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation

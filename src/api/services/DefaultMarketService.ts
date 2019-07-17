@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -16,7 +16,8 @@ import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
 import { ProfileService } from './model/ProfileService';
-import {RpcWallet} from 'omp-lib/dist/interfaces/rpc';
+import { SettingService } from './model/SettingService';
+import { SettingValue } from '../enums/SettingValue';
 
 export class DefaultMarketService {
 
@@ -25,6 +26,7 @@ export class DefaultMarketService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -36,24 +38,28 @@ export class DefaultMarketService {
 
     public async seedDefaultMarket(profile: resources.Profile): Promise<Market> {
 
-        const MARKETPLACE_NAME          = process.env.DEFAULT_MARKETPLACE_NAME
-                                            ? process.env.DEFAULT_MARKETPLACE_NAME
-                                            : 'DEFAULT';
-        const MARKETPLACE_PRIVATE_KEY   = process.env.DEFAULT_MARKETPLACE_PRIVATE_KEY
-                                            ? process.env.DEFAULT_MARKETPLACE_PRIVATE_KEY
-                                            : '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek';
-        const MARKETPLACE_ADDRESS       = process.env.DEFAULT_MARKETPLACE_ADDRESS
-                                            ? process.env.DEFAULT_MARKETPLACE_ADDRESS
-                                            : 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA';
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
+
+        const marketNameSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
+        });
+
+        const marketPKSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
+        });
+
+        const marketAddressSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
 
         const defaultMarket = {
             profile_id: profile.id,
-            name: MARKETPLACE_NAME,
+            name: marketNameSetting!.value,
             type: MarketType.MARKETPLACE,
-            receiveKey: MARKETPLACE_PRIVATE_KEY,
-            receiveAddress: MARKETPLACE_ADDRESS,
-            publishKey: MARKETPLACE_PRIVATE_KEY,
-            publishAddress: MARKETPLACE_ADDRESS,
+            receiveKey: marketPKSetting!.value,
+            receiveAddress: marketAddressSetting!.value,
+            publishKey: marketPKSetting!.value,
+            publishAddress: marketAddressSetting!.value,
             wallet: 'market.dat'
         } as MarketCreateRequest;
 
@@ -62,6 +68,7 @@ export class DefaultMarketService {
 
     public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
+        // create or update the default marketplace
         const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {
                 return await this.marketService.update(found.Id, market as MarketUpdateRequest).then(value => value.toJSON());

@@ -87,7 +87,7 @@ describe('ProposalAddActionListener', () => {
 
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length

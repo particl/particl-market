@@ -117,6 +117,7 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        DefaultSettingService: 'DefaultSettingService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
@@ -265,6 +266,7 @@ export const Targets = {
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
+            MarketRemoveCommand: 'MarketRemoveCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {

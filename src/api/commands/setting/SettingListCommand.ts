@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -13,9 +15,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import { SettingService } from '../../services/model/SettingService';
 import { ProfileService } from '../../services/model/ProfileService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MarketService } from '../../services/model/MarketService';
 
 export class SettingListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Setting>> {
 
@@ -24,7 +29,8 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
         super(Commands.SETTING_LIST);
         this.log = new Logger(__filename);
@@ -32,7 +38,8 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
 
     /**
      * data.params[]:
-     *  [0]: profileId
+     *  [0]: profile: resources.Profile
+     *  [1]: market: resources.Market, optional
      *
      * @param data
      * @param rpcCommandFactory
@@ -40,23 +47,52 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Setting>> {
-        const profileId = data.params[0];
-        return await this.settingService.findAllByProfileId(profileId, true);
+        const profile: resources.Profile = data.params[0];
+        const market: resources.Market = data.params[1];
+
+        if (!_.isEmpty(market)) {
+            return await this.settingService.findAllByProfileIdAndMarketId(profile.id, market.id, true);
+        } else {
+            return await this.settingService.findAllByProfileId(profile.id, true);
+        }
     }
 
+    /**
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: marketId, optional
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
         if (data.params.length < 1) {
-            throw new MessageException('Missing profileId.');
+            throw new MissingParamException('profileId');
         }
 
-        const profileId = data.params[0];
-        if (profileId && typeof profileId === 'string') {
-            throw new MessageException('profileId cant be a string.');
-        } else {
-            // make sure Profile with the id exists
-            await this.profileService.findOne(profileId) // throws if not found
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        }
+
+        // optional
+        if (data.params[1] && typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('marketId', 'number');
+        }
+
+        // make sure Profile with the id exists
+        data.params[0] = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+
+        // if given, make sure Market exists
+        if (data.params[1]) {
+            data.params[1] = await this.marketService.findOne(data.params[1])
+                .then(value => value.toJSON())
                 .catch(reason => {
-                    throw new MessageException('Profile not found.');
+                    throw new ModelNotFoundException('Market');
                 });
         }
 
@@ -64,17 +100,17 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' [<profileId>] ';
+        return this.getName() + ' <profileId> [marketId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
-            + '                                this settings with. ';
+            + '    <profileId>              - Numeric - The ID of the related Profile \n'
+            + '    <marketId>               - Numeric - The ID of the related Market \n';
     }
 
     public description(): string {
-        return 'List all settings belonging to a profile.';
+        return 'List all Settings belonging to a Profile and optionally Market.';
     }
 
     public example(): string {
