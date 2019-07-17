@@ -1,15 +1,17 @@
+import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
-
 import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
+import { {{name.capitalize}}CreateRequest } from '../../src/api/requests/{{name.capitalize}}CreateRequest';
+import { {{name.capitalize}}UpdateRequest } from '../../src/api/requests/{{name.capitalize}}UpdateRequest';
+
 
 describe('{{name.capitalize}}', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -20,19 +22,19 @@ describe('{{name.capitalize}}', () => {
     let testDataService: TestDataService;
     let {{name.camelCase}}Service: {{name.capitalize}}Service;
 
-    let createdId;
+    let {{name.camelCase}}: resources.{{name.capitalize}};
 
     const testData = {
         {{#each properties}}
         {{name.camelCase}}: undefined{{#unless @last}},{{/unless}} // TODO: Add test value
         {{/each}}
-    };
+    } as {{name.capitalize}}CreateRequest;
 
     const testDataUpdated = {
         {{#each properties}}
         {{name.camelCase}}: undefined{{#unless @last}},{{/unless}} // TODO: Add test value
         {{/each}}
-    };
+    } as {{name.capitalize}}UpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -48,23 +50,10 @@ describe('{{name.capitalize}}', () => {
         //
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await {{name.camelCase}}Service.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should create a new {{name.lowerCase}}', async () => {
-        // testData['related_id'] = 0;
-        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.create(testData);
-        createdId = {{name.camelCase}}Model.Id;
+        {{name.camelCase}} = await {{name.camelCase}}Service.create(testData).then(value => value.toJSON());
+        const result: resources.{{name.capitalize}} = {{name.camelCase}};
 
-        const result = {{name.camelCase}}Model.toJSON();
-
-        // test the values
         // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
@@ -79,46 +68,27 @@ describe('{{name.capitalize}}', () => {
     });
 
     test('Should list {{name.lowerCase}}s with our new create one', async () => {
-        const {{name.camelCase}}Collection = await {{name.camelCase}}Service.findAll();
-        const {{name.camelCase}} = {{name.camelCase}}Collection.toJSON();
-        expect({{name.camelCase}}.length).toBe(1);
 
-        const result = {{name.camelCase}}[0];
+        const wallet: resources.Wallet[] = await walletService.findAll().then(value => value.toJSON());
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        const {{name.camelCase}}s: resources.{{name.capitalize}}[] = await {{name.camelCase}}Service.findAll().then(value => value.toJSON());
+        expect({{name.camelCase}}s.length).toBe(1);
+
+        const result = {{name.camelCase}}s[0];
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
     test('Should return one {{name.lowerCase}}', async () => {
-        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.findOne(createdId);
-        const result = {{name.camelCase}}Model.toJSON();
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.findOne({{name.camelCase}}.id).then(value => value.toJSON());
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await {{name.camelCase}}Service.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should update the {{name.lowerCase}}', async () => {
-        // testDataUpdated['related_id'] = 0;
-        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.update(createdId, testDataUpdated);
-        const result = {{name.camelCase}}Model.toJSON();
-
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
+        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.update({{name.camelCase}}.id, testDataUpdated).then(value => value.toJSON());
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
         {{/each}}
@@ -126,9 +96,9 @@ describe('{{name.capitalize}}', () => {
 
     test('Should delete the {{name.lowerCase}}', async () => {
         expect.assertions(1);
-        await {{name.camelCase}}Service.destroy(createdId);
-        await {{name.camelCase}}Service.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await {{name.camelCase}}Service.destroy({{name.camelCase}}.id);
+        await {{name.camelCase}}Service.findOne({{name.camelCase}}.id).catch(e =>
+            expect(e).toEqual(new NotFoundException({{name.camelCase}}.id))
         );
     });
 

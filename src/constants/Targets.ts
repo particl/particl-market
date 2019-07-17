@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -52,7 +48,8 @@ export const Targets = {
         ShoppingCartItem: 'ShoppingCartItem',
         SmsgMessage: 'SmsgMessage',
         User: 'User',
-        Vote: 'Vote'
+        Vote: 'Vote',
+        Wallet: 'Wallet'
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
@@ -93,7 +90,8 @@ export const Targets = {
         ShoppingCartRepository: 'ShoppingCartRepository',
         SmsgMessageRepository: 'SmsgMessageRepository',
         UserRepository: 'UserRepository',
-        VoteRepository: 'VoteRepository'
+        VoteRepository: 'VoteRepository',
+        WalletRepository: 'WalletRepository'
     },
     Service:     {
         action: {
@@ -158,7 +156,8 @@ export const Targets = {
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
             UserService: 'UserService',
-            VoteService: 'VoteService'
+            VoteService: 'VoteService',
+            WalletService: 'WalletService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -252,8 +251,8 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
-            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
@@ -262,7 +261,6 @@ export const Targets = {
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
-        ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -342,13 +340,15 @@ export const Targets = {
             VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
-        }
+        },
+        WalletCommand: 'WalletCommand'
     },
     Factory:     {
         hashableconfig: {
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
                 HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',

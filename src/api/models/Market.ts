@@ -5,11 +5,13 @@
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
+import { Wallet } from './Wallet';
 
 export class Market extends Bookshelf.Model<Market> {
 
     public static RELATIONS = [
-        'Profile'
+        'Profile',
+        'Wallet'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Market>> {
@@ -85,9 +87,6 @@ export class Market extends Bookshelf.Model<Market> {
     public get PublishAddress(): string { return this.get('publishAddress'); }
     public set PublishAddress(value: string) { this.set('publishAddress', value); }
 
-    public get Wallet(): string { return this.get('wallet'); }
-    public set Wallet(value: string) { this.set('wallet', value); }
-
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
@@ -97,4 +96,9 @@ export class Market extends Bookshelf.Model<Market> {
     public Profile(): Profile {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
+
+    public Wallet(): Wallet {
+        return this.belongsTo(Wallet, 'wallet_id', 'id');
+    }
+
 }

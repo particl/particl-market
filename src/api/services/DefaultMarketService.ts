@@ -18,6 +18,7 @@ import { MarketType } from '../enums/MarketType';
 import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
+import { WalletService } from './model/WalletService';
 
 export class DefaultMarketService {
 
@@ -27,6 +28,7 @@ export class DefaultMarketService {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -52,15 +54,20 @@ export class DefaultMarketService {
             return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
         });
 
+        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+
+        // get the Profiles default wallet so we can set it alse as the wallet for the Market
+        const defaultProfileWallet: resources.Wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+
         const defaultMarket = {
+            wallet_id: defaultProfileWallet.id,
             profile_id: profile.id,
             name: marketNameSetting!.value,
             type: MarketType.MARKETPLACE,
             receiveKey: marketPKSetting!.value,
             receiveAddress: marketAddressSetting!.value,
             publishKey: marketPKSetting!.value,
-            publishAddress: marketAddressSetting!.value,
-            wallet: 'market.dat'
+            publishAddress: marketAddressSetting!.value
         } as MarketCreateRequest;
 
         return await this.insertOrUpdateMarket(defaultMarket, profile);
@@ -79,9 +86,9 @@ export class DefaultMarketService {
         this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
 
         // if wallet with the name doesnt exists, then create one
-        const exists = await this.coreRpcService.walletExists(market.wallet);
+        const exists = await this.coreRpcService.walletExists(newMarket.Wallet.name);
         if (!exists) {
-            await this.coreRpcService.createAndLoadWallet(market.wallet)
+            await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
                 .then(result => {
                     this.log.debug('created wallet: ', result.name);
                 })
@@ -90,10 +97,10 @@ export class DefaultMarketService {
                 });
         } else {
             // load the wallet unless already loaded
-            await this.coreRpcService.walletLoaded(market.wallet).
+            await this.coreRpcService.walletLoaded(newMarket.Wallet.name).
                 then(async isLoaded => {
                     if (!isLoaded) {
-                        await this.coreRpcService.loadWallet(market.wallet)
+                        await this.coreRpcService.loadWallet(newMarket.Wallet.name)
                             .catch(reason => {
                                 this.log.debug('wallet: ' + market.name + ' already loaded.');
                             });
@@ -107,7 +114,7 @@ export class DefaultMarketService {
         }
 
         // set secure messaging to use the default wallet
-        await this.coreRpcService.smsgSetWallet(newMarket.wallet);
+        await this.coreRpcService.smsgSetWallet(newMarket.Wallet.name);
 
         return await this.marketService.findOne(newMarket.id);
     }

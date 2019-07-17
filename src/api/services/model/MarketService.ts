@@ -34,8 +34,6 @@ export class MarketService {
 
     public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
 
-        // const profile: resources.Profile = await this.profileService.getDefaultForProfile().then(value => value.toJSON());
-
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
         const marketAddressSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
@@ -56,11 +54,11 @@ export class MarketService {
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
-        return this.marketRepo.findAll();
+        return await this.marketRepo.findAll();
     }
 
     public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
-        return this.marketRepo.findAllByProfileId(profileId, withRelated);
+        return await this.marketRepo.findAllByProfileId(profileId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
@@ -92,17 +90,10 @@ export class MarketService {
 
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
-
         const body = JSON.parse(JSON.stringify(data));
-
         this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
-
-        // If the request body was valid we will create the market
-        const market = await this.marketRepo.create(body);
-
-        // finally find and return the created market
-        const newMarket = await this.findOne(market.Id);
-        return newMarket;
+        const market: resources.Market = await this.marketRepo.create(body).then(value => value.toJSON());
+        return await this.findOne(market.id, true);
     }
 
     @validate()
@@ -118,10 +109,9 @@ export class MarketService {
         market.ReceiveAddress = body.receiveAddress;
         market.PublishKey = body.publishKey;
         market.PublishAddress = body.publishAddress;
-        market.Wallet = body.wallet;
 
-        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
-        return updatedMarket;
+        const updatedMarket = await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
+        return await this.findOne(updatedMarket.id, true);
     }
 
     public async destroy(id: number): Promise<void> {

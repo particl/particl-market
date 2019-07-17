@@ -15,7 +15,9 @@ declare module 'resources' {
         receiveAddress: string;
         publishKey: string;
         publishAddress: string;
-        wallet: string;
+        // wallet: string;
+
+        Wallet: Wallet;
 
         createdAt: Date;
         updatedAt: Date;
