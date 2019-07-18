@@ -158,16 +158,14 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<boolean>}
      */
     public async walletExists(name: string): Promise<boolean> {
-        this.log.debug('walletExists: ', name);
         return await this.listWalletDir()
             .then(result => {
-                this.log.debug('listWalletDir: ', JSON.stringify(result, null, 2));
                 const found = _.find(result.wallets, wallet => {
                     this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
                     return wallet.name === name;
                 });
                 const exists = found ? true : false;
-                this.log.debug('exists: ', exists);
+                this.log.debug('walletExists: ', exists);
                 return exists;
             });
     }
