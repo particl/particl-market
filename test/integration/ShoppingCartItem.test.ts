@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -17,7 +18,6 @@ import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ShoppingCartItemService } from '../../src/api/services/model/ShoppingCartItemService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ShoppingCartItemCreateRequest } from '../../src/api/requests/model/ShoppingCartItemCreateRequest';
-import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
@@ -59,13 +59,9 @@ describe('ShoppingCartList', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // get default shoppingcart
         defaultShoppingCart = defaultProfile.ShoppingCart[0];

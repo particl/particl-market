@@ -53,7 +53,8 @@ export const Targets = {
         ShoppingCartItem: 'ShoppingCartItem',
         SmsgMessage: 'SmsgMessage',
         User: 'User',
-        Vote: 'Vote'
+        Vote: 'Vote',
+        Wallet: 'Wallet'
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
@@ -95,7 +96,8 @@ export const Targets = {
         ShoppingCartRepository: 'ShoppingCartRepository',
         SmsgMessageRepository: 'SmsgMessageRepository',
         UserRepository: 'UserRepository',
-        VoteRepository: 'VoteRepository'
+        VoteRepository: 'VoteRepository',
+        WalletRepository: 'WalletRepository'
     },
     Service:     {
         action: {
@@ -120,6 +122,7 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        DefaultSettingService: 'DefaultSettingService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
@@ -161,7 +164,8 @@ export const Targets = {
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
             UserService: 'UserService',
-            VoteService: 'VoteService'
+            VoteService: 'VoteService',
+            WalletService: 'WalletService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -274,6 +278,7 @@ export const Targets = {
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
+            MarketRemoveCommand: 'MarketRemoveCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
@@ -342,7 +347,12 @@ export const Targets = {
         },
         smsg: {
             SmsgRootCommand: 'SmsgRootCommand',
+            SmsgRemoveCommand: 'SmsgRemoveCommand',
             SmsgSearchCommand: 'SmsgSearchCommand'
+        },
+        wallet: {
+            WalletRootCommand: 'WalletRootCommand',
+            WalletListCommand: 'WalletListCommand'
         },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
@@ -356,6 +366,7 @@ export const Targets = {
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
                 HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',

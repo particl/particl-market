@@ -15,6 +15,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -30,7 +32,7 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: listingItem: resources.ListingItem
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -39,18 +41,34 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        if (typeof data.params[0] === 'number') {
-            return await this.listingItemService.findOne(data.params[0]);
-        } else {
-            return await this.listingItemService.findOneByHash(data.params[0]);
-        }
+        const listingItem: resources.ListingItem = data.params[0];
+        return await this.listingItemService.findOne(listingItem.id);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: listingItemId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('id or hash');
+            throw new MissingParamException('listingItemId');
         }
+
+        if (data.params[0] && typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
+        }
+
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
+        data.params[0] = listingItem;
 
         return data;
     }

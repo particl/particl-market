@@ -16,14 +16,15 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('publish_key').nullable();
             table.string('publish_address').nullable();
 
-            table.string('wallet').notNullable();
-
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
 
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('cascade');
+
+            table.integer('wallet_id').unsigned().notNullable();
+            table.foreign('wallet_id').references('id').inTable('wallets').onDelete('CASCADE');
 
             // table.unique(['name', 'profile_id']);
             // table.unique(['receive_address', 'profile_id']);

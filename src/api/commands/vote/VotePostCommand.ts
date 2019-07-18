@@ -41,9 +41,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: profile: resources.Profile
-     *  [1]: proposalHash: resources.Proposal
-     *  [2]: proposalOptionId: resources.ProposalOption
+     *  [0]: market: resources.Market
+     *  [2]: profile: resources.Profile
+     *  [3]: proposalHash: resources.Proposal
+     *  [4]: proposalOptionId: resources.ProposalOption
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -109,14 +110,14 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new InvalidParamException('proposalOptionId', 'number');
         }
 
-        // TODO: might want to let users specify this.
-        const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
-
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
+
+        // TODO: might want to let users specify this.
+        const market: resources.Market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // make sure Proposal with the id exists
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])

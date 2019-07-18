@@ -69,11 +69,11 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-            return 'Search bids by itemhash, bid status, or bidder address';
+            return 'Search SmsgMessages.';
     }
 
     public example(): string {
-        return 'bid ' + this.getName() + ' TODO';
+        return 'smsg ' + this.getName() + ' 0 10 ASC';
     }
 
     /**
@@ -90,6 +90,7 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
      */
     private getSearchParams(params: any[]): SmsgMessageSearchParams {
 
+        // TODO: refactor
         let page = 0;
         let pageLimit = this.DEFAULT_PAGE_LIMIT;
         let ordering: SearchOrder = SearchOrder.ASC;

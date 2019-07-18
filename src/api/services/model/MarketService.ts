@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -14,6 +15,9 @@ import { Market } from '../../models/Market';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
 import { ProfileService } from './ProfileService';
+import { SettingService } from './SettingService';
+import { SettingValue } from '../../enums/SettingValue';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class MarketService {
 
@@ -22,28 +26,39 @@ export class MarketService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(withRelated: boolean = true): Promise<Market> {
-        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+    public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
 
-        const market = await this.marketRepo.getDefault(profile.id, withRelated);
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
+        const marketAddressSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
+
+        if (_.isEmpty(marketAddressSetting)) {
+            throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.');
+        }
+
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated)
+            .then(value => value.toJSON());
+
         if (market === null) {
-            this.log.warn(`Default Market was not found!`);
-            throw new NotFoundException(process.env.DEFAULT_MARKETPLACE_NAME);
+            this.log.error(`Default Market was not found!`);
+            throw new NotFoundException(marketAddressSetting!.value);
         }
         return market;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
-        return this.marketRepo.findAll();
+        return await this.marketRepo.findAll();
     }
 
     public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
-        return this.marketRepo.findAllByProfileId(profileId, withRelated);
+        return await this.marketRepo.findAllByProfileId(profileId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
@@ -75,17 +90,10 @@ export class MarketService {
 
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
-
         const body = JSON.parse(JSON.stringify(data));
-
         this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
-
-        // If the request body was valid we will create the market
-        const market = await this.marketRepo.create(body);
-
-        // finally find and return the created market
-        const newMarket = await this.findOne(market.Id);
-        return newMarket;
+        const market: resources.Market = await this.marketRepo.create(body).then(value => value.toJSON());
+        return await this.findOne(market.id, true);
     }
 
     @validate()
@@ -101,10 +109,9 @@ export class MarketService {
         market.ReceiveAddress = body.receiveAddress;
         market.PublishKey = body.publishKey;
         market.PublishAddress = body.publishAddress;
-        market.Wallet = body.wallet;
 
-        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
-        return updatedMarket;
+        const updatedMarket = await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
+        return await this.findOne(updatedMarket.id, true);
     }
 
     public async destroy(id: number): Promise<void> {

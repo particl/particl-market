@@ -11,7 +11,6 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
@@ -21,7 +20,6 @@ import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/model
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
@@ -69,7 +67,7 @@ describe('ListingItemObjectData', () => {
 
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // generate template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([

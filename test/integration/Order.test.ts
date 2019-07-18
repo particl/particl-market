@@ -68,7 +68,7 @@ describe('Order', () => {
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // generate seller profile
         const generateParams = new GenerateProfileParams([true, true, true]).toParamsArray();

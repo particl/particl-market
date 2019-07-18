@@ -5,11 +5,13 @@
 import { Bookshelf } from '../../config/Database';
 import {Collection, Model} from 'bookshelf';
 import { Profile } from './Profile';
+import {Market} from './Market';
 
 export class Setting extends Bookshelf.Model<Setting> {
 
     public static RELATIONS = [
-        'Profile'
+        'Profile',
+        'Market'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
@@ -28,6 +30,82 @@ export class Setting extends Bookshelf.Model<Setting> {
         }
     }
 
+    public static async fetchAllByMarketId(marketId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
+        const SettingCollection = Setting.forge<Model<Setting>>()
+            .query(qb => {
+                qb.where('market_id', '=', marketId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await SettingCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SettingCollection.fetchAll();
+        }
+    }
+
+    public static async fetchAllByProfileIdAndMarketId(profileId: number, marketId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
+        const SettingCollection = Setting.forge<Model<Setting>>()
+            .query(qb => {
+                qb.where('market_id', '=', marketId);
+                qb.andWhere('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await SettingCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SettingCollection.fetchAll();
+        }
+    }
+
+    public static async fetchAllByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
+        const SettingCollection = Setting.forge<Model<Setting>>()
+            .query(qb => {
+                qb.where('key', '=', key);
+                qb.andWhere('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await SettingCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SettingCollection.fetchAll();
+        }
+    }
+
+    public static async fetchAllByKey(key: string, withRelated: boolean = true): Promise<Collection<Setting>> {
+        const SettingCollection = Setting.forge<Model<Setting>>()
+            .query(qb => {
+                qb.where('key', '=', key);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await SettingCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SettingCollection.fetchAll();
+        }
+    }
+
+    public static async fetchByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number, withRelated: boolean = true): Promise<Setting> {
+        if (withRelated) {
+            return await Setting.where<Setting>({ key, profile_id: profileId, market_id: marketId }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Setting.where<Setting>({ key, profile_id: profileId, market_id: marketId }).fetch();
+        }
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Setting> {
         if (withRelated) {
             return await Setting.where<Setting>({ id: value }).fetch({
@@ -38,15 +116,6 @@ export class Setting extends Bookshelf.Model<Setting> {
         }
     }
 
-    public static async fetchByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Setting> {
-        if (withRelated) {
-            return await Setting.where<Setting>({ profile_id: profileId, key }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Setting.where<Setting>({ profile_id: profileId, key }).fetch();
-        }
-    }
 
     public get tableName(): string { return 'settings'; }
     public get hasTimestamps(): boolean { return true; }
@@ -69,4 +138,9 @@ export class Setting extends Bookshelf.Model<Setting> {
     public Profile(): Profile {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
+
+    public Market(): Market {
+        return this.belongsTo(Market, 'market_id', 'id');
+    }
+
 }

@@ -52,8 +52,10 @@ describe('TestDataService', () => {
         // clean up the db
         await testDataService.clean();
 
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+
 
     });
 

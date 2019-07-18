@@ -19,7 +19,7 @@ export class MakeRequestCommand extends AbstractMakeCommand {
     public suffix = 'Request';
     public prefix = '';
     public template = 'request.hbs';
-    public target = 'api/requests';
+    public target = 'api/requests/model';
 
     constructor(context: any, prefix?: string) {
         super(context);

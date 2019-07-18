@@ -18,6 +18,6 @@ export class MakeServiceCommand extends AbstractMakeCommand {
     public type = 'Service';
     public suffix = 'Service';
     public template = 'service.hbs';
-    public target = 'api/services';
+    public target = 'api/services/model';
 
 }

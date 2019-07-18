@@ -40,7 +40,6 @@ import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listi
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
 import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import { hash } from 'omp-lib/dist/hasher/hash';
 
 describe('ListingItem', () => {
@@ -74,7 +73,6 @@ describe('ListingItem', () => {
 
     let createdListingItem1: resources.ListingItem;
     let createdListingItem2: resources.ListingItem;
-    let createdListingItem3: resources.ListingItem;
 
     let updatedListingItem1: resources.ListingItem;
 
@@ -110,7 +108,7 @@ describe('ListingItem', () => {
 
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {

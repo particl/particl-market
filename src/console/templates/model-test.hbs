@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 import * from 'jest';
 import * as resources from 'resources';
 import { app } from '../../src/app';
@@ -16,6 +12,7 @@ import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capita
 import { {{name.capitalize}}CreateRequest } from '../../src/api/requests/{{name.capitalize}}CreateRequest';
 import { {{name.capitalize}}UpdateRequest } from '../../src/api/requests/{{name.capitalize}}UpdateRequest';
 
+
 describe('{{name.capitalize}}', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -27,9 +24,7 @@ describe('{{name.capitalize}}', () => {
     let profileService: ProfileService;
     let marketService: MarketService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let created{{name.capitalize}}: resources.{{name.capitalize}};
+    let {{name.camelCase}}: resources.{{name.capitalize}};
 
     const testData = {
         {{#each properties}}
@@ -59,29 +54,10 @@ describe('{{name.capitalize}}', () => {
         //
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await {{name.camelCase}}Service.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
+    test('Should create a new {{name.lowerCase}}', async () => {
+        {{name.camelCase}} = await {{name.camelCase}}Service.create(testData).then(value => value.toJSON());
+        const result: resources.{{name.capitalize}} = {{name.camelCase}};
 
-    test('Should throw ValidationException because we want to create a empty {{name.capitalize}}', async () => {
-        expect.assertions(1);
-        await {{name.camelCase}}Service.create({} as {{name.capitalize}}CreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
-    test('Should create a new {{name.capitalize}}', async () => {
-
-        created{{name.capitalize}}: resources.{{name.capitalize}} = await {{name.camelCase}}Service.create(testData)
-            .then(value => value.toJSON());
-        const result: resources.{{name.capitalize}} = created{{name.capitalize}};
-
-        // test the values
         // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
@@ -93,32 +69,28 @@ describe('{{name.capitalize}}', () => {
             .then(value => value.toJSON());
         expect({{name.camelCase}}s.length).toBe(1);
 
-        const result: resources.{{name.capitalize}} = {{name.camelCase}}s[0];
+    test('Should list {{name.lowerCase}}s with our new create one', async () => {
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        const wallet: resources.Wallet[] = await walletService.findAll().then(value => value.toJSON());
+
+        const {{name.camelCase}}s: resources.{{name.capitalize}}[] = await {{name.camelCase}}Service.findAll().then(value => value.toJSON());
+        expect({{name.camelCase}}s.length).toBe(1);
+
+        const result = {{name.camelCase}}s[0];
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
-    test('Should return one {{name.capitalize}}', async () => {
-        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.findOne(created{{name.capitalize}}.id)
-            .then(value => value.toJSON());
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
+    test('Should return one {{name.lowerCase}}', async () => {
+        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.findOne({{name.camelCase}}.id).then(value => value.toJSON());
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
-    test('Should update the {{name.capitalize}}', async () => {
-        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.update(created{{name.capitalize}}.id, testDataUpdated)
-            .then(value => value.toJSON());
-
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
+    test('Should update the {{name.lowerCase}}', async () => {
+        const result: resources.{{name.capitalize}} = await {{name.camelCase}}Service.update({{name.camelCase}}.id, testDataUpdated).then(value => value.toJSON());
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
         {{/each}}
@@ -126,9 +98,9 @@ describe('{{name.capitalize}}', () => {
 
     test('Should delete the {{name.capitalize}}', async () => {
         expect.assertions(1);
-        await {{name.camelCase}}Service.destroy(createdId);
-        await {{name.camelCase}}Service.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await {{name.camelCase}}Service.destroy({{name.camelCase}}.id);
+        await {{name.camelCase}}Service.findOne({{name.camelCase}}.id).catch(e =>
+            expect(e).toEqual(new NotFoundException({{name.camelCase}}.id))
         );
     });
 

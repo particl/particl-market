@@ -4,7 +4,6 @@
 
 import * from 'jest';
 import { app } from '../../src/app';
-import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
@@ -63,7 +62,7 @@ describe('FlaggedItem', () => {
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
 
         // get default market
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // create ListingItems
         const generateListingItemParams = new GenerateListingItemParams([

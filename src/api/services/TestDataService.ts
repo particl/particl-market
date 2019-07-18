@@ -358,7 +358,7 @@ export class TestDataService {
             if (generateParams.generateListingItem) {
 
                 const market: resources.Market = generateParams.marketId
-                    ? await this.marketService.getDefault().then(value => value.toJSON())
+                    ? await this.marketService.getDefaultForProfile(listingItemTemplate.Profile.id).then(value => value.toJSON())
                     : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
 
                 const listingItemCreateRequest = {
@@ -410,7 +410,7 @@ export class TestDataService {
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // const fromAddress = await this.coreRpcService.getNewAddress();
-            // const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
+            // const market: resources.Market = await this.marketService.getDefaultForProfile().then(value => value.toJSON());
 
             this.log.debug('create listingitem start');
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
@@ -1043,7 +1043,7 @@ export class TestDataService {
             .then(value => value.toJSON());
 
         // get default market
-        const defaultMarket: resources.Market = await this.marketService.getDefault()
+        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id)
             .then(value => value.toJSON());
 
         // set seller to given address or get a new one

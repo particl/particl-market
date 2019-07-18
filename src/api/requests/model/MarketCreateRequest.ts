@@ -11,6 +11,9 @@ import { MarketType } from '../../enums/MarketType';
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
+    public wallet_id: number;
+
+    @IsNotEmpty()
     public profile_id: number;
 
     @IsNotEmpty()
@@ -27,6 +30,6 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
 
     public publishKey: string;
     public publishAddress: string;
-    public wallet: string;
+
 }
 // tslint:enable:variable-name

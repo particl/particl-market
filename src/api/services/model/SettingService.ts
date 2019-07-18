@@ -25,11 +25,32 @@ export class SettingService {
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Setting>> {
-        return this.settingRepo.findAll();
+        return await this.settingRepo.findAll();
     }
 
     public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
         return await this.settingRepo.findAllByProfileId(profileId, withRelated);
+    }
+
+    public async findAllByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.settingRepo.findAllByKeyAndProfileId(key, profileId, withRelated);
+    }
+
+    public async findAllByKey(key: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.settingRepo.findAllByKey(key, withRelated);
+    }
+
+    public async findAllByProfileIdAndMarketId(profileId: number, marketId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.settingRepo.findAllByProfileIdAndMarketId(profileId, marketId, withRelated);
+    }
+
+    public async findOneByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number, withRelated: boolean = true): Promise<Setting> {
+        const setting = await this.settingRepo.findOneByKeyAndProfileIdAndMarketId(key, profileId, marketId, withRelated);
+        if (setting === null) {
+            this.log.warn(`Setting with the key=${key} was not found!`);
+            throw new NotFoundException(key);
+        }
+        return setting;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Setting> {
@@ -37,15 +58,6 @@ export class SettingService {
         if (setting === null) {
             this.log.warn(`Setting with the id=${id} was not found!`);
             throw new NotFoundException(id);
-        }
-        return setting;
-    }
-
-    public async findOneByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Setting> {
-        const setting = await this.settingRepo.findOneByKeyAndProfileId(key, profileId, withRelated);
-        if (setting === null) {
-            this.log.warn(`Setting with the key=${key} and profileId ${profileId} was not found!`);
-            throw new NotFoundException(key + ' and ' + profileId);
         }
         return setting;
     }
@@ -73,9 +85,7 @@ export class SettingService {
         setting.Key = body.key;
         setting.Value = body.value;
 
-        // update setting record
         const updatedSetting = await this.settingRepo.update(id, setting.toJSON());
-
         return updatedSetting;
     }
 
@@ -83,8 +93,8 @@ export class SettingService {
         await this.settingRepo.destroy(id);
     }
 
-    public async destroyByKeyAndProfileId(key: string, profileId: number): Promise<void> {
-        const setting = await this.findOneByKeyAndProfileId(key, profileId);
+    public async destroyByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number): Promise<void> {
+        const setting = await this.findOneByKeyAndProfileIdAndMarketId(key, profileId, marketId);
         await this.destroy(setting.id);
     }
 }

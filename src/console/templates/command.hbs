@@ -10,8 +10,11 @@ import { Commands } from './CommandEnumType';
 import { BaseCommand } from './BaseCommand';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { MissingParamException } from '../exceptions/MissingParamException';
+import { InvalidParamException } from '../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
 
-export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}Model> {
+export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}> {
 
     public log: LoggerType;
 
@@ -34,7 +37,7 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
      * @returns {Promise<{{name.capitalize}}Model>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<{{name.capitalize}}Model> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<{{name.capitalize}}> {
         throw new NotImplementedException();
         // root commands:
         // return await this.executeNext(data, rpcCommandFactory);
