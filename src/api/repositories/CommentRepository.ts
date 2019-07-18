@@ -9,7 +9,7 @@ import { Comment } from '../models/Comment';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import {CommentSearchParams} from '../requests/CommentSearchParams';
+import { CommentSearchParams } from '../requests/search/CommentSearchParams';
 
 export class CommentRepository {
 
@@ -31,28 +31,30 @@ export class CommentRepository {
         return this.CommentModel.fetchById(id, withRelated);
     }
 
-    public async findOneByHash(marketId: number, hash: string, withRelated: boolean = true): Promise<Comment> {
-        return this.CommentModel.fetchByHash(marketId, hash, withRelated);
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
+        return this.CommentModel.fetchByHash(hash, withRelated);
     }
 
     public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
         return this.CommentModel.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
     }
 
-    public async search(options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
-        return await this.CommentModel.search(options, withRelated);
+    /**
+     * @param {CommentSearchParams} options
+     * @param {boolean} withRelated
+     * @returns {Promise<Bookshelf.Collection<Comment>>}
+     */
+    public async search(options: CommentSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Comment>> {
+        return this.CommentModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Comment> {
         const comment = this.CommentModel.forge<Comment>(data);
-        this.log.error('forged = ' + JSON.stringify(comment, null, 2));
         try {
             const commentCreated = await comment.save();
             return this.CommentModel.fetchById(commentCreated.id);
         } catch (error) {
-            this.log.error('Could not create the comment! ' + JSON.stringify(error, null, 2));
-            throw error;
-            // throw new DatabaseException('Could not create the comment!', error);
+            throw new DatabaseException('Could not create the comment!', error);
         }
     }
 

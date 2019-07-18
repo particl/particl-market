@@ -105,7 +105,7 @@ export const Targets = {
             BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
             BidRejectActionService: 'BidRejectActionService',
-            CommentActionService: 'CommentActionService',
+            CommentAddActionService: 'CommentAddActionService',
             EscrowCompleteActionService: 'EscrowCompleteActionService',
             EscrowLockActionService: 'EscrowLockActionService',
             EscrowRefundActionService: 'EscrowRefundActionService',
@@ -190,8 +190,8 @@ export const Targets = {
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
         comment: {
-            CommentGetCommand: 'CommentGetCommand',
             CommentPostCommand: 'CommentPostCommand',
+            CommentGetCommand: 'CommentGetCommand',
             CommentSearchCommand: 'CommentSearchCommand',
             CommentRootCommand: 'CommentRootCommand'
         },
@@ -261,8 +261,8 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
-            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
@@ -271,7 +271,6 @@ export const Targets = {
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
-        ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -360,13 +359,15 @@ export const Targets = {
                 HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
-                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
+                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig',
+                HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig'
             },
             HashableField: 'HashableField',
             message: {
                 HashableBidMessageConfig: 'HashableBidMessageConfig',
                 HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
-                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
+                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig',
+                HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig'
             },
             model: {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
@@ -384,7 +385,8 @@ export const Targets = {
             MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
-            VoteMessageFactory: 'VoteMessageFactory'
+            VoteMessageFactory: 'VoteMessageFactory',
+            CommentAddMessageFactory: 'CommentAddMessageFactory'
         },
         MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
@@ -397,7 +399,8 @@ export const Targets = {
             OrderFactory: 'OrderFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
-            VoteFactory: 'VoteFactory'
+            VoteFactory: 'VoteFactory',
+            CommentFactory: 'CommentFactory'
         },
         RpcCommandFactory: 'RpcCommandFactory'
     },
@@ -427,7 +430,8 @@ export const Targets = {
             ListingItemAddActionListener: 'ListingItemAddActionListener',
             OrderItemShipActionListener: 'OrderItemShipActionListener',
             ProposalAddActionListener: 'ProposalAddActionListener',
-            VoteActionListener: 'VoteActionListener'
+            VoteActionListener: 'VoteActionListener',
+            CommentAddActionListener: 'CommentAddActionListener'
         },
         ActionListenerInterface: 'ActionListenerInterface',
         BaseActionListenr: 'BaseActionListenr',

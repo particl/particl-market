@@ -3,12 +3,12 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 /**
- * CommentType
+ * CommentAction
  *
  */
 
-export enum CommentType {
+export enum CommentAction {
 
-    LISTINGITEM_QUESTION_AND_ANSWERS = 'LISTINGITEM_QUESTION_AND_ANSWERS'
+    MPA_COMMENT_ADD = 'MPA_COMMENT_ADD'
 
 }

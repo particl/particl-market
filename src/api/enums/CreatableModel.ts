@@ -22,4 +22,5 @@ export enum CreatableModel {
     ACTIONMESSAGE = 'actionmessage',
     PROPOSAL = 'proposal',
     COMMENT = 'comment'
+
 }

@@ -160,6 +160,11 @@ import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
 import {CommentSearchCommand} from '../commands/comment/CommentSearchCommand';
 
+import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
+import { CommentPostCommand } from '../commands/comment/CommentPostCommand';
+import { CommentSearchCommand } from '../commands/comment/CommentSearchCommand';
+import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {

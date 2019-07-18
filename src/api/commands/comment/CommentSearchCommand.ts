@@ -1,80 +1,72 @@
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {Comment} from '../../models/Comment';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {RpcCommandFactory} from '../../factories/RpcCommandFactory';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {CommentType} from '../../enums/CommentType';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {MarketService} from '../../services/MarketService';
-import {CommentSearchParams} from '../../requests/CommentSearchParams';
-import {CommentService} from '../../services/model/CommentService';
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-export class CommentSearchCommand extends BaseCommand implements RpcCommandInterface<Comment> {
+import * as Bookshelf from 'bookshelf';
+import { inject, named } from 'inversify';
+import { validate, request } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { Comment } from '../../models/Comment';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { CommentService } from '../../services/model/CommentService';
+import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { CommentType } from '../../enums/CommentType';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemService } from '../../services/model/ListingItemService';
+
+export class CommentSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.COMMENT_SEARCH);
         this.log = new Logger(__filename);
     }
 
     /**
-     * command description
-     *
-     * @param data, RpcRequest
-     * @param rpcCommandFactory, RpcCommandFactory
-     * @returns {Promise<any>}
+     * @param data
+     * @returns {Promise<Comment>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        const searchArgs = {
-            marketId: data.params[0]
-        } as CommentSearchParams;
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
+        const searchArgs = {} as CommentSearchParams;
 
-        if (typeof data.params[1] === 'number') {
-            searchArgs.page = data.params[1];
-            searchArgs.pageLimit = data.params[2];
-            const order: string = data.params[3];
+        let withRelated;
+        if (typeof data.params[0] === 'number') {
+            searchArgs.page = data.params[0];
+            searchArgs.pageLimit = data.params[1];
+            const order: string = data.params[2];
             searchArgs.order = SearchOrder[order] || SearchOrder.ASC;
-            searchArgs.orderField = data.params[4];
-            searchArgs.type = data.params[5];
-            searchArgs.target = data.params[6];
+            searchArgs.orderField = data.params[3];
+            searchArgs.type = data.params[4];
+            searchArgs.target = data.params[5];
+            withRelated = data.params[6];
         } else {
-            searchArgs.commentHash = data.params[1];
+            searchArgs.commentHash = data.params[0];
             searchArgs.order = SearchOrder.ASC;
+            withRelated = data.params[1];
         }
 
-        try {
-            return await this.commentService.search(searchArgs);
-        } catch (ex) {
-            this.log.error(JSON.stringify(ex, null, 2));
-            throw ex;
-        }
+        return await this.commentService.search(searchArgs, withRelated);
     }
 
+    /**
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        }
-
-        const marketId = data.params[0];
-        if (typeof marketId !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
-
         if (data.params.length >= 2) {
-            const hashOrPage = data.params[1];
+            const hashOrPage = data.params[0];
             if (typeof hashOrPage === 'number') {
                 // It's a page
                 if (hashOrPage < 0) {
@@ -84,33 +76,28 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             } else if (typeof hashOrPage === 'string') {
                 // It's a commentHash
             } else {
-                throw new InvalidParamException('commentHash|page', 'string|number');
+                throw new InvalidParamException('hash|page', 'string|number');
             }
         }
-
-        // check market exists
-        // Throws NotFoundException
-        await this.marketService.findOne(marketId);
-
         return data;
     }
 
     public async validatePage(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length >= 3) {
-            const pageLimit = data.params[2];
+        if (data.params.length >= 2) {
+            const pageLimit = data.params[1];
             if (typeof pageLimit !== 'number' || pageLimit <= 0) {
                 throw new InvalidParamException('pageLimit', 'number');
             }
         }
-        if (data.params.length >= 4) {
-            const order = data.params[3];
+        if (data.params.length >= 3) {
+            const order = data.params[2];
             if (typeof order !== 'string' || !SearchOrder[order]) {
                 throw new InvalidParamException('order', 'SearchOrder');
             }
         }
 
-        if (data.params.length >= 5) {
-            const orderField = data.params[4];
+        if (data.params.length >= 4) {
+            const orderField = data.params[3];
             if (typeof orderField !== 'string'
                 || !(orderField === 'id'
                     || orderField === 'hash'
@@ -130,31 +117,56 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             }
         }
 
-        if (data.params.length >= 6) {
-            const type = data.params[5];
+        let type;
+        if (data.params.length >= 5) {
+            type = data.params[4];
             if (typeof type !== 'string' || !CommentType[type]) {
                 throw new InvalidParamException('type', 'CommentType');
             }
         }
 
-        if (data.params.length >= 7) {
-            const target = data.params[6];
+        let target;
+        if (data.params.length >= 6) {
+            target = data.params[5];
             if (typeof target !== 'string') {
                 throw new InvalidParamException('target', 'string');
             }
         }
+
+        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS && target) {
+            await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Listing Item');
+                });
+        }
+
         return data;
     }
 
-    public help(): string {
-        return this.getName() + 'search <marketId> (<commentHash> | [<page> [<pageLimit> [<order> [<orderField> [<type> [<target>]]]]]])';
+    public usage(): string {
+        return this.getName() + ' (<commentHash> [<withRelated>]| [<page> [<pageLimit> [<order> [<orderField> [<type> [<target> [<withRelated>]]]]]]])';
     }
 
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <commentHash>            - String - The comments hash.\n'
+            + '    <page>                   - [optional] Numeric - The number page we want to \n'
+            + '                                view of searchBy comment results.\n'
+            + '    <pageLimit>              - [optional] Numeric - The number of results per page.\n'
+            + '    <order>                  - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. \n'
+            + '    <orderField>             - [optional] The field to order the results by. \n'
+            + '    <type>                   - [optional] ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of comment.\n'
+            + '    <target>                 - [optional] String - The target of the comment.\n'
+            + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
+    }
+
+
     public description(): string {
-        return 'Commands for searching comments.';
+        return 'Search comments with the comment hash, or the page, page limit, order, order field, type, target and with related.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return 'comment ' + this.getName() + ' commentHash \'8d5adf3a47bf796a834af487ad4475de4a85306a5a4213e9d761b731b0014c14\'';
     }
+
 }

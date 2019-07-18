@@ -17,9 +17,8 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     public generatePastComment = false;
     public type = null;
     public sender = null;
+    public receiver = null;
     public target = null;
-    public marketId = null;
-
 
     /**
      * generateParams[]:
@@ -31,10 +30,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.generateListingItemTemplate = generateParams[0] ? true : false;
             this.generateListingItem = generateParams[1] ? true : false;
             this.generatePastComment = generateParams[2] ? generateParams[2] : false;
-            this.type = generateParams[3] ? generateParams[3] : null;
-            this.sender = generateParams[4] ? generateParams[4] : null;
-            this.target = generateParams[5] ? generateParams[5] : null;
-            this.marketId = generateParams[6] ? generateParams[6] : null;
+            this.sender = generateParams[3] ? generateParams[3] : null;
+            this.receiver = generateParams[4] ? generateParams[4] : null;
+            this.type = generateParams[5] ? generateParams[5] : null;
+            this.target = generateParams[6] ? generateParams[6] : null;
         }
     }
 
@@ -43,10 +42,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.generateListingItemTemplate,
             this.generateListingItem,
             this.generatePastComment,
-            this.type,
             this.sender,
-            this.target,
-            this.marketId
+            this.receiver,
+            this.type,
+            this.target
         ];
     }
 }

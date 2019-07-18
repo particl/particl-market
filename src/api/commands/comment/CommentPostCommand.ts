@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -11,32 +12,32 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { BaseCommand } from '../BaseCommand';
-import { Command } from '../Command';
 
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 
-import { Comment } from '../../models/Comment';
 import { CommentService } from '../../services/model/CommentService';
-import { CommentActionService } from '../../services/action/CommentActionService';
-import { MarketService } from '../../services/MarketService';
-import { ProfileService } from '../../services/ProfileService';
-import { CommentCreateRequest } from '../../requests/CommentCreateRequest';
-import { CommentMessageType } from '../../enums/CommentMessageType';
-import {CommentType} from '../../enums/CommentType';
+import { ProfileService } from '../../services/model/ProfileService';
+import { CommentType } from '../../enums/CommentType';
+import { MarketService } from '../../services/model/MarketService';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { CommentAddActionService } from '../../services/action/CommentAddActionService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 
-export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<Comment> {
+export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CommentActionService) public commentActionService: CommentActionService,
-        @inject(Types.Service) @named(Targets.Service.CommentService) public commentService: CommentService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public commentActionService: CommentAddActionService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.COMMENT_POST);
         this.log = new Logger(__filename);
@@ -51,65 +52,67 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        const marketId = data.params[0];
 
-        const profileId = data.params[1];
-        const senderProfile = await this.profileService.findOne(profileId);
-        const profileAddress = senderProfile.Address;
-
-        const type = CommentType[data.params[2]];
-        let target = data.params[3];
-        const parentCommentHash = data.params[5];
+        const profile: resources.Profile = data.params[0];
+        const receiver = data.params[1];
+        const type  = CommentType[data.params[2]];
+        const target = data.params[3];
         const message = data.params[4];
+        const parentComment = data.params.length > 5 ? data.params[5] : null;
 
-        let receiver;
-        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
-            const market = await this.marketService.findOne(marketId);
-            const marketAddr = market.Address;
-            receiver = marketAddr;
-        } else {
-            receiver = target;
-            target = 'N/A';
-        }
+        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        const daysRetention = 2;
+        const estimateFee = false;
 
         const commentRequest = {
+            sendParams: new SmsgSendParams(profile.address, receiver, false, daysRetention, estimateFee),
+            sender: profile,
+            receiver,
             type,
-            sender: profileAddress,
-            market_id: marketId,
             target,
-            parent_comment_hash: parentCommentHash,
             message,
-            receiver
-        } as CommentCreateRequest;
+            parentComment
+        } as CommentAddRequest;
 
         return await this.commentActionService.send(commentRequest);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: receiver
+     *  [2]: type
+     *  [3]: target
+     *  [4]: message
+     *  [5]: parentCommentHash
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
         if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        }
-        if (data.params.length < 2) {
             throw new MissingParamException('profileId');
-        }
-        if (data.params.length < 3) {
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('receiver');
+        } else if (data.params.length < 3) {
             throw new MissingParamException('type');
-        }
-        if (data.params.length < 4) {
+        } else if (data.params.length < 4) {
             throw new MissingParamException('target');
-        }
-        if (data.params.length < 5) {
+        } else if (data.params.length < 5) {
             throw new MissingParamException('message');
         }
 
-        const marketId = data.params[0];
-        if (typeof marketId !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
-        const profileId = data.params[1];
+        const profileId = data.params[0];
         if (typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         }
+
+        const receiver = data.params[1];
+        if (typeof receiver !== 'string') {
+            throw new InvalidParamException('receiver', 'string');
+        }
+
         const type = data.params[2];
         if (typeof type !== 'string' || !CommentType[type]) {
             throw new InvalidParamException('type', 'CommentType');
@@ -133,22 +136,32 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             }
         }
 
-        // Throws NotFoundException
-        await this.profileService.findOne(profileId);
-
-        // Throws NotFoundException
-        await this.marketService.findOne(marketId);
+        // make sure profile with the id exists
+        data.params[0] = await this.profileService.findOne(profileId).then(value => value.toJSON())
+            .catch(() => {
+                throw new ModelNotFoundException('Profile');
+            });
 
         // Throws NotFoundException
         if (parentCommentHash) {
-            await this.commentService.findOneByHash(marketId, parentCommentHash, true);
+            data.params[5] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Parent Comment');
+                });
+        }
+
+        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
+            await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Listing Item');
+                });
         }
 
         return data;
     }
 
     public help(): string {
-        return this.getName() + ' post <marketId> <profileId> <type> (<target>|<receiver>) <message> [<parentCommentHash>]';
+        return this.getName() + ' <profileId> <receiver> <type> <target> <message> [<parentHash>]';
     }
 
     public description(): string {
@@ -156,6 +169,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public example(): string {
-        return this.getName() + ' comment post 1 1 PRIVATE_CHAT pjT82w4qurXyr6wXur3aUwwUmWjafEKpLk \'testMessage\'';
+        return this.getName() + ' comment post 1 \'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW\' \'LISTINGITEM_QUESTION_AND_ANSWERS\'' +
+            ' \'e1ccdf1201676a0f56aa1c5f5c4c1a9c0cef205c9cf6b51a40a443da5d47aae4\' \'testMessage\'';
     }
+
 }

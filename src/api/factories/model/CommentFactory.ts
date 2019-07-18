@@ -6,15 +6,17 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { CommentMessage } from '../../messages/CommentMessage';
-import { CommentMessageType } from '../../enums/CommentMessageType';
-import { CommentCreateRequest } from '../../requests/CommentCreateRequest';
-import { CommentUpdateRequest } from '../../requests/CommentUpdateRequest';
+import { Types, Core } from '../../../constants';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { CommentCreateParams } from './ModelCreateParams';
+import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest';
+import { CommentUpdateRequest } from '../../requests/model/CommentUpdateRequest';
+import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { HashableCommentCreateRequestConfig } from '../hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
-
-export class CommentFactory {
+export class CommentFactory implements ModelFactoryInterface {
 
     public log: LoggerType;
 
@@ -26,38 +28,15 @@ export class CommentFactory {
 
     /**
      *
-     * @param {CommentMessageType} commentMessageType
-     * @returns {Promise<CommentMessage>}
+     * @param {CommentCreateParams} params
+     * @param {CommentAddMessage} commentMessage
+     * @param {resources.SmsgMessage} smsgMessage
+     * @returns {Promise<ProposalCreateRequest>}
      */
-    public async getMessage(type: string, sender: string, marketHash: string, target: string,
-                            parentHash: string, message: string, signature: string): Promise<CommentMessage> {
+    public async get(params: CommentCreateParams, commentMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage):
+        Promise<CommentCreateRequest | CommentUpdateRequest> {
 
-        const commentMessage = {
-            type,
-            sender,
-            marketHash,
-            target,
-            parentHash,
-            message,
-            signature
-        } as CommentMessage;
-
-        return commentMessage;
-    }
-
-    /**
-     *
-     * @param {CommentMessage} voteMessage
-     * @param proposalOption
-     * @param {number} weight
-     * @param create
-     * @param smsgMessage
-     * @returns {Promise<CommentCreateRequest | CommentUpdateRequest>}
-     */
-    public async getModel(voteMessage: CommentMessage, proposalOption: resources.ProposalOption, weight: number,
-                          create: boolean, smsgMessage?: resources.SmsgMessage): Promise<CommentCreateRequest | CommentUpdateRequest> {
-
-        /*const smsgData: any = {
+        const smsgData: any = {
             postedAt: Number.MAX_SAFE_INTEGER,
             receivedAt: Number.MAX_SAFE_INTEGER,
             expiredAt: Number.MAX_SAFE_INTEGER
@@ -67,26 +46,31 @@ export class CommentFactory {
             smsgData.postedAt = smsgMessage.sent;
             smsgData.receivedAt = smsgMessage.received;
             smsgData.expiredAt = smsgMessage.expiration;
+            smsgData.msgid = smsgMessage.msgid;
         }
 
-        if (create) {
-            return {
-                proposal_option_id: proposalOption.id,
-                signature: voteMessage.signature,
-                voter: voteMessage.voter,
-                weight,
-                ...smsgData
-            } as VoteCreateRequest;
-        } else {
-            return {
-                proposal_option_id: proposalOption.id,
-                signature: voteMessage.signature,
-                voter: voteMessage.voter,
-                weight,
-                ...smsgData
-            } as VoteUpdateRequest;
-        }*/
-        throw new NotImplementedException();
-    }
+        const commentRequest = {
+            sender: params.sender,
+            receiver: params.receiver,
+            type: params.type,
+            target: params.target,
+            message: params.message,
+            parentCommentId: params.parentCommentId,
+            ...smsgData
+        } as CommentCreateRequest || CommentUpdateRequest;
 
+        commentRequest.hash = ConfigurableHasher.hash({
+            ...commentRequest,
+            parentCommentHash: commentMessage.parentCommentHash
+        }, new HashableCommentCreateRequestConfig());
+
+        // validate that the commentMessage.hash should have a matching hash with the incoming or outgoing message
+        if (commentMessage.hash !== commentRequest.hash) {
+            const error = new HashMismatchException('CommentCreateRequest', commentMessage.hash, commentRequest.hash);
+            this.log.error(error.getMessage());
+            throw error;
+        }
+
+        return commentRequest;
+    }
 }

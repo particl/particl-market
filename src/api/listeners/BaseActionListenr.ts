@@ -40,6 +40,8 @@ import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import { VoteMessage } from '../messages/action/VoteMessage';
 import { ProposalService } from '../services/model/ProposalService';
 import {OrderItemStatus} from '../enums/OrderItemStatus';
+import { CommentAction } from '../enums/CommentAction';
+import { CommentAddValidator } from '../messages/validator/CommentValidator';
 
 // TODO: rename, refactor
 @injectable()
@@ -72,6 +74,8 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
                 return ProposalAddValidator.isValid(msg);
             case GovernanceAction.MPA_VOTE:
                 return VoteValidator.isValid(msg);
+            case CommentAction.MPA_COMMENT_ADD:
+                return CommentAddValidator.isValid(msg);
             default:
                 throw new NotImplementedException();
         }
@@ -261,6 +265,10 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
                 return await this.proposalService.findOneByHash((msg.action as VoteMessage).proposalHash, true)
                     .then( () => true)
                     .catch( () => false);
+
+            case CommentAction.MPA_COMMENT_ADD:
+                // TODO: make sure for each type, the target exists
+                return true;
 
             default:
                 throw new NotImplementedException();

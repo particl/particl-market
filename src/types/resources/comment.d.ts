@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { CommentType } from '../../api/enums/CommentType';
-
 declare module 'resources' {
 
     interface Comment {
@@ -11,18 +9,19 @@ declare module 'resources' {
         hash: string;
         sender: string;
         receiver: string;
+        type: string;
         target: string;
         message: string;
-        type: CommentType;
 
         postedAt: number;
         expiredAt: number;
-        createdAt: number;
+        receivedAt: number;
+
         updatedAt: number;
+        createdAt: number;
 
         ParentComment: Comment;
         ChildComments: Comment[];
-        Market: Market;
     }
 
 }

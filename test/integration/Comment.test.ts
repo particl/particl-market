@@ -12,13 +12,13 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CommentService } from '../../src/api/services/model/CommentService';
-import { CommentCreateRequest } from '../../src/api/requests/CommentCreateRequest';
-import { CommentUpdateRequest } from '../../src/api/requests/CommentUpdateRequest';
+import { CommentCreateRequest } from '../../src/api/requests/model/CommentCreateRequest';
+import { CommentUpdateRequest } from '../../src/api/requests/model/CommentUpdateRequest';
 import { CommentType } from '../../src/api/enums/CommentType';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,9 +40,9 @@ describe('Comment', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        commentService = app.IoC.getNamed<CommentService>(Types.Service, Targets.Service.CommentService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        commentService = app.IoC.getNamed<CommentService>(Types.Service, Targets.Service.model.CommentService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -59,26 +59,6 @@ describe('Comment', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no market_id', async () => {
-        const testData = {
-            // parent_comment_id: 0,
-            // market_id: 0,
-            sender: 'senderaddress',
-            receiver: 'receiveraddress, market/profile',
-            target: 'listingitemhash or some other type of target depending on type',
-            message: 'message',
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            postedAt: new Date().getTime(),
-            receivedAt: new Date().getTime(),
-            expiredAt: new Date().getTime() + 1000000
-        } as CommentCreateRequest;
-
-        expect.assertions(1);
-        await commentService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should throw ValidationException because we want to create a empty Comment', async () => {
         expect.assertions(1);
         await commentService.create({} as CommentCreateRequest).catch(e =>
@@ -89,26 +69,23 @@ describe('Comment', () => {
     test('Should create a new Comment', async () => {
 
         const testData = {
-            // parent_comment_id: 0,
-            market_id: defaultMarket.id,
-            sender: 'senderaddress',
-            receiver: 'receiveraddress, market/profile',
-            target: 'listingitemhash or some other type of target depending on type',
-            message: 'message',
+            sender: 'phRoeov8KFV4YNSj9by7gKZ7dGvXPdJ7Pd',
+            receiver: 'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW',
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            target: '290be04b41717f4aa4fb27fa83ef16e63aae56bdd060c9bc14efc5cddba3f992',
+            message: 'message',
             postedAt: new Date().getTime(),
             receivedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 1000000
         } as CommentCreateRequest;
-        const commentHash = ObjectHash.getHash(testData, HashableObjectType.COMMENT_CREATEREQUEST);
+
+        testData.hash = ConfigurableHasher.hash(testData, new HashableCommentCreateRequestConfig());
 
         createdComment = await commentService.create(testData)
             .then(value => value.toJSON());
         const result: resources.Comment = createdComment;
 
         // todo: write tests for comments having parent comments
-        expect(result.Market.id).toBe(testData.market_id);
-        expect(result.hash).toBe(commentHash);
         expect(result.sender).toBe(testData.sender);
         expect(result.receiver).toBe(testData.receiver);
         expect(result.target).toBe(testData.target);
@@ -120,7 +97,6 @@ describe('Comment', () => {
     });
 
     test('Should list Comments with our new create one', async () => {
-        const commentHash = ObjectHash.getHash(createdComment, HashableObjectType.COMMENT);
 
         const comments: resources.Comment[] = await commentService.findAll()
             .then(value => value.toJSON());
@@ -129,7 +105,7 @@ describe('Comment', () => {
         const result: resources.Comment = comments[0];
         log.debug('result: ', JSON.stringify(result, null, 2));
 
-        expect(result.hash).toBe(commentHash);
+        expect(result.hash).toBe(createdComment.hash);
         expect(result.sender).toBe(createdComment.sender);
         expect(result.receiver).toBe(createdComment.receiver);
         expect(result.target).toBe(createdComment.target);
@@ -144,7 +120,6 @@ describe('Comment', () => {
         const result: resources.Comment = await commentService.findOne(createdComment.id)
             .then(value => value.toJSON());
 
-        expect(result.Market.id).toBe(defaultMarket.id);
         expect(result.sender).toBe(createdComment.sender);
         expect(result.receiver).toBe(createdComment.receiver);
         expect(result.target).toBe(createdComment.target);

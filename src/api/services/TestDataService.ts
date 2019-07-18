@@ -93,10 +93,11 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
-import { CommentCreateRequest } from '../requests/CommentCreateRequest';
+import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
 import { CommentType } from '../enums/CommentType';
 import { CommentService } from './model/CommentService';
-import {GenerateCommentParams} from '../requests/testdata/GenerateCommentParams';
+import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
+import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 
 export class TestDataService {
 
@@ -210,6 +211,9 @@ export class TestDataService {
             }
             case CreatableModel.ITEMIMAGE: {
                 return await this.itemImageService.create(body.data as ItemImageCreateRequest);
+            }
+            case CreatableModel.COMMENT: {
+                return await this.commentService.create(body.data as CommentCreateRequest);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -851,7 +855,6 @@ export class TestDataService {
         if (generateParams.generateListingItem) {
             throw new NotImplementedException();
         }
-        // TODO: proposalHash is not set to listingitem
 
         const items: resources.Comment[] = [];
 
@@ -887,28 +890,18 @@ export class TestDataService {
             sender = generateParams.sender;
         }
 
-        let target;
-        if (!generateParams.target) {
-            const defaultProfile = await this.profileService.getDefault();
-            const profile = defaultProfile.toJSON();
-            target = profile.address;
-        } else {
-            target = generateParams.target;
-        }
-
-        let market;
-        let marketId;
-        if (!generateParams.marketId) {
+        let receiver;
+        if (!generateParams.receiver) {
             const defaultMarket = await this.marketService.getDefault();
-            market = defaultMarket.toJSON();
-            marketId = market.id;
+            const market = defaultMarket.toJSON();
+            receiver = market.address;
         } else {
-            marketId = generateParams.marketId;
-            market = await this.marketService.findOne(marketId);
+            receiver = generateParams.sender;
         }
-        this.log.error('marketId = ' + JSON.stringify(marketId, null, 2));
 
-        const type = generateParams.type || CommentType.PRIVATE_CHAT;
+        const target = generateParams.target;
+
+        const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
 
         const currentTime = new Date().getTime();
 
@@ -921,33 +914,26 @@ export class TestDataService {
             ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
             : _.random(currentTime + 1001, currentTime + 2000, false);
 
-        // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
-        // this.log.debug('currentblock: ', currentblock);
-        // this.log.debug('blockStart: ', blockStart);
-        // this.log.debug('blockEnd: ', blockEnd);
 
         // TODO: parent comment create?
 
-        const commentCreateRequest = {
-            market_id: marketId,
-            sender,
-            type,
-            message: Faker.lorem.lines(1),
+        const smsgData: any = {
             postedAt: timeStart,
             receivedAt: timeStart,
             expiredAt: timeEnd
+        };
+
+        const commentCreateRequest = {
+            sender,
+            receiver,
+            type,
+            target,
+            message: Faker.lorem.lines(1),
+            parentCommentId: null,
+            ...smsgData
         } as CommentCreateRequest;
 
-        if (type === CommentType.PRIVATE_CHAT) {
-            commentCreateRequest.target = 'N/A';
-            commentCreateRequest.receiver = target;
-        } else {
-            commentCreateRequest.target = target;
-            commentCreateRequest.receiver = market.address;
-        }
-
-        // TODO: This probably isn't needed as it's calculated by the service
-        // commentCreateRequest.hash = ObjectHash.getHash(commentCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
+        commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
 
         return commentCreateRequest;
     }

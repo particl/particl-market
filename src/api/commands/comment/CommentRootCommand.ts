@@ -5,15 +5,14 @@
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Types, Core } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
-export class CommentRootCommand extends BaseCommand implements RpcCommandInterface<Comment> {
+export class CommentRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
@@ -36,15 +35,16 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (get|search|post)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (post|search)';
+        return this.getName() + ' (get|search|post)  -  ' + this.description();
     }
 
     public description(): string {
-        return 'Commands for managing comments.';
+        return 'Commands for Comments.';
     }
 
-    public example(): string {
-        return this.getName() + ' TODO: example';
-    }
 }
