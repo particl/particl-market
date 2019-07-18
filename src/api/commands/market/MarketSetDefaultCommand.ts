@@ -77,6 +77,7 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
 
         // set secure messaging to use the default wallet
         await this.coreRpcService.smsgSetWallet(market.Wallet.name);
+        await this.coreRpcService.setActiveWallet(market.Wallet.name);
 
         return await this.marketService.getDefaultForProfile(profile.id);
     }

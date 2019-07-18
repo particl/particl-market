@@ -56,7 +56,7 @@ export class DefaultMarketService {
 
         this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
 
-        // get the Profiles default wallet so we can set it alse as the wallet for the Market
+        // get the Profiles default wallet so we can set it as the wallet for the Market
         const defaultProfileWallet: resources.Wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const defaultMarket = {
@@ -107,6 +107,7 @@ export class DefaultMarketService {
                     }
                 });
         }
+        await this.coreRpcService.setActiveWallet(newMarket.Wallet.name);
 
         await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
         if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
