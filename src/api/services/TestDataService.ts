@@ -98,6 +98,7 @@ import { CommentType } from '../enums/CommentType';
 import { CommentService } from './model/CommentService';
 import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
 import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
+import { DefaultSettingService } from './DefaultSettingService';
 
 export class TestDataService {
 
@@ -108,6 +109,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -156,6 +158,8 @@ export class TestDataService {
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
+
+            await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
             // seed the default market
             const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
@@ -310,6 +314,7 @@ export class TestDataService {
             'item_categories',
             'markets',
             'wallets',
+            'settings',
             'users',        // todo: not needed
             'price_ticker', // todo: price_tickers
             'flagged_items',
@@ -896,7 +901,7 @@ export class TestDataService {
         if (!generateParams.receiver) {
             const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
             const market = defaultMarket.toJSON();
-            receiver = market.address;
+            receiver = market.receiveAddress;
         } else {
             receiver = generateParams.sender;
         }

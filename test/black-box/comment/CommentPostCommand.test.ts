@@ -69,7 +69,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             invalidProfileId,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             "Invalid profile id"
@@ -85,7 +85,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             invalidProfileId,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             "Invalid profile id"
@@ -101,7 +101,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             invalidProfileId,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             "Invalid profile id"
@@ -118,7 +118,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             invalidProfileId,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             "Invalid profile id"
@@ -134,7 +134,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
             "Invalid comment type"
@@ -150,7 +150,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
             "Invalid comment type"
@@ -166,7 +166,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
             "Invalid comment type"
@@ -182,7 +182,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
             "Invalid comment type"
@@ -198,7 +198,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
             "Invalid comment target"
@@ -214,7 +214,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
             "Invalid comment target"
@@ -230,7 +230,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
             "Invalid comment target"
@@ -246,7 +246,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
             "Invalid comment target"
@@ -262,7 +262,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             invalidMessage
@@ -278,7 +278,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             invalidMessage
@@ -293,7 +293,7 @@ describe('CommentPostCommand', () => {
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
             defaultProfile.id,
-            defaultMarket.address,
+            defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             'Comment Message'
@@ -326,7 +326,7 @@ describe('CommentPostCommand', () => {
         const comment = result2[0];
 
         expect(comment.sender).toBe(defaultProfile.address);
-        expect(comment.receiver).toBe(defaultMarket.address);
+        expect(comment.receiver).toBe(defaultMarket.receiveAddress);
         expect(comment.target).toBe(createdListingItemHash);
         expect(comment.message).toBe('Comment Message');
         expect(comment.type).toBe(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS);
