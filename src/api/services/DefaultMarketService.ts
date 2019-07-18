@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -13,12 +14,16 @@ import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
 import { CoreRpcService } from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
+import { MarketType } from '../enums/MarketType';
+import { ProfileService } from './model/ProfileService';
+import {RpcWallet} from 'omp-lib/dist/interfaces/rpc';
 
 export class DefaultMarketService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
@@ -29,7 +34,7 @@ export class DefaultMarketService {
 
     // TODO: if something goes wrong here and default profile does not get created, the application should stop
 
-    public async seedDefaultMarket(): Promise<void> {
+    public async seedDefaultMarket(profile: resources.Profile): Promise<Market> {
 
         const MARKETPLACE_NAME          = process.env.DEFAULT_MARKETPLACE_NAME
                                             ? process.env.DEFAULT_MARKETPLACE_NAME
@@ -42,33 +47,72 @@ export class DefaultMarketService {
                                             : 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA';
 
         const defaultMarket = {
+            profile_id: profile.id,
             name: MARKETPLACE_NAME,
-            private_key: MARKETPLACE_PRIVATE_KEY,
-            address: MARKETPLACE_ADDRESS
+            type: MarketType.MARKETPLACE,
+            receiveKey: MARKETPLACE_PRIVATE_KEY,
+            receiveAddress: MARKETPLACE_ADDRESS,
+            publishKey: MARKETPLACE_PRIVATE_KEY,
+            publishAddress: MARKETPLACE_ADDRESS,
+            wallet: 'market.dat'
         } as MarketCreateRequest;
-        await this.insertOrUpdateMarket(defaultMarket);
-        return;
+
+        return await this.insertOrUpdateMarket(defaultMarket, profile);
     }
 
-    public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        let newMarketModel = await this.marketService.findByAddress(market.address);
-        if (newMarketModel === null) {
-            newMarketModel = await this.marketService.create(market);
-            this.log.debug('created new default Market: ', JSON.stringify(newMarketModel, null, 2));
-        } else {
-            newMarketModel = await this.marketService.update(newMarketModel.Id, market as MarketUpdateRequest);
-            this.log.debug('updated new default Market: ', JSON.stringify(newMarketModel, null, 2));
-        }
-        const newMarket = newMarketModel.toJSON();
+    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
-        // import market private key
-        if ( await this.smsgService.smsgImportPrivKey(newMarket.privateKey) ) {
+        const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
+            .then(async (found) => {
+                return await this.marketService.update(found.Id, market as MarketUpdateRequest).then(value => value.toJSON());
+            })
+            .catch(async (reason) => {
+                return await this.marketService.create(market).then(value => value.toJSON());
+            });
+        this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
+
+        // if wallet with the name doesnt exists, then create one
+        const exists = await this.coreRpcService.walletExists(market.wallet);
+        if (!exists) {
+            await this.coreRpcService.createAndLoadWallet(market.wallet)
+                .then(result => {
+                    this.log.debug('created wallet: ', result.name);
+                })
+                .catch(reason => {
+                    this.log.debug('wallet: ' + market.name + ' already exists.');
+                });
+        } else {
+            // load the wallet unless already loaded
+            await this.coreRpcService.walletLoaded(market.wallet).
+                then(async isLoaded => {
+                    if (!isLoaded) {
+                        await this.coreRpcService.loadWallet(market.wallet)
+                            .catch(reason => {
+                                this.log.debug('wallet: ' + market.name + ' already loaded.');
+                            });
+                    }
+                });
+        }
+
+        await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
+        if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
+            await this.importMarketPrivateKey(newMarket.publishKey, newMarket.publishAddress);
+        }
+
+        // set secure messaging to use the default wallet
+        await this.coreRpcService.smsgSetWallet(newMarket.wallet);
+
+        return await this.marketService.findOne(newMarket.id);
+    }
+
+    private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
+        if ( await this.smsgService.smsgImportPrivKey(privateKey) ) {
             // get market public key
-            const publicKey = await this.getPublicKeyForAddress(newMarket.address);
+            const publicKey = await this.getPublicKeyForAddress(address);
             this.log.debug('default Market publicKey: ', publicKey);
             // add market address
             if (publicKey) {
-                await this.smsgService.smsgAddAddress(newMarket.address, publicKey);
+                await this.smsgService.smsgAddAddress(address, publicKey);
             } else {
                 throw new InternalServerException('Error while adding public key to db.');
             }
@@ -76,7 +120,6 @@ export class DefaultMarketService {
             this.log.error('Error while importing market private key to db.');
             // todo: throw exception, and do not allow market to run before its properly set up
         }
-        return newMarket;
     }
 
     private async getPublicKeyForAddress(address: string): Promise<string|null> {

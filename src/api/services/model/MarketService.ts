@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -12,6 +13,7 @@ import { MarketRepository } from '../../repositories/MarketRepository';
 import { Market } from '../../models/Market';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
+import { ProfileService } from './ProfileService';
 
 export class MarketService {
 
@@ -19,13 +21,16 @@ export class MarketService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.getDefault(withRelated);
+        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+
+        const market = await this.marketRepo.getDefault(profile.id, withRelated);
         if (market === null) {
             this.log.warn(`Default Market was not found!`);
             throw new NotFoundException(process.env.DEFAULT_MARKETPLACE_NAME);
@@ -37,6 +42,10 @@ export class MarketService {
         return this.marketRepo.findAll();
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return this.marketRepo.findAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
@@ -46,12 +55,30 @@ export class MarketService {
         return market;
     }
 
-    public async findByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        return await this.marketRepo.findOneByAddress(address, withRelated);
+    public async findOneByProfileIdAndReceiveAddress(profileId: number, address: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, address, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
+        return market;
+    }
+
+    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByProfileIdAndName(profileId, name, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the name=${name} was not found!`);
+            throw new NotFoundException(name);
+        }
+        return market;
     }
 
     @validate()
-    public async create( @request(MarketCreateRequest) body: MarketCreateRequest): Promise<Market> {
+    public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the market
         const market = await this.marketRepo.create(body);
@@ -69,12 +96,14 @@ export class MarketService {
 
         // set new values
         market.Name = body.name;
-        market.PrivateKey = body.private_key;
-        market.Address = body.address;
-        // update market record
-        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
+        market.Type = body.type;
+        market.ReceiveKey = body.receiveKey;
+        market.ReceiveAddress = body.receiveAddress;
+        market.PublishKey = body.publishKey;
+        market.PublishAddress = body.publishAddress;
+        market.Wallet = body.wallet;
 
-        // return newMarket;
+        const updatedMarket = await this.marketRepo.update(id, market.toJSON());
         return updatedMarket;
     }
 

@@ -36,7 +36,7 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {
-    marketId: number;
+    market: string;
     rootCategory: resources.ItemCategory;
     msgid: string;
 }
@@ -45,7 +45,6 @@ export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
     address?: AddressCreateRequest;
     bidder: string;
-    msgid: string;
     parentBid?: resources.Bid;  // the bid that happened before this
 }
 

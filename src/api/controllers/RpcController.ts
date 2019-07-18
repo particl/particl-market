@@ -10,11 +10,11 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import * as _ from 'lodash';
-
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
+import * as interfaces from '../../types/interfaces';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);

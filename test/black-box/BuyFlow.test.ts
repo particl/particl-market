@@ -341,7 +341,7 @@ describe('Happy Buy Flow', () => {
 
         // make sure the Order/OrderItem statuses are correct
         expect(result[0].OrderItem.status).toBe(OrderItemStatus.BIDDED);
-        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.SENT);
 
         bidOnBuyerNode = result[0];
 
@@ -405,7 +405,7 @@ describe('Happy Buy Flow', () => {
 
         // make sure the Order/OrderItem statuses are correct
         expect(result[0].OrderItem.status).toBe(OrderItemStatus.BIDDED);
-        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].OrderItem.Order.status).toBe(OrderStatus.RECEIVED);
 
         bidOnSellerNode = result[0];
         log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
@@ -750,7 +750,7 @@ describe('Happy Buy Flow', () => {
         const lockBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
             return value.type === MPAction.MPA_LOCK;
         });
-        expect(lockBid.BidDatas).toHaveLength(2);
+        expect(lockBid.BidDatas).toHaveLength(3);
 
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_LOCKED);
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);

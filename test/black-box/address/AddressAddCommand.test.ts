@@ -102,7 +102,7 @@ describe('AddressAddCommand', () => {
             testData.addressLine2,
             testData.city,
             testData.state,
-            testData.country,
+            testData.country
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -118,7 +118,7 @@ describe('AddressAddCommand', () => {
             testData.addressLine1,
             testData.addressLine2,
             testData.city,
-            testData.state,
+            testData.state
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -133,7 +133,7 @@ describe('AddressAddCommand', () => {
             testData.lastName,
             testData.addressLine1,
             testData.addressLine2,
-            testData.city,
+            testData.city
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -147,7 +147,7 @@ describe('AddressAddCommand', () => {
             testData.firstName,
             testData.lastName,
             testData.addressLine1,
-            testData.addressLine2,
+            testData.addressLine2
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -160,7 +160,7 @@ describe('AddressAddCommand', () => {
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1,
+            testData.addressLine1
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -172,7 +172,7 @@ describe('AddressAddCommand', () => {
             defaultProfile.id,
             testData.title,
             testData.firstName,
-            testData.lastName,
+            testData.lastName
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -183,7 +183,7 @@ describe('AddressAddCommand', () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             defaultProfile.id,
             testData.title,
-            testData.firstName,
+            testData.firstName
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -193,7 +193,7 @@ describe('AddressAddCommand', () => {
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             defaultProfile.id,
-            testData.title,
+            testData.title
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -202,7 +202,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            defaultProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);

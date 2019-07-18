@@ -184,14 +184,14 @@ export class ItemInformationService {
      * @param itemCategory
      * @returns {Promise<ItemCategory>}
      */
-    private async getOrCreateItemCategory(itemCategory: ItemCategoryCreateRequest): Promise<ItemCategory> {
+    private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        if (itemCategory.key) {
-            result = await this.itemCategoryService.findOneByKey(itemCategory.key);
-        } else if (itemCategory.id) {
-            result = await this.itemCategoryService.findOne(itemCategory.id);
+        if (createRequest.key) {
+            result = await this.itemCategoryService.findOneByKey(createRequest.key);
+        } else if (createRequest.id) {
+            result = await this.itemCategoryService.findOne(createRequest.id);
         } else {
-            result = await this.itemCategoryService.create(itemCategory);
+            result = await this.itemCategoryService.create(createRequest);
         }
 
         return result;

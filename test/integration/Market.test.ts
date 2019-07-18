@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -14,6 +15,7 @@ import { Market } from '../../src/api/models/Market';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRequest';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -23,19 +25,21 @@ describe('Market', () => {
 
     let testDataService: TestDataService;
     let marketService: MarketService;
+    let profileService: ProfileService;
 
+    let defaultProfile: resources.Profile;
     let createdId;
 
     const testData = {
         name: 'TEST-MARKET',
-        private_key: 'TEST-PRIVATE-KEY',
-        address: 'TEST-MARKET-ADDRESS'
+        receiveKey: 'TEST-PRIVATE-KEY',
+        receiveAddress: 'TEST-MARKET-ADDRESS'
     } as MarketCreateRequest;
 
     const testDataUpdated = {
         name: 'TEST-UPDATE-MARKET',
-        private_key: 'TEST-UPDATE-PRIVATE-KEY',
-        address: 'TEST-UPDATE-MARKET-ADDRESS'
+        receiveKey: 'TEST-UPDATE-PRIVATE-KEY',
+        receiveAddress: 'TEST-UPDATE-MARKET-ADDRESS'
     } as MarketUpdateRequest;
 
     beforeAll(async () => {
@@ -43,10 +47,12 @@ describe('Market', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        defaultProfile = profileService.getDefault().then(value => value.toJSON());
     });
 
     // fetchByName
@@ -66,12 +72,12 @@ describe('Market', () => {
         const marketModel: Market = await marketService.create(testData);
         createdId = marketModel.Id;
 
-        const result = marketModel.toJSON();
+        const result: resources.Market = marketModel.toJSON();
 
         // test the values
         expect(result.name).toBe(testData.name);
-        expect(result.privateKey).toBe(testData.private_key);
-        expect(result.address).toBe(testData.address);
+        expect(result.receiveKey).toBe(testData.receiveKey);
+        expect(result.receiveAddress).toBe(testData.receiveAddress);
     });
 
     test('Should throw ValidationException because we want to create a empty market', async () => {
@@ -86,43 +92,43 @@ describe('Market', () => {
         const market = marketCollection.toJSON();
         expect(market.length).toBe(2); // include with default market
 
-        const result = market[1];
+        const result: resources.Market = market[1];
 
         // test the values
         expect(result.name).toBe(testData.name);
-        expect(result.privateKey).toBe(testData.private_key);
-        expect(result.address).toBe(testData.address);
+        expect(result.receiveKey).toBe(testData.receiveKey);
+        expect(result.receiveAddress).toBe(testData.receiveAddress);
     });
 
     test('Should return one market', async () => {
         const marketModel: Market = await marketService.findOne(createdId);
-        const result = marketModel.toJSON();
+        const result: resources.Market = marketModel.toJSON();
 
         // test the values
         expect(result.name).toBe(testData.name);
-        expect(result.privateKey).toBe(testData.private_key);
-        expect(result.address).toBe(testData.address);
+        expect(result.receiveKey).toBe(testData.receiveKey);
+        expect(result.receiveAddress).toBe(testData.receiveAddress);
     });
 
     test('Should update the market', async () => {
         const marketModel: Market = await marketService.update(createdId, testDataUpdated);
-        const result = marketModel.toJSON();
+        const result: resources.Market = marketModel.toJSON();
 
         // test the values
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.privateKey).toBe(testDataUpdated.private_key);
-        expect(result.address).toBe(testDataUpdated.address);
+        expect(result.receiveKey).toBe(testDataUpdated.receiveKey);
+        expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
     });
 
-    // findByAddress
     test('Should find market by address', async () => {
-        const marketModel: Market = await marketService.findByAddress(testDataUpdated.address);
-        const result = marketModel.toJSON();
+        const result: resources.Market = await marketService.findOneByProfileIdAndReceiveAddress(
+            defaultProfile.id, testDataUpdated.receiveAddress)
+            .then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.privateKey).toBe(testDataUpdated.private_key);
-        expect(result.address).toBe(testDataUpdated.address);
+        expect(result.receiveKey).toBe(testDataUpdated.receiveKey);
+        expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
     });
 
     test('Should delete the market', async () => {

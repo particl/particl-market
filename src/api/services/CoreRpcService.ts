@@ -13,10 +13,10 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import {RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir} from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
-import { BlindPrevout, CryptoAddress, CryptoAddressType, Prevout } from 'omp-lib/dist/interfaces/crypto';
+import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 
 declare function escape(s: string): string;
@@ -44,6 +44,32 @@ export interface BlockchainInfo {
     // todo: add pruning and softfork related data when needed
 }
 
+export interface RpcWalletInfo {
+    walletname: string;                 // the wallet name
+    walletversion: number;              // the wallet version
+    total_balance: number;              // the total balance of the wallet in PART
+    balance: number;                    // the total confirmed balance of the wallet in PART
+    blind_balance: number;              // the total confirmed blinded balance of the wallet in PART
+    anon_balance: number;               // the total confirmed anon balance of the wallet in PART
+    staked_balance: number;             // the total staked balance of the wallet in PART (non-spendable until maturity)
+    unconfirmed_balance: number;        // the total unconfirmed balance of the wallet in PART
+    immature_balance: number;           // the total immature balance of the wallet in PART
+    immature_anon_balance: number;      // the total immature anon balance of the wallet in PART
+    reserve: number;                    // the reserve balance of the wallet in PART
+    txcount: number;                    // the total number of transactions in the wallet
+    keypoololdest: number;              // the timestamp (seconds since Unix epoch) of the oldest pre-generated key in the key pool
+    keypoolsize: number;                // how many new keys are pre-generated (only counts external keys)
+    keypoolsize_hd_internal: number;    // how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is
+                                        // using this feature, otherwise external keys are used)
+    encryptionstatus: string;           // unencrypted/locked/unlocked
+    unlocked_until: number;             // the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers,
+                                        // or 0 if the wallet is locked
+    paytxfee: number;                   // the transaction fee configuration, set in PART/kB
+    hdseedid?: string;                  // the Hash160 of the HD account pubkey (only present when HD is enabled)
+    private_keys_enabled: boolean;      // false if privatekeys are disabled for this wallet (enforced watch-only wallet)
+}
+
+
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
 export class CoreRpcService extends CtRpc {
@@ -55,6 +81,8 @@ export class CoreRpcService extends CtRpc {
     private DEFAULT_REGTEST_PORT = 19792;
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
+
+    private activeWallet: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -74,10 +102,108 @@ export class CoreRpcService extends CtRpc {
 
     public async hasWallet(): Promise<boolean> {
         return await this.getWalletInfo()
-            .then(response => (response && response.hdseedid))
+            .then(response => {
+                // the Hash160 of the HD account pubkey (only present when HD is enabled)
+                return response.hdseedid !== undefined;
+            })
             .catch(error => {
                 return false;
             });
+    }
+
+    public async setActiveWallet(wallet: string): Promise<void> {
+        this.activeWallet = wallet;
+    }
+
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listLoadedWallets(): Promise<string[]> {
+        return await this.call('listwallets');
+    }
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listWalletDir(): Promise<RpcWalletDir> {
+        return await this.call('listwalletdir');
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletLoaded(name: string): Promise<boolean> {
+        this.log.debug('walletLoaded: ', name);
+        return await this.listLoadedWallets()
+            .then(result => {
+                this.log.debug('listLoadedWallets: ', JSON.stringify(result, null, 2));
+                const found = _.find(result, wallet => {
+                    this.log.debug(wallet + ' === ' + name + ': ' + (wallet === name));
+                    return wallet === name;
+                });
+                const loaded = found ? true : false;
+                this.log.debug('loaded: ', loaded);
+                return loaded;
+            });
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletExists(name: string): Promise<boolean> {
+        this.log.debug('walletExists: ', name);
+        return await this.listWalletDir()
+            .then(result => {
+                this.log.debug('listWalletDir: ', JSON.stringify(result, null, 2));
+                const found = _.find(result.wallets, wallet => {
+                    this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
+                    return wallet.name === name;
+                });
+                const exists = found ? true : false;
+                this.log.debug('exists: ', exists);
+                return exists;
+            });
+    }
+
+    /**
+     * Creates and loads a new wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async createWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.call('createwallet', [name, disablePrivateKeys, blank]);
+    }
+
+    // for clarity
+    public async createAndLoadWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.createWallet(name, disablePrivateKeys, blank);
+    }
+
+    /**
+     * Loads a wallet from a wallet file or directory.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async loadWallet(name: string): Promise<RpcWallet> {
+        return await this.call('loadwallet', [name]);
+    }
+
+    /**
+     * Set secure messaging to use the specified wallet.
+     * SMSG can only be enabled on one wallet.
+     * Call with no parameters to unset the active wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async smsgSetWallet(name?: string): Promise<RpcWallet> {
+        return await this.call('smsgsetwallet', [name]);
     }
 
     /**
@@ -104,7 +230,7 @@ export class CoreRpcService extends CtRpc {
     /**
      *
      */
-    public async getWalletInfo(): Promise<any> {
+    public async getWalletInfo(): Promise<RpcWalletInfo> {
         return await this.call('getwalletinfo');
     }
 
@@ -243,17 +369,20 @@ export class CoreRpcService extends CtRpc {
         } as CryptoAddress;
     }
 
-//    public async getBlindPrevouts(satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-//        return [await this.createBlindPrevoutFromAnon(satoshis, blind)];
-//    }
+/*
     public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // omp-lib: const type = (this.network === 'testnet') ? 'anon' : 'blind';
-        // todo: why send anon type to blind on testnet?
-        // todo: also without anon funds, failing with: Insufficient anon funds
-        // todo: create an enum for the type
-
-        this.log.debug('getBlindPrevouts(), type: blind, satoshis: ' + satoshis + ', blind: ' + blind);
-        return [await this.createBlindPrevoutFrom('blind', /* type, */satoshis, blind)];
+        // todo: create an enum for the outputtype
+        this.log.debug('getBlindPrevouts(), type: ' + type + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
+    }
+*/
+    public async getPrevouts(typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+        // todo: create an enum for the outputtype
+        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeIn: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        const prevOuts: BlindPrevout[] = [];
+        const newPrevOut = await this.createPrevoutFrom(typeIn, typeOut, satoshis, blind);
+        prevOuts.push(newPrevOut);
+        return prevOuts;
     }
 
     /**
@@ -404,16 +533,12 @@ export class CoreRpcService extends CtRpc {
     /**
      * Send part to multiple outputs.
      *
-     * @param typeIn        (string, required) part/blind/anon
-     * @param typeOut       (string, required) part/blind/anon
+     * @param typeIn        (OutputType, required) part/blind/anon
+     * @param typeOut       (OutputType, required) part/blind/anon
      * @param outputs       (json array, required) A json array of json objects
      */
-    public async sendTypeTo(typeIn: string, typeOut: string, outputs: RpcBlindSendToOutput[]): Promise<string> {
-        // for (const output of outputs) {
-        //    output['subfee'] = false;
-        // }
-        // this.log.debug('outputs: ', outputs);
-        const txid = await this.call('sendtypeto', [typeIn, typeOut, outputs]);
+    public async sendTypeTo(typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
+        const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs]);
         this.log.debug('txid: ', txid);
         return txid;
     }
@@ -523,21 +648,30 @@ export class CoreRpcService extends CtRpc {
      * with between minconf and maxconf (inclusive) confirmations.
      * Optionally filter to only include txouts paid to specified addresses.
      *
+     * @param type
      * @param {number} minconf
      * @param {number} maxconf
-     * @param {string[]} addresses
-     * @param {boolean} includeUnsafe
-     * @param queryOptions
      * @returns {Promise<any>}
      */
-    public async listUnspent(minconf: number = 1, maxconf: number = 9999999/*, addresses: string[] = [], includeUnsafe: boolean = true,
+    public async listUnspent(type: OutputType, minconf: number = 1, maxconf: number = 9999999
+                             /*, addresses: string[] = [], includeUnsafe: boolean = true,
                              queryOptions: any = {}*/): Promise<RpcUnspentOutput[]> {
-
         const params: any[] = [minconf, maxconf]; // , addresses, includeUnsafe];
+
+        switch (type) {
+            case OutputType.ANON:
+                return await this.call('listunspentanon', params);
+            case OutputType.BLIND:
+                return await this.call('listunspentblind', params);
+            case OutputType.PART:
+                return await this.call('listunspent', params);
+            default:
+                throw Error('Invalid Output type.');
+        }
+
         // if (!_.isEmpty(queryOptions)) {
         //    params.push(queryOptions);
         // }
-        return await this.call('listunspent', params);
     }
 
     /**
@@ -549,6 +683,7 @@ export class CoreRpcService extends CtRpc {
      * @param queryOptions
      * @returns {Promise<any>}
      */
+/*
     public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
                                   queryOptions?: any): Promise<RpcUnspentOutput[]> {
 
@@ -571,7 +706,7 @@ export class CoreRpcService extends CtRpc {
         }
         return await this.call('listunspentblind', params);
     }
-
+*/
     /**
      *
      * @param {boolean} unlock
@@ -699,6 +834,7 @@ export class CoreRpcService extends CtRpc {
 
     }
 
+
     private getOptions(): any {
 
         const auth = {
@@ -738,6 +874,5 @@ export class CoreRpcService extends CtRpc {
         const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
         return `http://${host}:${port}${wallet}`;
     }
-
 
 }

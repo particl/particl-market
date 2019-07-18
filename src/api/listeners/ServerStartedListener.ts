@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -14,7 +15,6 @@ import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -85,14 +85,16 @@ export class ServerStartedListener implements interfaces.Listener {
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
 
+                    // seed the default Profile
+                    const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
+                        .then(value => value.toJSON());
+
                     // seed the default market
-                    await this.defaultMarketService.seedDefaultMarket();
+                    const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                        .then(value => value.toJSON());
 
                     // seed the default categories
-                    await this.defaultItemCategoryService.seedDefaultCategories();
-
-                    // seed the default Profile
-                    await this.defaultProfileService.seedDefaultProfile();
+                    await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
 
                     // start message polling and other stuff, unless we're running integration tests
                     if (process.env.NODE_ENV !== 'test') {

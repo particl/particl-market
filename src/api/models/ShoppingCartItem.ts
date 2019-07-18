@@ -28,7 +28,6 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         'ListingItem.MessagingInformation',
         'ListingItem.ListingItemObjects',
         'ListingItem.Bids',
-        'ListingItem.Market',
         'ListingItem.FlaggedItem',
         'ShoppingCart'
     ];

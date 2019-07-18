@@ -85,7 +85,7 @@ export class ItemImageController {
             throw new MessageException('Image not found!');
         } else {
             const data = await this.itemImageDataService.loadImageFile(itemImage.hash, imageVersion);
-            const dataBuffer = new Buffer(data, 'base64');
+            const dataBuffer = Buffer.from(data, 'base64');
             res.setHeader('Content-Disposition', 'filename=' + itemImageData.data);
             res.send(dataBuffer);
         }

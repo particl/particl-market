@@ -18,6 +18,4 @@ export class BidRejectRequest extends RequestBody implements ActionRequestInterf
 
     public reason: BidRejectReason;             // optional predefined reject reason
 
-    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
-
 }

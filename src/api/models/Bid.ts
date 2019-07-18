@@ -53,8 +53,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemObjects',
         'ListingItem.ListingItemObjects.ListingItemObjectDatas',
         'ListingItem.ListingItemTemplate',
-        'ListingItem.ListingItemTemplate.Profile',
-        'ListingItem.Market'
+        'ListingItem.ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {

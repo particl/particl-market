@@ -17,8 +17,6 @@ import { ListingItemUpdateRequest } from '../../requests/model/ListingItemUpdate
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
-import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
-import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
@@ -27,30 +25,18 @@ import { MessagingInformationCreateRequest } from '../../requests/model/Messagin
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { EventEmitter } from 'events';
-import { ProposalService } from './ProposalService';
 
 export class ListingItemService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -195,6 +181,7 @@ export class ListingItemService {
         // set new values
         listingItem.hash = body.hash;
         listingItem.seller = body.seller;
+        listingItem.market = body.market;
         listingItem.expiryTime = body.expiryTime;
         listingItem.postedAt = body.postedAt;
         listingItem.expiredAt = body.expiredAt;

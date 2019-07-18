@@ -142,7 +142,6 @@ describe('ShoppingCartList', () => {
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
 
@@ -158,7 +157,6 @@ describe('ShoppingCartList', () => {
         expect(result.ListingItem.FlaggedItem).toBeDefined();
         expect(result.ListingItem.ItemInformation).toBeDefined();
         expect(result.ListingItem.ListingItemObjects).toBeDefined();
-        expect(result.ListingItem.Market).toBeDefined();
         expect(result.ListingItem.MessagingInformation).toBeDefined();
         expect(result.ListingItem.PaymentInformation).toBeDefined();
 

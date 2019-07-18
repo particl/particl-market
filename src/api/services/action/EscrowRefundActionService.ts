@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { EventEmitter } from 'events';
 import { BidService } from '../model/BidService';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -17,7 +16,6 @@ import { ListingItemService } from '../model/ListingItemService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
@@ -34,7 +32,6 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
@@ -146,9 +143,6 @@ export class EscrowRefundActionService extends BaseActionService {
      * - get the refundtx generated using omp-lib from the actionMessage (the temp _values will be removed automatically before message is sent)
      * - store the txid in the actionMessage
      * - and then send the rawtx
-     * - create the bidCreateRequest to save the Bid (MPA_REFUND) in the Database
-     *   - the previous Bid should be added as parentBid to create the relation
-     * - call createBid to create the Bid and update Order and OrderItem statuses
      *
      * @param params
      * @param marketplaceMessage, MPA_REFUND
@@ -166,36 +160,35 @@ export class EscrowRefundActionService extends BaseActionService {
             value: txid
         } as KVS);
 
-        // msgid is not set here, its updated in the afterPost
+        return marketplaceMessage;
+    }
+
+    /**
+     * called after post is executed and message is sent
+     *
+     * - create the bidCreateRequest to save the Bid (MPA_REFUND) in the Database
+     *   - the previous Bid should be added as parentBid to create the relation
+     * - call createBid to create the Bid and update Order and OrderItem statuses
+     *
+     * @param params
+     * @param marketplaceMessage
+     * @param smsgMessage
+     * @param smsgSendResponse
+     */
+    public async afterPost(params: EscrowRefundRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+
         const bidCreateParams = {
             listingItem: params.bid.ListingItem,
             bidder: params.bid.bidder,
             parentBid: params.bid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowRefundMessage)
+        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowRefundMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as EscrowRefundMessage, bidCreateRequest)
-                    .then(async value => {
-
-                        params.createdBid = value;
-                        return marketplaceMessage;
-                    });
+                return await this.createBid(marketplaceMessage.action as EscrowRefundMessage, bidCreateRequest);
             });
-    }
 
-    /**
-     * called after post is executed and message is sent
-     *
-     * @param params
-     * @param marketplaceMessage
-     * @param smsgSendResponse
-     */
-    public async afterPost(params: EscrowRefundRequest, marketplaceMessage: MarketplaceMessage,
-                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        // todo: stupid fix for possible undefined which shouldnt even happen, fix the real cause
-        smsgSendResponse.msgid =  smsgSendResponse.msgid ? smsgSendResponse.msgid : '';
-        await this.bidService.updateMsgId(params.createdBid.id, smsgSendResponse.msgid);
         return smsgSendResponse;
     }
 
@@ -211,7 +204,6 @@ export class EscrowRefundActionService extends BaseActionService {
      */
     public async createBid(escrowRefundMessage: EscrowRefundMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
-        // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();

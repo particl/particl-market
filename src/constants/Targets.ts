@@ -411,7 +411,6 @@ export const Targets = {
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         MulterMiddleware: 'MulterMiddleware',
-        PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },

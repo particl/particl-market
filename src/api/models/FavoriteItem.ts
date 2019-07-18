@@ -27,7 +27,6 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
         'ListingItem.MessagingInformation',
         'ListingItem.ListingItemObjects',
         'ListingItem.Bids',
-        'ListingItem.Market',
         'ListingItem.FlaggedItem',
         'Profile'
     ];

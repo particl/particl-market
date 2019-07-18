@@ -149,18 +149,26 @@ export class TestDataService {
 
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories()
-                .catch( reason => {
-                    this.log.debug('failed seeding default categories: ' + reason);
-                });
-            await this.defaultProfileService.seedDefaultProfile()
+            // seed the default Profile
+            const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
-            await this.defaultMarketService.seedDefaultMarket()
+
+            // seed the default market
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default market: ' + reason);
                 });
+
+            // seed the default categories
+            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress)
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+
         }
 
         this.log.info('cleanup & default seeds done.');
@@ -351,7 +359,7 @@ export class TestDataService {
 
                 const listingItemCreateRequest = {
                     seller: listingItemTemplate.Profile.address,
-                    market_id: market.id,
+                    market: market.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
@@ -1066,7 +1074,7 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id,
+            market: defaultMarket.receiveAddress,
             msgid: '' + new Date().getTime(),
             expiryTime: 4,
             postedAt: new Date().getTime(),

@@ -11,24 +11,20 @@ import { ProposalCreateRequest } from '../../requests/model/ProposalCreateReques
 import { SmsgService } from '../SmsgService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { ProposalService } from '../model/ProposalService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ListingItemService } from '../model/ListingItemService';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { ItemVote } from '../../enums/ItemVote';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
-import { FlaggedItem } from '../../models/FlaggedItem';
 import { VoteActionService } from './VoteActionService';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { GovernanceAction } from '../../enums/GovernanceAction';
 import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { BaseActionService } from './BaseActionService';
@@ -96,15 +92,6 @@ export class ProposalAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-
-        if (!params.sendParams.estimateFee) {
-            // processProposal "processes" the Proposal, creating or updating the Proposal.
-            // called from both beforePost() and onEvent()
-            await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
-        } else {
-            // if we're just estimating the price, dont save the Proposal
-        }
-
         return marketplaceMessage;
     }
 
@@ -113,10 +100,19 @@ export class ProposalAddActionService extends BaseActionService {
      *
      * @param params
      * @param marketplaceMessage
+     * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage, smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+    public async afterPost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+                           smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
+        // processProposal "processes" the Proposal, creating or updating the Proposal.
+        // called from both beforePost() and onEvent()
+        // TODO: currently do not pass smsgMessage to the processProposal here as that would set the values from smsgMessage
+        // TODO: add received or similar flag instead of this
+        await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
+
+        // TODO: what is this supposed to test?
         if (smsgSendResponse.msgid) {
             const proposal: resources.Proposal = await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid)
                 .then(value => value.toJSON());
@@ -135,6 +131,7 @@ export class ProposalAddActionService extends BaseActionService {
                     throw error;
                 }
 
+                // prepare the VoteRequest for sending votes
                 const postRequest = {
                     sendParams: params.sendParams,
                     sender: params.sender,

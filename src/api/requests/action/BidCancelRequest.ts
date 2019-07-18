@@ -15,6 +15,4 @@ export class BidCancelRequest extends RequestBody implements ActionRequestInterf
     @IsNotEmpty()
     public bid: resources.Bid;                  // bid which we're canceling
 
-    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
-
 }
