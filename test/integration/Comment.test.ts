@@ -48,10 +48,8 @@ describe('Comment', () => {
         await testDataService.clean();
 
         // get default profile and market
-        defaultProfile = await profileService.getDefault()
-            .then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault()
-            .then( value => value.toJSON());
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
     });
 
@@ -69,8 +67,8 @@ describe('Comment', () => {
     test('Should create a new Comment', async () => {
 
         const testData = {
-            sender: 'phRoeov8KFV4YNSj9by7gKZ7dGvXPdJ7Pd',
-            receiver: 'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW',
+            sender: defaultProfile.address,
+            receiver: defaultMarket.receiveAddress,
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             target: '290be04b41717f4aa4fb27fa83ef16e63aae56bdd060c9bc14efc5cddba3f992',
             message: 'message',
