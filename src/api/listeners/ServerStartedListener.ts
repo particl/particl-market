@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as interfaces from '../../types/interfaces';
 import { inject, named } from 'inversify';
@@ -19,7 +20,6 @@ import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProc
 import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
-import * as _ from 'lodash';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -119,6 +119,8 @@ export class ServerStartedListener implements interfaces.Listener {
                             this.messageProcessor.schedulePoll();
                         }
                         this.interval = 10000;
+                    } else {
+                        this.log.error('market not initialized yet, retrying in ' + this.interval + 'ms.');
                     }
 
                 } else {

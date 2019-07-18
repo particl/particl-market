@@ -9,7 +9,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Profile } from '../models/Profile';
 import { ProfileService } from './model/ProfileService';
-import {CoreRpcService, RpcWalletInfo} from './CoreRpcService';
+import { CoreRpcService, RpcWalletInfo } from './CoreRpcService';
 import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
@@ -58,6 +58,7 @@ export class DefaultProfileService {
 
                 // create Wallet for default Profile
                 const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo();
+                this.log.debug('walletInfo: ', JSON.stringify(walletInfo, null, 2));
                 const wallet: resources.Wallet = await this.walletService.create({
                     profile_id: profile.id,
                     name: walletInfo.walletname
