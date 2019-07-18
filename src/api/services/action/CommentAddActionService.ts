@@ -148,6 +148,14 @@ export class CommentAddActionService extends BaseActionService {
      */
     public async processComment(commentAddMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Comment | undefined> {
 
+        // verify that the comment was actually sent by the owner of the address
+        const verified = await this.verifyComment(commentAddMessage);
+        if (!verified) {
+            throw new MessageException('Received signature failed validation.');
+        } else {
+            this.log.debug('comment verified!');
+        }
+
         let parentCommentId;
         if (commentAddMessage.parentCommentHash) {
             parentCommentId = await this.commentService.findOneByHash(commentAddMessage.parentCommentHash)
@@ -192,9 +200,7 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * signs the comment, returns signature
      *
-     * @param proposal
-     * @param proposalOption
-     * @param address
+     * @param {CommentAddRequest} data
      */
     private async signComment(data: CommentAddRequest): Promise<string> {
         const commentTicket = {
@@ -211,10 +217,9 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * verifies Comment, returns boolean
      *
-     * @param voteMessage
-     * @param address
+     * @param {CommentAddMessage} commentAddMessage
      */
-    private async verifyVote(commentAddMessage: CommentAddMessage): Promise<boolean> {
+    private async verifyComment(commentAddMessage: CommentAddMessage): Promise<boolean> {
         const commentTicket = {
             address: commentAddMessage.sender,
             type: commentAddMessage.commentType,
