@@ -881,9 +881,10 @@ export class TestDataService {
             throw new NotImplementedException();
         }
 
+        const defaultProfile = await this.profileService.getDefault();
+
         let sender;
         if (!generateParams.sender) {
-            const defaultProfile = await this.profileService.getDefault();
             const profile = defaultProfile.toJSON();
             sender = profile.address;
         } else {
@@ -892,7 +893,7 @@ export class TestDataService {
 
         let receiver;
         if (!generateParams.receiver) {
-            const defaultMarket = await this.marketService.getDefault();
+            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
             const market = defaultMarket.toJSON();
             receiver = market.address;
         } else {
