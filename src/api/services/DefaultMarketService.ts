@@ -119,7 +119,7 @@ export class DefaultMarketService {
         return await this.marketService.findOne(newMarket.id);
     }
 
-    private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
+    public async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
         if ( await this.smsgService.smsgImportPrivKey(privateKey) ) {
             // get market public key
             const publicKey = await this.getPublicKeyForAddress(address);

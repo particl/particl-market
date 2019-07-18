@@ -92,8 +92,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [2]: type: MarketType
      *  [3]: receiveKey
      *  [4]: receiveAddress
-     *  [5]: publishKey
-     *  [6]: publishAddress
+     *  [5]: publishKey, optional
+     *  [6]: publishAddress, optional
      *  [7]: walletId, optional
      *
      * @param {RpcRequest} data
@@ -159,7 +159,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         let wallet: resources.Wallet;
-
         if (!_.isEmpty(data.params[7])) {
             // make sure Wallet with the id exists
             wallet = await this.walletService.findOne(data.params[7])
@@ -171,7 +170,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             if (wallet.Profile.id !== profile.id) {
                 throw new MessageException('Wallet does not belong to the Profile.');
             }
-
         } else {
             wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
         }
@@ -185,11 +183,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         if (!_.isEmpty(market)) {
             throw new MessageException('Market with the receiveAddress: ' + data.params[4] + ' already exists.');
-        }
-
-        if (_.isEmpty(data.params[7])) {
-            // if no wallet name was given, create one (profileAddress-walletReceiveAddress.dat)
-            data.params[7] = profile.address + '-' + data.params[4] + '.dat';
         }
 
         data.params[0] = profile;
