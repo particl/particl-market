@@ -17,6 +17,9 @@ import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListing
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 import { DefaultSettingService } from '../services/DefaultSettingService';
+import { SettingValue } from '../enums/SettingValue';
+import { SettingService } from '../services/model/SettingService';
+import * as _ from 'lodash';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -40,6 +43,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -77,14 +81,15 @@ export class ServerStartedListener implements interfaces.Listener {
     }
 
     private async checkConnection(): Promise<boolean> {
-        const isConnected = await this.coreRpcService.isConnected();
+        let isConnected = await this.coreRpcService.isConnected();
+        let hasMarketConfiguration = false;
+
         if (isConnected) {
 
             if (this.previousState !== isConnected) {
                 this.log.info('connection with particld established.');
 
                 const hasWallet = await this.coreRpcService.hasWallet();
-
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
 
@@ -92,24 +97,30 @@ export class ServerStartedListener implements interfaces.Listener {
                     const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
                         .then(value => value.toJSON());
 
-                    await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
+                    hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
 
-                    // seed the default market
-                    const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
-                        .then(value => value.toJSON());
+                    isConnected = isConnected && hasMarketConfiguration;
 
-                    // seed the default categories
-                    await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
+                    if (hasMarketConfiguration) {
+                        await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
-                    // start message polling and other stuff, unless we're running integration tests
-                    if (process.env.NODE_ENV !== 'test') {
-                        this.expiredListingItemProcessor.scheduleProcess();
-                        this.proposalResultProcessor.scheduleProcess();
-                        this.coreMessageProcessor.schedulePoll();
-                        this.messageProcessor.schedulePoll();
+                        // seed the default market
+                        const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                            .then(value => value.toJSON());
+
+                        // seed the default categories
+                        await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
+
+                        // start message polling and other stuff, unless we're running integration tests
+                        if (process.env.NODE_ENV !== 'test') {
+                            this.expiredListingItemProcessor.scheduleProcess();
+                            this.proposalResultProcessor.scheduleProcess();
+                            this.coreMessageProcessor.schedulePoll();
+                            this.messageProcessor.schedulePoll();
+                        }
+                        this.interval = 10000;
                     }
 
-                    this.interval = 10000;
                 } else {
                     this.log.error('wallet not initialized yet, retrying in ' + this.interval + 'ms.');
                 }
@@ -118,7 +129,7 @@ export class ServerStartedListener implements interfaces.Listener {
             // this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');
         } else {
 
-            if (this.previousState !== isConnected) {
+            if (this.previousState !== isConnected && hasMarketConfiguration) {
                 this.log.info('connection with particld disconnected.');
 
                 // stop message polling
@@ -134,6 +145,25 @@ export class ServerStartedListener implements interfaces.Listener {
         this.previousState = isConnected;
 
         return isConnected;
+    }
+
+
+    private async hasMarketConfiguration(profile: resources.Profile): Promise<boolean> {
+
+        const allSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
+        const foundSettings: resources.Setting[] = _.filter(allSettings, (value) => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME
+                || value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY
+                || value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
+
+        if ((!_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
+            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY])
+            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]))
+                || foundSettings.length === 3) {
+            return true;
+        }
+        return false;
     }
 
 

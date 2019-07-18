@@ -27,20 +27,25 @@ export class DefaultSettingService {
 
     public async saveDefaultProfileSettings(defaultProfile: resources.Profile): Promise<void> {
 
-        await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_NAME, defaultProfile)
-            .then(value => {
-                this.log.debug('DEFAULT_MARKETPLACE_NAME: ', JSON.stringify(value, null, 2));
-            });
+        if (!_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
+            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY])
+            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS])) {
 
-        await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, defaultProfile)
-            .then(value => {
-                this.log.debug('DEFAULT_MARKETPLACE_PRIVATE_KEY: ', JSON.stringify(value, null, 2));
-            });
+            await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_NAME, defaultProfile)
+                .then(value => {
+                    this.log.debug('DEFAULT_MARKETPLACE_NAME: ', JSON.stringify(value, null, 2));
+                });
 
-        await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, defaultProfile)
-            .then(value => {
-                this.log.debug('DEFAULT_MARKETPLACE_ADDRESS: ', JSON.stringify(value, null, 2));
-            });
+            await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, defaultProfile)
+                .then(value => {
+                    this.log.debug('DEFAULT_MARKETPLACE_PRIVATE_KEY: ', JSON.stringify(value, null, 2));
+                });
+
+            await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, defaultProfile)
+                .then(value => {
+                    this.log.debug('DEFAULT_MARKETPLACE_ADDRESS: ', JSON.stringify(value, null, 2));
+                });
+        }
 
         return;
     }
