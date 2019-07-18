@@ -80,7 +80,7 @@ describe('CommentPostCommand', () => {
     });
 
     test('Should fail to create a Comment of type LISTINGITEM_QUESTION_AND_ANSWERS because invalid profileId', async () => {
-        const invalidProfileId = 2;
+        const invalidProfileId = 99;
         // post a comment
         const response: any = await testUtil.rpc(commentCommand, [
             commentPostCommand,
