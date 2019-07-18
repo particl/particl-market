@@ -22,10 +22,6 @@ import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
 import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
 import { BidSendCommand } from '../commands/bid/BidSendCommand';
 
-import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
-import { CommentPostCommand } from '../commands/comment/CommentPostCommand';
-import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
-
 import { Command } from '../commands/Command';
 
 import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
@@ -158,7 +154,6 @@ import { SettingListCommand } from '../commands/setting/SettingListCommand';
 import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
 import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
-import {CommentSearchCommand} from '../commands/comment/CommentSearchCommand';
 
 import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
 import { CommentPostCommand } from '../commands/comment/CommentPostCommand';

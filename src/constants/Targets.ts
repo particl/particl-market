@@ -399,8 +399,7 @@ export const Targets = {
             OrderFactory: 'OrderFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
-            VoteFactory: 'VoteFactory',
-            CommentFactory: 'CommentFactory'
+            VoteFactory: 'VoteFactory'
         },
         RpcCommandFactory: 'RpcCommandFactory'
     },
