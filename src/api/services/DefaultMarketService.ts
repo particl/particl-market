@@ -85,8 +85,12 @@ export class DefaultMarketService {
             });
         this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
 
+        this.log.debug('newMarket.Wallet: ', JSON.stringify(newMarket.Wallet, null, 2));
+
         // if wallet with the name doesnt exists, then create one
         const exists = await this.coreRpcService.walletExists(newMarket.Wallet.name);
+        this.log.debug('exists: ', JSON.stringify(exists, null, 2));
+
         if (!exists) {
             await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
                 .then(result => {

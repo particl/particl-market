@@ -12,7 +12,8 @@ export class WalletCreateRequest extends RequestBody implements ModelRequestInte
     @IsNotEmpty()
     public profile_id: number;
 
-    @IsNotEmpty()
+    // the default wallet name is empty :/
+    // @IsNotEmpty()
     public name: string;
 
 }

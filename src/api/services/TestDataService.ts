@@ -297,6 +297,7 @@ export class TestDataService {
             'shopping_cart',
             'item_categories',
             'markets',
+            'wallets',
             'users',        // todo: not needed
             'price_ticker', // todo: price_tickers
             'flagged_items',
