@@ -28,22 +28,13 @@ export class ListingItemRepository {
         return list as Bookshelf.Collection<ListingItem>;
     }
 
-    public async findByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
+    public async findAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         return await this.ListingItemModel.fetchByCategory(categoryId, withRelated);
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
-        return this.ListingItemModel.fetchById(id, withRelated);
-    }
-
-    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+    public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
         return this.ListingItemModel.fetchExpired();
     }
-
-    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
-        return this.ListingItemModel.fetchByMsgId(msgId, withRelated);
-    }
-
 
     /**
      *
@@ -51,8 +42,16 @@ export class ListingItemRepository {
      * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        return this.ListingItemModel.fetchByHash(hash, withRelated);
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.fetchAllByHash(hash, withRelated);
+    }
+
+    public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchById(id, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByMsgId(msgId, withRelated);
     }
 
     /**

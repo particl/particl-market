@@ -75,6 +75,22 @@ export class DefaultMarketService {
 
     public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
+
+        const marketNameSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
+        });
+
+        const marketPKSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
+        });
+
+        const marketAddressSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
+
+        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+
         // create or update the default marketplace
         const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {

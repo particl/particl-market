@@ -11,7 +11,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('msgid').notNullable().unique();
-            table.string('hash');   // .notNullable().unique();
+            table.string('hash').notNullable();   // .notNullable().unique();
 
             table.string('seller').notNullable();
             table.string('market').notNullable();

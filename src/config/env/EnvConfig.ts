@@ -93,7 +93,7 @@ export class EnvConfig {
 
         if (!Environment.isTest()) {
             console.log('current env:');
-            _.forOwn(this.defaultEnv, (value: any, key: string) => {
+            _.forOwn(process.env, (value: any, key: string) => {
                 console.log('process.env.' + key + ':', process.env[key]);
             });
         }

@@ -93,6 +93,7 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
+import { DefaultSettingService } from './DefaultSettingService';
 
 
 export class TestDataService {
@@ -104,6 +105,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -151,6 +153,8 @@ export class TestDataService {
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
+
+            await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
             // seed the default market
             const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
@@ -298,6 +302,7 @@ export class TestDataService {
             'item_categories',
             'markets',
             'wallets',
+            'settings',
             'users',        // todo: not needed
             'price_ticker', // todo: price_tickers
             'flagged_items',

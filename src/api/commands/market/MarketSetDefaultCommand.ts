@@ -24,6 +24,7 @@ import { SettingService } from '../../services/model/SettingService';
 import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
+import {SettingCreateRequest} from '../../requests/model/SettingCreateRequest';
 
 export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -54,9 +55,9 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
 
-        await this.updateSetting(SettingValue.DEFAULT_MARKETPLACE_NAME, market.name, profile);
-        await this.updateSetting(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, market.receiveKey, profile);
-        await this.updateSetting(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, market.receiveAddress, profile);
+        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_NAME, market.name, profile);
+        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, market.receiveKey, profile);
+        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, market.receiveAddress, profile);
 
         // load the wallet unless already loaded
         await this.coreRpcService.walletLoaded(market.Wallet.name).
@@ -83,20 +84,32 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
     }
 
 
-    public async updateSetting(key: string, newValue: string, profile: resources.Profile): Promise<resources.Setting | undefined> {
+    public async createOrUpdateSetting(key: string, newValue: string, profile: resources.Profile): Promise<resources.Setting | undefined> {
 
 
         // if set already, update, if not set, create,
         const foundSettings: resources.Setting[] = await this.settingService.findAllByKeyAndProfileId(key, profile.id)
             .then(value => value.toJSON());
 
-        const foundSettingWithTheKey = foundSettings[0];
-        const settingRequest = {
-            key,
-            value: newValue
-        } as SettingUpdateRequest;
+        this.log.debug('foundSettings: ', JSON.stringify(foundSettings, null, 2));
 
-        return await this.settingService.update(foundSettingWithTheKey!.id, settingRequest).then(value => value.toJSON());
+        if (!_.isEmpty(foundSettings)) {
+            const foundSettingWithTheKey = foundSettings[0];
+            const settingRequest = {
+                key,
+                value: newValue
+            } as SettingUpdateRequest;
+
+            return await this.settingService.update(foundSettingWithTheKey!.id, settingRequest).then(value => value.toJSON());
+        } else {
+            const settingRequest = {
+                profile_id: profile.id,
+                key,
+                value: newValue
+            } as SettingCreateRequest;
+
+            return await this.settingService.create(settingRequest).then(value => value.toJSON());
+        }
 
     }
 

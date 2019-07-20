@@ -98,11 +98,13 @@ export class ServerStartedListener implements interfaces.Listener {
                     const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
                         .then(value => value.toJSON());
 
+                    // save the default env vars as settings
+                    await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
+
                     hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
                     isConnected = isConnected && hasMarketConfiguration;
 
                     if (hasMarketConfiguration) {
-                        await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
                         // seed the default market
                         const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)

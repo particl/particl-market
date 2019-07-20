@@ -30,7 +30,7 @@ export class SocketIoServer {
     private configure(io: SocketIO): SocketIO {
         this.log.debug('Configuring SocketIoServer');
 
-        io.set('transports', ['websocket']);
+        // io.set('transports', ['websocket']);
 
         // allow any user to authenticate.
         io.set('authorization', (handshake, callback) => {
