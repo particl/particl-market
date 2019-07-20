@@ -82,7 +82,7 @@ export class CoreRpcService extends CtRpc {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    private activeWallet: string;
+    private activeWallet = '';
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -113,6 +113,13 @@ export class CoreRpcService extends CtRpc {
 
     public async setActiveWallet(wallet: string): Promise<void> {
         this.activeWallet = wallet;
+
+        const walletLoaded = await this.walletLoaded(wallet);
+        if (!walletLoaded) {
+            await this.loadWallet(wallet);
+        }
+        await this.smsgSetWallet(wallet);
+        this.log.debug('ACTIVE WALLET SET TO: ' + wallet);
     }
 
 
@@ -139,16 +146,10 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<boolean>}
      */
     public async walletLoaded(name: string): Promise<boolean> {
-        this.log.debug('walletLoaded: ', name);
         return await this.listLoadedWallets()
-            .then(result => {
-                this.log.debug('listLoadedWallets: ', JSON.stringify(result, null, 2));
-                const found = _.find(result, wallet => {
-                    this.log.debug(wallet + ' === ' + name + ': ' + (wallet === name));
-                    return wallet === name;
-                });
-                const loaded = found ? true : false;
-                this.log.debug('loaded: ', loaded);
+            .then(wallets => {
+                const loaded = _.includes(wallets, name);
+                this.log.debug('walletLoaded(): ', loaded);
                 return loaded;
             });
     }
@@ -158,16 +159,14 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<boolean>}
      */
     public async walletExists(name: string): Promise<boolean> {
-        this.log.debug('walletExists: ', name);
         return await this.listWalletDir()
             .then(result => {
-                this.log.debug('listWalletDir: ', JSON.stringify(result, null, 2));
                 const found = _.find(result.wallets, wallet => {
-                    this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
+                    // this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
                     return wallet.name === name;
                 });
                 const exists = found ? true : false;
-                this.log.debug('exists: ', exists);
+                this.log.debug('walletExists: ', exists);
                 return exists;
             });
     }
@@ -825,9 +824,6 @@ export class CoreRpcService extends CtRpc {
     }
 
     private getUrl(): string {
-        // this.log.debug('Environment.isTestnet():', Environment.isTestnet());
-        // this.log.debug('Environment.isAlpha():', Environment.isAlpha());
-
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = process.env.RPC_PORT ?
             process.env.RPC_PORT :
@@ -838,7 +834,10 @@ export class CoreRpcService extends CtRpc {
                     (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
                 )
             );
-        const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
+
+        // const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '/wallet/');
+        const wallet = '/wallet/' + this.activeWallet;
+
         return `http://${host}:${port}${wallet}`;
     }
 

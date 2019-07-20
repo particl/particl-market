@@ -43,11 +43,14 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
         const listingItem: resources.ListingItem = data.params[0];
         return await this.listingItemService.findOne(listingItem.id);
+
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemId
+     *
+     * TODO: this command should be refactored as in the future hash could return multiple items
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -58,15 +61,27 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
             throw new MissingParamException('listingItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        // if (data.params[0] && typeof data.params[0] !== 'number') {
+        //    throw new InvalidParamException('listingItemId', 'number');
+        // }
+
+        let listingItem: resources.ListingItem;
+
+        if (typeof data.params[0] === 'number') {
+            listingItem = await this.listingItemService.findOne(data.params[0])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        } else if (typeof data.params[0] === 'string') {
+            listingItem = await this.listingItemService.findOneByHash(data.params[0])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        } else {
             throw new InvalidParamException('listingItemId', 'number');
         }
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItem');
-            });
 
         data.params[0] = listingItem;
 
@@ -74,20 +89,20 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
     }
 
     public usage(): string {
-        return this.getName() + ' [<listingItemId>|<hash>] ';
+        return this.getName() + ' <listingItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>          - [optional] Numeric - The ID of the listing item we want to retrieve. \n'
+            + '    <listingItemId>          - Numeric - The ID of the listing item we want to retrieve. \n'
             + '    <hash>                   - [optional] String - The hash of the listing item we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a listing item via listingItemId or hash.';
+        return 'Get a listing item via listingItemId.';
     }
 
     public example(): string {
-        return 'item ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb';
+        return 'item ' + this.getName() + ' 1';
     }
 }

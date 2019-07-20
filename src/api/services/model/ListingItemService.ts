@@ -46,8 +46,19 @@ export class ListingItemService {
         return await this.listingItemRepo.findAll();
     }
 
-    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
-        return await this.listingItemRepo.findExpired();
+    public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return await this.listingItemRepo.findAllExpired();
+    }
+
+    /**
+     *
+     * @param {string} hash
+     * @param {boolean} withRelated
+     * @returns {Promise<ListingItem>}
+     */
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
+        const listingItems = await this.listingItemRepo.findAllByHash(hash, withRelated);
+        return listingItems;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -60,27 +71,30 @@ export class ListingItemService {
     }
 
     /**
+     * TODO: DEPRECATED, shouldnt be used
      *
      * @param {string} hash
      * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        const listingItem = await this.listingItemRepo.findOneByHash(hash, withRelated);
-        if (listingItem === null) {
+        this.log.debug('findOneByHash(), hash: ', hash);
+        const listingItems = await this.findAllByHash(hash, withRelated);
+        this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
+        if (listingItems.size() === 0) {
             this.log.warn(`ListingItem with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
         }
-        return listingItem;
+        return listingItems.at(0);
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
-        const smsgMessage = await this.listingItemRepo.findOneByMsgId(msgId, withRelated);
-        if (smsgMessage === null) {
-            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+        const listingItem = await this.listingItemRepo.findOneByMsgId(msgId, withRelated);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the msgid=${msgId} was not found!`);
             throw new NotFoundException(msgId);
         }
-        return smsgMessage;
+        return listingItem;
     }
 
     /**
@@ -308,7 +322,7 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
-       const listingItemsModel = await this.findExpired();
+       const listingItemsModel = await this.findAllExpired();
        const listingItems = listingItemsModel.toJSON();
        for (const listingItem of listingItems) {
            if (listingItem.expiredAt <= Date()) {

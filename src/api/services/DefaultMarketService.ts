@@ -56,7 +56,7 @@ export class DefaultMarketService {
 
         this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
 
-        // get the Profiles default wallet so we can set it alse as the wallet for the Market
+        // get the Profiles default wallet so we can set it as the wallet for the Market
         const defaultProfileWallet: resources.Wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const defaultMarket = {
@@ -75,6 +75,22 @@ export class DefaultMarketService {
 
     public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
+
+        const marketNameSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
+        });
+
+        const marketPKSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
+        });
+
+        const marketAddressSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        });
+
+        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+
         // create or update the default marketplace
         const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(async (found) => {
@@ -83,13 +99,9 @@ export class DefaultMarketService {
             .catch(async (reason) => {
                 return await this.marketService.create(market).then(value => value.toJSON());
             });
-        this.log.debug('default Market: ', JSON.stringify(newMarket, null, 2));
-
-        this.log.debug('newMarket.Wallet: ', JSON.stringify(newMarket.Wallet, null, 2));
 
         // if wallet with the name doesnt exists, then create one
         const exists = await this.coreRpcService.walletExists(newMarket.Wallet.name);
-        this.log.debug('exists: ', JSON.stringify(exists, null, 2));
 
         if (!exists) {
             await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
@@ -111,6 +123,7 @@ export class DefaultMarketService {
                     }
                 });
         }
+        await this.coreRpcService.setActiveWallet(newMarket.Wallet.name);
 
         await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
         if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
@@ -123,7 +136,7 @@ export class DefaultMarketService {
         return await this.marketService.findOne(newMarket.id);
     }
 
-    private async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
+    public async importMarketPrivateKey(privateKey: string, address: string): Promise<void> {
         if ( await this.smsgService.smsgImportPrivKey(privateKey) ) {
             // get market public key
             const publicKey = await this.getPublicKeyForAddress(address);

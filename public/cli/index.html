@@ -199,8 +199,9 @@
                     }
                 },
                 error: function (err) {
-                    if(Math.random()<.2){
-                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up.');
+                    if(Math.random()<.1){
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up...');
+                        term.echo('<br/><iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?wmode=transparent&autoplay=1" frameborder="0" allowfullscreen id="player"></iframe>', { raw: true });
                     } else {
                         term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText);
                     }
@@ -235,8 +236,23 @@
     function greetings(term) {
         loadJSON(function(response) {
             var build = JSON.parse(response);
-            term.echo('PARTICL MARKETPLACE CLI [' + build.version + ']\n\n'+
-                'type "help" for commands. ');
+
+            term.echo('PARTICL MARKETPLACE CLI \n[' + build.version + ']\n\n');
+            term.echo('                              .   ..  . . .... ....... ........ .... ....................');
+            term.echo('   ___________    _______  ___________  _________    ______  __________  ______ .::::::::');
+            term.echo('   _\\ ___.   /_____\\_   /_ _\\ ___.   /  _\\      /___ _\\ __/_ _\\       /  _\\   / :::::::::');
+            term.echo('   |"   /   / | __      "| |"   /   /__ !__    ____/ |"    / |"  /___/__ |"  /____  .::::');
+            term.echo('   | \\_____/  | /        | |  \\_      /   |"    /    |    /  |  /      / |  /    / .:::::');
+            term.echo('   !_____|    !_______/__| !____\\____/    !____/     !___/   !________/  !______/ .::::::');
+            term.echo('                                        .   . ..:.::. .....::. . . ....::.........:::::::');
+            term.echo('           ________     _______  ___________  _____ . ..::. __________ _________ .:::::::');
+            term.echo('    ______ /  _.  / _____\\_   /_ _\\ ___.   /  _\\  /______ . _\\ _.    / _\\      /___  ::::');
+            term.echo('   __\\ _  /   /  /_ | __      "| |"   /   /__ |" /   ___/___|" /    /__|__   _____/ .::::');
+            term.echo('   |"   \\ `  /  / | | /        | |  \\_      / |    \\       /|  ____/  |  |"    /  .::::::');
+            term.echo('   !_____\\__/_____| !_______/__| !____\\____/  !_____\\_____/ !_________|  !____/ .::::::::');
+            term.echo('                                                             . .. . ...........::::::::l!\n\n');
+            term.echo('type "help" for commands. ');
+
         });
     }
 
@@ -269,38 +285,38 @@
 
     function connectClient() {
         var socket = io('ws://' + window.location.href.split("/")[2], {
-            transports: ['websocket'],
+            // transports: ['websocket'],
             forceNew: false
         });
 
         socket
             .on('connect', () => {
-                log('connect', 'connected');
+                // log('connect', 'connected');
                 onConnected(socket);
             })
             .on('connect_error', (err) => {
-                log('connect_error', err);
+                // log('connect_error', err);
             })
             .on('connect_timeout', () => {
-                log('connect_timeout');
+                // log('connect_timeout');
             })
             .on('reconnect', (attempt) => {
-                log('reconnect', 'Attempt #' + attempt);
+                // log('reconnect', 'Attempt #' + attempt);
             })
             .on('reconnecting', (attempt) => {
-                log('reconnecting', 'Attempt #' + attempt);
+                // log('reconnecting', 'Attempt #' + attempt);
             })
             .on('reconnect_attempt', () => {
-                log('reconnect_attempt');
+                // log('reconnect_attempt');
                 // on reconnection, reset the transports option, as the Websocket
                 // connection may have failed (caused by proxy, firewall, browser, ...)
-                socket.io.opts.transports = ['websocket'];
+                // socket.io.opts.transports = ['websocket'];
             })
             .on('reconnect_error', (err) => {
-                log('reconnect_error', err);
+                // log('reconnect_error', err);
             })
             .on('reconnect_failed', () => {
-                log('reconnect_failed');
+                // log('reconnect_failed');
             })
             .on('error', (err) => {
                 log('error', err);
