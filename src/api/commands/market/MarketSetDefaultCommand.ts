@@ -24,7 +24,7 @@ import { SettingService } from '../../services/model/SettingService';
 import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import {SettingCreateRequest} from '../../requests/model/SettingCreateRequest';
+import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 
 export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -100,7 +100,7 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
                 value: newValue
             } as SettingUpdateRequest;
 
-            return await this.settingService.update(foundSettingWithTheKey!.id, settingRequest).then(value => value.toJSON());
+            return await this.settingService.update(foundSettingWithTheKey.id, settingRequest).then(value => value.toJSON());
         } else {
             const settingRequest = {
                 profile_id: profile.id,

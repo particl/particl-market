@@ -22,8 +22,9 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CoreRpcService } from '../../services/CoreRpcService';
+import { BlockchainInfo, CoreRpcService } from '../../services/CoreRpcService';
 import { WalletService } from '../../services/model/WalletService';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -76,10 +77,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         return await this.marketService.create({
             profile_id: profile.id,
             wallet_id: wallet.id,
-            name : data.params[1],
-            type : data.params[2],
-            receiveKey : data.params[3],
-            receiveAddress : data.params[4],
+            name: data.params[1],
+            type: data.params[2],
+            receiveKey: data.params[3],
+            receiveAddress: data.params[4],
             publishKey : data.params[5],
             publishAddress : data.params[6]
         } as MarketCreateRequest);
@@ -89,9 +90,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      * data.params[]:
      *  [0]: profileId
      *  [1]: name
-     *  [2]: type: MarketType
-     *  [3]: receiveKey
-     *  [4]: receiveAddress
+     *  [2]: type: MarketType, optional
+     *  [3]: receiveKey, optional
+     *  [4]: receiveAddress, optional
      *  [5]: publishKey, optional
      *  [6]: publishAddress, optional
      *  [7]: walletId, optional
@@ -100,14 +101,14 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // TODO: generate the address from the pk
-
         // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('profileId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('name');
-        } else if (data.params.length < 3) {
+        }
+/*
+        else if (data.params.length < 3) {
             throw new MissingParamException('type');
         } else if (data.params.length < 4) {
             throw new MissingParamException('receiveKey');
@@ -116,17 +117,18 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         } else if (data.params.length === 6) {
             throw new MissingParamException('publishAddress');
         }
+*/
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('name', 'string');
-        } else if (typeof data.params[2] !== 'string') {
+        } else if (data.params[2] && typeof data.params[2] !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (typeof data.params[3] !== 'string') {
+        } else if (data.params[3] && typeof data.params[3] !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        } else if (typeof data.params[4] !== 'string') {
+        } else if (data.params[4] && typeof data.params[4] !== 'string') {
             throw new InvalidParamException('receiveAddress', 'string');
         } else if (data.params[5] && typeof data.params[5] !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
@@ -134,10 +136,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('publishAddress', 'string');
         } else if (data.params[7] && typeof data.params[7] !== 'number') {
             throw new InvalidParamException('walletId', 'number');
-        }
-
-        if (!EnumHelper.containsName(MarketType, data.params[2])) {
-            throw new InvalidParamException('type', 'MarketType');
         }
 
         // make sure Profile with the id exists
@@ -156,6 +154,38 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         if (!_.isEmpty(market)) {
             throw new MessageException('Market with the name: ' + data.params[1] + ' already exists.');
+        }
+
+        if (_.isEmpty(data.params[2])) {
+            // default market type to MARKETPLACE if not set
+            data.params[2] = MarketType.MARKETPLACE;
+        } else if (!EnumHelper.containsName(MarketType, data.params[2])) {
+            // invalid MarketType
+            throw new InvalidParamException('type', 'MarketType');
+        }
+
+        // create the keys if not given
+        if (_.isEmpty(data.params[3])) {
+            const blockchainInfo: BlockchainInfo = await this.coreRpcService.getBlockchainInfo();
+            const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
+
+            const receiveKey = PrivateKey.fromRandom(network);
+            const receiveKeyWif = receiveKey.toWIF();
+            const receivePublicKey = receiveKey.toPublicKey();
+            const receiveAddress = receivePublicKey.toAddress(network).toString();
+
+            /*
+            const publishKey = PrivateKey.fromRandom(network);
+            const publishKeyWif = publishKey.toWIF();
+            const publishPublicKey = publishKey.toPublicKey();
+            const publishAddress = publishPublicKey.toAddress(network);
+            */
+
+            data.params[3] = receiveKeyWif;
+            data.params[4] = receiveAddress;
+            // receiveKey and publishKey are the same for now...
+            data.params[5] = receiveKeyWif;
+            data.params[6] = receiveAddress;
         }
 
         let wallet: resources.Wallet;
@@ -186,8 +216,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         data.params[0] = profile;
-        data.params[5] = data.params[5] ? data.params[5] : data.params[3];
-        data.params[6] = data.params[6] ? data.params[6] : data.params[4];
         data.params[7] = wallet;
         return data;
     }
@@ -200,9 +228,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <profileId>              - Number - The ID of the Profile for which the Market is added. \n'
             + '    <name>                   - String - The unique name of the Market being created. \n'
-            + '    <type>                   - MarketType - MARKETPLACE \n'
-            + '    <receiveKey>             - String - The receive private key of the Market. \n'
-            + '    <receiveAddress>         - String - The receive address matching the receive private key. \n'
+            + '    <type>                   - MarketType, optional - MARKETPLACE \n'
+            + '    <receiveKey>             - String, optional - The receive private key of the Market. \n'
+            + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
             + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
             + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
             + '    <wallet>                 - String, optional - The wallet to be used with the Market. \n';

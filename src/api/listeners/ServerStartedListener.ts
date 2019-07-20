@@ -102,7 +102,9 @@ export class ServerStartedListener implements interfaces.Listener {
                     await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
                     hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
-                    isConnected = isConnected && hasMarketConfiguration;
+
+                    // if there's no configuration for the market, set the isConnected back to false
+                    isConnected = hasMarketConfiguration ? true : false;
 
                     if (hasMarketConfiguration) {
 
