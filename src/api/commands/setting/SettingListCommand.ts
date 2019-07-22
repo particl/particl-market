@@ -76,7 +76,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         // optional
-        if (data.params[1] && typeof data.params[1] !== 'number') {
+        if (data.params[1] !== undefined && typeof data.params[1] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -87,14 +87,18 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
                 throw new ModelNotFoundException('Profile');
             });
 
+        this.log.debug('data.params[1]: ', data.params[1]);
+
         // if given, make sure Market exists
-        if (data.params[1]) {
+        if (data.params[1] !== undefined) {
             data.params[1] = await this.marketService.findOne(data.params[1])
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Market');
                 });
         }
+
+        this.log.debug('data.params[1]: ', data.params[1]);
 
         return data;
     }

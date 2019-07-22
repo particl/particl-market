@@ -7,9 +7,9 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('SettingGetCommand', () => {
 

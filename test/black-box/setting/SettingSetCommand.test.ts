@@ -7,9 +7,9 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('SettingSetCommand', () => {
 
@@ -102,6 +102,18 @@ describe('SettingSetCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
+    test('Should fail to set Setting because invalid marketId', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData.key,
+            testData.value,
+            1,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
     test('Should fail to set Setting because missing Profile model', async () => {
         const missingProfileId = 0;
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
@@ -112,6 +124,19 @@ describe('SettingSetCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+    });
+
+    test('Should fail to set Setting because missing Market model', async () => {
+        const missingMarketId = 0;
+        const res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData.key,
+            testData.value,
+            profile.id,
+            missingMarketId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
     test('Should set a Setting', async () => {
