@@ -94,10 +94,6 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         }
 
         const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[0]).then(value => value.toJSON());
-        // if category has a key, its a default category and cant be updated
-        if (!_.isEmpty(itemCategory.key)) {
-            throw new MessageException(`Default category can't be updated or deleted.`);
-        }
         data.params[0] = itemCategory;
 
         if (data.params.length > 3) {
