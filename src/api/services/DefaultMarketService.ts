@@ -19,6 +19,7 @@ import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { WalletService } from './model/WalletService';
+import {MessageException} from '../exceptions/MessageException';
 
 export class DefaultMarketService {
 
@@ -54,7 +55,9 @@ export class DefaultMarketService {
             return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
         });
 
-        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+        if (marketNameSetting === undefined || marketPKSetting === undefined || marketAddressSetting === undefined) {
+            throw new MessageException('Default Market settings not found!');
+        }
 
         // get the Profiles default wallet so we can set it as the wallet for the Market
         const defaultProfileWallet: resources.Wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
@@ -70,26 +73,12 @@ export class DefaultMarketService {
             publishAddress: marketAddressSetting!.value
         } as MarketCreateRequest;
 
-        return await this.insertOrUpdateMarket(defaultMarket, profile);
+        const market = await this.insertOrUpdateMarket(defaultMarket, profile);
+        this.log.debug('seedDefaultMarket(), market: ', JSON.stringify(market.toJSON(), null, 2));
+        return market;
     }
 
     public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
-
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
-
-        const marketNameSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
-        });
-
-        const marketPKSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
-        });
-
-        const marketAddressSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
-        });
-
-        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
 
         // create or update the default marketplace
         const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)

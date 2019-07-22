@@ -43,10 +43,9 @@ export class MarketService {
             throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.');
         }
 
-        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated)
-            .then(value => value.toJSON());
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated);
 
-        if (market === null) {
+        if (market === undefined) {
             this.log.error(`Default Market was not found!`);
             throw new NotFoundException(marketAddressSetting!.value);
         }
