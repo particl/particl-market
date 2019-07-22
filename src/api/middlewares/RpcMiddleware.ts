@@ -21,7 +21,9 @@ export class RpcMiddleware implements interfaces.Middleware {
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
 
-        if (!this.serverStartedListener.isStarted) {
+        // fail if server isnt started and the method is anything else than market
+        // we need to be able to set the default market while the server is waiting for default market settings
+        if (!this.serverStartedListener.isStarted && req.body.method !== 'market') {
             return res.failed(503, 'Server not fully started yet, is particld running?');
         }
 

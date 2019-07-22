@@ -21,6 +21,7 @@ import { CoreRpcService, RpcWalletInfo } from '../../services/CoreRpcService';
 import { SettingValue } from '../../enums/SettingValue';
 import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from '../../services/model/SettingService';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
 
@@ -81,6 +82,10 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
         if (data.params.length < 1) {
             throw new MissingParamException('name');
+        }
+
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('name', 'string');
         }
 
         // check if profile already exist for the given name

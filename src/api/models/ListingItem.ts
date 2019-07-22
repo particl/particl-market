@@ -55,6 +55,22 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         // 'FlaggedItem.Proposal.ProposalResults',
     ];
 
+    public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
+        const ListingItemCollection = ListingItem.forge<Model<ListingItem>>()
+            .query(qb => {
+                qb.where('hash', '=', hash);
+            })
+            .orderBy('expiry_time', 'ASC');
+
+        if (withRelated) {
+            return await ListingItemCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItemCollection.fetchAll();
+        }
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
         if (withRelated) {
             return await ListingItem.where<ListingItem>({ id: value }).fetch({
@@ -62,16 +78,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             });
         } else {
             return await ListingItem.where<ListingItem>({ id: value }).fetch();
-        }
-    }
-
-    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ hash: value }).fetch();
         }
     }
 

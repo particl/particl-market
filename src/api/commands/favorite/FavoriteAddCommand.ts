@@ -37,8 +37,8 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     /**
      *
      * data.params[]:
-     *  [0]: profile_id
-     *  [1]: item_id or hash
+     *  [0]: profileId
+     *  [1]: itemId or hash
      *
      * when data.params[1] is number then findById, else findOneByHash
      *
