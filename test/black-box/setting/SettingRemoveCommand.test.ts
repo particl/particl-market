@@ -66,8 +66,7 @@ describe('SettingRemoveCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('settingId', 'number').getMessage());
     });
 
-    test('Should fail to set Setting because Setting model not found', async () => {
-        const missingProfileId = 0;
+    test('Should fail to remove Setting because Setting model not found', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
             0
         ]);

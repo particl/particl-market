@@ -16,7 +16,6 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import { ProfileService } from '../../services/model/ProfileService';
 
 export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -24,7 +23,6 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.MARKET_REMOVE);
@@ -48,7 +46,6 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     *  [0]: profileId
      *  [0]: marketId
      *
      * @param data
@@ -58,24 +55,13 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
             throw new MissingParamException('marketId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
-
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
 
         // make sure Market with the id exists
         const market: resources.Market = await this.marketService.findOne(data.params[0])
@@ -102,12 +88,11 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <cartId> ';
+        return this.getName() + ' <marketId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>                - The Id of the Profile which Market we want to remove. '
             + '    <marketId>                 - The Id of the Market we want to remove. ';
     }
 
@@ -116,6 +101,6 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return 'cart ' + this.getName() + ' 1 ';
+        return 'market ' + this.getName() + ' 1 ';
     }
 }
