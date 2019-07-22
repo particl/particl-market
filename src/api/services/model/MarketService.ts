@@ -62,15 +62,11 @@ export class MarketService {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
-        this.log.debug('findOne: ', id);
-
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
             this.log.warn(`Market with the id=${id} was not found!`);
             throw new NotFoundException(id);
         }
-        this.log.debug('findOne: ', JSON.stringify(market.toJSON(), null, 2));
-
         return market;
     }
 
