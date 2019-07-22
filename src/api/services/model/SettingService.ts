@@ -93,8 +93,4 @@ export class SettingService {
         await this.settingRepo.destroy(id);
     }
 
-    public async destroyByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number): Promise<void> {
-        const setting = await this.findOneByKeyAndProfileIdAndMarketId(key, profileId, marketId);
-        await this.destroy(setting.id);
-    }
 }

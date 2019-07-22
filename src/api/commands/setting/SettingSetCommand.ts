@@ -135,7 +135,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         // optional
-        if (data.params[3] && typeof data.params[3] !== 'number') {
+        if (data.params[3] !== undefined && typeof data.params[3] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -147,7 +147,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
             });
 
         // if given, make sure Market exists
-        if (data.params[3]) {
+        if (data.params[3] !== undefined) {
             data.params[3] = await this.marketService.findOne(data.params[3])
                 .then(value => value.toJSON())
                 .catch(reason => {
