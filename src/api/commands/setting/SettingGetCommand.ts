@@ -40,6 +40,8 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
      *  [0]: profile: resources.Profile
      *  [2]: market: resources.Market, optional
      *
+     * TODO: change this command name to find or similar since we're returning an array
+     *
      * @param data
      * @param rpcCommandFactory
      * @returns {Promise<resources.Setting[]>}
