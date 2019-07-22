@@ -36,8 +36,6 @@ describe('MarketRemoveCommand', () => {
         market = await testUtil.getDefaultMarket();
         profile = await testUtil.getDefaultProfile();
 
-        log.debug('default market: ', JSON.stringify(market, null, 2));
-
         // create a market
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -46,8 +44,6 @@ describe('MarketRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         testMarket = res.getBody()['result'];
-
-        log.debug('testMarket: ', JSON.stringify(testMarket, null, 2));
     });
 
     test('Should fail to remove Market because missing profileId', async () => {
