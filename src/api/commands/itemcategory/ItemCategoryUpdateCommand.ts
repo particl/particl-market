@@ -14,7 +14,6 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -24,7 +23,6 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
 
     public log: LoggerType;
     public name: string;
-    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

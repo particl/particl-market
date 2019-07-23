@@ -14,8 +14,8 @@ import { ItemCategoryRepository } from '../../repositories/ItemCategoryRepositor
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableListingItemTemplateConfig} from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 export class ItemCategoryService {
 
