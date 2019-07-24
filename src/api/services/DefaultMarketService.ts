@@ -65,12 +65,12 @@ export class DefaultMarketService {
         const defaultMarket = {
             wallet_id: defaultProfileWallet.id,
             profile_id: profile.id,
-            name: marketNameSetting!.value,
+            name: marketNameSetting.value,
             type: MarketType.MARKETPLACE,
-            receiveKey: marketPKSetting!.value,
-            receiveAddress: marketAddressSetting!.value,
-            publishKey: marketPKSetting!.value,
-            publishAddress: marketAddressSetting!.value
+            receiveKey: marketPKSetting.value,
+            receiveAddress: marketAddressSetting.value,
+            publishKey: marketPKSetting.value,
+            publishAddress: marketAddressSetting.value
         } as MarketCreateRequest;
 
         const market = await this.insertOrUpdateMarket(defaultMarket, profile);
