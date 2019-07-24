@@ -150,7 +150,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         } else if (data.params.length < 5) {
             throw new MissingParamException('categoryId');
         } else if (data.params.length < 6) {
-            throw new MissingParamException('paymentType');
+            throw new MissingParamException('saleType');
         } else if (data.params.length < 7) {
             throw new MissingParamException('currency');
         } else if (data.params.length < 8) {
