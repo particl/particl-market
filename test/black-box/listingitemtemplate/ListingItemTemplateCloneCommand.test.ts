@@ -73,7 +73,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
-        log.debug('clonedListingItemTemplate: ', JSON.stringify(result, null, 2));
+        // log.debug('clonedListingItemTemplate: ', JSON.stringify(result, null, 2));
 
         expect(result).hasOwnProperty('Profile');
         expect(result).hasOwnProperty('ItemInformation');

@@ -111,7 +111,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         ) as resources.ListingItem[];
         listingItem = listingItems[0];
     });
-
+/*
     test('Should fail to set featured because missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand]);
         res.expectJson();
@@ -128,7 +128,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('itemImageId').getMessage());
     });
 
-    test('Should fail to set featured because listingItemTemplateId is of invalid type', async () => {
+    test('Should fail to set featured because invalid listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             'INVALID',
             listingItemTemplate.ItemInformation.ItemImages[0].id
@@ -138,7 +138,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail to set featured because itemImageId is of invalid type', async () => {
+    test('Should fail to set featured because invalid itemImageId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id,
             'INVALID'
@@ -147,8 +147,9 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
-
+*/
     test('Should set the featured flag on ItemImage', async () => {
+        log.debug('listingItemTemplate', JSON.stringify(listingItemTemplate, null, 2));
         const res = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id,
             listingItemTemplate.ItemInformation.ItemImages[0].id
@@ -160,8 +161,8 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(result.id).toBe(listingItemTemplate.ItemInformation.ItemImages[0].id);
         expect(result.featured).toBeTruthy();
     });
-
-    test('Should fail to set featured because ItemImage is already posted', async () => {
+/*
+    test('Should fail to set featured because ListingItemTemplate is already posted', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItem.id,
             listingItem.ItemInformation.ItemImages[0].id
@@ -171,7 +172,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(
             new MessageException('Can\'t set featured flag on ItemImage because the ListingItemTemplate has already been posted!').getMessage());
     });
-
+*/
 });
 
 
