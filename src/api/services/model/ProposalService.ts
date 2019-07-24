@@ -88,8 +88,6 @@ export class ProposalService {
 
     @validate()
     public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest): Promise<Proposal> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
@@ -115,9 +113,6 @@ export class ProposalService {
 
         // finally find and return the created proposal
         const result = await this.findOne(proposal.id, true);
-
-        this.log.debug('ProposalService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
         return result;
     }
 
@@ -205,7 +200,6 @@ export class ProposalService {
         proposalResult = await this.proposalResultService.findOne(proposalResult.id)
             .then(value => value.toJSON());
         // this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
-        this.log.debug('createEmptyProposalResult(), created ProposalResult');
 
         return proposalResult;
     }

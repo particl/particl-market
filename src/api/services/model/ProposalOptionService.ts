@@ -59,20 +59,9 @@ export class ProposalOptionService {
 
     @validate()
     public async create( @request(ProposalOptionCreateRequest) data: ProposalOptionCreateRequest): Promise<ProposalOption> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
-
-        // If the request body was valid we will create the proposalOption
         const proposalOption = await this.proposalOptionRepo.create(body);
-
-        // finally find and return the created proposal
         const result = await this.findOne(proposalOption.id, true);
-
-        // this.log.debug('ProposalOption.create, result:', JSON.stringify(result, null, 2));
-
-        this.log.debug('ProposalOptionService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

@@ -78,9 +78,9 @@ export class ListingItemService {
      * @returns {Promise<ListingItem>}
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        this.log.debug('findOneByHash(), hash: ', hash);
+        // this.log.debug('findOneByHash(), hash: ', hash);
         const listingItems = await this.findAllByHash(hash, withRelated);
-        this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
+        // this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
         if (listingItems.size() === 0) {
             this.log.warn(`ListingItem with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
