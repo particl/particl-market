@@ -41,8 +41,10 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
+
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const itemImage: resources.ItemImage = data.params[0];
+        const itemImage: resources.ItemImage = data.params[1];
+
         return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, itemImage.id);
     }
 
@@ -55,6 +57,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // check if we got all the params
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         } else if (data.params.length < 2) {
