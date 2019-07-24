@@ -61,7 +61,7 @@ describe('ListingItemTemplateAddCommand', () => {
     test('Should fail to add because missing shortDescription', async () => {
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
+            'Test Title'                   // [1]: title
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -166,7 +166,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('internationalShippingPrice').getMessage());
     });
 
-    test('Should fail to add because invalid type of profileId', async () => {
+    test('Should fail to add because invalid profileId', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             'INVALID',                      // [0]: profile_id
@@ -185,7 +185,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to add because invalid type of title', async () => {
+    test('Should fail to add because invalid title', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -204,7 +204,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('title', 'string').getMessage());
     });
 
-    test('Should fail to add because invalid type of shortDescription', async () => {
+    test('Should fail to add because invalid shortDescription', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -223,7 +223,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('shortDescription', 'string').getMessage());
     });
 
-    test('Should fail to add because invalid type of longDescription', async () => {
+    test('Should fail to add because invalid longDescription', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -242,7 +242,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('longDescription', 'string').getMessage());
     });
 
-    test('Should fail to add because invalid type of categoryId', async () => {
+    test('Should fail to add because invalid categoryId', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -264,7 +264,7 @@ describe('ListingItemTemplateAddCommand', () => {
 /*
 // TODO: saleType is hardcoded for now
 
-    test('Should fail to add because invalid type of saleType', async () => {
+    test('Should fail to add because invalid saleType', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -287,7 +287,7 @@ describe('ListingItemTemplateAddCommand', () => {
 /*
 // TODO: currency is hardcoded for now
 
-    test('Should fail to add because invalid type of currency', async () => {
+    test('Should fail to add because invalid currency', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -307,7 +307,7 @@ describe('ListingItemTemplateAddCommand', () => {
     });
 */
 
-    test('Should fail to add because invalid type of basePrice', async () => {
+    test('Should fail to add because invalid basePrice', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -326,7 +326,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('basePrice', 'number').getMessage());
     });
 
-    test('Should fail to add because invalid type of domesticShippingPrice', async () => {
+    test('Should fail to add because invalid domesticShippingPrice', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -345,7 +345,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('domesticShippingPrice', 'number').getMessage());
     });
 
-    test('Should fail to add because invalid type of internationalShippingPrice', async () => {
+    test('Should fail to add because invalid internationalShippingPrice', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -367,7 +367,7 @@ describe('ListingItemTemplateAddCommand', () => {
 /*
 // TODO: escrowType is hardcoded for now
 
-    test('Should fail to add because invalid type of escrowType', async () => {
+    test('Should fail to add because invalid escrowType', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -391,7 +391,7 @@ describe('ListingItemTemplateAddCommand', () => {
     });
 */
 
-    test('Should fail to add because invalid type of buyerRatio', async () => {
+    test('Should fail to add because invalid buyerRatio', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
@@ -414,7 +414,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('buyerRatio', 'number').getMessage());
     });
 
-    test('Should fail to add because invalid type of sellerRatio', async () => {
+    test('Should fail to add because invalid sellerRatio', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id

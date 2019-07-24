@@ -221,7 +221,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> <type> <receiveKey> <receiveAddress> [publishKey] [publishAddress] [wallet] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [wallet] ';
     }
 
     public help(): string {
