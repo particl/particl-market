@@ -11,9 +11,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
-import {SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ItemLocationUpdateCommand', () => {
 
