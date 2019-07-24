@@ -38,13 +38,12 @@ export class CommandEnumType extends Enum<Command> {
 
     public ESCROW_ADD: Command      = new Command('escrowadd', 'add', false);
     public ESCROW_UPDATE: Command   = new Command('escrowupdate', 'update', false);
-    public ESCROW_REMOVE: Command   = new Command('escrowremove', 'remove', false);
     public ESCROW_LOCK: Command     = new Command('escrowlock', 'lock', false);
     public ESCROW_REFUND: Command   = new Command('escrowrefund', 'refund', false);
     public ESCROW_RELEASE: Command  = new Command('escrowrelease', 'release', false);
     public ESCROW_COMPLETE: Command = new Command('escrowcomplete', 'complete', false);
     public ESCROW_ROOT: Command     = new Command('escrow', 'escrow', true,
-        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_REMOVE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE,
+        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE,
             this.ESCROW_COMPLETE], EnvironmentType.ALL);
 
     public PAYMENTINFORMATION_UPDATE: Command   = new Command('paymentinformationupdate', 'update', false);

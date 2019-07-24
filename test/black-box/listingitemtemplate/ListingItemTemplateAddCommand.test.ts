@@ -168,7 +168,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of profileId', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             'INVALID',                      // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -187,7 +187,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of title', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             0,                              // [1]: title
             'test short description',       // [2]: short description
@@ -206,7 +206,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of shortDescription', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             0,                              // [2]: short description
@@ -225,7 +225,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of longDescription', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -244,7 +244,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of categoryId', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -266,7 +266,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of saleType', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -289,7 +289,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of currency', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -309,7 +309,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of basePrice', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -328,7 +328,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of domesticShippingPrice', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -347,7 +347,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of internationalShippingPrice', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -369,7 +369,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of escrowType', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -393,7 +393,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of buyerRatio', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -416,7 +416,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because invalid type of sellerRatio', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
@@ -439,7 +439,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should fail to add because Profile not found', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             0,                              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description

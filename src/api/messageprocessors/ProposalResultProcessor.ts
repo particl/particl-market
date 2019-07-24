@@ -69,14 +69,22 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                         // we can now check whether the ListingItem should be removed or not
                         if (proposal.category === ProposalCategory.ITEM_VOTE) {
-                            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                                .then(value => value.toJSON());
-                            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                                .then(async remove => {
-                                    if (remove) {
-                                        await this.listingItemService.destroy(listingItem.id);
-                                    }
+
+                            await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                                .then(async value => {
+                                    const listingItem: resources.ListingItem = value.toJSON();
+                                    await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                                        .then(async remove => {
+                                            if (remove) {
+                                                await this.listingItemService.destroy(listingItem.id);
+                                            }
+                                        });
+
+                                })
+                                .catch( reason => {
+                                    // TODO: listingItem already removed?
                                 });
+
                         }
                     }
                 }
