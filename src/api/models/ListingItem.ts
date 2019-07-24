@@ -14,7 +14,6 @@ import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
-import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { Proposal } from './Proposal';
 

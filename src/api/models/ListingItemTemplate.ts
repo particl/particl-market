@@ -40,7 +40,6 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
-        'ListingItems.Market',
         'ListingItems.PaymentInformation',
         'ListingItems.PaymentInformation.ItemPrice',
         'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',

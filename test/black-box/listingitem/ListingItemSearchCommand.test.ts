@@ -13,6 +13,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
 describe('ListingItemSearchCommand', () => {
 
@@ -69,7 +70,7 @@ describe('ListingItemSearchCommand', () => {
 
         // expect template is related to correct profile and ListingItem posted to correct market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
+        expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
@@ -94,15 +95,27 @@ describe('ListingItemSearchCommand', () => {
         listingItem = listingItems[0];
     });
 
+    const PAGE = 0;
+    const PAGELIMIT = 10;
+    const SEARCHORDER = SearchOrder.ASC;
+
     test('Should fail to searchBy ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = 'INVALID';
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'INVALID',          // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            false               // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL.');
     });
 
@@ -445,7 +458,7 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy for flagged listing items', async () => {
         // flag item
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem.hash,
+            listingItem.id,
             defaultProfile.id
         ]);
         // make sure we got the expected result from posting the proposal
@@ -454,6 +467,7 @@ describe('ListingItemSearchCommand', () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.flagged = true;
+
         res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
