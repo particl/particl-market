@@ -243,7 +243,7 @@ describe('ItemLocationUpdateCommand', () => {
 
     test('Should fail to update ItemLocation because the ListingItemTemplate has been published', async () => {
 
-        // create ListingItemTemplate
+        // create ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
