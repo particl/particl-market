@@ -150,6 +150,11 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException(`ItemLocation for the listingItemTemplateId=${listingItemTemplate.id} already exists!`);
         }
 
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
         data.params[0] = listingItemTemplate;
 
         return data;

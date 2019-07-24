@@ -18,6 +18,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemImage } from '../../models/ItemImage';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -77,7 +78,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[1], true)
             .then(value => value.toJSON());
 
-        // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
+        // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
         // make sure the given image is assigned to the template
         const foundImage: resources.ItemImage | undefined = _.find(listingItemTemplate.ItemInformation.ItemImages, img => {
@@ -89,11 +90,9 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
             throw new MessageException('imageId doesnt exist on template');
         }
 
-        // this.log.debug('foundImage.id: ', foundImage!.id);
-
-        // check if item already been posted
-        if (!_.isEmpty(itemImage.ItemInformation.ListingItem) && itemImage.ItemInformation.ListingItem.id) {
-            throw new MessageException(`Can't set featured flag on ItemImage because the ListingItemTemplate has already been posted!`);
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         data.params[0] = listingItemTemplate;

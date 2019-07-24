@@ -14,6 +14,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import {GenerateListingItemParams} from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
@@ -26,8 +27,8 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     const featuredImageCommand = Commands.TEMPLATE_FEATURED_IMAGE.commandName;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let listingItem: resources.ListingItem;
-    let listingItemTemplateWithNoImages: resources.ListingItemTemplate;
+    let postedListingItemTemplate: resources.ListingItemTemplate;
+
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
 
@@ -66,7 +67,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,   // generateItemImages
+            true,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -84,34 +85,10 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
             true,                    // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-        listingItemTemplateWithNoImages = listingItemTemplates[0];
+        postedListingItemTemplate = listingItemTemplates[0];
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                       // generateItemInformation
-            true,                       // generateItemLocation
-            true,                       // generateShippingDestinations
-            true,                       // generateItemImages
-            true,                       // generatePaymentInformation
-            true,                       // generateEscrow
-            true,                       // generateItemPrice
-            true,                       // generateMessagingInformation
-            false,                      // generateListingItemObjects
-            false,                      // generateObjectDatas
-            listingItemTemplate.hash,   // listingItemTemplateHash
-            defaultProfile.address,     // seller
-            null                        // categoryId
-        ]).toParamsArray();
-
-        // create ListingItem for testing
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateListingItemParams       // what kind of data to generate
-        ) as resources.ListingItem[];
-        listingItem = listingItems[0];
     });
-/*
+
     test('Should fail to set featured because missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand]);
         res.expectJson();
@@ -147,7 +124,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
-*/
+
     test('Should set the featured flag on ItemImage', async () => {
         log.debug('listingItemTemplate', JSON.stringify(listingItemTemplate, null, 2));
         const res = await testUtil.rpc(templateCommand, [featuredImageCommand,
@@ -161,18 +138,17 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(result.id).toBe(listingItemTemplate.ItemInformation.ItemImages[0].id);
         expect(result.featured).toBeTruthy();
     });
-/*
+
     test('Should fail to set featured because ListingItemTemplate is already posted', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
-            listingItem.id,
-            listingItem.ItemInformation.ItemImages[0].id
+            postedListingItemTemplate.id,
+            postedListingItemTemplate.ItemInformation.ItemImages[0].id
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(
-            new MessageException('Can\'t set featured flag on ItemImage because the ListingItemTemplate has already been posted!').getMessage());
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
-*/
+
 });
 
 

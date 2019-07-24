@@ -18,6 +18,7 @@ import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
 export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -99,6 +100,11 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
             }
         } else {
             throw new ModelNotFoundException('ShippingDestination');
+        }
+
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         return data;
