@@ -35,7 +35,7 @@ describe('FavoriteListCommand', () => {
         await testUtil.cleanDb();
 
         defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket(defaultProfile.id);
+        defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -62,7 +62,7 @@ describe('FavoriteListCommand', () => {
 
     });
 
-    test('Should fail to return list because missing title', async () => {
+    test('Should fail to return list because missing profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteListCommand]);
         res.expectJson();
         res.expectStatusCode(404);
