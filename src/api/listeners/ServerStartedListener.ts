@@ -21,6 +21,7 @@ import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
 import {CoreCookieService} from '../services/CoreCookieService';
+import {Environment} from '../../core/helpers/Environment';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -105,7 +106,17 @@ export class ServerStartedListener implements interfaces.Listener {
                     // save the default env vars as settings
                     await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
 
+                    // check whether we have the required default marketplace configuration to continue
                     hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
+
+                    // currently, we have the requirement for the particl-desktop user to create the market wallet manually
+                    // we'll skip this nonsense if process.env.STANDALONE=true
+                    if (!Environment.isTruthy(process.env.STANDALONE)) {
+                        const hasRequiredMarketWallet = await this.coreRpcService.walletExists('market.dat');
+                        this.log.warn('Not running in standalone mode, wallet created: ', hasRequiredMarketWallet);
+                        hasMarketConfiguration = hasRequiredMarketWallet && hasMarketConfiguration;
+                        this.interval = 10000;
+                    }
 
                     // if there's no configuration for the market, set the isConnected back to false
                     isConnected = hasMarketConfiguration ? true : false;
@@ -157,7 +168,6 @@ export class ServerStartedListener implements interfaces.Listener {
         return isConnected;
     }
 
-
     private async hasMarketConfiguration(profile: resources.Profile): Promise<boolean> {
 
         const allSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
@@ -170,12 +180,11 @@ export class ServerStartedListener implements interfaces.Listener {
         if ((!_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
             && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY])
             && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]))
-                || foundSettings.length === 3) {
+            || foundSettings.length === 3) {
             return true;
         }
         return false;
     }
-
 
     private async configureRpcService(): Promise<void> {
         // if a wallet other than the default one is configured, then we need to set that one as the active one

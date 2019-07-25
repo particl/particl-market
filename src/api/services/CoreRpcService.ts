@@ -129,8 +129,6 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<RpcWalletDir>}
      */
     public async listLoadedWallets(): Promise<string[]> {
-        this.log.debug('listLoadedWallets(), getCoreRpcUsername(): ', this.coreCookieService.getCoreRpcUsername());
-        this.log.debug('listLoadedWallets(), getCoreRpcPassword(): ', this.coreCookieService.getCoreRpcPassword());
         return await this.call('listwallets');
     }
 

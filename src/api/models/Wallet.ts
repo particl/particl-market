@@ -71,7 +71,7 @@ export class Wallet extends Bookshelf.Model<Wallet> {
     }
 
     public Markets(): Collection<Market> {
-        return this.hasMany(Market, 'profile_id', 'id');
+        return this.hasMany(Market, 'wallet_id', 'id');
     }
 
 }

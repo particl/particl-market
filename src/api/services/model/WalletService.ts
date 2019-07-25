@@ -72,6 +72,15 @@ export class WalletService {
         return wallet;
     }
 
+    public async findOneByName(name: string, withRelated: boolean = true): Promise<Wallet> {
+        const wallet = await this.walletRepo.findOneByName(name, withRelated);
+        if (wallet === null) {
+            this.log.warn(`Wallet with the name=${name} was not found!`);
+            throw new NotFoundException(name);
+        }
+        return wallet;
+    }
+
     @validate()
     public async create( @request(WalletCreateRequest) data: WalletCreateRequest): Promise<Wallet> {
         const body = JSON.parse(JSON.stringify(data));

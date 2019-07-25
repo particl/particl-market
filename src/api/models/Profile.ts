@@ -20,7 +20,8 @@ export class Profile extends Bookshelf.Model<Profile> {
         'ShoppingCart',
         'Markets',
         'Markets.Wallet',
-        'Wallets'
+        'Wallets',
+        'Wallets.Markets'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {

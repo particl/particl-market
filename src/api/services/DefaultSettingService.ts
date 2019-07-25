@@ -33,17 +33,20 @@ export class DefaultSettingService {
 
             await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_NAME, defaultProfile)
                 .then(value => {
-                    this.log.debug('DEFAULT_MARKETPLACE_NAME: ', JSON.stringify(value, null, 2));
+                    const settingValue = value ? value.value : 'undefined';
+                    this.log.debug('DEFAULT_MARKETPLACE_NAME: ', settingValue);
                 });
 
             await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, defaultProfile)
                 .then(value => {
-                    this.log.debug('DEFAULT_MARKETPLACE_PRIVATE_KEY: ', JSON.stringify(value, null, 2));
+                    const settingValue = value ? value.value : 'undefined';
+                    this.log.debug('DEFAULT_MARKETPLACE_PRIVATE_KEY: ', settingValue);
                 });
 
             await this.insertOrUpdateSettingFromEnv(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, defaultProfile)
                 .then(value => {
-                    this.log.debug('DEFAULT_MARKETPLACE_ADDRESS: ', JSON.stringify(value, null, 2));
+                    const settingValue = value ? value.value : 'undefined';
+                    this.log.debug('DEFAULT_MARKETPLACE_ADDRESS: ', settingValue);
                 });
         }
 
