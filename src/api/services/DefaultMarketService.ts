@@ -19,8 +19,8 @@ import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { WalletService } from './model/WalletService';
-import {MessageException} from '../exceptions/MessageException';
-import {WalletCreateRequest} from '../requests/model/WalletCreateRequest';
+import { MessageException } from '../exceptions/MessageException';
+import { WalletCreateRequest } from '../requests/model/WalletCreateRequest';
 
 export class DefaultMarketService {
 
