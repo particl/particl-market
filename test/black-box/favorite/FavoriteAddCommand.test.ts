@@ -86,6 +86,8 @@ describe('FavoriteAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
+/*
+    // TODO: hash is supported, propably id shouldnt be
     test('Should fail to add because invalid listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             defaultProfile.id,
@@ -95,7 +97,7 @@ describe('FavoriteAddCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
-
+*/
     test('Should fail to add because Profile not found', async () => {
 
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,

@@ -80,21 +80,29 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
         if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
         }
 
         // make sure required data exists and fetch it
+        let listingItem: resources.ListingItem;
+
+        if (typeof data.params[1] === 'string') {
+            listingItem = await this.listingItemService.findOneByHash(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
+        } else {
+            listingItem = await this.listingItemService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        }
+
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
-            });
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[1])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItem');
             });
 
         await this.favoriteItemService.findOneByProfileIdAndListingItemId(profile.id, listingItem.id)
