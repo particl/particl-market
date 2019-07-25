@@ -121,11 +121,15 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('option2Description');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (data.params[0] !== undefined && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[3] && typeof data.params[3] !== 'number') {
+        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('proposalTitle', 'string');
+        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('proposalDescription', 'string');
+        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'number') {
             throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] && typeof data.params[4] !== 'boolean') {
+        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'boolean') {
             throw new InvalidParamException('estimateFee', 'boolean');
         }
 

@@ -20,6 +20,7 @@ import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProc
 import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
+import {CoreCookieService} from '../services/CoreCookieService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -44,6 +45,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.CoreCookieService) public coreCookieService: CoreCookieService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -60,6 +62,8 @@ export class ServerStartedListener implements interfaces.Listener {
     public async act(payload: any): Promise<any> {
         this.log.info('Received event ServerStartedListenerEvent', payload);
         this.isAppReady = true;
+        await this.coreCookieService.scheduleCookieLoop();
+        this.log.debug('this.coreCookieService.scheduleCookieLoop() DONE');
         await this.configureRpcService();
         this.pollForConnection();
     }

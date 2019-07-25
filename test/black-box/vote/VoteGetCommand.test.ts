@@ -9,10 +9,9 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('VoteGetCommand', () => {
 

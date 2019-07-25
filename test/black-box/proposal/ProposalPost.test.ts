@@ -119,11 +119,9 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('option2Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid category of profileId', async () => {
-
-        const invalidProfileId = 'invalid profile id';
+    test('Should fail to post a Proposal because invalid profileId', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            invalidProfileId,
+            'INVALID',
             title,
             description,
             daysRetention,
@@ -134,6 +132,66 @@ describe('ProposalPostCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail to post a Proposal because invalid proposalTitle', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            defaultProfile.id,
+            0,
+            description,
+            daysRetention,
+            estimateFee,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalTitle', 'string').getMessage());
+    });
+/*
+    test('Should fail to post a Proposal because invalid proposalDescription', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            defaultProfile.id,
+            title,
+            0,
+            daysRetention,
+            estimateFee,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalDescription', 'string').getMessage());
+    });
+
+    test('Should fail to post a Proposal because invalid daysRetention', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            defaultProfile.id,
+            title,
+            description,
+            'INVALID',
+            estimateFee,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
+    });
+
+    test('Should fail to post a Proposal because invalid estimateFee', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            defaultProfile.id,
+            title,
+            description,
+            daysRetention,
+            'INVALID',
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('estimateFee', 'boolean').getMessage());
     });
 
     test('Should fail to post a Proposal because Profile not found', async () => {
@@ -151,23 +209,6 @@ describe('ProposalPostCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
-    });
-
-    test('Should fail to post a Proposal because invalid category of daysRetention', async () => {
-
-        const invalidDaysRetention = 'Invalid daysRetention';
-        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
-            title,
-            description,
-            invalidDaysRetention,
-            estimateFee,
-            options[0],
-            options[1]
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
     });
 
     test('Should estimate Proposal posting fee', async () => {
@@ -232,5 +273,5 @@ describe('ProposalPostCommand', () => {
         expect(result.ProposalOptions[0].description).toBe(options[0]);
         expect(result.ProposalOptions[1].description).toBe(options[1]);
     }, 600000); // timeout to 600s
-
+*/
 });

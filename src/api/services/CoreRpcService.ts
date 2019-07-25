@@ -13,7 +13,7 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import {RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir} from 'omp-lib/dist/interfaces/rpc';
+import { RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir } from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
@@ -129,6 +129,8 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<RpcWalletDir>}
      */
     public async listLoadedWallets(): Promise<string[]> {
+        this.log.debug('listLoadedWallets(), getCoreRpcUsername(): ', this.coreCookieService.getCoreRpcUsername());
+        this.log.debug('listLoadedWallets(), getCoreRpcPassword(): ', this.coreCookieService.getCoreRpcPassword());
         return await this.call('listwallets');
     }
 
