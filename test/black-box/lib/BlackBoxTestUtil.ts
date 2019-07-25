@@ -154,8 +154,8 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultMarket(): Promise<resources.Market> {
-        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
+    public async getDefaultMarket(profileId?: number): Promise<resources.Market> {
+        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName, profileId]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Market[] = res.getBody()['result'];

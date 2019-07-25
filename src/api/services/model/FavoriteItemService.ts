@@ -65,7 +65,7 @@ export class FavoriteItemService {
      * @param withRelated
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
      */
-    public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<FavoriteItem>> {
         return await this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
     }
 
