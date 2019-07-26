@@ -10,13 +10,14 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('wallets', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('name').notNullable();
+            table.string('name').notNullable().unique();
 
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
         })
     ]);
 };

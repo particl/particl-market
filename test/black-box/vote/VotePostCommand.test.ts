@@ -216,7 +216,6 @@ describe('VotePostCommand', () => {
 
         log.debug('vote: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBeGreaterThan(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     }, 600000); // timeout to 600s

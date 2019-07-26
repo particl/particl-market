@@ -13,6 +13,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
 describe('ListingItemSearchCommand', () => {
 
@@ -69,7 +70,7 @@ describe('ListingItemSearchCommand', () => {
 
         // expect template is related to correct profile and ListingItem posted to correct market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
+        expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
@@ -94,24 +95,45 @@ describe('ListingItemSearchCommand', () => {
         listingItem = listingItems[0];
     });
 
+    const PAGE = 0;
+    const PAGELIMIT = 10;
+    const SEARCHORDER = SearchOrder.ASC;
+
     test('Should fail to searchBy ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = 'INVALID';
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'INVALID',          // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL.');
     });
 
     test('Should searchBy OWN ListingItems when profileid = OWN', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = 'OWN';
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'OWN',              // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -121,23 +143,20 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should searchBy ALL ListingItems when profileid = ALL', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = 'ALL';
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(listingItem.hash);
-    });
-
-    test('Should searchBy ALL ListingItems when profileId is empty, since default is ALL', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -149,10 +168,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should searchBy ALL ListingItems when profileId = *', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -164,11 +192,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should searchBy only first ListingItem using pagination and setting pageLimit to 1', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.pageLimit = 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, 1, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -180,12 +216,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should searchBy the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.pageLimit = 1;
-        params.page = 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            1, 1, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -196,12 +239,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should return empty ListingItems array if invalid pagination', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.pageLimit = 1;
-        params.page = 2;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            2, 1, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -210,34 +260,53 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should searchBy ListingItems by category.key', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.category = listingItem.ItemInformation.ItemCategory.key;
 
-        // TODO: add category to item generation
         const itemCount = listingItem.ItemInformation.ItemCategory.key
             === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key
             ? 2 : 1;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            listingItem.ItemInformation.ItemCategory.key, // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemCategory.key).toBe(params.category);
+        expect(result[0].ItemInformation.ItemCategory.key).toBe(listingItem.ItemInformation.ItemCategory.key);
     });
 
     test('Should searchBy ListingItems by category.id', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.category = listingItem.ItemInformation.ItemCategory.id;
+        log.debug('listingItem.ItemInformation: ', JSON.stringify(listingItem.ItemInformation, null, 2));
+        log.debug('listingItemTemplate.ListingItems[0].ItemInformation: ', JSON.stringify(listingItemTemplate.ListingItems[0].ItemInformation, null, 2));
 
         const itemCount = listingItem.ItemInformation.ItemCategory.id
             === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
             ? 2 : 1;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            listingItem.ItemInformation.ItemCategory.id, // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -247,15 +316,24 @@ describe('ListingItemSearchCommand', () => {
         // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemCategory.id).toBe(params.category);
+        expect(result[0].ItemInformation.ItemCategory.id).toBe(listingItem.ItemInformation.ItemCategory.id);
 
     });
 
     test('Should searchBy ListingItems by searchString', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.searchString = listingItem.ItemInformation.title.substr(0, 10);
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            listingItem.ItemInformation.title.substr(0, 10), // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -267,18 +345,29 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should return two ListingItems when searching by price', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
             < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
 
-        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
             > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
+            minPrice,           // minPrice
+            maxPrice,           // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -288,18 +377,29 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should return one ListingItem when searching by price', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
             < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-        > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
+            minPrice,           // minPrice
+            maxPrice,           // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -309,11 +409,22 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should return no ListingItems when searching using invalid price range', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.minPrice = 1000.0001;
-        params.maxPrice = 1000.0002;
+        const minPrice = 1000.0001;
+        const maxPrice = 1000.0002;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
+            minPrice,           // minPrice
+            maxPrice,           // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -323,11 +434,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should return ListingItems without related', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.withRelated = false;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            false               // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -342,86 +461,113 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].Market).toBeUndefined();
     });
 
-
     test('Should searchBy ListingItems by country (ItemLocation)', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
-        params.country = listingItem.ItemInformation.ItemLocation.country;
 
         const itemCount = listingItem.ItemInformation.ItemLocation.country
         === listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
             ? 2 : 1;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            listingItem.ItemInformation.ItemLocation.country, // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemLocation.country).toBe(params.country);
-
+        expect(result[0].ItemInformation.ItemLocation.country).toBe(listingItem.ItemInformation.ItemLocation.country);
     });
 
     test('Should searchBy ListingItem by ShippingDestination', async () => {
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.profileId = '*';
 
         const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
-        params.shippingDestination = shippingDestinationsThatShip[0].country;
+        const shippingDestination = shippingDestinationsThatShip[0].country;
 
         const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS
-                && o.country === params.shippingDestination;
+                && o.country === shippingDestination;
         });
 
         const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            shippingDestination, // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(params.shippingDestination);
+        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
     });
 
     test('Should searchBy ListingItem by ShippingDestination, min-maxPrice and searchString', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-
         const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
-        params.shippingDestination = shippingDestinationsThatShip[0].country;
+        const shippingDestination = shippingDestinationsThatShip[0].country;
 
         const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
         const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS
-                && o.country === params.shippingDestination;
+                && o.country === shippingDestination;
         });
 
         const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
 
-        params.minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-        < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
 
-        params.maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-        > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
+            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        params.searchString = listingItem.ItemInformation.title.substr(0, 10);
+        const searchString = listingItem.ItemInformation.title.substr(0, 10);
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            minPrice,           // minPrice
+            maxPrice,           // maxPrice
+            '',                 // country, string, can be null
+            shippingDestination, // shippingDestination, string, can be null
+            searchString,       // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -432,9 +578,19 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should find all ListingItems when using no searchBy criteria', async () => {
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            false,              // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -445,16 +601,26 @@ describe('ListingItemSearchCommand', () => {
     test('Should searchBy for flagged listing items', async () => {
         // flag item
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem.hash,
+            listingItem.id,
             defaultProfile.id
         ]);
         // make sure we got the expected result from posting the proposal
         const result: any = res.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
-        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
-        params.flagged = true;
-        res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        res = await testUtil.rpc(itemCommand, [itemSearchCommand,
+            PAGE, PAGELIMIT, SEARCHORDER,
+            '',                 // category, number|string, if string, try to find using key, can be null
+            'ALL',              // type, DEPRECATED
+            '*',                // profileId, (NUMBER | OWN | ALL | *)
+            null,               // minPrice
+            null,               // maxPrice
+            '',                 // country, string, can be null
+            '',                 // shippingDestination, string, can be null
+            '',                 // searchString, string, can be null
+            true,               // flagged, boolean, can be null
+            true                // withRelated
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const resMain: any = res.getBody()['result'];

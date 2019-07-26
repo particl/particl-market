@@ -222,21 +222,32 @@ describe('EscrowUpdateCommand', () => {
 
     test('Should not be able to update Escrow because ListingItemTemplate is not modifiable', async () => {
 
-        let res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplate.id,
+        // create ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
             2,
-            defaultMarket.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
 
-        // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
-        expect(result.result).toBe('Sent.');
-
-        await testUtil.waitFor(5);
-
-        res = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
+        const res = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
             listingItemTemplate.id,
             EscrowType.MAD_CT,
             100,

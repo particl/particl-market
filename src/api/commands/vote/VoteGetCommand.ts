@@ -99,7 +99,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     }
 
     public description(): string {
-        return 'Get votes on a given proposal by a given submitter. ';
+        return 'Get SummaryVote on a given Proposal for Profile. ';
     }
 
     public example(): string {

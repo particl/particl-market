@@ -33,6 +33,7 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
+     *  [1]: profile: resources.Profile
      *  [0]: market: resources.Market
      *
      * @param data
@@ -40,7 +41,8 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const market: resources.Market = data.params[0];
+        const profile: resources.Profile = data.params[0];
+        const market: resources.Market = data.params[1];
 
         // TODO: add removal of all other market related data
         return this.marketService.destroy(market.id);
@@ -78,31 +80,27 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
             });
 
         // make sure Market with the id exists
-        const market: resources.Market = await this.marketService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+        const market: resources.Market = await this.marketService.findOne(data.params[1])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
             });
 
-
-        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(data.params[0]).then(value => value.toJSON())
-            .then(value => {
-                return value.toJSON();
-            });
+        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(data.params[0], true)
+            .then(value => value.toJSON());
 
         if (market.id === defaultMarket.id) {
             throw new MessageException('Default Market cannot be removed.');
         }
 
-        data.params[0] = market;
+        data.params[0] = profile;
+        data.params[1] = market;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <cartId> ';
+        return this.getName() + ' <profileId> <marketId> ';
     }
 
     public help(): string {
@@ -116,6 +114,6 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return 'cart ' + this.getName() + ' 1 ';
+        return 'market ' + this.getName() + ' 1 1 ';
     }
 }

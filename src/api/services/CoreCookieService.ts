@@ -21,7 +21,7 @@ export class CoreCookieService {
     private DEFAULT_CORE_USER = 'test';
     private DEFAULT_CORE_PASSWORD = 'test';
     private CORE_COOKIE_FILE = process.env.RPCCOOKIEFILE ? process.env.RPCCOOKIEFILE : '.cookie';
-
+    private DEFAULT_INTERVAL = 1000;
     private PATH_TO_COOKIE: string;
 
     constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
@@ -42,6 +42,28 @@ export class CoreCookieService {
      */
     public getCoreRpcPassword(): string {
         return this.DEFAULT_CORE_PASSWORD;
+    }
+
+    public async scheduleCookieLoop(pollingInterval: number = 1000): Promise<void> {
+        this.DEFAULT_INTERVAL = pollingInterval;
+        const cookie = this.getPathToCookie();
+        this.log.info('scheduleLoop(), cookie: ', cookie);
+
+        if (cookie) {
+            const data = fs.readFileSync(cookie);
+            this.log.debug('cookie: ', data.toString());
+            const usernameAndPassword = data.toString().split(':', 2);
+
+            // set username and password to cookie values
+            this.DEFAULT_CORE_USER = usernameAndPassword[0];
+            this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
+            this.log.debug('set DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
+            this.log.debug('set DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
+        }
+
+        this.getCookieLoop();
+        this.log.debug('this.getCookieLoop() called ');
+
     }
 
     private getCookieLoop(): void {
@@ -78,7 +100,7 @@ export class CoreCookieService {
                 const self = this;
                 setTimeout(() => {
                     self.getCookieLoop();
-                }, 1000);
+                }, this.DEFAULT_INTERVAL);
             }
 
         } catch ( ex ) {
@@ -91,11 +113,14 @@ export class CoreCookieService {
         if (this.PATH_TO_COOKIE) {
             return this.PATH_TO_COOKIE;
         }
+        this.log.debug('PATH_TO_COOKIE: ', this.PATH_TO_COOKIE);
 
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
         let dir = '';
         const appName = 'Particl';
+
+        this.log.debug('process.platform: ', process.platform);
 
         switch (process.platform) {
           case 'linux': {

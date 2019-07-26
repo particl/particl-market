@@ -19,6 +19,8 @@ import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { WalletService } from './model/WalletService';
+import { MessageException } from '../exceptions/MessageException';
+import { WalletCreateRequest } from '../requests/model/WalletCreateRequest';
 
 export class DefaultMarketService {
 
@@ -54,54 +56,52 @@ export class DefaultMarketService {
             return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
         });
 
-        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+        if (marketNameSetting === undefined || marketPKSetting === undefined || marketAddressSetting === undefined) {
+            throw new MessageException('Default Market settings not found!');
+        }
 
-        // get the Profiles default wallet so we can set it as the wallet for the Market
-        const defaultProfileWallet: resources.Wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        // the initial default marketplace should use a wallet called market.dat
+        const defaultMarketWallet: resources.Wallet = await this.walletService.findOneByName('market.dat')
+            .then(value => value.toJSON())
+            .catch(async reason => {
+                return await this.walletService.create({
+                    profile_id: profile.id,
+                    name: 'market.dat'
+                } as WalletCreateRequest).then(value => value.toJSON());
+            });
 
         const defaultMarket = {
-            wallet_id: defaultProfileWallet.id,
+            wallet_id: defaultMarketWallet.id,
             profile_id: profile.id,
-            name: marketNameSetting!.value,
+            name: marketNameSetting.value,
             type: MarketType.MARKETPLACE,
-            receiveKey: marketPKSetting!.value,
-            receiveAddress: marketAddressSetting!.value,
-            publishKey: marketPKSetting!.value,
-            publishAddress: marketAddressSetting!.value
+            receiveKey: marketPKSetting.value,
+            receiveAddress: marketAddressSetting.value,
+            publishKey: marketPKSetting.value,
+            publishAddress: marketAddressSetting.value
         } as MarketCreateRequest;
 
-        return await this.insertOrUpdateMarket(defaultMarket, profile);
+        const market = await this.insertOrUpdateMarket(defaultMarket, profile);
+        this.log.debug('seedDefaultMarket(), market: ', JSON.stringify(market.toJSON(), null, 2));
+        return market;
     }
 
-    public async insertOrUpdateMarket(market: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
-
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
-
-        const marketNameSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
-        });
-
-        const marketPKSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
-        });
-
-        const marketAddressSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
-        });
-
-        this.log.debug('seedDefaultMarket(), profile: ', JSON.stringify(profile, null, 2));
+    public async insertOrUpdateMarket(marketRequest: MarketCreateRequest, profile: resources.Profile): Promise<Market> {
 
         // create or update the default marketplace
-        const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
+        const newMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, marketRequest.receiveAddress)
             .then(async (found) => {
-                return await this.marketService.update(found.Id, market as MarketUpdateRequest).then(value => value.toJSON());
+                this.log.debug('found market, update... ');
+                return await this.marketService.update(found.Id, marketRequest as MarketUpdateRequest).then(value => value.toJSON());
             })
             .catch(async (reason) => {
-                return await this.marketService.create(market).then(value => value.toJSON());
+                this.log.debug('did NOT find market, create... ');
+                return await this.marketService.create(marketRequest).then(value => value.toJSON());
             });
 
         // if wallet with the name doesnt exists, then create one
         const exists = await this.coreRpcService.walletExists(newMarket.Wallet.name);
+        this.log.debug('wallet exists: ', exists);
 
         if (!exists) {
             await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
@@ -109,7 +109,7 @@ export class DefaultMarketService {
                     this.log.debug('created wallet: ', result.name);
                 })
                 .catch(reason => {
-                    this.log.debug('wallet: ' + market.name + ' already exists.');
+                    this.log.debug('wallet: ' + marketRequest.name + ' already exists.');
                 });
         } else {
             // load the wallet unless already loaded
@@ -118,7 +118,7 @@ export class DefaultMarketService {
                     if (!isLoaded) {
                         await this.coreRpcService.loadWallet(newMarket.Wallet.name)
                             .catch(reason => {
-                                this.log.debug('wallet: ' + market.name + ' already loaded.');
+                                this.log.debug('wallet: ' + marketRequest.name + ' already loaded.');
                             });
                     }
                 });

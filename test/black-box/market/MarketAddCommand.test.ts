@@ -39,8 +39,7 @@ describe('MarketAddCommand', () => {
         receiveKey: 'receiveKey',
         receiveAddress: 'receiveAddress',
         publishKey: 'publishKey',
-        publishAddress: 'publishAddress',
-        wallet: 'market.dat'
+        publishAddress: 'publishAddress'
     };
 
     test('Should fail to create Market because missing profileId', async () => {
@@ -59,53 +58,6 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
-    test('Should fail to create Market because missing type', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
-            marketData.name
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('type').getMessage());
-    });
-
-    test('Should fail to create Market because missing receiveKey', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
-            marketData.name,
-            marketData.type
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('receiveKey').getMessage());
-    });
-
-    test('Should fail to create Market because missing receiveAddress', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
-            marketData.name,
-            marketData.type,
-            marketData.receiveKey
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('receiveAddress').getMessage());
-    });
-
-    test('Should fail to create Market because missing publishAddress', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
-            marketData.name,
-            marketData.type,
-            marketData.receiveKey,
-            marketData.receiveAddress,
-            marketData.publishKey
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('publishAddress').getMessage());
-    });
-
     test('Should fail to create Market because invalid profileId', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
@@ -116,7 +68,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -133,7 +85,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -150,7 +102,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -167,7 +119,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -184,7 +136,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -201,7 +153,7 @@ describe('MarketAddCommand', () => {
             0,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -218,7 +170,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             true,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -235,7 +187,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             true,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -252,7 +204,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -274,11 +226,23 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            marketData.wallet
+            defaultProfile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MessageException('Market with the name: ' + marketData.name + ' already exists.').getMessage());
     });
 
+    test('Should create a new market with minimum params', async () => {
+
+        const marketName = marketData.name + ' 2';
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            defaultProfile.id,
+            marketName
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Market = res.getBody()['result'];
+        expect(result.name).toBe(marketName);
+    });
 });

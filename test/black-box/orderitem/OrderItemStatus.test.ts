@@ -13,7 +13,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {OrderItemStatusResponse} from '../../../src/core/helpers/OrderItemStatusResponse';
+import { OrderItemStatusResponse } from '../../../src/core/helpers/OrderItemStatusResponse';
 // tslint:enable:max-line-length
 
 describe('OrderItemStatus', () => {
@@ -207,11 +207,11 @@ describe('OrderItemStatus', () => {
         log.debug('========================================================================================');
 
         let response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand,
-            [listingItemGetCommand, listingItemTemplateSellerNode.hash],
+            [listingItemGetCommand, listingItemTemplateSellerNode.id],
             15 * 60,
             200,
-            'hash',
-            listingItemTemplateSellerNode.hash
+            'id',
+            listingItemTemplateSellerNode.id
         );
         response.expectJson();
         response.expectStatusCode(200);

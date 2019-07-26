@@ -114,10 +114,12 @@ export class ProposalAddActionService extends BaseActionService {
 
         // TODO: what is this supposed to test?
         if (smsgSendResponse.msgid) {
+
+            // TODO: msgid update should be unnecessary now?
             const proposal: resources.Proposal = await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid)
                 .then(value => value.toJSON());
 
-            this.log.debug('afterPost(), proposal: ', JSON.stringify(proposal, null, 2));
+            // this.log.debug('afterPost(), proposal: ', JSON.stringify(proposal, null, 2));
 
             // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
             if (ProposalCategory.ITEM_VOTE === proposal.category) {
@@ -154,6 +156,7 @@ export class ProposalAddActionService extends BaseActionService {
             throw new MessageException('Failed to set Proposal msgid');
         }
 
+        this.log.debug('afterPost(), smsgSendResponse:', JSON.stringify(smsgSendResponse, null, 2));
         return smsgSendResponse;
     }
 
@@ -227,6 +230,8 @@ export class ProposalAddActionService extends BaseActionService {
 
                 // create the first ProposalResult
                 await this.proposalService.createEmptyProposalResult(createdProposal);
+                this.log.debug('processProposal(), created ProposalResult');
+
                 return await this.proposalService.findOne(createdProposal.id).then(value => value.toJSON());
             });
 

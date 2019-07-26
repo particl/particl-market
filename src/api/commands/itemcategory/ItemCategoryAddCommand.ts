@@ -19,6 +19,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import {HashableItemCategoryCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -49,15 +50,17 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
 
         const market: resources.Market = data.params[0];
-        const parentItemCategory: resources.ItemCategory = data.params[2];
+        const parentItemCategory: resources.ItemCategory = data.params[3];
 
         const createRequest = {
-            name: data.params[0],
-            description: data.params[1],
+            name: data.params[1],
+            description: data.params[2],
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
-        createRequest.key = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateConfig());
+        createRequest.key = ConfigurableHasher.hash(createRequest, new HashableItemCategoryCreateRequestConfig());
+
+        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
 
         return await this.itemCategoryService.create(createRequest);
     }
@@ -100,7 +103,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' <categoryName> <description> <parentItemCategoryId> ';
+        return this.getName() + ' <marketId> <categoryName> <description> <parentItemCategoryId> ';
     }
 
     public help(): string {
@@ -109,9 +112,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             + '    <categoryName>                - String - The name of the category to create. \n'
             + '    <description>                 - String - A description of the category to create. \n'
             + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the \n'
-            + '                                     category we\'re creating. \n'
-            + '    <parentItemCategoryKey>       - String - The identifying key of the parent \n'
-            + '                                     category of the category we\'re creating. ';
+            + '                                     category we\'re creating. \n';
     }
 
     public description(): string {

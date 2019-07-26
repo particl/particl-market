@@ -13,7 +13,7 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import {RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir} from 'omp-lib/dist/interfaces/rpc';
+import { RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir } from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';

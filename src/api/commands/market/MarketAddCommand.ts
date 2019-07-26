@@ -124,17 +124,17 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('profileId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('name', 'string');
-        } else if (data.params[2] && typeof data.params[2] !== 'string') {
+        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (data.params[3] && typeof data.params[3] !== 'string') {
+        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        } else if (data.params[4] && typeof data.params[4] !== 'string') {
+        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'string') {
             throw new InvalidParamException('receiveAddress', 'string');
-        } else if (data.params[5] && typeof data.params[5] !== 'string') {
+        } else if (data.params[5] !== undefined && typeof data.params[5] !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
-        } else if (data.params[6] && typeof data.params[6] !== 'string') {
+        } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
             throw new InvalidParamException('publishAddress', 'string');
-        } else if (data.params[7] && typeof data.params[7] !== 'number') {
+        } else if (data.params[7] !== undefined && typeof data.params[7] !== 'number') {
             throw new InvalidParamException('walletId', 'number');
         }
 
@@ -221,7 +221,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> <type> <receiveKey> <receiveAddress> [publishKey] [publishAddress] [wallet] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [wallet] ';
     }
 
     public help(): string {

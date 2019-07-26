@@ -46,10 +46,7 @@ export class Market extends Bookshelf.Model<Market> {
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Market.where<Market>({
-                profile_id: profileId,
-                receive_address: receiveAddress
-            }).fetch();
+            return await Market.where<Market>({ profile_id: profileId, receive_address: receiveAddress }).fetch();
         }
     }
 

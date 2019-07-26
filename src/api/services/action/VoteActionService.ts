@@ -212,6 +212,7 @@ export class VoteActionService extends BaseActionService {
 
         const msgids: string[] = [];
         for (const addressInfo of addressInfos) {
+            this.log.debug('================================================');
             this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
 
             if (addressInfo.balance > 0) {
@@ -232,6 +233,7 @@ export class VoteActionService extends BaseActionService {
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
             await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+            this.log.debug('vote(), removed flag set');
         }
 
         if (msgids.length === 0) {
@@ -271,16 +273,16 @@ export class VoteActionService extends BaseActionService {
         // TODO: way too long method, needs to be refactored
 
         // get the address balance
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => value.balance);
-        this.log.debug('voteMessage.voter: ', voteMessage.voter);
-        this.log.debug('balance: ', balance);
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter], true).then(value => value.balance);
+        this.log.debug('processVote(), voteMessage.voter: ', voteMessage.voter);
+        this.log.debug('processVote(), balance: ', balance);
 
         // verify that the vote was actually sent by the owner of the address
         const verified = await this.verifyVote(voteMessage);
         if (!verified) {
             throw new MessageException('Received signature failed validation.');
         } else {
-            this.log.debug('vote verified!');
+            this.log.debug('processVote(), vote verified!');
         }
 
         let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
@@ -294,88 +296,87 @@ export class VoteActionService extends BaseActionService {
 
         // address needs to have balance for the vote to matter
         // already checked in send, but doing it again since we call this also from onEvent()
-        if (balance > 0) {
+        // if (balance > 0) {
 
-            // find the ProposalOption for which the Vote is for
-            const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
+        // find the ProposalOption for which the Vote is for
+        const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
 
-            // find the Vote and if it exists, update it, and if not, then create it
-            let vote: resources.Vote | undefined = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
-                .then(value => value.toJSON())
-                .catch(reason => this.log.debug('Vote not found: ', reason));
+        // find the Vote and if it exists, update it, and if not, then create it
+        let vote: resources.Vote | undefined = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
+            .then(value => value.toJSON())
+            .catch(reason => this.log.debug('Vote not found: ', reason));
 
-            // todo: createOrUpdateVote
-            if (vote) {
-                // Vote was found, update it
-                // when vote is found, we are either receiving our own vote or someone is voting again
-                // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
-                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
-                        proposalOption: votedProposalOption,
-                        weight: balance,
-                        create: false
-                    } as VoteCreateParams,
-                    voteMessage,
-                    smsgMessage);
-                this.log.debug('found vote, updating the existing one');
-                this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
-                this.log.debug('proposal.id: ' + proposal.id);
-                this.log.debug('vote.id: ' + vote.id);
-                vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
-                this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
+        // todo: createOrUpdateVote
+        if (vote) {
+            // Vote was found, update it
+            // when vote is found, we are either receiving our own vote or someone is voting again
+            // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
+            const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
+                    proposalOption: votedProposalOption,
+                    weight: balance,
+                    create: false
+                } as VoteCreateParams,
+                voteMessage,
+                smsgMessage);
+            this.log.debug('found vote, updating the existing one');
+            this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
+            this.log.debug('proposal.id: ' + proposal.id);
+            this.log.debug('vote.id: ' + vote.id);
+            vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
+            this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
 
-            } else {
-                // Vote doesnt exist yet, so we need to create it.
-                // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
-                this.log.debug('did not find vote, creating...');
-                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
-                        msgid: smsgMessage ? smsgMessage.msgid : '',
-                        proposalOption: votedProposalOption,
-                        weight: balance,
-                        create: true
-                    } as VoteCreateParams,
-                    voteMessage,
-                    smsgMessage);
+        } else {
+            // Vote doesnt exist yet, so we need to create it.
+            // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
+            this.log.debug('did not find vote, creating...');
+            const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
+                    msgid: smsgMessage ? smsgMessage.msgid : '',
+                    proposalOption: votedProposalOption,
+                    weight: balance,
+                    create: true
+                } as VoteCreateParams,
+                voteMessage,
+                smsgMessage);
 
-                vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
-                this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
-            }
-
-            if (vote) {
-                // after creating/updating the Vote, recalculate the ProposalResult
-                proposal = await this.proposalService.findOne(vote.ProposalOption.Proposal.id).then(value => value.toJSON());
-                const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-                this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-
-                // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
-                // we can now check whether the ListingItem should be removed or not
-                if (proposal.category === ProposalCategory.ITEM_VOTE) {
-
-                    // if this vote is mine lets set/unset the removed flag
-                    const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
-                    if (addressInfo && addressInfo.ismine) {
-                        this.log.debug('isMine: ', addressInfo.ismine);
-                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
-                    }
-
-                    const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                        .then(value => value.toJSON());
-                    await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                        .then(async remove => {
-                            if (remove) {
-                                this.log.debug('removing the ListingItem...');
-                                await this.listingItemService.destroy(listingItem.id);
-                            }
-                        });
-                }
-                return vote;
-            }
-
+            vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
+            this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
         }
 
+        // if (vote) {
+        // after creating/updating the Vote, recalculate the ProposalResult
+        proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
+        const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+        this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+        // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
+        // we can now check whether the ListingItem should be removed or not
+        if (proposal.category === ProposalCategory.ITEM_VOTE) {
+
+            // if this vote is mine lets set/unset the removed flag
+            const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
+            if (addressInfo && addressInfo.ismine) {
+                this.log.debug('isMine: ', addressInfo.ismine);
+                await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+            }
+
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                .then(value => value.toJSON());
+            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                .then(async remove => {
+                    if (remove) {
+                        this.log.debug('removing the ListingItem...');
+                        await this.listingItemService.destroy(listingItem.id);
+                    }
+                });
+        }
+        return vote;
+        // }
+
+        // }
         // returning undefined vote in case there's no balance
         // we could also throw in this situation
-        return;
+        // return;
     }
 
 

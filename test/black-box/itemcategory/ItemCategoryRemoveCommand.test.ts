@@ -11,6 +11,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ItemCategoryRemoveCommand', () => {
 
@@ -24,8 +25,8 @@ describe('ItemCategoryRemoveCommand', () => {
     const categoryListCommand = Commands.CATEGORY_LIST.commandName;
     const categoryRemoveCommand = Commands.CATEGORY_REMOVE.commandName;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     let rootCategory: resources.ItemCategory;
     let customCategory: resources.ItemCategory;
@@ -33,8 +34,8 @@ describe('ItemCategoryRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultMarket = await testUtil.getDefaultMarket();
-        defaultProfile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
 
         // first get the rootCategory
         let res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
@@ -44,6 +45,7 @@ describe('ItemCategoryRemoveCommand', () => {
 
         // create a custom category
         res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            market.id,
             'customcategoryname',
             'description',
             rootCategory.id
@@ -60,23 +62,35 @@ describe('ItemCategoryRemoveCommand', () => {
         // TODO: categories should be related to market
     });
 
-    test('Should not delete ItemCategory because invalid categoryId', async () => {
-        const invalidCategoryId = 'INVALID_CATEGORY_DOESNT_EXIST';
-        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, invalidCategoryId]);
+    test('Should fail to remove ItemCategory because missing categoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
+    });
+
+    test('Should fail to delete ItemCategory because invalid categoryId', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            'INVALID_CATEGORY_DOESNT_EXIST'
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
     test('Should not delete ItemCategory because it cant be found', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, -1]);
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            0
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
     test('Should delete the ItemCategory', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, customCategory.id]);
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            customCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
     });
@@ -90,6 +104,7 @@ describe('ItemCategoryRemoveCommand', () => {
     test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
 
         let res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            market.id,
             'customcategoryname2',
             'description',
             rootCategory.id

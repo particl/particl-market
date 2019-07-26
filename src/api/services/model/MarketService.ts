@@ -18,6 +18,7 @@ import { ProfileService } from './ProfileService';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { MessageException } from '../../exceptions/MessageException';
+import {ListingItem} from '../../models/ListingItem';
 
 export class MarketService {
 
@@ -45,7 +46,7 @@ export class MarketService {
 
         const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated);
 
-        if (market === null) {
+        if (market === undefined) {
             this.log.error(`Default Market was not found!`);
             throw new NotFoundException(marketAddressSetting!.value);
         }
@@ -109,8 +110,12 @@ export class MarketService {
         market.PublishKey = body.publishKey;
         market.PublishAddress = body.publishAddress;
 
-        const updatedMarket = await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
-        return await this.findOne(updatedMarket.id, true);
+        if (body.wallet_id) {
+            market.set('walletId', body.wallet_id);
+        }
+
+        await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
+        return await this.findOne(id, true);
     }
 
     public async destroy(id: number): Promise<void> {

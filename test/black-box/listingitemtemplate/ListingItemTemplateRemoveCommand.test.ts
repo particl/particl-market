@@ -154,7 +154,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
         // expect template is related to correct profile and ListingItem posted to correct Market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(defaultMarket.id);
+        expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
         // remove Listing item template
         const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);

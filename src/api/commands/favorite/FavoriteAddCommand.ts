@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -16,6 +17,9 @@ import { FavoriteItemCreateRequest } from '../../requests/model/FavoriteItemCrea
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 /**
  * Command for adding an item to your favorites, identified by ID or hash.
@@ -37,8 +41,8 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     /**
      *
      * data.params[]:
-     *  [0]: profileId
-     *  [1]: itemId or hash
+     *  [0]: profile: resources.Profile
+     *  [1]: listingItem: resources.ListingItem
      *
      * when data.params[1] is number then findById, else findOneByHash
      *
@@ -47,80 +51,91 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<FavoriteItem> {
+        const profile: resources.Profile = data.params[0];
+        const listingItem: resources.ListingItem = data.params[1];
+
         return await this.favoriteItemService.create({
-                profile_id: data.params[0],
-                listing_item_id: data.params[1]
-            } as FavoriteItemCreateRequest);
+            profile_id: profile.id,
+            listing_item_id: listingItem.id
+        } as FavoriteItemCreateRequest);
     }
 
     /**
      * validate that profile and item exists, replace possible hash with id
+     *
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: listingItemId
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params.length < 2) {
-            throw new MessageException('Missing parameters.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('profileId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('listingItemId');
         }
 
-        const profileId = data.params[0];
-        let itemId = data.params[1];
+        if (data.params[0] && typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        }
 
-        if (profileId && typeof profileId === 'string') {
-            throw new MessageException('profileId cant be a string.');
+        // make sure required data exists and fetch it
+        let listingItem: resources.ListingItem;
+
+        if (typeof data.params[1] === 'string') {
+            listingItem = await this.listingItemService.findOneByHash(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
         } else {
-            // make sure profile with the id exists
-            await this.profileService.findOne(profileId);   // throws if not found
+            listingItem = await this.listingItemService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
         }
 
-        // if item hash is in the params, fetch the id
-        if (itemId && typeof itemId === 'string') {
-            const listingItemModel = await this.listingItemService.findOneByHash(itemId);
-            const listingItem = listingItemModel.toJSON();
-            itemId = listingItem.id;
-        } else {
-            // else make sure the the item with the id exists, throws if not
-            const item = await this.listingItemService.findOne(itemId);
-        }
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
 
-        return await this.favoriteItemService.findOneByProfileIdAndListingItemId(profileId, itemId) // throws if not found
+        await this.favoriteItemService.findOneByProfileIdAndListingItemId(profile.id, listingItem.id)
+            .then(value => {
+                throw new MessageException('FavoriteItem already exists.');
+            })
             .catch(reason => {
                 // great, not found, so we can continue and create it
                 // return RpcRequest with the correct data to be passed to execute
-            })
-            .then(value => {
-                if (value) {
-                    throw new MessageException('FavoriteItem allready exists.');
-                } else {
-                    data.params[0] = profileId;
-                    data.params[1] = itemId;
-                    return data;
-                }
             });
 
+        data.params[0] = profile;
+        data.params[1] = listingItem;
+        return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> (<itemId>|<hash>) ';
+        return this.getName() + ' <profileId> <listingItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>                   - Numeric - The ID of the profile we \n'
             + '                                     want to associate this favorite with. \n'
-            + '    <itemId>                      - Numeric - The ID of the listing item you want to \n'
-            + '                                     add to your favorites. \n'
-            + '    <hash>                        - String - The hash of the listing item you want \n'
-            + '                                     to add to your favorites. ';
+            + '    <listingItemId>               - Numeric - The ID of the listing item you want to \n'
+            + '                                     add to your favorites. \n';
     }
 
     public description(): string {
-        return 'Command for adding an item to your favorites, identified by ID or hash.';
+        return 'Command for adding FavoriteItems.';
     }
 
     public example(): string {
-        return 'favorite ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+        return 'favorite ' + this.getName() + ' 1 1 ';
     }
 }

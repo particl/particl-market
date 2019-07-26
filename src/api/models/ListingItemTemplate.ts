@@ -40,7 +40,6 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
-        'ListingItems.Market',
         'ListingItems.PaymentInformation',
         'ListingItems.PaymentInformation.ItemPrice',
         'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',
@@ -186,7 +185,6 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
-    // ListingItemTemplate can haz a parent ListingItemTemplate
     public ParentListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
