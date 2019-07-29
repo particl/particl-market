@@ -141,7 +141,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
         // get the default market.
         // TODO: Might want to let users specify this later.
-        const market: resources.Market = await this.marketService.getDefaultForProfile(data.params[0]).then(value => value.toJSON());
+        const market: resources.Market = await this.marketService.getDefaultForProfile(data.params[0].id).then(value => value.toJSON());
 
         data.params.unshift(market);
         return data;
