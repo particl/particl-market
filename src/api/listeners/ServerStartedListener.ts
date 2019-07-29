@@ -28,7 +28,6 @@ export class ServerStartedListener implements interfaces.Listener {
     public static Event = Symbol('ServerStartedListenerEvent');
 
     public log: LoggerType;
-    public isAppReady = false;
     public isStarted = false;
     private previousState = false;
 
@@ -62,10 +61,8 @@ export class ServerStartedListener implements interfaces.Listener {
      */
     public async act(payload: any): Promise<any> {
         this.log.info('Received event ServerStartedListenerEvent', payload);
-        this.isAppReady = true;
         await this.coreCookieService.scheduleCookieLoop();
         this.log.debug('this.coreCookieService.scheduleCookieLoop() DONE');
-        await this.configureRpcService();
         this.pollForConnection();
     }
 
@@ -119,7 +116,7 @@ export class ServerStartedListener implements interfaces.Listener {
                     }
 
                     // if there's no configuration for the market, set the isConnected back to false
-                    isConnected = hasMarketConfiguration ? true : false;
+                    isConnected = hasMarketConfiguration;
 
                     if (hasMarketConfiguration) {
 
@@ -185,15 +182,4 @@ export class ServerStartedListener implements interfaces.Listener {
         }
         return false;
     }
-
-    private async configureRpcService(): Promise<void> {
-        // if a wallet other than the default one is configured, then we need to set that one as the active one
-        await this.coreRpcService.listLoadedWallets()
-            .then(async wallets => {
-                this.log.debug('loaded wallets: ', wallets);
-                await this.coreRpcService.setActiveWallet(wallets[0]);
-            });
-        return;
-    }
-
 }
