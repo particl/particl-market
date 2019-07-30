@@ -18,6 +18,7 @@ import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
+import { SettingValue } from '../enums/SettingValue';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -103,6 +104,7 @@ export class CoreRpcService extends CtRpc {
     ) {
         super();
         this.log = new Logger(__filename);
+        this.activeWallet = process.env[SettingValue.DEFAULT_WALLET.toString()] ? process.env[SettingValue.DEFAULT_WALLET.toString()] : this.activeWallet;
     }
 
     public async isConnected(): Promise<boolean> {
@@ -122,6 +124,10 @@ export class CoreRpcService extends CtRpc {
             .catch(error => {
                 return false;
             });
+    }
+
+    public get currentWallet(): string {
+        return this.activeWallet;
     }
 
     public async setActiveWallet(wallet: string): Promise<void> {

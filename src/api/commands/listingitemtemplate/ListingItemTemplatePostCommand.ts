@@ -130,8 +130,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new InvalidParamException('marketId', 'number');
         }
 
-        if (data.params[3] !== undefined && typeof data.params[3] !== 'boolean') {
-            throw new InvalidParamException('estimateFee', 'boolean');
+        if (data.params[3] !== undefined) {
+            if (typeof data.params[3] !== 'boolean') {
+                throw new InvalidParamException('estimateFee', 'boolean');
+            }
         } else {
             data.params[3] = false;
         }
