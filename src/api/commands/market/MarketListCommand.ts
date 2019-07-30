@@ -60,7 +60,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            data.params[0] = await this.profileService.getDefault(data.params[0])
+            data.params[0] = await this.profileService.getDefault()
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Profile');
