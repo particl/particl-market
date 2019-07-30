@@ -109,7 +109,7 @@ export class ServerStartedListener implements interfaces.Listener {
                     // currently, we have the requirement for the particl-desktop user to create the market wallet manually
                     // we'll skip this nonsense if process.env.STANDALONE=true
                     if (!Environment.isTruthy(process.env.STANDALONE)) {
-                        const hasRequiredMarketWallet = await this.coreRpcService.walletExists('market.dat');
+                        const hasRequiredMarketWallet = await this.coreRpcService.walletExists('market');
                         this.log.warn('Not running in standalone mode, wallet created: ', hasRequiredMarketWallet);
                         hasMarketConfiguration = hasRequiredMarketWallet && hasMarketConfiguration;
                         this.interval = 10000;

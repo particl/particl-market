@@ -11,7 +11,7 @@ import { Market } from '../models/Market';
 import { MarketService } from './model/MarketService';
 import { MarketCreateRequest } from '../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
-import { CoreRpcService } from './CoreRpcService';
+import {CoreRpcService, RpcExtKeyGenesisImport, RpcMnemonic} from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
@@ -118,8 +118,13 @@ export class DefaultMarketService {
 
         if (!exists) {
             await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
-                .then(result => {
+                .then(async result => {
                     this.log.debug('created wallet: ', result.name);
+                    const mnemonic: RpcMnemonic = await this.coreRpcService.mnemonic(['new']);
+                    this.log.debug('mnemonic: ', JSON.stringify(mnemonic, null, 2));
+                    const extkey: RpcExtKeyGenesisImport = await this.coreRpcService.extKeyGenesisImport([mnemonic.mnemonic]);
+                    this.log.debug('extkey: ', JSON.stringify(extkey, null, 2));
+                    // todo: store the data
                 })
                 .catch(reason => {
                     this.log.debug('wallet: ' + marketRequest.name + ' already exists.');

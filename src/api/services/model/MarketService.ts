@@ -35,14 +35,19 @@ export class MarketService {
 
     public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
 
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId)
+            .then(value => value.toJSON());
+
         const marketAddressSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
         });
+        // this.log.debug('getDefaultForProfile(), defaultProfileSetting: ', JSON.stringify(profileSettings, null, 2));
 
         if (_.isEmpty(marketAddressSetting)) {
+            this.log.error(new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.').getMessage());
             throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.');
         }
+        this.log.debug('getDefaultForProfile(), marketAddressSetting: ', marketAddressSetting!.value);
 
         const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated);
 
