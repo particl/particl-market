@@ -18,6 +18,7 @@ import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
+import { SettingValue } from '../enums/SettingValue';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -69,6 +70,19 @@ export interface RpcWalletInfo {
     private_keys_enabled: boolean;      // false if privatekeys are disabled for this wallet (enforced watch-only wallet)
 }
 
+export interface RpcMnemonic {
+    mnemonic: string;
+    master: string;
+}
+
+export interface RpcExtKeyGenesisImport {
+    result: string;
+    master_id: string;
+    master_label: string;
+    account_id: string;
+    account_label: string;
+    note: string;
+}
 
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
@@ -90,6 +104,7 @@ export class CoreRpcService extends CtRpc {
     ) {
         super();
         this.log = new Logger(__filename);
+        this.activeWallet = process.env[SettingValue.DEFAULT_WALLET.toString()] ? process.env[SettingValue.DEFAULT_WALLET.toString()] : this.activeWallet;
     }
 
     public async isConnected(): Promise<boolean> {
@@ -109,6 +124,10 @@ export class CoreRpcService extends CtRpc {
             .catch(error => {
                 return false;
             });
+    }
+
+    public get currentWallet(): string {
+        return this.activeWallet;
     }
 
     public async setActiveWallet(wallet: string): Promise<void> {
@@ -180,9 +199,16 @@ export class CoreRpcService extends CtRpc {
         return await this.call('createwallet', [name, disablePrivateKeys, blank]);
     }
 
-    // for clarity
     public async createAndLoadWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
         return await this.createWallet(name, disablePrivateKeys, blank);
+    }
+
+    public async mnemonic(params: any[] = []): Promise<RpcMnemonic> {
+        return await this.call('mnemonic', params);
+    }
+
+    public async extKeyGenesisImport(params: any[] = []): Promise<RpcExtKeyGenesisImport> {
+        return await this.call('extkeygenesisimport', params);
     }
 
     /**

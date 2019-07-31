@@ -4,6 +4,7 @@
 
 import { Logger as LoggerType} from '../../../src/core/Logger';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
+import { App } from '../../../src/core/App';
 
 export class TestUtil {
 
@@ -14,7 +15,7 @@ export class TestUtil {
         new LoggerConfig().configure();
     }
 
-    public async bootstrapAppContainer(app: any): Promise<void> {
+    public async bootstrapAppContainer(app: App): Promise<void> {
         this.log.debug('bootstrapAppContainer(), bootstrap the App...');
         await app.bootstrap();
         this.log.debug('bootstrapAppContainer(), bootstrap the App DONE');
