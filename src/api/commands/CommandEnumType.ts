@@ -30,10 +30,11 @@ export class CommandEnumType extends Enum<Command> {
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
 
     public COMMENT_POST: Command    = new Command('commentpost', 'post', false);
-    public COMMENT_GET: Command    = new Command('commentget', 'get', false);
+    public COMMENT_GET: Command     = new Command('commentget', 'get', false);
     public COMMENT_SEARCH: Command  = new Command('commentsearch', 'search', false);
+    public COMMENT_COUNT: Command   = new Command('commentcount', 'count', false);
     public COMMENT_ROOT: Command    = new Command('comment', 'comment', true,
-        [this.COMMENT_POST, this.COMMENT_GET, this.COMMENT_SEARCH], EnvironmentType.ALL);
+        [this.COMMENT_POST, this.COMMENT_GET, this.COMMENT_SEARCH, this.COMMENT_COUNT], EnvironmentType.ALL);
 
     public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
     public ITEM_GET: Command            = new Command('itemget', 'get', false);

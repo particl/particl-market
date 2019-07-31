@@ -50,10 +50,10 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             searchArgs.orderField = data.params[3];
             searchArgs.type = data.params[4];
             searchArgs.target = data.params[5];
-            withRelated = data.params[6];
+            searchArgs.parentCommentId = data.params[6];
+            withRelated = data.params[7];
         } else {
             searchArgs.commentHash = data.params[0];
-            searchArgs.order = SearchOrder.ASC;
             withRelated = data.params[1];
         }
 
@@ -133,6 +133,18 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             }
         }
 
+        let parentCommentHash;
+        if (data.params.length >= 7) {
+            parentCommentHash = data.params[6];
+            // Throws NotFoundException
+            if (parentCommentHash && parentCommentHash.length > 0) {
+                data.params[6] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON().id)
+                    .catch(() => {
+                        throw new ModelNotFoundException('Parent Comment');
+                    });
+            }
+        }
+
         if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS && target) {
             await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
                 .catch(() => {
@@ -157,12 +169,13 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
             + '    <orderField>             - [optional] The field to order the results by. \n'
             + '    <type>                   - [optional] ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of comment.\n'
             + '    <target>                 - [optional] String - The target of the comment.\n'
+            + '    <parentCommentHash>      - [optional] String - The hash of the parent comment.\n'
             + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
     }
 
 
     public description(): string {
-        return 'Search comments with the comment hash, or the page, page limit, order, order field, type, target and with related.';
+        return 'Search comments with the comment hash, or the page, page limit, order, order field, type, target, parentCommentHash and with related.';
     }
 
     public example(): string {

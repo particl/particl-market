@@ -197,6 +197,7 @@ export const Targets = {
             CommentPostCommand: 'CommentPostCommand',
             CommentGetCommand: 'CommentGetCommand',
             CommentSearchCommand: 'CommentSearchCommand',
+            CommentCountCommand: 'CommentCountCommand',
             CommentRootCommand: 'CommentRootCommand'
         },
         currencyprice: {

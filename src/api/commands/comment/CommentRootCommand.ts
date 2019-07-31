@@ -36,11 +36,11 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' (get|search|post)  -  ' + this.description();
+        return this.getName() + ' (count|get|search|post)  -  ' + this.description();
     }
 
     public help(): string {
-        return this.getName() + ' (get|search|post)  -  ' + this.description();
+        return this.getName() + ' (count|get|search|post)  -  ' + this.description();
     }
 
     public description(): string {

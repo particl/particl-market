@@ -35,6 +35,10 @@ export class CommentRepository {
         return this.CommentModel.fetchByHash(hash, withRelated);
     }
 
+    public async findAllByTypeTarget(type: string, target: string): Promise<Bookshelf.Collection<Comment>> {
+        return this.CommentModel.findAllByTypeTarget(type, target);
+    }
+
     public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
         return this.CommentModel.findAllByCommentorsAndCommentHash(addresses, hash, withRelated);
     }
@@ -46,6 +50,10 @@ export class CommentRepository {
      */
     public async search(options: CommentSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Comment>> {
         return this.CommentModel.searchBy(options, withRelated);
+    }
+
+    public async count(options: CommentSearchParams): Promise<number> {
+        return this.CommentModel.countBy(options);
     }
 
     public async create(data: any): Promise<Comment> {

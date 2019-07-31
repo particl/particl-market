@@ -54,7 +54,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
 
         const profile: resources.Profile = data.params[0];
-        const receiver = data.params[1];
+        let receiver = data.params[1];
         const type  = CommentType[data.params[2]];
         const target = data.params[3];
         const message = data.params[4];
@@ -63,6 +63,11 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
         const daysRetention = 2;
         const estimateFee = false;
+
+        if (!receiver) {
+            const market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            receiver = market.receiveAddress;
+        }
 
         const commentRequest = {
             sendParams: new SmsgSendParams(profile.address, receiver, false, daysRetention, estimateFee),

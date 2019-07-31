@@ -36,6 +36,15 @@ export class Comment extends Bookshelf.Model<Comment> {
         }
     }
 
+    public static async findAllByTypeTarget(type: string, target: string): Promise<Collection<Comment>> {
+      const commentResultCollection = Comment.forge<Model<Comment>>()
+            .query(qb => {
+                qb.where('comments.type', '=', type);
+                qb.where('comments.target', '=', target);
+            });
+      return await commentResultCollection.fetchAll();
+    }
+
     public static async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
         const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {
@@ -50,6 +59,23 @@ export class Comment extends Bookshelf.Model<Comment> {
         } else {
             return await commentResultCollection.fetchAll();
         }
+    }
+
+    public static async countBy(options: CommentSearchParams): Promise<number> {
+        return Comment.forge<Model<Comment>>()
+            .query( qb => {
+                qb.where('comments.type', '=', options.type);
+                qb.where('comments.target', '=', options.target);
+
+                if (options.parentCommentId === '') {
+                    qb.whereNull('comments.parent_comment_id');
+                }
+
+                if (options.parentCommentId) {
+                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
+                }
+            })
+            .count();
     }
 
     public static async searchBy(options: CommentSearchParams, withRelated: boolean = true): Promise<Collection<Comment>> {
@@ -88,6 +114,14 @@ export class Comment extends Bookshelf.Model<Comment> {
 
                 if (options.target) {
                     qb.where('comments.target', '=', options.target);
+                }
+
+                if (options.parentCommentId === '') {
+                    qb.whereNull('comments.parent_comment_id');
+                }
+
+                if (options.parentCommentId) {
+                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
                 }
             })
             .orderBy(`comments.${options.orderField}`, options.order)

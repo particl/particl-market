@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsEnum } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { CommentType } from '../../enums/CommentType';
@@ -15,7 +14,6 @@ export class CommentSearchParams extends RequestBody {
 
     public pageLimit: number;
 
-    @IsEnum(SearchOrder)
     public order: SearchOrder;
 
     public orderField: string;
@@ -23,4 +21,6 @@ export class CommentSearchParams extends RequestBody {
     public type: CommentType;
 
     public target: string;
+
+    public parentCommentId: string;
 }
