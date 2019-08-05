@@ -50,8 +50,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         const fromAddress = bid.OrderItem.Order.buyer;  // we are the buyer
         const toAddress = bid.OrderItem.Order.seller;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
