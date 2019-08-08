@@ -121,16 +121,31 @@ export class ProposalResultService {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
         });
 
+// TODO: currently, we dont take the keep votes into calculation
+//        const keepOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+//            return proposalOptionResult.ProposalOption.description === ItemVote.KEEP.toString();
+//        });
+//        if (keepOptionResult && removeOptionResult && (removeOptionResult.weight - keepOptionResult.weight) < 0) {
+//            // more keep votes
+//            return false;
+//        }
+
         // Requirements to remove the ListingItem from the testnet market, these should also be configurable:
         // at minimum, 10% of total network weight for removal
         const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const networkSupply = blockchainInfo.moneysupply * 100000000;
 
-        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 0.1; // todo: configurable
+        const removalPercentage: number = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE) || 0.1;
         if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
             this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '%');
             return true;
         }
+
+//        if (keepOptionResult && removeOptionResult && ((removeOptionResult.weight - keepOptionResult.weight) / networkSupply) * 100 >= removalPercentage) {
+//            this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '%');
+//            return true;
+//        }
+
         // this.log.debug('ListingItem should NOT be destroyed');
         return false;
     }
