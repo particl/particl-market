@@ -159,7 +159,6 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | Route       | Description |
 | ----------- | ----------- |
 | **/api/info** | Shows us the name, description and the version of the package.json |
-| **/api/docs** | This is the Swagger UI with our API documentation |
 | **/status**   | Shows a small monitor page for the server |
 | **/cli**      | Web based CLI to use the RPC commands |
 | **/api/rpc**  | RPC Server endpoint |
