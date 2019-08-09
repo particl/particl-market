@@ -13,7 +13,7 @@ import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import {Config} from 'omp-lib/dist/abstract/config';
+import { Config } from 'omp-lib/dist/abstract/config';
 
 export class OmpService {
 
