@@ -16,11 +16,12 @@ import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
-import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
 import { Environment } from './helpers/Environment';
 import { MessageException } from '../api/exceptions/MessageException';
+import { envConfig } from '../config/EnvironmentConfig';
+import * as dotenv from 'dotenv';
 
 export interface Configurable {
     configure(app: App): void;
@@ -36,14 +37,12 @@ export class App {
     private log: Logger = new Logger(__filename);
     private bootstrapApp: Bootstrap;
     private configurations: Configurable[] = [];
-    private envConfig: EnvConfig;
 
-    constructor(envConfig?: EnvConfig) {
+    constructor() {
 
-        console.log('App() constructor, envconfig(): ', JSON.stringify(envConfig));
+        console.log('App() constructor');
         // if envConfig isn't given, use ProductionEnvConfig
-        this.envConfig = !envConfig ? new ProductionEnvConfig() : envConfig;
-        this.bootstrapApp = new Bootstrap(this.envConfig);
+        this.bootstrapApp = new Bootstrap();
 
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();
@@ -91,6 +90,10 @@ export class App {
                     return process.exit(1);
                 });
         }
+
+        // loads the .env file into the 'process.env' variable, in case it hasn't been loaded already
+        const config: EnvConfig = envConfig();
+        dotenv.config({ path: config.envFile });
 
         // Perform database migrations
         // TODO: migrate fails when db is created from the desktop and when run from the market project and vice versa
