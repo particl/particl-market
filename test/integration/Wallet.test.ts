@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -14,6 +15,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { WalletService } from '../../src/api/services/model/WalletService';
 import { WalletCreateRequest } from '../../src/api/requests/model/WalletCreateRequest';
 import { WalletUpdateRequest } from '../../src/api/requests/model/WalletUpdateRequest';
+import {ProfileService} from '../../src/api/services/model/ProfileService';
 
 describe('Wallet', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -23,15 +25,17 @@ describe('Wallet', () => {
 
     let testDataService: TestDataService;
     let walletService: WalletService;
+    let profileService: ProfileService;
 
+    let profile: resources.Profile;
     let wallet: resources.Wallet;
 
     const testData = {
-        name: 'TEST'
+        name: Faker.random.uuid()
     } as WalletCreateRequest;
 
     const testDataUpdated = {
-        name: 'TEST-UPDATED'
+        name: Faker.random.uuid()
     } as WalletUpdateRequest;
 
     beforeAll(async () => {
@@ -39,9 +43,14 @@ describe('Wallet', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         walletService = app.IoC.getNamed<WalletService>(Types.Service, Targets.Service.model.WalletService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
+
+        profile = await profileService.getDefault()
+            .then(value => value.toJSON());
+
     });
 
     afterAll(async () => {
@@ -49,6 +58,8 @@ describe('Wallet', () => {
     });
 
     test('Should create a new wallet', async () => {
+
+        testData.profile_id = profile.id;
         wallet = await walletService.create(testData).then(value => value.toJSON());
         const result: resources.Wallet = wallet;
 
@@ -64,10 +75,10 @@ describe('Wallet', () => {
 
     test('Should list wallets with our new create one', async () => {
         const wallets: resources.Wallet[] = await walletService.findAll().then(value => value.toJSON());
-        expect(wallets.length).toBe(1);
+        expect(wallets.length).toBe(2);
 
-        const result = wallets[0];
-        expect(result.name).toBe(testData.name);
+        expect(wallets[0].name).toBe('market');
+        expect(wallets[1].name).toBe(testData.name);
     });
 
     test('Should return one wallet', async () => {

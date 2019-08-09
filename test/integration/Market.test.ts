@@ -17,7 +17,7 @@ import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRe
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketType } from '../../src/api/enums/MarketType';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import {ValidationException} from '../../src/api/exceptions/ValidationException';
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -29,7 +29,7 @@ describe('Market', () => {
     let marketService: MarketService;
     let profileService: ProfileService;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
     let createdId;
 
     const testData = {
@@ -56,16 +56,13 @@ describe('Market', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault()
-            .then(value => value.toJSON())
-            .catch(reason => {
-                log.debug(reason);
-            });
-        log.debug('defaultProfile: ', JSON.stringify(defaultProfile, null, 2));
+        profile = await profileService.getDefault()
+            .then(value => value.toJSON());
+        log.debug('profile: ', JSON.stringify(profile, null, 2));
     });
 
     it('Should get default market', async () => {
-        const result: resources.Market = await marketService.getDefaultForProfile(defaultProfile.id)
+        const result: resources.Market = await marketService.getDefaultForProfile(profile.id)
             .then(value => value.toJSON());
         log.debug('result: ', JSON.stringify(result, null, 2));
 
@@ -79,8 +76,8 @@ describe('Market', () => {
 
     it('Should create a new market', async () => {
 
-        testData.profile_id = defaultProfile.id;
-        testData.wallet_id = defaultProfile.Wallets[0].id;
+        testData.profile_id = profile.id;
+        testData.wallet_id = profile.Wallets[0].id;
 
         const marketModel: Market = await marketService.create(testData);
         createdId = marketModel.Id;
@@ -135,7 +132,7 @@ describe('Market', () => {
 
     test('Should find market by address', async () => {
         const result: resources.Market = await marketService.findOneByProfileIdAndReceiveAddress(
-            defaultProfile.id, testDataUpdated.receiveAddress)
+            profile.id, testDataUpdated.receiveAddress)
             .then(value => value.toJSON());
 
         // test the values
