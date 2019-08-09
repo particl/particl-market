@@ -2,21 +2,22 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
 import * from 'jest';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
+import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Market } from '../../src/api/models/Market';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRequest';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import {ModelNotFoundException} from '../../src/api/exceptions/ModelNotFoundException';
+import { MarketType } from '../../src/api/enums/MarketType';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import {ValidationException} from '../../src/api/exceptions/ValidationException';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -32,15 +33,17 @@ describe('Market', () => {
     let createdId;
 
     const testData = {
+        type: MarketType.MARKETPLACE,
         name: 'TEST-MARKET',
         receiveKey: 'TEST-PRIVATE-KEY',
-        receiveAddress: 'TEST-MARKET-ADDRESS'
+        receiveAddress: Faker.random.uuid()
     } as MarketCreateRequest;
 
     const testDataUpdated = {
+        type: MarketType.MARKETPLACE,
         name: 'TEST-UPDATE-MARKET',
         receiveKey: 'TEST-UPDATE-PRIVATE-KEY',
-        receiveAddress: 'TEST-UPDATE-MARKET-ADDRESS'
+        receiveAddress: Faker.random.uuid()
     } as MarketUpdateRequest;
 
     beforeAll(async () => {
@@ -51,7 +54,7 @@ describe('Market', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        // await testDataService.clean();
+        await testDataService.clean();
 
         defaultProfile = await profileService.getDefault()
             .then(value => value.toJSON())
@@ -73,8 +76,12 @@ describe('Market', () => {
         expect(result.receiveAddress).toBeDefined();
         expect(result.receiveAddress).not.toBeNull();
     });
-/*
+
     it('Should create a new market', async () => {
+
+        testData.profile_id = defaultProfile.id;
+        testData.wallet_id = defaultProfile.Wallets[0].id;
+
         const marketModel: Market = await marketService.create(testData);
         createdId = marketModel.Id;
 
@@ -144,5 +151,5 @@ describe('Market', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
-*/
+
 });

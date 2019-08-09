@@ -16,7 +16,6 @@
 ```
 
 
-[![CircleCI](https://circleci.com/gh/particl/dapp-shell/tree/develop.svg?style=svg)](https://circleci.com/gh/particl/dapp-shell/tree/develop)
 
 ## Getting Started 
 ### Step 1:  Set up the Development Environment 
