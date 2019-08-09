@@ -12,5 +12,5 @@
  */
 
 export const Tables = {
-    Users: 'users'
+    // Users: 'users'
 };

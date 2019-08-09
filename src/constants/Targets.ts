@@ -51,7 +51,6 @@ export const Targets = {
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
         SmsgMessage: 'SmsgMessage',
-        User: 'User',
         Vote: 'Vote',
         Wallet: 'Wallet'
     },
@@ -93,7 +92,6 @@ export const Targets = {
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
         SmsgMessageRepository: 'SmsgMessageRepository',
-        UserRepository: 'UserRepository',
         VoteRepository: 'VoteRepository',
         WalletRepository: 'WalletRepository'
     },
@@ -159,7 +157,6 @@ export const Targets = {
             ShoppingCartItemService: 'ShoppingCartItemService',
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
-            UserService: 'UserService',
             VoteService: 'VoteService',
             WalletService: 'WalletService'
         },
