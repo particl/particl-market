@@ -62,7 +62,14 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
         // TODO: create MessageValidator and move to base
-        return ListingItemAddValidator.isValid(marketplaceMessage);
+        this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+
+        try {
+            return ListingItemAddValidator.isValid(marketplaceMessage);
+        } catch (e) {
+            this.log.debug('ERROR:', e);
+            return false;
+        }
     }
 
     /**

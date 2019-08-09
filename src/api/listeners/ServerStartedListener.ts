@@ -93,6 +93,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.log.info('connection with particld established.');
 
                 const hasWallet = await this.coreRpcService.hasWallet();
+                this.log.debug('hasWallet: ' + hasWallet);
+
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
 
@@ -136,10 +138,12 @@ export class ServerStartedListener implements interfaces.Listener {
                         }
                         this.interval = 10000;
                     } else {
+                        isConnected = false;
                         this.log.error('market not initialized yet, retrying in ' + this.interval + 'ms.');
                     }
 
                 } else {
+                    isConnected = false;
                     this.log.error('wallet not initialized yet, retrying in ' + this.interval + 'ms.');
                 }
             }
