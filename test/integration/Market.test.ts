@@ -56,8 +56,7 @@ describe('Market', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        profile = await profileService.getDefault()
-            .then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
         log.debug('profile: ', JSON.stringify(profile, null, 2));
     });
 
