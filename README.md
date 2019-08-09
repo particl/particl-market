@@ -184,7 +184,6 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **src/api/repositories/**       | Repository / DB layer |
 | **src/api/requests/**           | Request bodys with validations |
 | **src/api/services/**           | Service layer |
-| **src/api/** swagger.json       | Swagger documentation |
 | **src/console/**                | Command line scripts |
 | **src/config/**                 | Configurations like database or logger |
 | **src/constants/**              | Global Constants |

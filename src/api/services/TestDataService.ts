@@ -303,7 +303,6 @@ export class TestDataService {
             'markets',
             'wallets',
             'settings',
-            'users',        // todo: not needed
             'price_ticker', // todo: price_tickers
             'flagged_items',
             'currency_prices',
