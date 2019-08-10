@@ -94,6 +94,7 @@ import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { DefaultSettingService } from './DefaultSettingService';
+import { SettingValue } from '../enums/SettingValue';
 
 
 export class TestDataService {
@@ -917,6 +918,18 @@ export class TestDataService {
             settings.push({
                 key: Faker.random.word(),
                 value: Faker.random.word()
+            } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_NAME.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_NAME]
+            } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY]
+            } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_ADDRESS.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]
             } as SettingCreateRequest);
         }
         return settings;

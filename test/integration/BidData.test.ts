@@ -112,7 +112,7 @@ describe('BidDatas', () => {
             listingItem.hash,           // listingItemhash
             MPAction.MPA_BID,           // type
             profile.address,            // bidder
-            profile.address             // seller
+            sellerProfile.address       // seller
         ]).toParamsArray();
 
         const bids = await testDataService.generate({
