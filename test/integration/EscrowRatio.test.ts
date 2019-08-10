@@ -23,7 +23,6 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { Escrow } from '../../src/api/models/Escrow';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
