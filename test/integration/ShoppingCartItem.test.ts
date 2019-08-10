@@ -4,7 +4,6 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -12,7 +11,6 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ShoppingCartItem } from '../../src/api/models/ShoppingCartItem';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ShoppingCartItemService } from '../../src/api/services/model/ShoppingCartItemService';
