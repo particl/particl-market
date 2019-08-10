@@ -15,7 +15,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { WalletService } from '../../src/api/services/model/WalletService';
 import { WalletCreateRequest } from '../../src/api/requests/model/WalletCreateRequest';
 import { WalletUpdateRequest } from '../../src/api/requests/model/WalletUpdateRequest';
-import {ProfileService} from '../../src/api/services/model/ProfileService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
 
 describe('Wallet', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

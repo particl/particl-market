@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -28,43 +29,33 @@ describe('ItemCategory', () => {
     let profileService: ProfileService;
     let marketService: MarketService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let rootId;
     let createdId;
     let createdIdChild;
 
     const rootData = {
-        parent_item_category_id: 0,
-        key: 'cat_ROOT',
+        key: Faker.random.uuid(),
         name: 'ROOT',
         description: 'root'
     } as ItemCategoryCreateRequest;
 
     const testData = {
-        parent_item_category_id: 0,
-        key: 'cat_electronics',
+        key: Faker.random.uuid(),
         name: 'Electronics and Technologyyyyyy',
         description: 'description'
     } as ItemCategoryCreateRequest;
 
     const testDataUpdated = {
-        parent_item_category_id: 0,
-        key: 'cat_technology',
+        key: Faker.random.uuid(),
         name: 'Electronics and Technology',
         description: 'Electronics and Technology description'
     } as ItemCategoryUpdateRequest;
 
-    const testDataNullKey = {
-        parent_item_category_id: 0,
-        name: 'nullkey1',
-        description: 'nullkey1'
-    } as ItemCategoryCreateRequest;
-
     const testDataChild = {
-        parent_item_category_id: 0,
-        key: 'cat_computer_systems_parts',
+        key: Faker.random.uuid(),
         name: 'Computer Systems and Parts',
         description: 'Computer Systems and Parts description'
     } as ItemCategoryCreateRequest;
@@ -78,12 +69,11 @@ describe('ItemCategory', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean(false);
+        await testDataService.clean();
 
         // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
-
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
 
@@ -91,20 +81,24 @@ describe('ItemCategory', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no name of ItemCategory', async () => {
+    test('Should throw ValidationException because missing name', async () => {
         expect.assertions(1);
         await itemCategoryService.create({
             parent_item_category_id: 0,
             key: 'cat_ele',
             description: 'Electronics',
-            market: defaultMarket.receiveAddress
+            market: market.receiveAddress
         } as ItemCategoryCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a root ItemCategory', async () => {
-        const result: resources.ItemCategory = await itemCategoryService.create(rootData).then(value => value.toJSON());
+
+        rootData.market = market.receiveAddress;
+
+        const result: resources.ItemCategory = await itemCategoryService.create(rootData)
+            .then(value => value.toJSON());
         rootId = result.id;
 
         expect(result.name).toBe(rootData.name);
@@ -113,7 +107,7 @@ describe('ItemCategory', () => {
 
     test('Should create a new ItemCategory', async () => {
         testData.parent_item_category_id = rootId;
-        testData.market = defaultMarket.receiveAddress;
+        testData.market = market.receiveAddress;
         const result: resources.ItemCategory = await itemCategoryService.create(testData).then(value => value.toJSON());
         createdId = result.id;
 
@@ -123,7 +117,7 @@ describe('ItemCategory', () => {
 
     test('Should create a new child ItemCategory', async () => {
         testDataChild.parent_item_category_id = createdId;
-        testDataChild.market = defaultMarket.receiveAddress;
+        testDataChild.market = market.receiveAddress;
         const result: resources.ItemCategory = await itemCategoryService.create(testDataChild).then(value => value.toJSON());
         createdIdChild = result.id;
 
@@ -172,7 +166,7 @@ describe('ItemCategory', () => {
         );
 
         const itemCategories: resources.ItemCategory[] = await itemCategoryService.findAll().then(value => value.toJSON());
-        expect(itemCategories.length).toBe(0);
+        expect(itemCategories.length).toBe(82);
     }, 600000); // timeout to 600s
 
 });

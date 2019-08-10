@@ -17,7 +17,7 @@ import { SettingService } from '../../src/api/services/model/SettingService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { SettingCreateRequest } from '../../src/api/requests/model/SettingCreateRequest';
 import { SettingUpdateRequest } from '../../src/api/requests/model/SettingUpdateRequest';
-import {MarketService} from '../../src/api/services/model/MarketService';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('Setting', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -58,7 +58,6 @@ describe('Setting', () => {
 
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-
 
     });
 

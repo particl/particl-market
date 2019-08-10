@@ -18,7 +18,6 @@ import { ProfileService } from './ProfileService';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { MessageException } from '../../exceptions/MessageException';
-import {ListingItem} from '../../models/ListingItem';
 
 export class MarketService {
 
