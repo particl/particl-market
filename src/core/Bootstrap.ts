@@ -14,15 +14,13 @@ import { extendExpressResponse } from './api/extendExpressResponse';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
 import { SocketIoServer } from './SocketIoServer';
-import { EnvConfig } from '../config/env/EnvConfig';
 
 export class Bootstrap {
 
     public log: Logger = new Logger(__filename);
-    private envConfig: EnvConfig;
 
-    constructor(envConfig: EnvConfig) {
-        this.envConfig = envConfig;
+    constructor() {
+        // nothing explicit to do
     }
 
     public defineExpressApp(app: express.Application): express.Application {
