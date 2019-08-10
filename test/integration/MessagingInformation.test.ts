@@ -14,14 +14,13 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { MessagingInformation } from '../../src/api/models/MessagingInformation';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/model/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../src/api/requests/model/MessagingInformationUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -33,27 +32,22 @@ describe('MessagingInformation', () => {
     let messagingInformationService: MessagingInformationService;
     let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
+    let marketService: MarketService;
 
-    let createdId;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
-    let createdListingItem: resources.ListingItem;
-    let defaultProfile;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
+    let listingItemTemplate: resources.ListingItemTemplate;
+
+    let messagingInformationForListingItem: resources.MessagingInformation;
+    let messagingInformationForTemplate: resources.MessagingInformation;
 
     const testData = {
-        listing_item_template_id: null,
         protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey1'
     } as MessagingInformationCreateRequest;
 
-    const testData2 = {
-        listing_item_id: null,
-        protocol: 'SMSG',
-        publicKey: 'bf4f3a68-b0a0-4202-b62a-ded47ca2cdae'
-    } as MessagingInformationCreateRequest;
-
     const testDataUpdated = {
-        listing_item_template_id: null,
         protocol: MessagingProtocol.SMSG,
         publicKey: 'publickey2'
     } as MessagingInformationUpdateRequest;
@@ -63,24 +57,30 @@ describe('MessagingInformation', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.model.MessagingInformationService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault();
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        let generateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            false,  // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            false,      // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            false,      // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
@@ -88,27 +88,7 @@ describe('MessagingInformation', () => {
             withRelated: true,
             generateParams
         } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0];
-
-        generateParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
-        ]).toParamsArray();
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,  // what to generate
-            amount: 1,                          // how many to generate
-            withRelated: true,                  // return model
-            generateParams                      // what kind of data to generate
-        } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
-
+        listingItemTemplate = listingItemTemplates[0];
     });
 
     afterAll(async () => {
@@ -116,22 +96,20 @@ describe('MessagingInformation', () => {
     });
 
     test('Should create a new MessagingInformation for ListingItemTemplate', async () => {
-        testData.listing_item_template_id = createdListingItemTemplate.id;
-        const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
-        createdId = messagingInformationModel.Id;
+        testData.listing_item_template_id = listingItemTemplate.id;
 
-        const result = messagingInformationModel.toJSON();
+        messagingInformationForTemplate = await messagingInformationService.create(testData).then(value => value.toJSON());
+        const result = messagingInformationForTemplate;
 
         expect(result.protocol).toBe(testData.protocol);
         expect(result.publicKey).toBe(testData.publicKey);
     });
 
     test('Should create a new MessagingInformation for ListingItem', async () => {
-        testData.listing_item_id = createdListingItem.id;
-        const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
-        createdId = messagingInformationModel.Id;
+        testData.listing_item_id = listingItemTemplate.ListingItems[0].id;
 
-        const result = messagingInformationModel.toJSON();
+        messagingInformationForListingItem = await messagingInformationService.create(testData).then(value => value.toJSON());
+        const result = messagingInformationForListingItem;
 
         expect(result.protocol).toBe(testData.protocol);
         expect(result.publicKey).toBe(testData.publicKey);
@@ -145,28 +123,26 @@ describe('MessagingInformation', () => {
     });
 
     test('Should list MessagingInformations with our newly created ones', async () => {
-        const messagingInformationCollection = await messagingInformationService.findAll();
-        const messagingInformation = messagingInformationCollection.toJSON();
-        expect(messagingInformation.length).toBe(2);
+        const messagingInformations: resources.MessagingInformation[] = await messagingInformationService.findAll().then(value => value.toJSON());
+        expect(messagingInformations.length).toBe(2);
 
-        const result = messagingInformation[0];
+        const result: resources.MessagingInformation = messagingInformations[0];
 
         expect(result.protocol).toBe(testData.protocol);
         expect(result.publicKey).toBe(testData.publicKey);
     });
 
     test('Should return one MessagingInformation', async () => {
-        const messagingInformationModel: MessagingInformation = await messagingInformationService.findOne(createdId);
-        const result = messagingInformationModel.toJSON();
+        const result: resources.MessagingInformation = await messagingInformationService.findOne(messagingInformationForListingItem.id)
+            .then(value => value.toJSON());
 
         expect(result.protocol).toBe(testData.protocol);
         expect(result.publicKey).toBe(testData.publicKey);
     });
 
     test('Should update the MessagingInformation', async () => {
-        testDataUpdated.listing_item_template_id = createdListingItemTemplate.id;
-        const messagingInformationModel: MessagingInformation = await messagingInformationService.update(createdId, testDataUpdated);
-        const result = messagingInformationModel.toJSON();
+        const result: resources.MessagingInformation = await messagingInformationService.update(messagingInformationForTemplate.id, testDataUpdated)
+            .then(value => value.toJSON());
 
         expect(result.protocol).toBe(testDataUpdated.protocol);
         expect(result.publicKey).toBe(testDataUpdated.publicKey);
@@ -174,9 +150,9 @@ describe('MessagingInformation', () => {
 
     test('Should delete the MessagingInformation', async () => {
         expect.assertions(1);
-        await messagingInformationService.destroy(createdId);
-        await messagingInformationService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await messagingInformationService.destroy(messagingInformationForTemplate.id);
+        await messagingInformationService.findOne(messagingInformationForTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationForTemplate.id))
         );
     });
 

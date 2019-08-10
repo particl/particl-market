@@ -97,8 +97,7 @@ describe('ItemCategory', () => {
 
         rootData.market = market.receiveAddress;
 
-        const result: resources.ItemCategory = await itemCategoryService.create(rootData)
-            .then(value => value.toJSON());
+        const result: resources.ItemCategory = await itemCategoryService.create(rootData).then(value => value.toJSON());
         rootId = result.id;
 
         expect(result.name).toBe(rootData.name);

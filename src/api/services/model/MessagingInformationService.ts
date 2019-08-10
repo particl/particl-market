@@ -40,12 +40,8 @@ export class MessagingInformationService {
 
     @validate()
     public async create( @request(MessagingInformationCreateRequest) body: MessagingInformationCreateRequest): Promise<MessagingInformation> {
-        const startTime = new Date().getTime();
-
         // this.log.debug('messagingInformationService.create, body: ', JSON.stringify(body, null, 2));
-
-        // todo: could this be annotated in MessagingInformationCreateRequest?
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+        if (body.listing_item_id === undefined && body.listing_item_template_id === undefined) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
