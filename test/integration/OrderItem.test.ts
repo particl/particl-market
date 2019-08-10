@@ -71,19 +71,19 @@ describe('OrderItem', () => {
         sellerProfile = profiles[0];
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            false,          // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            false,          // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false,          // generateObjectDatas
-            profile.id,     // profileId
-            true,           // generateListingItem
-            market.id       // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            sellerProfile.id,   // profileId
+            true,               // generateListingItem
+            market.id           // marketId
         ]).toParamsArray();
 
         // generate ListingItemTemplate with ListingItem
@@ -103,7 +103,7 @@ describe('OrderItem', () => {
             false,                      // generateListingItem
             listingItem.hash,           // listingItemHash
             MPAction.MPA_BID,           // type
-            profile.address,       // bidder
+            profile.address,            // bidder
             sellerProfile.address       // seller
         ]).toParamsArray();
 
@@ -122,7 +122,7 @@ describe('OrderItem', () => {
             false,                      // generateOrderItems
             listingItem.hash,           // listingItemhash
             bid.id,                     // bidId
-            profile.address,       // bidder
+            profile.address,            // bidder
             sellerProfile.address       // seller
         ]);
 

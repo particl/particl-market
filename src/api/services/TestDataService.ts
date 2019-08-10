@@ -351,7 +351,8 @@ export class TestDataService {
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
-                const market: resources.Market = generateParams.marketId
+                this.log.debug('listingItemTemplate.Profile.id: ', listingItemTemplate.Profile.id);
+                const market: resources.Market = generateParams.marketId === undefined || generateParams.marketId === null
                     ? await this.marketService.getDefaultForProfile(listingItemTemplate.Profile.id).then(value => value.toJSON())
                     : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
 
@@ -378,7 +379,7 @@ export class TestDataService {
                 const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                     .then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-                //  this.log.debug('created listingItem, hash: ', listingItem.hash);
+                // this.log.debug('created listingItem, hash: ', listingItem.hash);
 
                 listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
 
@@ -1152,7 +1153,8 @@ export class TestDataService {
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
-        const profile: resources.Profile = generateParams.profileId === null
+        // todo: use undefined
+        const profile: resources.Profile = generateParams.profileId === null || generateParams.profileId === undefined
             ? await this.profileService.getDefault().then(value => value.toJSON())
             : await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
 
@@ -1165,7 +1167,7 @@ export class TestDataService {
             profile_id: profile.id
         } as ListingItemTemplateCreateRequest;
 
-        // this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+        this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         return listingItemTemplateCreateRequest;
     }
 
