@@ -17,12 +17,11 @@ import { ProposalOptionUpdateRequest } from '../../src/api/requests/model/Propos
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ItemVote } from '../../src/api/enums/ItemVote';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('ProposalOption', () => {
 
