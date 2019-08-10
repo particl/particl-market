@@ -22,6 +22,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ItemVote } from '../../src/api/enums/ItemVote';
+import {GenerateListingItemTemplateParams} from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('ProposalOption', () => {
 
@@ -36,8 +37,8 @@ describe('ProposalOption', () => {
     let profileService: ProfileService;
     let marketService: MarketService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItem: resources.ListingItem;
     let proposal: resources.Proposal;
@@ -68,32 +69,31 @@ describe('ProposalOption', () => {
         await testDataService.clean();
 
         // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                                       // generateItemInformation
-            true,                                       // generateItemLocation
-            true,                                       // generateShippingDestinations
-            false,                                      // generateItemImages
-            true,                                       // generatePaymentInformation
-            true,                                       // generateEscrow
-            true,                                       // generateItemPrice
-            true,                                       // generateMessagingInformation
-            true,                                       // generateListingItemObjects
-            false,                                      // generateObjectDatas
-            null,                                       // listingItemTemplateHash
-            defaultProfile.address                      // seller
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            false,      // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            false,      // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,          // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemParams   // what kind of data to generate
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
         } as TestDataGenerateRequest);
-        listingItem = listingItems[0];
+        listingItem = listingItemTemplates[0].ListingItems[0];
 
         // create Proposal
         const generateProposalParams = new GenerateProposalParams([
@@ -102,10 +102,10 @@ describe('ProposalOption', () => {
             listingItem.hash,                           // listingItemHash,
             false,                                      // generatePastProposal,
             0,                                          // voteCount
-            defaultProfile.address                      // submitter
+            profile.address                      // submitter
         ]).toParamsArray();
 
-        const proposals = await testDataService.generate({
+        const proposals: resources.Proposal[] = await testDataService.generate({
             model: CreatableModel.PROPOSAL,             // what to generate
             amount: 1,                                  // how many to generate
             withRelated: true,                          // return model
@@ -133,12 +133,8 @@ describe('ProposalOption', () => {
 
         testData.proposal_id = proposal.id;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
         proposalOption = await proposalOptionService.create(testData).then(value => value.toJSON());
-        const result = proposalOption;
-
-        // log.debug('ProposalOption, result:', JSON.stringify(result, null, 2));
-        // log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
+        const result: resources.ProposalOption = proposalOption;
 
         expect(result.Proposal.id).toBe(proposal.id);
         expect(result.optionId).toBe(testData.optionId);
@@ -161,10 +157,8 @@ describe('ProposalOption', () => {
 
     test('Should return one ProposalOption', async () => {
         proposalOption = await proposalOptionService.findOne(proposalOption.id).then(value => value.toJSON());
-        const result = proposalOption;
+        const result: resources.ProposalOption = proposalOption;
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(proposal.id);
         expect(result.optionId).toBe(testData.optionId);
