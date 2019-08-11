@@ -6,7 +6,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { BidConfiguration, Cryptocurrency, MPM, ompVersion, OpenMarketProtocol } from 'omp-lib/dist/omp';
-import { CoreRpcService } from './CoreRpcService';
+import { CoreRpcService, BlockchainInfo } from './CoreRpcService';
 import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
 import { BidMessage } from '../messages/action/BidMessage';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
@@ -32,9 +32,19 @@ export class OmpService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        const ompConfig = { network: 'testnet'} as Config;
-        this.omp = new OpenMarketProtocol(ompConfig);
-        this.omp.inject(Cryptocurrency.PART, coreRpcService);
+        this.coreRpcService.getBlockchainInfo().then(
+            (blockInfo: BlockchainInfo) => {
+                const chain = `${blockInfo.chain}net`;
+                const ompConfig = { network: chain} as Config;
+                this.omp = new OpenMarketProtocol(ompConfig);
+                this.omp.inject(Cryptocurrency.PART, coreRpcService);
+            },
+            () => {
+                const ompConfig = { network: 'testnet'} as Config;
+                this.omp = new OpenMarketProtocol(ompConfig);
+                this.omp.inject(Cryptocurrency.PART, coreRpcService);
+            }
+        );
     }
 
     /**
