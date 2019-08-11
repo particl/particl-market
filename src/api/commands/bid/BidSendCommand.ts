@@ -103,6 +103,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             address
         } as BidRequest;
 
+        this.log.debug('postRequest: ', JSON.stringify(postRequest, null, 2));
         const response: SmsgSendResponse = await this.bidActionService.post(postRequest);
         return response;
 

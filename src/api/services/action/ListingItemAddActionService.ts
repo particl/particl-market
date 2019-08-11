@@ -43,6 +43,7 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
+        // this.log.debug('createMessage(), params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
             listingItem: params.listingItem

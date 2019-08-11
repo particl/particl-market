@@ -1096,13 +1096,11 @@ export class TestDataService {
                 shippingPrice: {
                     domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
                     international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
-                } as ShippingPriceCreateRequest
-                // TODO: omp-lib generates these, so we cant use these right now
-                // cryptocurrencyAddress: {
-                //    type: CryptoAddressType.STEALTH, // Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
-                //    address: (await this.coreRpcService.getNewStealthAddress()).address
-                //    // profile_id: 0 // TODO: should be linked to profile
-                // } as CryptocurrencyAddressCreateRequest
+                } as ShippingPriceCreateRequest,
+                cryptocurrencyAddress: {
+                    type: CryptoAddressType.STEALTH,
+                    address: (await this.coreRpcService.getNewStealthAddress()).address
+                } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;
 
