@@ -10,9 +10,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import {BidDataValue} from '../../../src/api/enums/BidDataValue';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 
 describe('BidSendCommand', () => {

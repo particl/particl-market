@@ -91,7 +91,7 @@ describe('ProposalAddActionListener', () => {
     });
     // tslint:enable:max-line-length
 
-
+/*
     test('Should create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE)', async () => {
         log.debug('===================================================================================');
         log.debug('create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE), create Proposal');
@@ -261,7 +261,7 @@ describe('ProposalAddActionListener', () => {
         expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
         expect(updatedProposal.FlaggedItem).toEqual({});
     });
-
+*/
     test('Should create and post MPA_PROPOSAL_ADD (ITEM_VOTE)', async () => {
 
         log.debug('===================================================================================');

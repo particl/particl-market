@@ -363,8 +363,10 @@ export class VoteActionService extends BaseActionService {
             await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
                 .then(async remove => {
 
-                    // update the removed flaag if its value is different from what it should be
-                    if (remove !== listingItem.removed) {
+                    // TODO: if user has voted for removal, then the item should stay removed
+
+                    // update the removed flag if its value is different from what it should be
+                    if (remove) {
                         this.log.debug('updating the ListingItem removed flag to: ' + remove);
                         // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
                         // await this.listingItemService.destroy(listingItem.id);
