@@ -34,23 +34,10 @@ export class OmpService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-
         const json = require('node_modules/omp-lib/package.json');
         OmpService.version = json.version;
 
-        this.coreRpcService.getBlockchainInfo().then(
-            (blockInfo: BlockchainInfo) => {
-                const chain = `${blockInfo.chain}net`;
-                const ompConfig = { network: chain} as Config;
-                this.omp = new OpenMarketProtocol(ompConfig);
-                this.omp.inject(Cryptocurrency.PART, coreRpcService);
-            },
-            () => {
-                const ompConfig = { network: 'testnet'} as Config;
-                this.omp = new OpenMarketProtocol(ompConfig);
-                this.omp.inject(Cryptocurrency.PART, coreRpcService);
-            }
-        );
+        this.initializeOmp(coreRpcService);
     }
 
     /**
@@ -128,5 +115,25 @@ export class OmpService {
         );
     }
 
-
+    private initializeOmp(coreRpcService: CoreRpcService): void {
+        coreRpcService.isConnected().then((connected) => {
+            if (!connected) {
+                setTimeout(this.initializeOmp, 500, coreRpcService);
+                return;
+            }
+            coreRpcService.getBlockchainInfo().then(
+                (blockInfo: BlockchainInfo) => {
+                    const chain = `${blockInfo.chain}net`;
+                    const ompConfig = { network: chain} as Config;
+                    this.omp = new OpenMarketProtocol(ompConfig);
+                    this.omp.inject(Cryptocurrency.PART, coreRpcService);
+                },
+                () => {
+                    const ompConfig = { network: 'testnet'} as Config;
+                    this.omp = new OpenMarketProtocol(ompConfig);
+                    this.omp.inject(Cryptocurrency.PART, coreRpcService);
+                }
+            );
+        });
+    }
 }
