@@ -5,6 +5,7 @@
 import * from 'jest';
 import * as resources from 'resources';
 import * as _ from 'lodash';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -626,6 +627,7 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
         testDataToSave.generatedAt = new Date().getTime();
+        testDataToSave.msgid = Faker.random.uuid();
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         const templateHash = ConfigurableHasher.hash(createdListingItemTemplate3, new HashableListingItemTemplateConfig());
@@ -648,7 +650,7 @@ describe('ListingItemTemplate', async () => {
         );
     });
 
-    // TODO: rewrite this whole f***ing suite
+    // TODO: rewrite this..
 /*
     // searchBy tests
     test('Should generate 10 templates for searchBy tests', async () => {

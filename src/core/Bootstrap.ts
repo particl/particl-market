@@ -11,7 +11,6 @@ import { ApiInfo } from './ApiInfo';
 import { ApiMonitor } from './ApiMonitor';
 import { exceptionHandler } from './api/exceptionHandler';
 import { extendExpressResponse } from './api/extendExpressResponse';
-import { SwaggerUI } from './SwaggerUI';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
 import { SocketIoServer } from './SocketIoServer';
@@ -41,9 +40,6 @@ export class Bootstrap {
 
         const cliIndex = new CliIndex();
         cliIndex.setup(app);
-
-        const swaggerUI = new SwaggerUI();
-        swaggerUI.setup(app);
     }
 
     public startServer(app: express.Application): http.Server {

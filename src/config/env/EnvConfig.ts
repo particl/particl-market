@@ -15,7 +15,6 @@ export class EnvConfig {
 
     private defaultEnv = {
         NODE_ENV: EnvironmentType.DEVELOPMENT.toString(),
-        MARKETPLACE_VERSION: '0.0.1.0',
         APP_NAME: 'particl-market',
         APP_HOST: 'http://localhost',
         APP_URL_PREFIX: '/api',
@@ -46,9 +45,6 @@ export class EnvConfig {
         API_INFO_ROUTE: '/info',
         CLI_ENABLED: true,
         CLI_ROUTE: '/cli',
-        SWAGGER_ENABLED: true,
-        SWAGGER_ROUTE: '/docs',
-        SWAGGER_FILE: '/src/api/swagger.json',
         MONITOR_ENABLED: true,
         MONITOR_ROUTE: '/status',
         DB_CLIENT: 'sqlite3',

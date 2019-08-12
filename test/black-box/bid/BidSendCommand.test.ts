@@ -10,9 +10,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import {BidDataValue} from '../../../src/api/enums/BidDataValue';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { BidDataValue } from '../../../src/api/enums/BidDataValue';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 
 describe('BidSendCommand', () => {
@@ -32,9 +32,9 @@ describe('BidSendCommand', () => {
     const itemGetCommand = Commands.ITEM_GET.commandName;
 
     // let sellerMarket: resources.Market;
-    // let sellerProfile: resources.Profile;
-    let buyerMarket: resources.Market;
-    let buyerProfile: resources.Profile;
+    let sellerProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     // let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
@@ -50,10 +50,10 @@ describe('BidSendCommand', () => {
 
         // get default profile and market
         // sellerMarket = await testUtilSellerNode.getDefaultMarket();
-        // sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
 
-        buyerMarket = await testUtilBuyerNode.getDefaultMarket();
-        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        market = await testUtilBuyerNode.getDefaultMarket();
+        profile = await testUtilBuyerNode.getDefaultProfile();
 /*
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -92,15 +92,18 @@ describe('BidSendCommand', () => {
 
         // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,                               // generateItemInformation
+            true,                               // generateItemLocation
+            true,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
+            true,                               // generateMessagingInformation
+            false,                              // generateListingItemObjects
+            false,                              // generateObjectDatas
+            undefined,                          // listingItemTemplateHash
+            sellerProfile.address               // seller
         ]).toParamsArray();
 
         const listingItems: resources.ListingItem[] = await testUtilBuyerNode.generateData(
@@ -111,14 +114,16 @@ describe('BidSendCommand', () => {
         );
         listingItem = listingItems[0];
 
+        log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+
     });
 
     test('Should post Bid for a ListingItem using Profiles existing ShippingAddress', async () => {
 
         const bidSendCommandParams = [bidSendCommand,
             listingItem.hash,
-            buyerProfile.id,
-            buyerProfile.ShippingAddresses[0].id,
+            profile.id,
+            profile.ShippingAddresses[0].id,
             'colour',
             'black',
             'size',
@@ -135,12 +140,12 @@ describe('BidSendCommand', () => {
 
         // TODO: expect Bid with Order and OrderItems to have been created
     });
-
+/*
     test('Should post Bid with address from bidData without addressId', async () => {
 
         const bidSendCommandParams = [bidSendCommand,
             listingItem.hash,
-            buyerProfile.id,
+            profile.id,
             false,
             BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
@@ -180,7 +185,7 @@ describe('BidSendCommand', () => {
 
         const bidSendCommandParams = [bidSendCommand,
             listingItem.hash,
-            buyerProfile.id,
+            profile.id,
             false,
             BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
             'Johnny',
@@ -210,7 +215,7 @@ describe('BidSendCommand', () => {
             bidSendCommand,
             listingItem.hash,
             invalidProfileId,
-            buyerProfile.ShippingAddresses[0].id,
+            profile.ShippingAddresses[0].id,
             'colour',
             'black',
             'size',
@@ -233,7 +238,7 @@ describe('BidSendCommand', () => {
             listingItem.hash,
             MPAction.MPA_BID,
             '*',
-            buyerProfile.address
+            profile.address
         ];
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSearchCommandParams);
@@ -244,7 +249,7 @@ describe('BidSendCommand', () => {
         log.debug('bid searchBy result:', JSON.stringify(result, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItem.hash);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].bidder).toBe(profile.address);
     });
-
+*/
 });

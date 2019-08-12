@@ -33,15 +33,19 @@ describe('ListingItemTemplateGetCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            defaultProfile.id,  // profileId
+            false,              // generateListingItem
+            defaultMarket.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -58,7 +62,10 @@ describe('ListingItemTemplateGetCommand', () => {
         const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(200);
+
         const result: resources.ListingItemTemplate = res.getBody()['result'];
+
+        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.Profile.id).toBe(defaultProfile.id);
         expect(result.Profile.name).toBe(defaultProfile.name);
         expect(result).hasOwnProperty('Profile');
@@ -80,7 +87,8 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.ItemInformation.ItemLocation.address).toBe(listingItemTemplate.ItemInformation.ItemLocation.address);
         expect(result.ItemInformation.ItemLocation.LocationMarker.title)
             .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.description).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.description)
+            .toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();
@@ -95,10 +103,6 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international)
             .toBe(listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type)
-            .toBe(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address)
-            .toBe(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
         expect(result.MessagingInformation.protocol).toBe(listingItemTemplate.MessagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(listingItemTemplate.MessagingInformation.publicKey);

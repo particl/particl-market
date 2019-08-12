@@ -35,7 +35,7 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
     public async process(): Promise<void> {
 
-        this.log.debug('process(), recalculate ProposalResults...');
+        // this.log.debug('process(), recalculate ProposalResults...');
 
         // return Proposals ending after Date.now()
         const proposalSearchParams = {

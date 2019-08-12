@@ -53,10 +53,17 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
      */
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
+
+        this.log.debug('get()');
+
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
+        this.log.debug('get(), information: ', JSON.stringify(information, null, 2));
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
+        this.log.debug('get(), payment: ', JSON.stringify(payment, null, 2));
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
+        this.log.debug('get(), messaging: ', JSON.stringify(messaging, null, 2));
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
+        this.log.debug('get(), objects: ', JSON.stringify(objects, null, 2));
 
         const item = {
             information,
@@ -235,10 +242,14 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             // cryptoAddress can be used to override the one set on the template
             address = cryptoAddress;
         } else {
-            address = {
-                type: itemPrice.CryptocurrencyAddress.type,
-                address: itemPrice.CryptocurrencyAddress.address
-            } as CryptoAddress;
+            if (itemPrice.CryptocurrencyAddress) {
+                address = {
+                    type: itemPrice.CryptocurrencyAddress.type,
+                    address: itemPrice.CryptocurrencyAddress.address
+                } as CryptoAddress;
+            } else {
+                address = {} as CryptoAddress;
+            }
         }
 
         return [{
@@ -284,23 +295,31 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
     private async getItemObject(value: resources.ListingItemObject): Promise<ItemObject> {
-        // check Table and Dropdown
-        if (value.type === 'TABLE') {
-            return {
-                type: 'TABLE',
-                description: value.description,
-                table: await this.getObjectDataOptions(value.ListingItemObjectDatas)
-            } as ItemObject;
-        } else if (value.type === 'DROPDOWN') {
-            return {
-                type: 'DROPDOWN',
-                description: value.description,
-                objectId: value.objectId,
-                forceInput: value.forceInput,
-                options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
-            } as ItemObject;
-        } else {
-            throw new NotImplementedException();
+        switch (value.type) {
+            case 'TABLE':
+                return {
+                    type: 'TABLE',
+                    description: value.description,
+                    table: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            case 'DROPDOWN':
+                return {
+                    type: 'DROPDOWN',
+                    description: value.description,
+                    objectId: value.objectId,
+                    forceInput: value.forceInput,
+                    options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            case 'CHECKBOX':
+                return {
+                    type: 'CHECKBOX',
+                    description: value.description,
+                    objectId: value.objectId,
+                    forceInput: value.forceInput,
+                    options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            default:
+                throw new NotImplementedException();
         }
     }
 

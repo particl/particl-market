@@ -11,7 +11,6 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemCreateRequest } from '../../src/api/requests/model/ListingItemCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/model/ItemInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/model/PaymentInformationCreateRequest';
@@ -53,31 +52,27 @@ describe('ListingItem', () => {
     let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
     let marketService: MarketService;
-
     let itemInformationService: ItemInformationService;
     let itemLocationService: ItemLocationService;
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
     let itemImageService: ItemImageService;
-
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
     let itemPriceService: ItemPriceService;
     let shippingPriceService: ShippingPriceService;
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
-
     let messagingInformationService: MessagingInformationService;
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
     let createdListingItem1: resources.ListingItem;
     let createdListingItem2: resources.ListingItem;
-
     let updatedListingItem1: resources.ListingItem;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -107,8 +102,8 @@ describe('ListingItem', () => {
         await testDataService.clean();
 
         // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
@@ -326,37 +321,35 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        createdListingItem1 = await listingItemService.create(testDataToSave)
-            .then(value => value.toJSON());
+        createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
 
+
     test('Should findAll ListingItems consisting of the previously created one', async () => {
-        const listingItemCollection = await listingItemService.findAll();
-        const listingItems = listingItemCollection.toJSON();
-        const result = listingItems[0];
+        const listingItems: resources.ListingItem[] = await listingItemService.findAll().then(value => value.toJSON());
+        const result: resources.ListingItem = listingItems[0];
 
         expect(listingItems).toHaveLength(1);
     });
 
-    test('Should findOne ListingItem using id', async () => {
-        const listingItemModel: ListingItem = await listingItemService.findOne(createdListingItem1.id);
-        const result = listingItemModel.toJSON();
 
+    test('Should findOne ListingItem using id', async () => {
+        const result: resources.ListingItem = await listingItemService.findOne(createdListingItem1.id).then(value => value.toJSON());
         expect(result.hash).toBe(createdListingItem1.hash);
     });
+
 
     test('Should findOne ListingItem using hash', async () => {
-        const listingItemModel: ListingItem = await listingItemService.findOneByHash(createdListingItem1.hash);
-        const result = listingItemModel.toJSON();
-
+        const result: resources.ListingItem = await listingItemService.findOneByHash(createdListingItem1.hash).then(value => value.toJSON());
         expect(result.hash).toBe(createdListingItem1.hash);
     });
+
 
     test('Should create a new ListingItem without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic2));
@@ -367,36 +360,34 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem2 = listingItemModel.toJSON();
+        createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
 
+
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
 
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
 
-        const listingItemModel: ListingItem = await listingItemService.update(createdListingItem2.id, testDataToSave);
-        updatedListingItem1 = listingItemModel.toJSON();
-
-        // log.debug('result.ItemInformation.ItemImages:', JSON.stringify(result.ItemInformation.ItemImages, null, 2));
-        log.debug('updated ListingItem.id:', updatedListingItem1.id);
+        updatedListingItem1 = await listingItemService.update(createdListingItem2.id, testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(updatedListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
+
 
     test('Should delete the previously updated ListingItem', async () => {
         expect.assertions(21);
         await listingItemService.destroy(updatedListingItem1.id);
         await expectListingItemWasDeleted(updatedListingItem1);
     });
+
 
     test('Should create a new ListingItem without PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic2));
@@ -406,23 +397,22 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
-
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdListingItem2 = listingItemModel.toJSON();
+        createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
+
 
     test('Should delete the ListingItem with ItemInformation', async () => {
         expect.assertions(6);
         await listingItemService.destroy(createdListingItem2.id);
         await expectListingItemWasDeleted(createdListingItem2);
     });
+
 
     test('Should create a new ListingItem without MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic2));
@@ -431,15 +421,15 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
-        createdListingItem2 = await listingItemService.create(testDataToSave)
-            .then(value => value.toJSON());
+        createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
+
 
     test('Should delete the ListingItem with ItemInformation and PaymentInformation', async () => {
         expect.assertions(11);
@@ -447,24 +437,11 @@ describe('ListingItem', () => {
         await expectListingItemWasDeleted(createdListingItem2);
     });
 
+
     test('Should delete expired ListingItem', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestExpired));
-
-        delete testDataToSave.itemInformation;
-        delete testDataToSave.paymentInformation;
-        delete testDataToSave.messagingInformation;
-        delete testDataToSave.listingItemObjects;
-
-        testDataToSave.market = defaultMarket.receiveAddresss;
-        testDataToSave.seller = defaultProfile.address;
-        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
-        testDataToSave.generatedAt = +new Date().getTime();
-
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        const expiredListingItem = listingItemModel.toJSON();
         await listingItemService.deleteExpiredListingItems();
-        await listingItemService.findOne(expiredListingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(expiredListingItem.id))
+        await listingItemService.findOne(createdListingItem1.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItem1.id))
         );
     });
 
@@ -473,8 +450,8 @@ describe('ListingItem', () => {
     test('Should update ListingItem correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.market_id = defaultMarket.id;
-        testDataToSave.seller = defaultProfile.address;
+        testDataToUpdate.market_id = market.id;
+        testDataToSave.seller = profile.address;
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;

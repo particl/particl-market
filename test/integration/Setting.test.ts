@@ -3,6 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +17,7 @@ import { SettingService } from '../../src/api/services/model/SettingService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { SettingCreateRequest } from '../../src/api/requests/model/SettingCreateRequest';
 import { SettingUpdateRequest } from '../../src/api/requests/model/SettingUpdateRequest';
-import * as resources from 'resources';
+import { MarketService } from '../../src/api/services/model/MarketService';
 
 describe('Setting', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -26,18 +28,21 @@ describe('Setting', () => {
     let testDataService: TestDataService;
     let settingService: SettingService;
     let profileService: ProfileService;
+    let marketService: MarketService;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let createdSetting: resources.Setting;
 
     const testData = {
-        key: 'testkey',
-        value: 'testvalue'
+        key: Faker.random.uuid(),
+        value: Faker.random.uuid()
     } as SettingCreateRequest;
 
     const testDataUpdated = {
-        key: 'testkeyUPDATED',
-        value: 'testvalueUPDATED'
+        key: Faker.random.uuid(),
+        value: Faker.random.uuid()
     } as SettingUpdateRequest;
 
     beforeAll(async () => {
@@ -46,14 +51,13 @@ describe('Setting', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         settingService = app.IoC.getNamed<SettingService>(Types.Service, Targets.Service.model.SettingService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
 
@@ -61,22 +65,18 @@ describe('Setting', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await settingService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should create a new Setting', async () => {
 
-        testData.profile_id = defaultProfile.id;
+        testData.profile_id = profile.id;
+        testData.market_id = market.id;
+
         const settingModel: Setting = await settingService.create(testData);
         const result = settingModel.toJSON();
         createdSetting = result;
 
         // test the values
         expect(result.Profile.id).toBe(testData.profile_id);
+        expect(result.Market.id).toBe(testData.market_id);
         expect(result.key).toBe(testData.key);
         expect(result.value).toBe(testData.value);
     });
@@ -89,11 +89,9 @@ describe('Setting', () => {
     });
 
     test('Should list Settings with our new create one', async () => {
-        const settingCollection = await settingService.findAll();
-        const setting = settingCollection.toJSON();
-        expect(setting.length).toBe(1);
-
-        const result = setting[0];
+        const settings = await settingService.findAll().then(value => value.toJSON());
+        expect(settings.length).toBe(6); // 5 defaault ones
+        const result = settings[5];
 
         // test the values
         expect(result.key).toBe(testData.key);
@@ -101,10 +99,10 @@ describe('Setting', () => {
     });
 
     test('Should find all Settings by profileId', async () => {
-        const settingCollection = await settingService.findAllByProfileId(defaultProfile.id);
+        const settingCollection = await settingService.findAllByProfileId(profile.id);
         const setting = settingCollection.toJSON();
-        expect(setting.length).toBe(1);
-        const result = setting[0];
+        expect(setting.length).toBe(5);
+        const result = setting[4];
 
         // test the values
         expect(result.key).toBe(testData.key);
@@ -121,9 +119,9 @@ describe('Setting', () => {
         expect(result.value).toBe(testData.value);
     });
 
-    test('Should return one Setting using key and profileId', async () => {
-        const settingModel: Setting = await settingService.findOneByKeyAndProfileId(testData.key, testData.profile_id);
-        const result = settingModel.toJSON();
+    test('Should return one Setting using key, profileId and marketId', async () => {
+        const result: resources.Setting = await settingService.findOneByKeyAndProfileIdAndMarketId(testData.key, testData.profile_id, market.id)
+            .then(value => value.toJSON());
 
         // test the values
         expect(result.Profile.id).toBe(testData.profile_id);
@@ -148,7 +146,4 @@ describe('Setting', () => {
             expect(e).toEqual(new NotFoundException(createdSetting.id))
         );
     });
-
-    // TODO: missing test for destroyByKeyAndProfileId
-
 });

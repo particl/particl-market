@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -15,7 +16,6 @@ import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartSe
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ShoppingCartCreateRequest } from '../../src/api/requests/model/ShoppingCartCreateRequest';
 import { ShoppingCartUpdateRequest } from '../../src/api/requests/model/ShoppingCartUpdateRequest';
-import * as resources from 'resources';
 
 describe('ShoppingCart', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

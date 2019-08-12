@@ -351,6 +351,21 @@ export class VoteActionService extends BaseActionService {
         // we can now check whether the ListingItem should be removed or not
         if (proposal.category === ProposalCategory.ITEM_VOTE) {
 
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                .then(value => value.toJSON());
+            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                .then(async remove => {
+
+                    // TODO: if user has voted for removal, then the item should stay removed
+                    // update the removed flag if its value is different from what it should be
+                    if (remove) {
+                        this.log.debug('updating the ListingItem removed flag to: ' + remove);
+                        // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
+                        // await this.listingItemService.destroy(listingItem.id);
+                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    }
+                });
+
             // if this vote is mine lets set/unset the removed flag
             const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
             if (addressInfo && addressInfo.ismine) {
@@ -358,19 +373,6 @@ export class VoteActionService extends BaseActionService {
                 await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
             }
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                .then(value => value.toJSON());
-            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                .then(async remove => {
-
-                    // update the removed flaag if its value is different from what it should be
-                    if (remove !== listingItem.removed) {
-                        this.log.debug('updating the ListingItem removed flag to: ' + remove);
-                        // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
-                        // await this.listingItemService.destroy(listingItem.id);
-                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
-                    }
-                });
         }
         return vote;
         // }

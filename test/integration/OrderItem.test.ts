@@ -36,9 +36,9 @@ describe('OrderItem', () => {
     let marketService: MarketService;
     let profileService: ProfileService;
 
-    let buyerProfile: resources.Profile;
+    let profile: resources.Profile;
     let sellerProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
@@ -57,8 +57,8 @@ describe('OrderItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        buyerProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(buyerProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // generate a seller profile in addition to the default one used for buyer
         const generateProfileParams = new GenerateProfileParams().toParamsArray();
@@ -71,19 +71,19 @@ describe('OrderItem', () => {
         sellerProfile = profiles[0];
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,                   // generateItemInformation
-            true,                   // generateItemLocation
-            true,                   // generateShippingDestinations
-            false,                  // generateItemImages
-            true,                   // generatePaymentInformation
-            true,                   // generateEscrow
-            true,                   // generateItemPrice
-            true,                   // generateMessagingInformation
-            false,                  // generateListingItemObjects
-            false,                  // generateObjectDatas
-            sellerProfile.id,       // profileId
-            true,                   // generateListingItem
-            defaultMarket.id        // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            sellerProfile.id,   // profileId
+            true,               // generateListingItem
+            market.id           // marketId
         ]).toParamsArray();
 
         // generate ListingItemTemplate with ListingItem
@@ -97,13 +97,13 @@ describe('OrderItem', () => {
         listingItemTemplate = listingItemTemplates[0];
         listingItem = listingItemTemplates[0].ListingItems[0];
 
-        // create a new bid from defaultProfile for ListingItem that is being sold by createdSellerProfile
+        // create a new bid from defaultProfile for ListingItem that is being sold by sellerProfile
         const bidParams = new GenerateBidParams([
             false,                      // generateListingItemTemplate
             false,                      // generateListingItem
             listingItem.hash,           // listingItemHash
             MPAction.MPA_BID,           // type
-            buyerProfile.address,       // bidder
+            profile.address,            // bidder
             sellerProfile.address       // seller
         ]).toParamsArray();
 
@@ -122,7 +122,7 @@ describe('OrderItem', () => {
             false,                      // generateOrderItems
             listingItem.hash,           // listingItemhash
             bid.id,                     // bidId
-            buyerProfile.address,       // bidder
+            profile.address,            // bidder
             sellerProfile.address       // seller
         ]);
 
@@ -208,4 +208,5 @@ describe('OrderItem', () => {
             expect(e).toEqual(new NotFoundException(orderItem.id))
         );
     });
+
 });

@@ -71,11 +71,15 @@ export class BidActionService extends BaseActionService {
      */
     public async createMessage(params: BidRequest): Promise<MarketplaceMessage> {
 
+        this.log.debug('createMessage()');
+
         // note: factory checks that the hashes match
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
             listingItem: params.listingItem
         } as ListingItemAddRequest);
+
+        this.log.debug('createMessage(), listingItemAddMPM: ', JSON.stringify(listingItemAddMPM, null, 2));
 
         // todo: cryptocurrency hardcoded to PART for now
         // todo: ...and propably hardcoded already on the Command level, so could be passed with the BidRequest params
