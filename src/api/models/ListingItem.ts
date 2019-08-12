@@ -244,8 +244,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
-    public get Removed(): string { return this.get('removed'); }
-    public set Removed(value: string) { this.set('removed', value); }
+    public get Removed(): boolean { return this.get('removed'); }
+    public set Removed(value: boolean) { this.set('removed', value); }
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }

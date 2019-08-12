@@ -323,7 +323,7 @@ export class VoteActionService extends BaseActionService {
             this.log.debug('proposal.id: ' + proposal.id);
             this.log.debug('vote.id: ' + vote.id);
             vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
-            this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
+            // this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
 
         } else {
             // Vote doesnt exist yet, so we need to create it.
@@ -339,15 +339,13 @@ export class VoteActionService extends BaseActionService {
                 smsgMessage);
 
             vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
-            this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
+            // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
         }
 
         // if (vote) {
         // after creating/updating the Vote, recalculate the ProposalResult
         proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
         const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-        this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
         // we can now check whether the ListingItem should be removed or not
@@ -364,9 +362,13 @@ export class VoteActionService extends BaseActionService {
                 .then(value => value.toJSON());
             await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
                 .then(async remove => {
-                    if (remove) {
-                        this.log.debug('removing the ListingItem...');
-                        await this.listingItemService.destroy(listingItem.id);
+
+                    // update the removed flaag if its value is different from what it should be
+                    if (remove !== listingItem.removed) {
+                        this.log.debug('updating the ListingItem removed flag to: ' + remove);
+                        // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
+                        // await this.listingItemService.destroy(listingItem.id);
+                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
                     }
                 });
         }

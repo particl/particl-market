@@ -23,6 +23,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -138,6 +139,10 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
+
+        if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+        }
 
         // get the default market.
         // TODO: Might want to let users specify this later.
