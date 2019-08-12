@@ -1,27 +1,71 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { Profile } from './Profile';
 import { ListingItem } from './ListingItem';
-import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 
 export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
+
+    public static RELATIONS = [
+        'ListingItem',
+        'ListingItem.ItemInformation',
+        'ListingItem.ItemInformation.ItemCategory',
+        'ListingItem.ItemInformation.ItemLocation',
+        'ListingItem.ItemInformation.ItemLocation.LocationMarker',
+        'ListingItem.ItemInformation.ItemImages',
+        'ListingItem.ItemInformation.ItemImages.ItemImageDatas',
+        'ListingItem.ItemInformation.ShippingDestinations',
+        'ListingItem.PaymentInformation',
+        'ListingItem.PaymentInformation.Escrow',
+        'ListingItem.PaymentInformation.Escrow.Ratio',
+        'ListingItem.PaymentInformation.ItemPrice',
+        'ListingItem.PaymentInformation.ItemPrice.ShippingPrice',
+        'ListingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress',
+        'ListingItem.MessagingInformation',
+        'ListingItem.ListingItemObjects',
+        'ListingItem.Bids',
+        'ListingItem.FlaggedItem',
+        'Profile'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FavoriteItem> {
         if (withRelated) {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'FavoriteItemRelated',
-                    // 'FavoriteItemRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch();
         }
     }
 
-    // find favorite by profile id and listing item id
-    public static async search(options: FavoriteSearchParams): Promise<FavoriteItem> {
-        return await FavoriteItem.where<FavoriteItem>({ listing_item_id: options.itemId, profile_id: options.profileId }).fetch();
+    public static async fetchByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
+        if (withRelated) {
+            return await FavoriteItem.where<FavoriteItem>({ listing_item_id: itemId, profile_id: profileId }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await FavoriteItem.where<FavoriteItem>({ listing_item_id: itemId, profile_id: profileId }).fetch();
+        }
+    }
+
+    public static async fetchFavoritesByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<FavoriteItem>> {
+        const favoriteItems = FavoriteItem.forge<Model<FavoriteItem>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await favoriteItems.fetchAll({
+                withRelated: this.RELATIONS
+
+            });
+        } else {
+            return await favoriteItems.fetchAll();
+        }
     }
 
     public get tableName(): string { return 'favorite_items'; }
@@ -49,9 +93,4 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     public ListingItem(): ListingItem {
       return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
-
-    // TODO: add related
-    // public FavoriteItemRelated(): FavoriteItemRelated {
-    //    return this.hasOne(FavoriteItemRelated);
-    // }
 }

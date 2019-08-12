@@ -1,11 +1,8 @@
-#!/usr/bin/env bash
-rm -rf data/marketplace*db
-rm -rf data/app1/marketplace*db
-rm -rf data/app2/marketplace*db
-npm run db:migrate
-cp data/marketplace.db data/marketplace-test.db
-cp data/marketplace.db data/app1/marketplace.db
-cp data/marketplace.db data/app1/marketplace-test.db
-cp data/marketplace.db data/app2/marketplace.db
-cp data/marketplace.db data/app2/marketplace-test.db
-
+#!/bin/sh
+mkdir -p data/app1/database
+mkdir -p data/app2/database
+rm -rf data/database/marketplace*db*
+rm -rf data/tests/database/marketplace*db*
+rm -rf data/app1/database/marketplace*db*
+rm -rf data/app2/database/marketplace*db*
+echo "removed dbs."

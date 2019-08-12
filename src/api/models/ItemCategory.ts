@@ -1,5 +1,9 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
@@ -47,7 +51,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchAllByName(name: string, withRelated: boolean = true): Promise<Collection<ItemCategory>> {
-        const listingCollection = ItemCategory.forge<Collection<ItemCategory>>()
+        const listingCollection = ItemCategory.forge<Model<ItemCategory>>()
             .query(qb => {
                 qb.where('name', 'LIKE', '%' + name + '%');
             })
@@ -78,11 +82,11 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    // public get ParentItemCategoryId(): number { return this.get('parent_item_category_id'); }
-    // public set ParentItemCategoryId(value: number) { this.set('parent_item_category_id', value); }
-
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
+
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get Key(): string { return this.get('key'); }
     public set Key(value: string) { this.set('key', value); }

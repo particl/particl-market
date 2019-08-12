@@ -1,8 +1,9 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../{{deepness}}core/api/RequestBody';
+import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
-export class {{name.capitalize}}Request extends RequestBody {
+export class {{name.capitalize}}Request extends RequestBody implements ModelRequestInterface {
     {{#if hasProperties}}
     {{#each properties}}
 

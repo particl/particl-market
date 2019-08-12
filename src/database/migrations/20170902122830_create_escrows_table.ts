@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Knex from 'knex';
 
 
@@ -7,6 +11,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('type').notNullable();
+            table.integer('seconds_to_lock').unsigned().nullable();
 
             table.integer('payment_information_id').unsigned();
             table.foreign('payment_information_id').references('id')

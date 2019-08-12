@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -5,7 +9,7 @@ import { ShippingDestination } from '../models/ShippingDestination';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationSearchParams } from '../requests/search/ShippingDestinationSearchParams';
 
 export class ShippingDestinationRepository {
 

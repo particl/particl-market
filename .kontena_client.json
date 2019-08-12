@@ -1,0 +1,26 @@
+{
+    "current_server": "KONTENA_SERVER_NAME",
+    "current_account": "KONTENA_ACCOUNT_NAME",
+    "servers": [
+        {
+            "url": "KONTENA_SERVER_URL",
+            "name": "KONTENA_SERVER_NAME",
+            "username": "KONTENA_SERVER_USERNAME",
+            "grid": "KONTENA_SERVER_GRID",
+            "token": "KONTENA_SERVER_TOKEN",
+            "token_expires_at": 0,
+            "refresh_token": null
+        }
+    ],
+    "accounts": [
+        {
+            "name": "KONTENA_ACCOUNT_NAME",
+            "username": "KONTENA_ACCOUNT_USERNAME",
+            "token": "KONTENA_ACCOUNT_TOKEN",
+            "token_expires_at": 1496236130,
+            "refresh_token": "KONTENA_ACCOUNT_REFRESH_TOKEN"
+        }
+    ]
+}
+
+

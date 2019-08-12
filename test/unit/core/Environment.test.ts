@@ -1,5 +1,9 @@
-import { Environment } from '../../../src/core/helpers/Environment';
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
+import { Environment } from '../../../src/core/helpers/Environment';
 
 describe('Environment', () => {
     test('getName() should return the test env', () => {

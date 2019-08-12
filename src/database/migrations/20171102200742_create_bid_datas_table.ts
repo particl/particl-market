@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Knex from 'knex';
 
 
@@ -6,8 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('bid_datas', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('data_value');
-            table.string('data_id');
+            table.string('key');
+            table.string('value');
             table.integer('bid_id').unsigned().notNullable();
             table.foreign('bid_id').references('id')
                 .inTable('bids').onDelete('cascade');

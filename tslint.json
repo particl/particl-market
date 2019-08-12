@@ -1,10 +1,15 @@
 {
-    "extends": "tslint:recommended",
+    "extends": [
+        "tslint:recommended",
+        "tslint-clean-code",
+        "tslint-sonarts"
+    ],
     "rules": {
         "max-line-length": [
             true,
             160
         ],
+        "no-bitwise": false,
         "no-consecutive-blank-lines": false,
         "quotemark": [true, "single", "avoid-escape"],
         "interface-name": false,
@@ -50,6 +55,40 @@
         "trailing-comma": [true, {
             "multiline": "never",
             "singleline": "never"
-        }]
+        }],
+
+        /*"try-catch-first": true,*/
+        /*"newspaper-order": true,*/
+        "no-for-each-push": true,
+        "no-map-without-usage": true,
+        /*"no-complex-conditionals": [
+            true,
+            2
+        ],*/
+        "prefer-dry-conditionals": [
+            true,
+            2
+        ],
+        /*"no-feature-envy": [
+            true,
+            5,
+            [
+                "_",
+                "ts"
+            ]
+        ],*/
+        /*"no-commented-out-code": true,*/
+
+        /*SONARTS, set these on...*/
+        "no-commented-code": false,
+        "no-big-function": false,
+        "no-duplicate-string": false,
+        "no-identical-functions": false,
+        "cognitive-complexity": [true, 45],/*default:15*/
+        "prefer-immediate-return": false,
+        "no-dead-store": false,
+        "parameters-max-number": [true, 10],
+        "no-redundant-boolean": false,
+        "no-use-of-empty-return-value": false /*turn on, there are bugs related to this*/
     }
 }

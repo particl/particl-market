@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 
 
@@ -6,11 +10,7 @@ export class LocationMarker extends Bookshelf.Model<LocationMarker> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<LocationMarker> {
         if (withRelated) {
             return await LocationMarker.where<LocationMarker>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'LocationMarkerRelated',
-                    // 'LocationMarkerRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await LocationMarker.where<LocationMarker>({ id: value }).fetch();
@@ -23,11 +23,11 @@ export class LocationMarker extends Bookshelf.Model<LocationMarker> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get MarkerTitle(): string { return this.get('markerTitle'); }
-    public set MarkerTitle(value: string) { this.set('markerTitle', value); }
+    public get Title(): string { return this.get('title'); }
+    public set Title(value: string) { this.set('title', value); }
 
-    public get MarkerText(): string { return this.get('markerText'); }
-    public set MarkerText(value: string) { this.set('markerText', value); }
+    public get Description(): string { return this.get('description'); }
+    public set Description(value: string) { this.set('description', value); }
 
     public get Lat(): number { return this.get('lat'); }
     public set Lat(value: number) { this.set('lat', value); }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Knex from 'knex';
 
 
@@ -7,8 +11,13 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('type').notNullable();
-            table.text('description').notNullable();
+            table.text('description').notNullable(); // title
             table.integer('order').notNullable();
+
+            table.text('object_id').nullable();
+            table.boolean('force_input').defaultTo(false);
+
+            table.boolean('searchable').defaultTo(false);
 
             table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')

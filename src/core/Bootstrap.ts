@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as http from 'http';
 import * as express from 'express';
 import { InversifyExpressServer } from 'inversify-express-utils';
@@ -7,17 +11,21 @@ import { ApiInfo } from './ApiInfo';
 import { ApiMonitor } from './ApiMonitor';
 import { exceptionHandler } from './api/exceptionHandler';
 import { extendExpressResponse } from './api/extendExpressResponse';
-import { SwaggerUI } from './SwaggerUI';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
+import { SocketIoServer } from './SocketIoServer';
 
 export class Bootstrap {
 
     public log: Logger = new Logger(__filename);
 
+    constructor() {
+        // nothing explicit to do
+    }
+
     public defineExpressApp(app: express.Application): express.Application {
         app.set('host', process.env.APP_HOST);
-        app.set('port', Server.normalizePort(process.env.PORT || process.env.APP_PORT || '3000'));
+        app.set('port', Server.normalizePort(process.env.APP_PORT || '3000'));
         return app;
     }
 
@@ -32,9 +40,6 @@ export class Bootstrap {
 
         const cliIndex = new CliIndex();
         cliIndex.setup(app);
-
-        const swaggerUI = new SwaggerUI();
-        swaggerUI.setup(app);
     }
 
     public startServer(app: express.Application): http.Server {
@@ -60,4 +65,7 @@ export class Bootstrap {
         return app;
     }
 
+    public createSocketIoServer(server: Server, ioc: IoC): SocketIoServer {
+         return new SocketIoServer(server.httpServer, ioc);
+    }
 }

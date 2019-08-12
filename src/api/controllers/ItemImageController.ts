@@ -1,57 +1,94 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam } from 'inversify-express-utils';
+import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request } from 'inversify-express-utils';
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
-import { ItemImageService } from '../services/ItemImageService';
+import { ItemImageService } from '../services/model/ItemImageService';
+import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ImagePostUploadRequest } from '../requests/action/ImagePostUploadRequest';
+import { MessageException } from '../exceptions/MessageException';
+import { ItemImageDataService } from '../services/model/ItemImageDataService';
 
 // Get middlewares
-const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RestApiMiddleware);
+const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
+const multerMiddleware = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.MulterMiddleware);
 
-@controller('/item-images', restApi.use)
+@controller('/item-images', multerMiddleware.use, restApi.use)
 export class ItemImageController {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageHttpUploadService) private itemImageHttpUploadService: ItemImageHttpUploadService,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
     }
 
-    @httpGet('/')
-    public async findAll( @response() res: myExpress.Response): Promise<any> {
-        const itemImages = await this.itemImageService.findAll();
-        this.log.debug('findAll: ', JSON.stringify(itemImages, null, 2));
-        return res.found(itemImages.toJSON());
+    /**
+     * upload images
+     *
+     * @param res
+     * @param templateId
+     * @param body
+     * @param req
+     */
+    @httpPost('/template/:templateId')
+    public async create(@response() res: myExpress.Response, @requestParam('templateId') templateId: string,
+                        @requestBody() body: any, @request() req: any): Promise<resources.ItemImage[]> {
+
+        const listingItemTemplateId = parseInt(templateId, 10);
+
+        if (!req.files || req.files.length === 0) {
+            throw new MessageException('Missing images.');
+        }
+
+        const imagePostRequest = {
+            listingItemTemplateId,
+            requestBody: body,
+            request: req
+        } as ImagePostUploadRequest;
+        return this.itemImageHttpUploadService.httpPostImageUpload(imagePostRequest);
     }
 
-    @httpPost('/')
-    public async create( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
-        const itemImage = await this.itemImageService.create(body);
-        this.log.debug('create: ', JSON.stringify(itemImage, null, 2));
-        return res.created(itemImage.toJSON());
-    }
+    /**
+     * publishes images through the rest api
+     *
+     * todo: change id to hash
+     *
+     * @param res
+     * @param id
+     * @param imageVersion
+     */
+    @httpGet('/:id/:imageVersion')
+    public async publishImage(@response() res: myExpress.Response, @requestParam('id') id: string, @requestParam('imageVersion')
+        imageVersion: string): Promise<any> {
 
-    @httpGet('/:id')
-    public async findOne( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        const itemImage = await this.itemImageService.findOne(parseInt(id, 10));
-        this.log.debug('findOne: ', JSON.stringify(itemImage, null, 2));
-        return res.found(itemImage.toJSON());
-    }
+        // todo: check validity of imageVersion and throw if not valid
 
-    @httpPut('/:id')
-    public async update( @response() res: myExpress.Response, @requestParam('id') id: string, @requestBody() body: any): Promise<any> {
-        const itemImage = await this.itemImageService.update(parseInt(id, 10), body);
-        this.log.debug('update: ', JSON.stringify(itemImage, null, 2));
-        return res.updated(itemImage.toJSON());
-    }
+        // find the itemImage by id
+        const itemImageModel = await this.itemImageService.findOne(parseInt(id, 10));
+        const itemImage: resources.ItemImage = itemImageModel.toJSON();
 
-    @httpDelete('/:id')
-    public async destroy( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        await this.itemImageService.destroy(parseInt(id, 10));
-        this.log.debug('destroy: ', parseInt(id, 10));
-        return res.destroyed();
+        // get the requested version of the image
+        const itemImageData: resources.ItemImageData | undefined = await _.find(itemImage.ItemImageDatas, data => data['imageVersion'] === imageVersion);
+
+        if (!itemImageData || itemImage.ItemImageDatas.length === 0) {
+            throw new MessageException('Image not found!');
+        } else {
+            const data = await this.itemImageDataService.loadImageFile(itemImage.hash, imageVersion);
+            const dataBuffer = Buffer.from(data, 'base64');
+            res.setHeader('Content-Disposition', 'filename=' + itemImageData.data);
+            res.send(dataBuffer);
+        }
     }
-    // Implement your routes here
 }
+

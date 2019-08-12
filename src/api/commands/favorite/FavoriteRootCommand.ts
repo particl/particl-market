@@ -1,12 +1,13 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { FavoriteListCommand } from './FavoriteListCommand';
-import { FavoriteAddCommand } from './FavoriteAddCommand';
-import { FavoriteRemoveCommand } from './FavoriteRemoveCommand';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
@@ -16,9 +17,6 @@ export class FavoriteRootCommand extends BaseCommand implements RpcCommandInterf
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteListCommand) private favoriteListCommand: FavoriteListCommand,
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.FAVORITE_ROOT);
@@ -30,8 +28,12 @@ export class FavoriteRootCommand extends BaseCommand implements RpcCommandInterf
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (list|add|remove)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (list|add|remove)';
+        return this.usage();
     }
 
     public description(): string {

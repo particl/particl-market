@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -17,28 +21,28 @@ export class ProfileRepository {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(withRelated: boolean = true): Promise<Profile> {
-        return this.findOneByName('DEFAULT', withRelated);
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
         const list = await this.ProfileModel.fetchAll();
         return list as Bookshelf.Collection<Profile>;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Profile> {
-        return this.ProfileModel.fetchById(id, withRelated);
+        return await this.ProfileModel.fetchById(id, withRelated);
     }
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
-        return this.ProfileModel.fetchByName(name, withRelated);
+        return await this.ProfileModel.fetchByName(name, withRelated);
+    }
+
+    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
+        return await this.ProfileModel.fetchByAddress(name, withRelated);
     }
 
     public async create(data: any): Promise<Profile> {
         const profile = this.ProfileModel.forge<Profile>(data);
         try {
             const profileCreated = await profile.save();
-            return this.ProfileModel.fetchById(profileCreated.id);
+            return await this.ProfileModel.fetchById(profileCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the profile!', error);
         }
@@ -48,7 +52,7 @@ export class ProfileRepository {
         const profile = this.ProfileModel.forge<Profile>({ id });
         try {
             const profileUpdated = await profile.save(data, { patch: true });
-            return this.ProfileModel.fetchById(profileUpdated.id);
+            return await this.ProfileModel.fetchById(profileUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the profile!', error);
         }

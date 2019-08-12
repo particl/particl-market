@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -17,33 +21,34 @@ export class MarketRepository {
         this.log = new Logger(__filename);
     }
 
-    public async getDefault(withRelated: boolean = true): Promise<Market> {
-        return this.findOneByName('DEFAULT', withRelated);
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
         const list = await this.MarketModel.fetchAll();
         return list as Bookshelf.Collection<Market>;
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
-        return this.MarketModel.fetchById(id, withRelated);
+        return await this.MarketModel.fetchById(id, withRelated);
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
-        return this.MarketModel.fetchByAddress(address, withRelated);
+    public async findOneByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<Market> {
-        return this.MarketModel.fetchByName(name, withRelated);
+    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByProfileIdAndName(profileId, name, withRelated);
     }
 
     public async create(data: any): Promise<Market> {
         const market = this.MarketModel.forge<Market>(data);
         try {
             const marketCreated = await market.save();
-            return this.MarketModel.fetchById(marketCreated.id);
+            return await this.MarketModel.fetchById(marketCreated.id);
         } catch (error) {
+            this.log.error('ERROR: ', error);
             throw new DatabaseException('Could not create the market!', error);
         }
     }
@@ -52,7 +57,7 @@ export class MarketRepository {
         const market = this.MarketModel.forge<Market>({ id });
         try {
             const marketUpdated = await market.save(data, { patch: true });
-            return this.MarketModel.fetchById(marketUpdated.id);
+            return await this.MarketModel.fetchById(marketUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the market!', error);
         }

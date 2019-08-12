@@ -1,20 +1,34 @@
-# dapp-shell 
 
-[![Codefresh build status]( https://g.codefresh.io/api/badges/build?repoOwner=xludx&repoName=dapp-shell&branch=develop&pipelineName=dapp-shell&accountName=ludx&type=cf-2)]( https://g.codefresh.io/repositories/xludx/dapp-shell/builds?filter=trigger:build;branch:develop;service:5a6681e5867c720001c99eca~dapp-shell)
+```
+                              .   ..  . . .... ....... ........ .... ....................
+   ___________    _______  ___________  _________    ______  __________  ______ .::::::::
+   _\ ___.   /_____\_   /_ _\ ___.   /  _\      /___ _\ __/_ _\       /  _\   / :::::::::
+   |"   /   / | __      "| |"   /   /__ !__    ____/ |"    / |"  /___/__ |"  /____  .::::
+   | \_____/  | /        | |  \_      /   |"    /    |    /  |  /      / |  /    / .:::::
+   !_____|    !_______/__| !____\____/    !____/     !___/   !________/  !______/ .::::::
+                                        .   . ..:.::. .....::. . . ....::.........:::::::
+           ________     _______  ___________  _____ . ..::. __________ _________ .:::::::
+    ______ /  _.  / _____\_   /_ _\ ___.   /  _\  /______ . _\ _.    / _\      /___  ::::
+   __\ _  /   /  /_ | __      "| |"   /   /__ |" /   ___/___|" /    /__|__   _____/ .::::
+   |"   \ `  /  / | | /        | |  \_      / |    \       /|  ____/  |  |"    /  .::::::
+   !_____\__/_____| !_______/__| !____\____/  !_____\_____/ !_________|  !____/ .::::::::
+                                                             . .. . ...........::::::::l!
+```
 
-## Getting Started
-### Step 1:  Set up the Development Environment
+
+## Getting Started 
+### Step 1:  Set up the Development Environment 
 You need to set up your development environment before you can do anything.
 
 Install [Node.js and NPM](https://nodejs.org/en/download/)
 * on OSX use [homebrew](http://brew.sh) `brew install node`
 * on Windows use [chocolatey](https://chocolatey.org/) `choco install nodejs`
-* on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -`<br/>
+* on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -`<br/>
 `sudo apt-get install -y nodejs`
 
-Then install yarn globally
+Then install yarn globally 
 ```
-npm install yarn -g
+npm install yarn -g 
 ```
 
 And finally install Docker
@@ -22,14 +36,9 @@ And finally install Docker
 
 
 ### Step 2: Set up the Project
-Fork this project.
+Fork this project. 
 
 Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
-
-Do it manually or run:
-```
-./bin/copy-env.sh
-```
 
 Then setup your application environment.
 ```
@@ -44,7 +53,7 @@ Go to the project dir and start your app with this npm script.
 npm run serve
 ```
 
-> This starts a local server using `nodemon`, which will watch for any file changes and will restart the sever according to these changes.
+> This starts a local server using `nodemon`, which will watch for any file changes and will restart the server according to these changes.
 > The server address will be displayed to you as `http://0.0.0.0:3000`.
 
 
@@ -76,6 +85,7 @@ Integration tests start the application container and do not require the applica
 * Run the unit tests using `npm test` (There is also a vscode task for this called `test`).
 * Run the integration tests using `npm run test:integration:pretty` and don't forget to start your application.
 * Run the black-box tests using `npm run test:black-box:pretty` and don't forget to start your application.
+* Run the ui tests using `npm run test:ui:pretty` and don't forget to start your application.
 * To run just some certain test(s) try `TEST=Market* npm run test:integration:single`
 
 ### Running in dev mode
@@ -100,7 +110,7 @@ Integration tests start the application container and do not require the applica
 ### Scaffolding Commands
 All the templates for the commands are located in `src/console/templates`.
 
-* `npm run console make:resource` - Generates a controller, service, requests, repo, model and a migration with CRUD operations.
+* `npm run console make:resource` - Generates a command, service, requests, repo, model and a migration with CRUD operations.
 * `npm run console make:controller` - Generates a controller.
 * `npm run console make:service` - Generates a service.
 * `npm run console make:command` - Generates a command.
@@ -142,12 +152,11 @@ Our IoC automatically looks through the `controllers`, `listeners` , `middleware
 
 
 ## API Routes
-The route prefix is `/api` by default, but you can change this in the .env file. The route for the RPC API is `/api`.
+The route prefix is `/api` by default, but you can change this in the .env file. The route for the RPC API is `/api/rpc`.
 
 | Route       | Description |
 | ----------- | ----------- |
 | **/api/info** | Shows us the name, description and the version of the package.json |
-| **/api/docs** | This is the Swagger UI with our API documentation |
 | **/status**   | Shows a small monitor page for the server |
 | **/cli**      | Web based CLI to use the RPC commands |
 | **/api/rpc**  | RPC Server endpoint |
@@ -167,12 +176,11 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **src/api/listeners/**          | Event listeners |
 | **src/api/messageprocessors/**  | Marketplace messageprocessors |
 | **src/api/messages/**           | Marketplace messages |
-| **src/api/middlewares/**        | Express Middlewares like populateUser |
+| **src/api/middlewares/**        | Express Middlewares |
 | **src/api/models/**             | Bookshelf Models |
 | **src/api/repositories/**       | Repository / DB layer |
 | **src/api/requests/**           | Request bodys with validations |
 | **src/api/services/**           | Service layer |
-| **src/api/** swagger.json       | Swagger documentation |
 | **src/console/**                | Command line scripts |
 | **src/config/**                 | Configurations like database or logger |
 | **src/constants/**              | Global Constants |
@@ -192,57 +200,9 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 
 
 
-
-
-
-
 # About
 
 This project is based on Express Typescript Boilerplate
 [![Dependency Status](https://david-dm.org/w3tecch/express-typescript-boilerplate/status.svg?style=flat)](https://david-dm.org/w3tecch/express-typescript-boilerplate)
 [![Build Status](https://travis-ci.org/w3tecch/express-typescript-boilerplate.svg?branch=master)](https://travis-ci.org/w3tecch/express-typescript-boilerplate)
 [![Build status](https://ci.appveyor.com/api/projects/status/f8e7jdm8v58hcwpq/branch/master?svg=true&passingText=Windows%20passing&pendingText=Windows%20pending&failingText=Windows%20failing)](https://ci.appveyor.com/project/dweber019/express-typescript-boilerplate/branch/master)
-
-> A delightful way to building a RESTful API with NodeJs & TypeScript.
-> An Node.js RESTful API boilerplate featuring
-[Express](https://expressjs.com/),
-[Inversify](http://inversify.io/),
-[Winston](https://github.com/winstonjs/winston),
-[TypeScript](https://www.typescriptlang.org/),
-[TsLint](http://palantir.github.io/tslint/),
-[@types](https://www.npmjs.com/~types),
-[Jest](https://facebook.github.io/jest/),
-[Swagger](http://swagger.io/),
-[validatejs](https://validatejs.org/),
-[knex](http://knexjs.org/) and
-[bookshelf](http://bookshelfjs.org/)
-by [w3tech](https://github.com/w3tecch)
-
-## Features
-- **Beautiful Syntax** thanks to the awesome annotations from [Inversify Express Utils](https://github.com/inversify/inversify-express-utils).
-- **Easy API Testing** with included black-box testing.
-- **Dependency Injection** done with the nice framework from [Inversify](http://inversify.io/).
-- **Fast Database Building** with simple migration and seeding from [Knex](http://knexjs.org/).
-- **Simplified Database Query** with the ORM of [Knex](http://knexjs.org/) called [Bookshelf](http://bookshelfjs.org/).
-- **Clear Structure** with controllers, services, repositories, models, middlewares...
-- **Easy Exception Handling** with our own simple and easy to adopt logic. You will love it.
-- **Easy Data Seeding** with our own factories.
-- **Custom Commands** are also available in our setup and really easy to use or even extend.
-- **Scaffolding Commands** will speed up your development tremendously as you should focus on business code and not scaffolding.
-- **Smart Validation** thanks to [class-validator](https://github.com/pleerock/class-validator) with some nice annotations.
-- **API Documentation** thanks to [swagger](http://swagger.io/).
-- **API Monitoring** thanks to [express-status-monitor](https://github.com/RafalWilinski/express-status-monitor).
-- **Integrated Testing Tool** thanks to [Wallaby.js](https://wallabyjs.com/)
-
-## Documentations of our main dependencies
-* [Express](https://expressjs.com/)
-* [Knex](http://knexjs.org/)
-* [Bookshelf](http://bookshelfjs.org/)
-* [Bookshelf Cheatsheet](http://ricostacruz.com/cheatsheets/bookshelf.html)
-* [Inversify](http://inversify.io/)
-* [Inversify Express Utils](https://github.com/inversify/inversify-express-utils)
-* [class-validator](https://github.com/pleerock/class-validator)
-* [Jest](http://facebook.github.io/jest/)
-* [Auth0 API Documentation](https://auth0.com/docs/api/management/v2)
-* [swagger Documentation](http://swagger.io/)
-

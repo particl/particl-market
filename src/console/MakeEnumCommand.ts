@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * MakeEnumCommand
  * -------------------------------------
@@ -84,6 +88,14 @@ export class MakeEnumCommand extends AbstractMakeCommand {
                 properties.push(property);
             }
         }
+        for (const property of properties) {
+            const types = property.type.replace(/[()]/g, '').split(' ');
+            property.type = {
+                script: types[1],
+                database: types[0]
+            };
+        }
+/*
         properties.map(p => {
             const types = p.type.replace(/[()]/g, '').split(' ');
             p.type = {
@@ -92,6 +104,7 @@ export class MakeEnumCommand extends AbstractMakeCommand {
             };
             return p;
         });
+*/
         console.log('');
         return properties;
     }

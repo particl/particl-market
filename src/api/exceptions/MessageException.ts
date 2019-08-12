@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * MessageException
  * ----------------------------------------
@@ -12,6 +16,7 @@ import { Exception } from '../../core/api/Exception';
 
 export class MessageException extends Exception {
     constructor(message?: string) {
+        // TODO: should be 400
         super(404, `${message}`);
     }
 }

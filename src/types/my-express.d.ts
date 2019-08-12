@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * my-express
  * ----------------------------------------
@@ -18,8 +22,6 @@ declare namespace myExpress {
     }
 
     interface Request extends expressLib.Request {
-        tokeninfo: auth0.User;
-        user: resources.User;
     }
 
     interface Response extends expressLib.Response {

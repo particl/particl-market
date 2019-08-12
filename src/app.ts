@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * EXPRESS TYPESCRIPT BOILERPLATE
  * ----------------------------------------
@@ -11,14 +15,28 @@
  */
 
 import 'reflect-metadata';
+import { envConfig } from './config/EnvironmentConfig';
 import { App } from './core/App';
 import { CustomConfig } from './config/CustomConfig';
+import { Environment } from './core/helpers/Environment';
+import * as dotenv from 'dotenv';
 
-export const app = new App();
+console.log('app, process.env.NODE_ENV:', process.env.NODE_ENV );
 
-if (process.env.NODE_ENV !== 'test') {
-    // Here you can add more custom configurations
-    app.configure(new CustomConfig());
-    // Launch the server with all his awesome features.
-    app.bootstrap();
+const config = envConfig();
+// loads the .env file into the 'process.env' variable (this does not load anything if the config path doesn't exist yet)
+dotenv.config({ path: config.envFile });
+
+const newApp = new App();
+
+if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
+    // integration tests will bootstrap the app
+    newApp.configure(new CustomConfig());
+    newApp.bootstrap()
+        .catch(reason => {
+            console.log('ERROR:', reason);
+        });
+
 }
+
+export const app = newApp;

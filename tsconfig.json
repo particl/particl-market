@@ -4,6 +4,7 @@
         "module": "commonjs",
         "pretty": true,
         "sourceMap": true,
+        "inlineSources": true,
         "outDir": "dist",
         "importHelpers": true,
         "strict": true,
@@ -36,6 +37,7 @@
         "src/**/*"
     ],
     "exclude": [
+        "src/test/**/*",
         "knexfile.ts"
     ]
 }

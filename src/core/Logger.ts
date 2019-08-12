@@ -1,4 +1,9 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as path from 'path';
+import * as interfaces from '../types/interfaces';
 
 /**
  * core.log.Log
@@ -31,17 +36,30 @@ export class Logger {
     private static Adapter: interfaces.LoggerAdapterConstructor;
     private static Adapters: Map<string, interfaces.LoggerAdapterConstructor> = new Map();
 
+    // tslint:disable:no-ignored-return
+    // tslint:disable:no-misleading-array-reverse
     private static parsePathToScope(filepath: string): string {
         if (filepath.indexOf(path.sep) >= 0) {
-            filepath = filepath.replace(process.cwd(), '');
-            filepath = filepath.replace(`${path.sep}src${path.sep}`, '');
-            filepath = filepath.replace(`${path.sep}dist${path.sep}`, '');
+            // split and reverse filepath
+            const split = filepath.split(path.sep).reverse();
+            const rebuild: string[] = [];
+            // rebuild from filename, to dirs.
+            split.some((e) => {
+                // abort if we reach the src or dist directory
+                const quit = (['src', 'dist'].indexOf(e) !== -1);
+                if (!quit) {
+                    rebuild.push(e);
+                }
+                return quit;
+            });
+            filepath = rebuild.reverse().join(path.sep);
             filepath = filepath.replace('.ts', '');
             filepath = filepath.replace('.js', '');
-            filepath = filepath.replace(path.sep, ':');
         }
         return filepath;
     }
+    // tslint:enable:no-misleading-array-reverse
+    // tslint:enable:no-ignored-return
 
     private scope: string;
     private adapter: interfaces.LoggerAdapter;

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * core.Server
  * ------------------------------------
@@ -10,7 +14,6 @@ import * as http from 'http';
 import * as express from 'express';
 import { Logger } from './Logger';
 import { Environment } from './helpers/Environment';
-import { SwaggerUI } from './SwaggerUI';
 import { ApiMonitor } from './ApiMonitor';
 import { ApiInfo } from './ApiInfo';
 import { CliIndex } from './CliIndex';
@@ -71,13 +74,10 @@ export class Server {
         this.log.debug(``);
         this.log.debug('-------------------------------------------------------');
         this.log.debug(`Environment  : ${Environment.getNodeEnv()}`);
-        this.log.debug(`Version      : ${Environment.getPkg().version}`);
+        // this.log.debug(`Version      : ${Environment.getPkg().version}`);
         this.log.debug(``);
         if (Environment.isTruthy(process.env.API_INFO_ENABLED)) {
             this.log.debug(`API Info     : ${app.get('host')}:${app.get('port')}${ApiInfo.getRoute()}`);
-        }
-        if (Environment.isTruthy(process.env.SWAGGER_ENABLED)) {
-            this.log.debug(`Swagger      : ${app.get('host')}:${app.get('port')}${SwaggerUI.getRoute()}`);
         }
         if (Environment.isTruthy(process.env.CLI_ENABLED)) {
             this.log.debug(`CLI          : ${app.get('host')}:${app.get('port')}${CliIndex.getRoute()}`);
@@ -105,11 +105,11 @@ export class Server {
         }
         switch (error.code) {
             case 'EACCES':
-                this.log.error(`The Server requires elevated privileges`);
+                this.log.error('The Server requires elevated privileges: ', error);
                 process.exit(1);
                 break;
             case 'EADDRINUSE':
-                this.log.error(`Port is already in use or blocked by the os`);
+                this.log.error('Port is already in use or blocked by the os: ', error);
                 process.exit(1);
                 break;
             default:

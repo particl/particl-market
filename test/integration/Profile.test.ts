@@ -1,30 +1,34 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { AddressService } from '../../src/api/services/AddressService';
-import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
-import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
-
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { AddressService } from '../../src/api/services/model/AddressService';
+import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
+import { FavoriteItemService } from '../../src/api/services/model/FavoriteItemService';
+import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Profile } from '../../src/api/models/Profile';
-import { Address } from '../../src/api/models/Address';
-import { ListingItem } from '../../src/api/models/ListingItem';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-
-import { Country } from '../../src/api/enums/Country';
-import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
-import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
+import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
+import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
+import { AddressType } from '../../src/api/enums/AddressType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import * as resources from 'resources';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -39,30 +43,41 @@ describe('Profile', () => {
     let marketService: MarketService;
     let listingItemService: ListingItemService;
     let favoriteItemService: FavoriteItemService;
+    let shoppingCartService: ShoppingCartService;
 
     let createdId;
-    let createdListingItem;
+    let createdListingItem: resources.ListingItem;
 
+    // TODO: move to file or generate
     const testData = {
         name: 'DEFAULT1',
         address: 'DEFAULT11-ADDRESS',
         shippingAddresses: [{
+            firstName: 'Robert',
+            lastName: 'Downey',
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
+            state: 'test state',
             country: 'Sweden',
-            zipCode: '85001'
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
         }, {
+            firstName: 'Johnny',
+            lastName: 'Depp',
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
+            state: 'test state',
             country: 'Finland',
-            zipCode: '85001'
-        }] as any
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        }] as AddressCreateRequest[]
     } as ProfileCreateRequest;
 
+    // TODO: move to file or generate
     const testDataUpdated = {
         name: 'DEFAULT2',
         address: 'DEFAULT12-ADDRESS'
@@ -72,28 +87,38 @@ describe('Profile', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
-        cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
+        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
-        // create market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        // create ListingItem
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams: generateListingItemParams // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0];
+
     });
 
     afterAll(async () => {
@@ -107,13 +132,6 @@ describe('Profile', () => {
         );
     });
 
-    test('Should throw ValidationException because missing profile address', async () => {
-        expect.assertions(1);
-        await profileService.create({ name: 'test' } as ProfileCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should create a new profile with just delivery addresses', async () => {
         const profileModel: Profile = await profileService.create(testData);
         createdId = profileModel.Id;
@@ -123,6 +141,10 @@ describe('Profile', () => {
         expect(result.name).toBe(testData.name);
         expect(result.address).toBe(testData.address);
         expect(result.ShippingAddresses).toHaveLength(2);
+
+        // check for default ShoppingCart
+        expect(result.ShoppingCart).toHaveLength(1);
+        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
     test('Should list profiles with our new create one', async () => {
@@ -137,6 +159,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toBe(undefined);           // doesnt fetch related
         expect(result.CryptocurrencyAddresses).toBe(undefined);     // doesnt fetch related
         expect(result.FavoriteItems).toBe(undefined);               // doesnt fetch related
+        expect(result.ShoppingCart).toBe(undefined);               // doesnt fetch related
     });
 
     test('Should return one profile', async () => {
@@ -148,6 +171,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toHaveLength(2);
         expect(result.CryptocurrencyAddresses).toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
+        expect(result.ShoppingCart).toHaveLength(1);
     });
 
     // TODO: updating profile does not affect related models
@@ -158,10 +182,11 @@ describe('Profile', () => {
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.address).toBe(testDataUpdated.address);
         expect(result.ShippingAddresses).toHaveLength(2);
+        expect(result.ShoppingCart).toHaveLength(1);
     });
 
     test('Should delete the profile', async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const profileModel: Profile = await profileService.findOne(createdId);
         const result = profileModel.toJSON();
@@ -182,24 +207,30 @@ describe('Profile', () => {
         await addressService.findOne(addressId2).catch(e => {
             expect(e).toEqual(new NotFoundException(addressId2));
         });
+
+        const shoppingCartId = result.ShoppingCart[0].id;
+        // make sure shoppingCart were also deleted
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
+            expect(e).toEqual(new NotFoundException(shoppingCartId));
+        });
     });
 
-    test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
+    test('Should create and delete a new profile with delivery addresses and cryptoaddresses', async () => {
+        // TODO: use CreateableModel everywhere
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
             amount: 1,
             withRelated: true
         } as TestDataGenerateRequest);
-        const profileModel = profiles[0];
-        // expect(profileModel).toBe(1);
-        const result = profileModel.toJSON();
-        // expect(result.id).toBe(1);
+        const result = profiles[0];
 
         expect(result.name.substring(0, 5)).toBe('TEST-');
         expect(result.address).toBeDefined();
         expect(result.ShippingAddresses).not.toHaveLength(0);
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
+        expect(result.ShoppingCart).toHaveLength(1);
+
         await profileService.destroy(result.id);
         await profileService.findOne(result.id).catch(e => {
             expect(e).toEqual(new NotFoundException(result.id));
@@ -215,10 +246,15 @@ describe('Profile', () => {
         await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
             expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
         });
+        const shoppingCartId = result.ShoppingCart[0].id;
+        // make sure shoppingCart were also deleted
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
+            expect(e).toEqual(new NotFoundException(shoppingCartId));
+        });
 
     });
 
-    test('Should create a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
+    test('Should create and delete a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
             amount: 1,
@@ -240,6 +276,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).not.toHaveLength(0);
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(1);
+        expect(result.ShoppingCart).toHaveLength(1);
 
         await profileService.destroy(result.id);
         await profileService.findOne(result.id).catch(e => {
@@ -263,6 +300,13 @@ describe('Profile', () => {
         await favoriteItemService.findOne(favItemId).catch(e => {
             expect(e).toEqual(new NotFoundException(favItemId));
         });
+
+        const shoppingCartId = result.ShoppingCart[0].id;
+        // make sure shoppingCart were also deleted
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
+            expect(e).toEqual(new NotFoundException(shoppingCartId));
+        });
+
     });
 
 });

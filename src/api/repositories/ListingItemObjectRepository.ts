@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -5,6 +9,7 @@ import { ListingItemObject } from '../models/ListingItemObject';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ListingItemObjectSearchParams } from '../requests/search/ListingItemObjectSearchParams';
 
 export class ListingItemObjectRepository {
 
@@ -24,6 +29,15 @@ export class ListingItemObjectRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItemObject> {
         return this.ListingItemObjectModel.fetchById(id, withRelated);
+    }
+
+    /**
+     *
+     * @param options, ListingItemObjectSearchParams
+     * @returns {Promise<Bookshelf.Collection<ListingItemObject>>}
+     */
+    public async search(options: ListingItemObjectSearchParams): Promise<Bookshelf.Collection<ListingItemObject>> {
+        return this.ListingItemObjectModel.searchBy(options);
     }
 
     public async create(data: any): Promise<ListingItemObject> {

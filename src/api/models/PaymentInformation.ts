@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Escrow } from './Escrow';
@@ -20,10 +24,6 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
         } else {
             return await PaymentInformation.where<PaymentInformation>({ id: value }).fetch();
         }
-    }
-
-    public static async fetchByListingItemTemplateId(value: number): Promise<PaymentInformation> {
-        return await PaymentInformation.where<PaymentInformation>({ listing_item_template_id: value }).fetch();
     }
 
     public get tableName(): string { return 'payment_informations'; }

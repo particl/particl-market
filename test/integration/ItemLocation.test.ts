@@ -1,25 +1,29 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ItemLocationService } from '../../src/api/services/ItemLocationService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
+import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
-import { ItemLocation } from '../../src/api/models/ItemLocation';
-import { ListingItem } from '../../src/api/models/ListingItem';
-import { ItemInformation } from '../../src/api/models/ItemInformation';
-
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
-import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
+import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
+import { ItemLocationUpdateRequest } from '../../src/api/requests/model/ItemLocationUpdateRequest';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
+import { LocationMarkerUpdateRequest } from '../../src/api/requests/model/LocationMarkerUpdateRequest';
 
 describe('ItemLocation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,85 +34,81 @@ describe('ItemLocation', () => {
     let testDataService: TestDataService;
     let itemLocationService: ItemLocationService;
     let marketService: MarketService;
+    let profileService: ProfileService;
     let listingItemService: ListingItemService;
     let itemInformationService: ItemInformationService;
     let locationMarkerService: LocationMarkerService;
 
-    let createdId;
-    let itemInformation;
-    let createdListingItem;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let listingItem: resources.ListingItem;
+    let itemLocation: resources.ItemLocation;
 
     const testData = {
-        item_information_id: null,
-        region: 'South Africa',
+        country: 'South Africa',
         address: 'asdf, asdf, asdf',
+        description: 'desc',
         locationMarker: {
-            markerTitle: 'Helsinki',
-            markerText: 'Helsinki',
+            title: 'Helsinki',
+            description: 'Helsinki',
             lat: 12.1234,
             lng: 23.2314
-        }
+        } as LocationMarkerCreateRequest
     } as ItemLocationCreateRequest;
 
     const testDataUpdated = {
-        item_information_id: null,
-        region: 'EU',
+        country: 'EU',
         address: 'zxcv, zxcv, zxcv',
+        description: 'desc',
         locationMarker: {
-            markerTitle: 'Stockholm',
-            markerText: 'Stockholm',
+            title: 'Stockholm',
+            description: 'Stockholm',
             lat: 34.2314,
             lng: 11.1234
-        }
-    };
+        } as LocationMarkerUpdateRequest
+    } as ItemLocationUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
-        // create market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        // create ListingItem without ItemLocation
+        const generateParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            false,                               // generateItemLocation
+            false,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            false,                               // generatePaymentInformation
+            false,                               // generateEscrow
+            false,                               // generateItemPrice
+            false,                               // generateMessagingInformation
+            false,                              // generateListingItemObjects
+            false,                              // generateObjectDatas
+            null,                               // listingItemTemplateHash
+            defaultProfile.address              // seller
+        ]).toParamsArray();
 
-        // create iteminformation
-        itemInformation = await testDataService.create<ItemInformation>({
-            model: 'iteminformation',
-            data: {
-                listing_item_id: createdListingItem.id,
-                title: 'TEST TITLE',
-                shortDescription: 'TEST SHORT DESCRIPTION',
-                longDescription: 'TEST LONG DESCRIPTION',
-                itemCategory: {
-                    key: 'cat_high_luxyry_items',
-                    name: 'Luxury Items',
-                    description: ''
-                }
-            } as any,
-                withRelated: true
-        } as TestDataCreateRequest);
-    });
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        listingItem = listingItems[0];
 
-
-    afterAll(async () => {
-        //
     });
 
     test('Should throw ValidationException because there is no item_information_id', async () => {
@@ -118,94 +118,82 @@ describe('ItemLocation', () => {
         );
     });
 
-    test('Should create a new item location', async () => {
-        // set the itemInformation id
-        testData.item_information_id = itemInformation.id;
-
-        const itemLocationModel: ItemLocation = await itemLocationService.create(testData as ItemLocationCreateRequest);
-        createdId = itemLocationModel.Id;
-
-        const result = itemLocationModel.toJSON();
-
-        expect(result.region).toBe(testData.region);
-        expect(result.address).toBe(testData.address);
-        expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
-        expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
-        expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
-    });
-
-    test('Should throw ValidationException because we want to create a empty item location', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemLocation', async () => {
         expect.assertions(1);
         await itemLocationService.create({} as ItemLocationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item locations with our new create one', async () => {
-        const itemLocationCollection = await itemLocationService.findAll();
-        const itemLocation = itemLocationCollection.toJSON();
-        expect(itemLocation.length).toBe(1);
+    test('Should create a new ItemLocation', async () => {
+        testData.item_information_id = listingItem.ItemInformation.id;
 
-        const result = itemLocation[0];
+        itemLocation = await itemLocationService.create(testData as ItemLocationCreateRequest).then(value => value.toJSON());
+        const result = itemLocation;
 
-        expect(result.region).toBe(testData.region);
+        expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
-        expect(result.LocationMarker).toBe(undefined); // doesnt fetch related
-    });
-
-    test('Should return one item location', async () => {
-        const itemLocationModel: ItemLocation = await itemLocationService.findOne(createdId);
-        const result = itemLocationModel.toJSON();
-        expect(result.region).toBe(testData.region);
-        expect(result.address).toBe(testData.address);
-        expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
+        expect(result.LocationMarker.title).toBe(testData.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testData.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
 
-    test('Should throw ValidationException because wer are trying to update with no item_information_id', async () => {
-        expect.assertions(1);
-        await itemLocationService.update(createdId, testDataUpdated as ItemLocationUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+
+    test('Should list ItemLocations with our newly created one', async () => {
+        const itemLocations: resources.ItemLocation[] = await itemLocationService.findAll().then(value => value.toJSON());
+        expect(itemLocations.length).toBe(1);
+
+        const result = itemLocations[0];
+        expect(result.country).toBe(testData.country);
+        expect(result.address).toBe(testData.address);
+        expect(result.LocationMarker).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should update the item location', async () => {
-        // set the itemInformation id
-        testDataUpdated.item_information_id = itemInformation.id;
+    test('Should return one ItemLocation', async () => {
+        itemLocation = await itemLocationService.findOne(itemLocation.id).then(value => value.toJSON());
 
-        const itemLocationModel: ItemLocation = await itemLocationService.update(createdId, testDataUpdated as ItemLocationUpdateRequest);
-        const result = itemLocationModel.toJSON();
-        expect(result.region).toBe(testDataUpdated.region);
+        const result = itemLocation;
+        expect(result.country).toBe(testData.country);
+        expect(result.address).toBe(testData.address);
+        expect(result.LocationMarker.title).toBe(testData.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testData.locationMarker.description);
+        expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
+        expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
+    });
+
+    test('Should update the ItemLocation', async () => {
+        itemLocation = await itemLocationService.update(itemLocation.id, testDataUpdated).then(value => value.toJSON());
+
+        const result = itemLocation;
+        expect(result.country).toBe(testDataUpdated.country);
         expect(result.address).toBe(testDataUpdated.address);
-        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated.locationMarker.markerTitle);
-        expect(result.LocationMarker.markerText).toBe(testDataUpdated.locationMarker.markerText);
+        expect(result.LocationMarker.title).toBe(testDataUpdated.locationMarker.title);
+        expect(result.LocationMarker.description).toBe(testDataUpdated.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testDataUpdated.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testDataUpdated.locationMarker.lng);
     });
 
-    test('Should delete the item location', async () => {
+    test('Should delete the ItemLocation', async () => {
         expect.assertions(3);
-        // delete listing item
-        await listingItemService.destroy(createdListingItem.id);
-        await listingItemService.findOne(createdListingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItem.id))
+        // delete ListingItem
+        await listingItemService.destroy(listingItem.id);
+        await listingItemService.findOne(listingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.id))
         );
-        // delete itemInformation
-        await itemInformationService.findOne(itemInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemInformation.id))
+        // delete ItemInformation
+        await itemInformationService.findOne(listingItem.ItemInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.id))
         );
-        // delete item location
-        await itemLocationService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        // delete ItemLocation
+        await itemLocationService.findOne(itemLocation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocation.id))
         );
     });
 
-    test('Should not have location markers because locationItem has been deleted', async () => {
-        const bidData = await locationMarkerService.findAll();
-        expect(bidData.length).toBe(0);
+    test('Should not have LocationMarkers because ItemLocation has been deleted', async () => {
+        const itemLocations: resources.ItemLocation[] = await locationMarkerService.findAll().then(value => value.toJSON());
+        expect(itemLocations.length).toBe(0);
     });
 
 });

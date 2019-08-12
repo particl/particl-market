@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * APPLICATION CONFIGURATION
  * ----------------------------------------
@@ -29,7 +33,6 @@ export class AppConfig implements Configurable {
 
             // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
             .use(helmet())
-            .use(helmet.noCache())
             .use(helmet.hsts({
                 maxAge: 31536000,
                 includeSubdomains: true
@@ -39,13 +42,14 @@ export class AppConfig implements Configurable {
             .use(compression())
 
             // Parse incoming request bodies in a middleware before your handlers, available under the req.body property.
-            .use(bodyParser.json())
+            // TODO: decide on some limit
+            .use(bodyParser.json({ limit: '5mb' }))
             .use(bodyParser.urlencoded({
                 extended: true
             }))
 
-            // Serve static filles like images from the public folder
-            .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: 31557600000 }))
+            // Serve static files like images from the public folder
+            .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: Infinity }))
 
             // A favicon is a visual cue that client software, like browsers, use to identify a site
             .use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')))

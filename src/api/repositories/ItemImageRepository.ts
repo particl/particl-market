@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -23,14 +27,17 @@ export class ItemImageRepository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImage> {
-        return this.ItemImageModel.fetchById(id, withRelated);
+        return await this.ItemImageModel.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<ItemImage> {
+        const startTime = new Date().getTime();
         const itemImage = this.ItemImageModel.forge<ItemImage>(data);
         try {
             const itemImageCreated = await itemImage.save();
-            return this.ItemImageModel.fetchById(itemImageCreated.id);
+            const result = await this.ItemImageModel.fetchById(itemImageCreated.id);
+            // this.log.debug('itemImageRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return result;
         } catch (error) {
             throw new DatabaseException('Could not create the itemImage!', error);
         }
@@ -40,8 +47,9 @@ export class ItemImageRepository {
         const itemImage = this.ItemImageModel.forge<ItemImage>({ id });
         try {
             const itemImageUpdated = await itemImage.save(data, { patch: true });
-            return this.ItemImageModel.fetchById(itemImageUpdated.id);
+            return await this.ItemImageModel.fetchById(itemImageUpdated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not update the itemImage!', error);
         }
     }
@@ -61,5 +69,4 @@ export class ItemImageRepository {
             throw new DatabaseException('Could not delete the itemImage!', error);
         }
     }
-
 }

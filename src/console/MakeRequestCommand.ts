@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * MakeRequestCommand
  * -------------------------------------
@@ -15,7 +19,7 @@ export class MakeRequestCommand extends AbstractMakeCommand {
     public suffix = 'Request';
     public prefix = '';
     public template = 'request.hbs';
-    public target = 'api/requests';
+    public target = 'api/requests/model';
 
     constructor(context: any, prefix?: string) {
         super(context);

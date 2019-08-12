@@ -1,56 +1,51 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Logger as LoggerType} from '../../../src/core/Logger';
-import { EventEmitter } from '../../../src/core/api/events';
-import { ServerStartedListener } from '../../../src/api/listeners/ServerStartedListener';
+import { LoggerConfig } from '../../../src/config/LoggerConfig';
+import { App } from '../../../src/core/App';
 
 export class TestUtil {
 
-    public log: LoggerType;
-    private serverStarted = false;
+    public log: LoggerType = new LoggerType(__filename);
 
     constructor() {
-        this.log = new LoggerType(__filename);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+        new LoggerConfig().configure();
     }
 
-    public async bootstrapAppContainer(app: any): boolean {
+    public async bootstrapAppContainer(app: App): Promise<void> {
+        this.log.debug('bootstrapAppContainer(), bootstrap the App...');
+        await app.bootstrap();
+        this.log.debug('bootstrapAppContainer(), bootstrap the App DONE');
 
-        const emitter = await app.bootstrap();
-        emitter.on(ServerStartedListener.ServerReadyEvent, () => {
-            this.serverStarted = true;
-        });
-        await this.waitForServerStarted();
-
+        // todo: this hack needs to be fixed
+        this.log.debug('bootstrapAppContainer(), TEST_BOOTSTRAP_WAITFOR:', process.env.TEST_BOOTSTRAP_WAITFOR || 10);
+        await this.waitFor(process.env.TEST_BOOTSTRAP_WAITFOR || 10);
     }
 
-    private async isServerStarted(): boolean {
-        if (this.serverStarted === false) {
-            throw Error('Not started.');
-        } else {
-            this.log.debug('SERVER READY!');
+    /**
+     * wait for given amount of time
+     *
+     * @param {number} maxSeconds
+     * @returns {Promise<boolean>}
+     */
+    public async waitFor(maxSeconds: number): Promise<boolean> {
+        for (let i = 0; i < maxSeconds; i++) {
+            this.log.debug('waiting... ' + i + '/' + maxSeconds);
+            await this.waitTimeOut(1000);
         }
         return true;
     }
 
-    private waitFor(timeout: number): Promise<void> {
-        this.log.debug('waiting for ' + timeout + 'ms');
+    private waitTimeOut(timeoutMs: number): Promise<void> {
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve();
-            }, timeout);
+            }, timeoutMs);
         });
-    }
-
-    private async waitForServerStarted(): boolean {
-        const MAX_RETRIES = 20;
-        for (let i = 0; i <= MAX_RETRIES; i++) {
-            try {
-                return await this.isServerStarted();
-            } catch (err) {
-                const timeout = 1000;
-                await this.waitFor(timeout);
-                this.log.debug('error: ' + err.message);
-            }
-        }
     }
 }
 

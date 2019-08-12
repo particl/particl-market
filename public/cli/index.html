@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Particl Marketplace CLI</title>
 
-    <link rel="stylesheet" media="all" href="https://rawgit.com/jcubic/jquery.terminal/master/css/jquery.terminal.css">
+    <link rel="stylesheet" media="all" href="css/jquery.terminal.css">
     <style>
 /*
  * style based on http://js13kgames.com/entries/lost-in-cyberspace
@@ -81,10 +81,10 @@
         }
         #player {pointer-events: none;}
     </style>
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
-    <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.terminal.js"></script>
-    <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.mousewheel-min.js"></script>
-    <script src="https://rawgit.com/cvan/keyboardevent-key-polyfill/master/index.js"></script>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/jquery-terminal.js"></script>
+    <script src="js/jquery-mousewheel-min.js"></script>
+    <script src="js/keyboard-polyfill.js"></script>
 
 
 </head>
@@ -98,14 +98,73 @@
     keyboardeventKeyPolyfill.polyfill();
     var scanlines = $('.scanlines');
     var term = $('#term').terminal(function(command, term) {
+        command = command.trim();
         if (command !== '') {
+            var params = [];
+            {
+                var quoteSingle = 0;
+                var quoteDouble = 0;
+                var backslash = 0;
+                var param = "";
+                for(var i = 0; i < command.length; ++i){
+                    var c = command.charAt(i);
+                    if(c === ' '){
+                        if(quoteSingle || quoteDouble){
+                            param = param.concat(' ');
+                        }else{
+                            if(param !== ""){ // Check for empty strings to trim and squeeze whitespace outside of quotes.
+                                params.push(param);
+                                param = "";
+                            }
+                        }
+                    }else if(c === "\\"){
+                        backslash ^= 1; // XOR to account for double backslash.
+                    }else{
+                        if(c === '"'){
+                            if(backslash){
+                                param = param.concat(c);
+                            }else if(!quoteSingle){
+                                quoteDouble ^= 1;
+                                if(!quoteDouble){
+                                    params.push(param);
+                                    param = "";
+                                }
+                            }
+                            else{
+                                param = param.concat(c);
+                            }
+                        }else if(c === "'"){
+                            if(backslash){
+                                param = param.concat(c);
+                            }else if(!quoteDouble){
+                                quoteSingle ^= 1;
+                                if(!quoteSingle){
+                                    params.push(param);
+                                    param = "";
+                                }
+                            }
+                            else{
+                                param = param.concat(c);
+                            }
+                        }
+                        else{
+                            param = param.concat(c);
+                        }
+                        backslash = 0;
+                    }
+                }
+                if(param !== ""){
+                    params.push(param);
+                    // param = ""; // No need to reset what we'll never use again
+                }
+            }
 
-            var params = command.split(' ');
             var method = params.shift();
 
+            var isANumber = /^-?\d+(.\d+)?$/;
             for (var i=0; i < params.length; i++) {
                 var param = parseFloat(params[i]);
-                if (!isNaN(param)){
+                if (isANumber.test(params[i]) && !isNaN(param)){
                     params[i] = param;
                 }
                 if (params[i] === 'true' || params[i] === 'false') {
@@ -125,6 +184,9 @@
             $.ajax({
                 url: '/api/rpc',
                 type: 'POST',
+                headers: {
+                    "Authorization": "Basic " + btoa("test:test")
+                },
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('result: ', data);
@@ -137,8 +199,8 @@
                     }
                 },
                 error: function (err) {
-                    if(Math.random()<.2){
-                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up.');
+                    if(Math.random()<.1){
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up...');
                         term.echo('<br/><iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?wmode=transparent&autoplay=1" frameborder="0" allowfullscreen id="player"></iframe>', { raw: true });
                     } else {
                         term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText);
@@ -158,6 +220,7 @@
         prompt: '>> ',
         greetings: null,
         onResize: set_time,
+        wrap: false, // if set to false terminal will not wrap long lines
         onInit: function(term) {
             greetings(term);
             set_time;
@@ -171,10 +234,113 @@
     }
 
     function greetings(term) {
-        term.echo('PARTICL MARKETPLACE CLI v0.1\n\n'+
-            'type "help" for commands. ');
-    }
-</script>
+        loadJSON(function(response) {
+            var build = JSON.parse(response);
 
+            term.echo('PARTICL MARKETPLACE CLI \n[' + build.version + ']\n\n');
+            term.echo('                              .   ..  . . .... ....... ........ .... ....................');
+            term.echo('   ___________    _______  ___________  _________    ______  __________  ______ .::::::::');
+            term.echo('   _\\ ___.   /_____\\_   /_ _\\ ___.   /  _\\      /___ _\\ __/_ _\\       /  _\\   / :::::::::');
+            term.echo('   |"   /   / | __      "| |"   /   /__ !__    ____/ |"    / |"  /___/__ |"  /____  .::::');
+            term.echo('   | \\_____/  | /        | |  \\_      /   |"    /    |    /  |  /      / |  /    / .:::::');
+            term.echo('   !_____|    !_______/__| !____\\____/    !____/     !___/   !________/  !______/ .::::::');
+            term.echo('                                        .   . ..:.::. .....::. . . ....::.........:::::::');
+            term.echo('           ________     _______  ___________  _____ . ..::. __________ _________ .:::::::');
+            term.echo('    ______ /  _.  / _____\\_   /_ _\\ ___.   /  _\\  /______ . _\\ _.    / _\\      /___  ::::');
+            term.echo('   __\\ _  /   /  /_ | __      "| |"   /   /__ |" /   ___/___|" /    /__|__   _____/ .::::');
+            term.echo('   |"   \\ `  /  / | | /        | |  \\_      / |    \\       /|  ____/  |  |"    /  .::::::');
+            term.echo('   !_____\\__/_____| !_______/__| !____\\____/  !_____\\_____/ !_________|  !____/ .::::::::');
+            term.echo('                                                             . .. . ...........::::::::l!\n\n');
+            term.echo('type "help" for commands. ');
+
+        });
+    }
+
+    function loadJSON(callback) {
+        var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', 'build.json', true); // Replace 'my_data' with the path to your file
+        xobj.onreadystatechange = function () {
+            if (xobj.readyState == 4 && xobj.status == "200") {
+                // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+                callback(xobj.responseText);
+            }
+        };
+        xobj.send(null);
+    }
+
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+    var reconnection = true,
+        reconnectionDelay = 5000;
+
+    function log(eventName, message) {
+        if (typeof message == 'object')
+            message = JSON.stringify(message);
+        var content = '[' + eventName + '] ' + (message ? message : '');
+        term.echo('socket.io: ' + content);
+    }
+
+    function connectClient() {
+        var socket = io('ws://' + window.location.href.split("/")[2], {
+            // transports: ['websocket'],
+            forceNew: false
+        });
+
+        socket
+            .on('connect', () => {
+                // log('connect', 'connected');
+                onConnected(socket);
+            })
+            .on('connect_error', (err) => {
+                // log('connect_error', err);
+            })
+            .on('connect_timeout', () => {
+                // log('connect_timeout');
+            })
+            .on('reconnect', (attempt) => {
+                // log('reconnect', 'Attempt #' + attempt);
+            })
+            .on('reconnecting', (attempt) => {
+                // log('reconnecting', 'Attempt #' + attempt);
+            })
+            .on('reconnect_attempt', () => {
+                // log('reconnect_attempt');
+                // on reconnection, reset the transports option, as the Websocket
+                // connection may have failed (caused by proxy, firewall, browser, ...)
+                // socket.io.opts.transports = ['websocket'];
+            })
+            .on('reconnect_error', (err) => {
+                // log('reconnect_error', err);
+            })
+            .on('reconnect_failed', () => {
+                // log('reconnect_failed');
+            })
+            .on('error', (err) => {
+                log('error', err);
+            })
+            .on('cli', (event) => {
+                log('cli', event.message);
+            })
+            .on('serverping', (data) => {
+                // log('serverping', data);
+                socket.emit('serverpong');
+            });
+    }
+
+    function onConnected(socket){
+
+        socket
+            .on('disconnect', function () {
+                // socket.disconnect();
+                term.echo('socket.io client disconnected!');
+            });
+
+    }
+
+    connectClient();
+</script>
 </body>
 </html>

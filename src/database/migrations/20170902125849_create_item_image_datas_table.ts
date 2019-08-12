@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Knex from 'knex';
 
 
@@ -6,12 +10,14 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('item_image_datas', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('data_id'); // .notNullable();
             table.string('protocol'); // .notNullable();
             table.string('encoding'); // .notNullable();
-            table.text('data_big'); // .notNullable();
-            table.text('data_medium'); // .notNullable();
-            table.text('data_thumbnail'); // .notNullable();
+
+            table.string('image_version').notNullable();
+            table.string('image_hash').notNullable();
+
+            table.string('data_id'); // .notNullable();
+            table.text('data'); // .notNullable();
 
             table.integer('item_image_id').unsigned();
             table.foreign('item_image_id').references('id')
@@ -19,6 +25,9 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
+            table.string('original_mime'); // .notNullable();
+            table.string('original_name'); // .notNullable();
         })
     ]);
 };

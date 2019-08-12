@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 
 
@@ -6,11 +10,7 @@ export class EscrowRatio extends Bookshelf.Model<EscrowRatio> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<EscrowRatio> {
         if (withRelated) {
             return await EscrowRatio.where<EscrowRatio>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'EscrowRatioRelated',
-                    // 'EscrowRatioRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await EscrowRatio.where<EscrowRatio>({ id: value }).fetch();
@@ -35,8 +35,4 @@ export class EscrowRatio extends Bookshelf.Model<EscrowRatio> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public EscrowRatioRelated(): EscrowRatioRelated {
-    //    return this.hasOne(EscrowRatioRelated);
-    // }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * core.database.ModelFactory
  * ------------------------------------------------
@@ -49,12 +53,13 @@ export class ModelFactory {
 
     private async makeEntity(entity: any): Promise<any> {
         for (const attribute in entity) {
-            if (entity.hasOwnProperty(attribute)) {
-                if (typeof entity[attribute] === 'object' && entity[attribute] instanceof ModelFactory) {
-                    const modelFactory: ModelFactory = entity[attribute];
-                    const subEntity = await modelFactory.build();
-                    entity[attribute] = subEntity[this.identifier];
-                }
+            if (entity.hasOwnProperty(attribute)
+                && typeof entity[attribute] === 'object'
+                && entity[attribute] instanceof ModelFactory) {
+
+                const modelFactory: ModelFactory = entity[attribute];
+                const subEntity = await modelFactory.build();
+                entity[attribute] = subEntity[this.identifier];
             }
         }
         return entity;

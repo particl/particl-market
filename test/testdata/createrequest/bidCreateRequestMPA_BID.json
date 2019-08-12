@@ -1,0 +1,25 @@
+{
+    "type": "MPA_BID",
+    "bidder": "bidderaddress",
+    "bidDatas": [{
+        "key": "COLOR",
+        "value": "RED"
+    }, {
+        "key": "COLOR",
+        "value": "GREEN"
+    }],
+    "address": {
+        "title": "SHIPPING_ADDRESS_FOR_BID",
+        "firstName": "Robert",
+        "lastName": "Downey",
+        "addressLine1": "addressline1",
+        "addressLine2": "addressline2",
+        "city": "Vaajakoski",
+        "state": "Keski-Suomi",
+        "country": "FI",
+        "zipCode": "40800",
+        "type": "SHIPPING_BID"
+    },
+    "generatedAt": 123412341234,
+    "hash": "asdfasdfadfssafddsfsdfadsfasdfasdfasdfasfd"
+}

@@ -3,17 +3,19 @@
 *.log
 *.log*
 
+
 # Node files #
 node_modules/
 npm-debug.log
 yarn-error.log
 .env
-test/.env.test
-test/.env.blackbox
+.env.test
+.env.blackbox
 
 # OS generated files #
 .DS_Store
 Thumbs.db
+.Trash*
 
 # Typing #
 typings/
@@ -34,13 +36,31 @@ test/**/*.js.map
 coverage/
 !test/preprocessor.js
 
-data/marketplace.db
-data/marketplace-test.db
-data/particl1
-data/particl2
-data/app1
-data/app2
+test/testdata/test.json
+test/reports/*
+
+data/wallet1.dat
+data/wallet2.dat
+data/database/*
+data/uploads/*
+data/tests/*
+data/particl1/*
+data/particl2/*
+data/app1/*
+data/app1_dist/*
+data/app2/*
+data/app2_dist/*
+data/app1_node_modules/*
+data/app2_node_modules/*
+data/gui1_node_modules/*
+data/gui2_node_modules/*
+data/bootstrap*
+data/images/*
 
 *.paw
 
 codeship*.yml
+.scannerwork
+
+kontena.ovpn
+

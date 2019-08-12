@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -5,7 +10,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -20,13 +25,35 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         this.log = new Logger(__filename);
     }
 
+    /**
+     * data.params[]:
+     *  none
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
-        return await this.testDataService.clean(data.params);
+    public async execute(@request(RpcRequest) data: RpcRequest): Promise<void> {
+        let seed = true;
+        if (!_.isEmpty(data.params[0])) {
+            seed = data.params[0] === true;
+        }
+        return await this.testDataService.clean(seed);
+    }
+
+    public usage(): string {
+        return this.getName() + ' ';
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.usage() + ' -  ' + this.description() + '\n';
     }
 
+    public description(): string {
+        return 'Cleans database, inserts default data.';
+    }
+
+    public example(): string {
+        return 'data ' + this.getName();
+    }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -5,7 +9,7 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
 
 export class ListingItemTemplateRepository {
 
@@ -28,7 +32,16 @@ export class ListingItemTemplateRepository {
     }
 
     /**
-     * todo: optionally fetch withRelated
+     *
+     * @param {string} hash
+     * @param {boolean} withRelated
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
+        return this.ListingItemTemplateModel.fetchByHash(hash, withRelated);
+    }
+
+    /**
      *
      * @param options, ListingItemSearchParams
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
@@ -44,6 +57,7 @@ export class ListingItemTemplateRepository {
             const listingItemTemplateCreated = await listingItemTemplate.save();
             return this.ListingItemTemplateModel.fetchById(listingItemTemplateCreated.id);
         } catch (error) {
+            this.log.error('error: ', error);
             throw new DatabaseException('Could not create the listingItemTemplate!', error);
         }
     }

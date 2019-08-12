@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -5,7 +9,8 @@ import { Bid } from '../models/Bid';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { BidSearchParams } from '../requests/BidSearchParams';
+import { BidSearchParams } from '../requests/search/BidSearchParams';
+import {ListingItem} from '../models/ListingItem';
 
 export class BidRepository {
 
@@ -27,8 +32,15 @@ export class BidRepository {
         return this.BidModel.fetchById(id, withRelated);
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Bid> {
+        return this.BidModel.fetchByHash(hash, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Bid> {
+        return this.BidModel.fetchByMsgId(msgId, withRelated);
+    }
+
     /**
-     * todo: optionally fetch withRelated
      *
      * @param options, BidSearchParams
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -37,16 +49,13 @@ export class BidRepository {
         return this.BidModel.search(options, withRelated);
     }
 
-    public async getLatestBid(listingItemId: number): Promise<Bid> {
-        return this.BidModel.getLatestBid(listingItemId);
-    }
-
     public async create(data: any): Promise<Bid> {
         const bid = this.BidModel.forge<Bid>(data);
         try {
             const bidCreated = await bid.save();
             return this.BidModel.fetchById(bidCreated.id);
         } catch (error) {
+            this.log.error('Could not creat the bid!', error);
             throw new DatabaseException('Could not create the bid!', error);
         }
     }

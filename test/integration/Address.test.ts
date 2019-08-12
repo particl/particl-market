@@ -1,19 +1,21 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Address } from '../../src/api/models/Address';
-
-import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
-import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateRequest';
-
-import { AddressService } from '../../src/api/services/AddressService';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
+import { AddressUpdateRequest } from '../../src/api/requests/model/AddressUpdateRequest';
+import { AddressService } from '../../src/api/services/model/AddressService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { AddressType } from '../../src/api/enums/AddressType';
 
 describe('Address', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,33 +32,40 @@ describe('Address', () => {
 
     const testData = {
         title: 'Title',
+        firstName: 'Robert',
+        lastName: 'Downey',
         addressLine1: 'Add',
         addressLine2: 'ADD 22',
         city: 'city',
+        state: 'test state',
         country: 'Finland',
         zipCode: '85001',
-        profile_id: 0
+        profile_id: 0,
+        type: AddressType.SHIPPING_OWN
     } as AddressCreateRequest;
 
     const testDataUpdated = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
         title: 'Work',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
+        state: 'test state',
         country: 'Sweden',
-        zipCode: '85001',
-        profile_id: 0
+        zipCode: '85001'
     } as AddressUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        // clean up the db
-        await testDataService.clean([]);
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
+
         const defaultProfile = await profileService.getDefault();
         defaultProfileId = defaultProfile.id;
     });
@@ -69,6 +78,7 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
+            state: 'test state',
             country: 'Finland',
             zipCode: '85001'
         } as AddressCreateRequest).catch(e => {
@@ -86,6 +96,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
     });
@@ -107,6 +118,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
 
@@ -120,27 +132,13 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
 
     });
 
-    test('Should throw ValidationException because there is no profile_id', async () => {
-        expect.assertions(1);
-        await addressService.update(createdId, {
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            country: 'Finland',
-            zipCode: '85001'
-        } as AddressUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-            );
-    });
-
     test('Should update the address', async () => {
-        testDataUpdated.profile_id = defaultProfileId;
         const addressModel: Address = await addressService.update(createdId, testDataUpdated);
         const result = addressModel.toJSON();
 
@@ -148,6 +146,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
         expect(result.city).toBe(testDataUpdated.city);
+        expect(result.state).toBe(testDataUpdated.state);
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
     });

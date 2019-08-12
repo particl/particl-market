@@ -1,6 +1,13 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
+import { ListingItemObjectSearchParams } from '../requests/search/ListingItemObjectSearchParams';
+import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
@@ -9,12 +16,24 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
                 withRelated: [
                     'ListingItem',
-                    'ListingItemTemplate'
+                    'ListingItemTemplate',
+                    'ListingItemObjectDatas'
                 ]
             });
         } else {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch();
         }
+    }
+
+    public static async searchBy(options: ListingItemObjectSearchParams): Promise<Collection<ListingItemObject>> {
+        const listingCollection = ListingItemObject.forge<Model<ListingItemObject>>()
+            .query(qb => {
+                qb.where('listing_item_objects.type', 'LIKE', '%' + options.searchString + '%');
+                qb.orWhere('listing_item_objects.description', 'LIKE', '%' + options.searchString + '%');
+            })
+            .orderBy('listing_item_objects.id', 'ASC');
+
+        return await listingCollection.fetchAll();
     }
 
     public get tableName(): string { return 'listing_item_objects'; }
@@ -25,6 +44,12 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
+
+    public get ObjectId(): string { return this.get('object_id'); }
+    public set ObjectId(value: string) { this.set('object_id', value); }
+
+    public get ForceInput(): string { return this.get('force_input'); }
+    public set ForceInput(value: string) { this.set('force_input', value); }
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
@@ -45,6 +70,10 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public ListingItemObjectDatas(): Collection<ListingItemObjectData> {
+        return this.hasMany(ListingItemObjectData, 'listing_item_object_id', 'id');
     }
 
 }

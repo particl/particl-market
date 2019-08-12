@@ -1,0 +1,23 @@
+testnet=1
+staking=0
+
+[test]
+wallet=market
+server=1
+rpcauth=test:1115cff319dd95bc85694eaee524cb3$db9ff1eb00be80c151709c92a7f460b8a97d95efaefc1bd68e65a50ed921f615
+rpccookiefile=.cookie
+rpcport=51935
+rpccorsdomain=http://localhost:4300
+rpcallowip=0.0.0.0/0
+rpcbind=0.0.0.0
+rpcworkqueue=500
+rpcthreads=128
+rpctimeout=1000
+addnode=particld1
+addnode=particld2
+txindex=1
+addressindex=1
+
+debug=smsg
+printtoconsole=1
+debuglogfile=debug.log # | 0

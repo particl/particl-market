@@ -1,18 +1,25 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
-// import { Collection } from 'bookshelf';
+import { Collection } from 'bookshelf';
 import { ItemImageData } from './ItemImageData';
 import { ItemInformation } from './ItemInformation';
 
 export class ItemImage extends Bookshelf.Model<ItemImage> {
 
+    public static RELATIONS = [
+        'ItemImageDatas',
+        'ItemInformation',
+        'ItemInformation.ListingItem',
+        'ItemInformation.ListingItemTemplate'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImage> {
         if (withRelated) {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
-                withRelated: [
-//                    'ItemImageDatas'
-                    'ItemImageData',
-                    'ItemInformation'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemImage.where<ItemImage>({ id: value }).fetch();
@@ -34,20 +41,15 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ItemImageData(): ItemImageData {
-        return this.hasOne(ItemImageData);
+    public get Featured(): boolean { return this.get('featured'); }
+    public set Featured(value: boolean) { this.set('featured', value); }
+
+
+    public ItemImageDatas(): Collection<ItemImageData> {
+        return this.hasMany(ItemImageData, 'item_image_id', 'id');
     }
 
     public ItemInformation(): ItemInformation {
-      return this.belongsTo(ItemInformation, 'item_information_id', 'id');
+        return this.belongsTo(ItemInformation, 'item_information_id', 'id');
     }
-
-
-    // TODO: hasMany
-    /*
-    public ImageDatas(): Collection<ItemImageData> {
-        // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
-        return this.hasMany(ItemImageData); // , 'image_data_id', 'id');
-    }
-    */
 }

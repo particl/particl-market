@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -14,9 +18,11 @@ export const Targets = {
         Bid: 'Bid',
         BidData: 'BidData',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
+        CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
         FavoriteItem: 'FavoriteItem',
+        FlaggedItem: 'FlaggedItem',
         ItemCategory: 'ItemCategory',
         ItemImage: 'ItemImage',
         ItemImageData: 'ItemImageData',
@@ -25,78 +31,145 @@ export const Targets = {
         ItemPrice: 'ItemPrice',
         ListingItem: 'ListingItem',
         ListingItemObject: 'ListingItemObject',
+        ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
         Market: 'Market',
         MessagingInformation: 'MessagingInformation',
+        Order: 'Order',
+        OrderItem: 'OrderItem',
         PaymentInformation: 'PaymentInformation',
+        PriceTicker: 'PriceTicker',
         Profile: 'Profile',
+        Proposal: 'Proposal',
+        ProposalOption: 'ProposalOption',
+        ProposalOptionResult: 'ProposalOptionResult',
+        ProposalResult: 'ProposalResult',
+        Setting: 'Setting',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
-        User: 'User'
+        ShoppingCart: 'ShoppingCart',
+        ShoppingCartItem: 'ShoppingCartItem',
+        SmsgMessage: 'SmsgMessage',
+        Vote: 'Vote',
+        Wallet: 'Wallet'
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
+        CurrencyPriceRepository: 'CurrencyPriceRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
         FavoriteItemRepository: 'FavoriteItemRepository',
+        FlaggedItemRepository: 'FlaggedItemRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         ItemImageDataRepository: 'ItemImageDataRepository',
         ItemImageRepository: 'ItemImageRepository',
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        ListingItemObjectDataRepository: 'ListingItemObjectDataRepository',
         ListingItemObjectRepository: 'ListingItemObjectRepository',
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
         LocationMarkerRepository: 'LocationMarkerRepository',
         MarketRepository: 'MarketRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
+        OrderItemRepository: 'OrderItemRepository',
+        OrderRepository: 'OrderRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
+        PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
+        ProposalOptionRepository: 'ProposalOptionRepository',
+        ProposalOptionResultRepository: 'ProposalOptionResultRepository',
+        ProposalRepository: 'ProposalRepository',
+        ProposalResultRepository: 'ProposalResultRepository',
+        SettingRepository: 'SettingRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
-        UserRepository: 'UserRepository'
+        ShoppingCartItemRepository: 'ShoppingCartItemRepository',
+        ShoppingCartRepository: 'ShoppingCartRepository',
+        SmsgMessageRepository: 'SmsgMessageRepository',
+        VoteRepository: 'VoteRepository',
+        WalletRepository: 'WalletRepository'
     },
     Service:     {
-        AddressService: 'AddressService',
-        BidDataService: 'BidDataService',
-        BidService: 'BidService',
+        action: {
+            ActionServiceInterface: 'ActionServiceInterface',
+            BaseActionService: 'BaseActionService',
+            BidAcceptActionService: 'BidAcceptActionService',
+            BidActionService: 'BidActionService',
+            BidCancelActionService: 'BidCancelActionService',
+            BidRejectActionService: 'BidRejectActionService',
+            EscrowCompleteActionService: 'EscrowCompleteActionService',
+            EscrowLockActionService: 'EscrowLockActionService',
+            EscrowRefundActionService: 'EscrowRefundActionService',
+            EscrowReleaseActionService: 'EscrowReleaseActionService',
+            ListingItemAddActionService: 'ListingItemAddActionService',
+            OrderItemShipActionService: 'OrderItemShipActionService',
+            ProposalAddActionService: 'ProposalAddActionService',
+            VoteActionService: 'VoteActionService'
+        },
+        CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
-        CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
-        EscrowRatioService: 'EscrowRatioService',
-        EscrowService: 'EscrowService',
-        FavoriteItemService: 'FavoriteItemService',
-        ItemCategoryService: 'ItemCategoryService',
-        ItemImageDataService: 'ItemImageDataService',
-        ItemImageService: 'ItemImageService',
-        ItemInformationService: 'ItemInformationService',
-        ItemLocationService: 'ItemLocationService',
-        ItemPriceService: 'ItemPriceService',
-        ListingItemObjectService: 'ListingItemObjectService',
-        ListingItemService: 'ListingItemService',
-        ListingItemTemplateService: 'ListingItemTemplateService',
-        LocationMarkerService: 'LocationMarkerService',
-        MarketService: 'MarketService',
-        MessageBroadcastService: 'MessageBroadcastService',
-        MessagingInformationService: 'MessagingInformationService',
-        PaymentInformationService: 'PaymentInformationService',
-        ProfileService: 'ProfileService',
-        ShippingDestinationService: 'ShippingDestinationService',
-        ShippingPriceService: 'ShippingPriceService',
-        TestDataService: 'TestDataService',
-        UserService: 'UserService'
+        DefaultSettingService: 'DefaultSettingService',
+        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
+        model: {
+            AddressService: 'AddressService',
+            BidDataService: 'BidDataService',
+            BidService: 'BidService',
+            CryptocurrencyAddressService: 'CryptocurrencyAddressService',
+            CurrencyPriceService: 'CurrencyPriceService',
+            EscrowRatioService: 'EscrowRatioService',
+            EscrowService: 'EscrowService',
+            FavoriteItemService: 'FavoriteItemService',
+            FlaggedItemService: 'FlaggedItemService',
+            ItemCategoryService: 'ItemCategoryService',
+            ItemImageDataService: 'ItemImageDataService',
+            ItemImageService: 'ItemImageService',
+            ItemInformationService: 'ItemInformationService',
+            ItemLocationService: 'ItemLocationService',
+            ItemPriceService: 'ItemPriceService',
+            ListingItemObjectDataService: 'ListingItemObjectDataService',
+            ListingItemObjectService: 'ListingItemObjectService',
+            ListingItemService: 'ListingItemService',
+            ListingItemTemplateService: 'ListingItemTemplateService',
+            LocationMarkerService: 'LocationMarkerService',
+            MarketService: 'MarketService',
+            MessagingInformationService: 'MessagingInformationService',
+            OrderItemService: 'OrderItemService',
+            OrderService: 'OrderService',
+            PaymentInformationService: 'PaymentInformationService',
+            PriceTickerService: 'PriceTickerService',
+            ProfileService: 'ProfileService',
+            ProposalOptionResultService: 'ProposalOptionResultService',
+            ProposalOptionService: 'ProposalOptionService',
+            ProposalResultService: 'ProposalResultService',
+            ProposalService: 'ProposalService',
+            SettingService: 'SettingService',
+            ShippingDestinationService: 'ShippingDestinationService',
+            ShippingPriceService: 'ShippingPriceService',
+            ShoppingCartItemService: 'ShoppingCartItemService',
+            ShoppingCartService: 'ShoppingCartService',
+            SmsgMessageService: 'SmsgMessageService',
+            VoteService: 'VoteService',
+            WalletService: 'WalletService'
+        },
+        OmpService: 'OmpService',
+        SmsgService: 'SmsgService',
+        TestDataService: 'TestDataService'
     },
     Command:     {
         address: {
-            AddressCreateCommand: 'AddressCreateCommand',
-            AddressDestroyCommand: 'AddressDestroyCommand',
+            AddressAddCommand: 'AddressAddCommand',
+            AddressListCommand: 'AddressListCommand',
+            AddressRemoveCommand: 'AddressRemoveCommand',
+            AddressRootCommand: 'AddressRootCommand',
             AddressUpdateCommand: 'AddressUpdateCommand'
         },
         admin: {
@@ -104,25 +177,34 @@ export const Targets = {
         },
         BaseCommand: 'BaseCommand',
         bid: {
-            AcceptBidCommand: 'AcceptBidCommand',
+            BidAcceptCommand: 'BidAcceptCommand',
+            BidCancelCommand: 'BidCancelCommand',
+            BidRejectCommand: 'BidRejectCommand',
+            BidRootCommand: 'BidRootCommand',
             BidSearchCommand: 'BidSearchCommand',
-            CancelBidCommand: 'CancelBidCommand',
-            RejectBidCommand: 'RejectBidCommand',
-            SendBidCommand: 'SendBidCommand'
+            BidSendCommand: 'BidSendCommand'
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        currencyprice: {
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
+        },
+        daemon: {
+            DaemonRootCommand: 'DaemonRootCommand'
+        },
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',
-            DataGenerateCommand: 'DataGenerateCommand'
+            DataGenerateCommand: 'DataGenerateCommand',
+            DataRootCommand: 'DataRootCommand'
         },
         escrow: {
-            EscrowCreateCommand: 'EscrowCreateCommand',
-            EscrowDestroyCommand: 'EscrowDestroyCommand',
+            EscrowCompleteCommand: 'EscrowCompleteCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
+            EscrowRemoveCommand: 'EscrowRemoveCommand',
+            EscrowRootCommand: 'EscrowRootCommand',
             EscrowUpdateCommand: 'EscrowUpdateCommand'
         },
         favorite: {
@@ -133,121 +215,223 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         itemcategory: {
-            ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
-            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
-            ItemCategoryFindCommand: 'ItemCategoryFindCommand',
+            ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
+            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
+            ItemCategoryRootCommand: 'ItemCategoryRootCommand',
+            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageGetsCommand: 'ItemImageGetsCommand',
-            ItemImageRemoveCommand: 'ItemImageRemoveCommand'
+            ItemImageListCommand: 'ItemImageListCommand',
+            ItemImageRemoveCommand: 'ItemImageRemoveCommand',
+            ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
-            ItemInformationCreateCommand: 'ItemInformationCreateCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
+            ItemInformationRootCommand: 'ItemInformationRootCommand',
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
         },
         itemlocation: {
-            ItemLocationCreateCommand: 'ItemLocationCreateCommand',
+            ItemLocationAddCommand: 'ItemLocationAddCommand',
             ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
+            ItemLocationRootCommand: 'ItemLocationRootCommand',
             ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
         listingitem: {
+            ListingItemFlagCommand: 'ListingItemFlagCommand',
             ListingItemGetCommand: 'ListingItemGetCommand',
-            ListingItemSearchCommand: 'ListingItemSearchCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
-            ListingItemUpdateCommand : 'ListingItemUpdateCommand'
+            ListingItemRootCommand: 'ListingItemRootCommand',
+            ListingItemSearchCommand: 'ListingItemSearchCommand'
+        },
+        listingitemobject: {
+            ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
+            ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
         listingitemtemplate: {
-            ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
-            ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
+            ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
+            ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
+            ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
+            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
+            ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
+            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
+            ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
         market: {
-            MarketCreateCommand: 'MarketCreateCommand'
+            MarketAddCommand: 'MarketAddCommand',
+            MarketListCommand: 'MarketListCommand',
+            MarketRemoveCommand: 'MarketRemoveCommand',
+            MarketSetDefaultCommand: 'MarketSetDefaultCommand',
+            MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
+            MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
         },
+        order: {
+            OrderRootCommand: 'OrderRootCommand',
+            OrderSearchCommand: 'OrderSearchCommand'
+        },
+        orderitem: {
+            OrderItemRootCommand: 'OrderItemRootCommand',
+            OrderItemShipCommand: 'OrderItemShipCommand',
+            OrderItemStatusCommand: 'OrderItemStatusCommand'
+        },
         paymentinformation: {
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand',
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
         },
+        priceticker: {
+            PriceTickerRootCommand: 'PriceTickerRootCommand'
+        },
         profile: {
-            ProfileCreateCommand: 'ProfileCreateCommand',
-            ProfileDestroyCommand: 'ProfileDestroyCommand',
+            ProfileAddCommand: 'ProfileAddCommand',
             ProfileGetCommand: 'ProfileGetCommand',
+            ProfileListCommand: 'ProfileListCommand',
+            ProfileRemoveCommand: 'ProfileRemoveCommand',
+            ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
-        RootRpcCommand: 'RootRpcCommand',
+        proposal: {
+            ProposalGetCommand: 'ProposalGetCommand',
+            ProposalListCommand: 'ProposalListCommand',
+            ProposalPostCommand: 'ProposalPostCommand',
+            ProposalResultCommand: 'ProposalResultCommand',
+            ProposalRootCommand: 'ProposalRootCommand'
+        },
         RpcCommandInterface: 'RpcCommandInterface',
+        setting: {
+            SettingGetCommand: 'SettingGetCommand',
+            SettingListCommand: 'SettingListCommand',
+            SettingRemoveCommand: 'SettingRemoveCommand',
+            SettingRootCommand: 'SettingRootCommand',
+            SettingSetCommand: 'SettingSetCommand'
+        },
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
-            ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'
+            ShippingDestinationListCommand: 'ShippingDestinationListCommand',
+            ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
+            ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
+        },
+        shoppingcart: {
+            ShoppingCartAddCommand: 'ShoppingCartAddCommand',
+            ShoppingCartClearCommand: 'ShoppingCartClearCommand',
+            ShoppingCartGetCommand: 'ShoppingCartGetCommand',
+            ShoppingCartListCommand: 'ShoppingCartListCommand',
+            ShoppingCartRemoveCommand: 'ShoppingCartRemoveCommand',
+            ShoppingCartRootCommand: 'ShoppingCartRootCommand',
+            ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand'
+        },
+        shoppingcartitem: {
+            ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
+            ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
+            ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
+            ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        smsg: {
+            SmsgRootCommand: 'SmsgRootCommand',
+            SmsgRemoveCommand: 'SmsgRemoveCommand',
+            SmsgSearchCommand: 'SmsgSearchCommand'
+        },
+        wallet: {
+            WalletRootCommand: 'WalletRootCommand',
+            WalletListCommand: 'WalletListCommand'
+        },
+        vote: {
+            VoteGetCommand: 'VoteGetCommand',
+            VoteListCommand: 'VoteListCommand',
+            VotePostCommand: 'VotePostCommand',
+            VoteRootCommand: 'VoteRootCommand'
         }
     },
     Factory:     {
-        BidFactory: 'BidFactory',
-        EscrowFactory: 'EscrowFactory',
+        hashableconfig: {
+            createrequest: {
+                HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
+                HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
+                HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
+                HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
+                HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
+                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
+            },
+            HashableField: 'HashableField',
+            message: {
+                HashableBidMessageConfig: 'HashableBidMessageConfig',
+                HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
+                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
+            },
+            model: {
+                HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
+            }
+        },
+        ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
-        ListingItemFactory: 'ListingItemFactory',
+        message: {
+            BidCancelMessageFactory: 'BidCancelMessageFactory',
+            BidRejectMessageFactory: 'BidRejectMessageFactory',
+            EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
+            EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
+            EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
+            ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
+            MessageFactoryInterface: 'MessageFactoryInterface',
+            OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
+            ProposalAddMessageFactory: 'ProposalAddMessageFactory',
+            VoteMessageFactory: 'VoteMessageFactory'
+        },
         MessagingInformationFactory: 'MessagingInformationFactory',
-        RpcCommandFactory: 'RpcCommandFactory',
-        TestFactory: 'TestFactory'
+        model: {
+            BidFactory: 'BidFactory',
+            ListingItemFactory: 'ListingItemFactory',
+            ListingItemTemplateFactory: 'ListingItemTemplateFactory',
+            ModelCreateParams: 'ModelCreateParams',
+            ModelFactoryInterface: 'ModelFactoryInterface',
+            OrderFactory: 'OrderFactory',
+            ProposalFactory: 'ProposalFactory',
+            SmsgMessageFactory: 'SmsgMessageFactory',
+            VoteFactory: 'VoteFactory'
+        },
+        RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
-        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-        BidMessageProcessor: 'BidMessageProcessor',
-        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor',
+        CoreMessageProcessor: 'CoreMessageProcessor',
+        ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
-        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor'
+        ProposalResultProcessor: 'ProposalResultProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
-        PopulateUserMiddleware: 'PopulateUserMiddleware',
+        MulterMiddleware: 'MulterMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ServerStartedListener: 'ServerStartedListener',
-        user: {
-            UserAuthenticatedListener: 'UserAuthenticatedListener',
-            UserCreatedListener: 'UserCreatedListener'
-        }
+        action: {
+            BidAcceptActionListener: 'BidAcceptActionListener',
+            BidActionListener: 'BidActionListener',
+            BidCancelActionListener: 'BidCancelActionListener',
+            BidRejectActionListener: 'BidRejectActionListener',
+            EscrowCompleteActionListener: 'EscrowCompleteActionListener',
+            EscrowLockActionListener: 'EscrowLockActionListener',
+            EscrowRefundActionListener: 'EscrowRefundActionListener',
+            EscrowReleaseActionListener: 'EscrowReleaseActionListener',
+            ListingItemAddActionListener: 'ListingItemAddActionListener',
+            OrderItemShipActionListener: 'OrderItemShipActionListener',
+            ProposalAddActionListener: 'ProposalAddActionListener',
+            VoteActionListener: 'VoteActionListener'
+        },
+        ActionListenerInterface: 'ActionListenerInterface',
+        BaseActionListenr: 'BaseActionListenr',
+        ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {
-        AddressController: 'AddressController',
-        BidController: 'BidController',
-        BidDataController: 'BidDataController',
-        CryptocurrencyAddressController: 'CryptocurrencyAddressController',
-        EscrowController: 'EscrowController',
-        EscrowRatioController: 'EscrowRatioController',
-        FavoriteItemController: 'FavoriteItemController',
-        ItemCategoryController: 'ItemCategoryController',
         ItemImageController: 'ItemImageController',
-        ItemImageDataController: 'ItemImageDataController',
-        ItemInformationController: 'ItemInformationController',
-        ItemLocationController: 'ItemLocationController',
-        ItemPriceController: 'ItemPriceController',
-        ListingItemController: 'ListingItemController',
-        ListingItemObjectController: 'ListingItemObjectController',
-        ListingItemTemplateController: 'ListingItemTemplateController',
-        LocationMarkerController: 'LocationMarkerController',
-        MarketController: 'MarketController',
-        MessagingInformationController: 'MessagingInformationController',
-        PaymentInformationController: 'PaymentInformationController',
-        ProfileController: 'ProfileController',
-        RpcController: 'RpcController',
-        ShippingDestinationController: 'ShippingDestinationController',
-        ShippingPriceController: 'ShippingPriceController',
-        UserController: 'UserController'
+        RpcController: 'RpcController'
     }
 };

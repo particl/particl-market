@@ -1,13 +1,15 @@
-import { Bookshelf } from '../../config/Database';
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { Bookshelf } from '../../config/Database';
 
 export class MessagingInformation extends Bookshelf.Model<MessagingInformation> {
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<MessagingInformation> {
         if (withRelated) {
             return await MessagingInformation.where<MessagingInformation>({ id: value }).fetch({
-                withRelated: [
-                ]
+                withRelated: []
             });
         } else {
             return await MessagingInformation.where<MessagingInformation>({ id: value }).fetch();

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -23,14 +27,19 @@ export class ItemInformationRepository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemInformation> {
-        return this.ItemInformationModel.fetchById(id, withRelated);
+        return await this.ItemInformationModel.fetchById(id, withRelated);
+    }
+
+    public async findByItemTemplateId(listingItemTemplateId: number, withRelated: boolean = true): Promise<ItemInformation> {
+        return await this.ItemInformationModel.findByItemTemplateId(listingItemTemplateId, withRelated);
     }
 
     public async create(data: any): Promise<ItemInformation> {
         const itemInformation = this.ItemInformationModel.forge<ItemInformation>(data);
         try {
             const itemInformationCreated = await itemInformation.save();
-            return this.ItemInformationModel.fetchById(itemInformationCreated.id);
+            const result = await this.ItemInformationModel.fetchById(itemInformationCreated.id);
+            return result;
         } catch (error) {
             throw new DatabaseException('Could not create the itemInformation!', error);
         }
@@ -40,7 +49,7 @@ export class ItemInformationRepository {
         const itemInformation = this.ItemInformationModel.forge<ItemInformation>({ id });
         try {
             const itemInformationUpdated = await itemInformation.save(data, { patch: true });
-            return this.ItemInformationModel.fetchById(itemInformationUpdated.id);
+            return await this.ItemInformationModel.fetchById(itemInformationUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the itemInformation!', error);
         }

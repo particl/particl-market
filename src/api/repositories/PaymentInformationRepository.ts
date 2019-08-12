@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -24,10 +28,6 @@ export class PaymentInformationRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<PaymentInformation> {
         return this.PaymentInformationModel.fetchById(id, withRelated);
-    }
-
-    public async findOneByListingItemTemplateId(id: number): Promise<PaymentInformation> {
-        return this.PaymentInformationModel.fetchByListingItemTemplateId(id);
     }
 
     public async create(data: any): Promise<PaymentInformation> {

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * IOC - CONTAINER
  * ----------------------------------------
@@ -58,16 +62,21 @@ export class IoC {
         await this.bindFactories();
         this.log.info('binding message processors');
         await this.bindMessageProcessors();
+        this.log.info('binding listeners');
         await this.bindListeners();
 
         if (!Environment.isTest()) {
+            this.log.info('binding middlewares');
             await this.bindMiddlewares();
+            this.log.info('binding controllers');
             await this.bindControllers();
         }
 
         if (this.customConfiguration) {
             this.container = this.customConfiguration(this.container);
         }
+        this.log.info('binding done.');
+
     }
 
     private bindCore(): void {
@@ -115,7 +124,7 @@ export class IoC {
 
     private bindMessageProcessors(): Promise<void> {
         return this.bindFiles(
-            '/messageprocessors/**/*MessageProcessor.ts',
+            '/messageprocessors/**/*Processor.ts',
             Targets.MessageProcessor,
             (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
     }
@@ -140,6 +149,7 @@ export class IoC {
             this.container
                 .bind<any>(Types.Listener)
                 .to(value)
+                .inSingletonScope()
                 .whenTargetNamed(name);
 
             const listener: interfaces.Listener = this.container.getNamed<any>(Types.Listener, name);
@@ -152,6 +162,7 @@ export class IoC {
         this.container
             .bind<any>(type)
             .to(value)
+            .inSingletonScope()
             .whenTargetNamed(name);
     }
 
@@ -159,7 +170,6 @@ export class IoC {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
                 // this.log.info('bindFiles, filePath:', filePath);
-                // this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;

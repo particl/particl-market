@@ -1,26 +1,44 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 import { Collection } from 'bookshelf';
 import { ItemLocation } from './ItemLocation';
 import { ItemImage } from './ItemImage';
 import { ShippingDestination } from './ShippingDestination';
 import { ItemCategory } from './ItemCategory';
+import { ListingItemTemplate } from './ListingItemTemplate';
+import {ListingItem} from './ListingItem';
 
 export class ItemInformation extends Bookshelf.Model<ItemInformation> {
+
+    public static RELATIONS = [
+        'ItemCategory',
+        'ItemLocation',
+        'ItemLocation.LocationMarker',
+        'ItemImages',
+        'ItemImages.ItemImageDatas',
+        'ShippingDestinations'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemInformation> {
         if (withRelated) {
             return await ItemInformation.where<ItemInformation>({ id: value }).fetch({
-                withRelated: [
-                    'ItemCategory',
-                    'ItemLocation',
-                    'ItemLocation.LocationMarker',
-                    'ItemImages',
-                    'ItemImages.ItemImageData',
-                    'ShippingDestinations'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemInformation.where<ItemInformation>({ id: value }).fetch();
+        }
+    }
+
+    public static async findByItemTemplateId(value: number, withRelated: boolean = true): Promise<ItemInformation> {
+        if (withRelated) {
+            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch();
         }
     }
 
@@ -60,4 +78,13 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public ShippingDestinations(): Collection<ShippingDestination> {
         return this.hasMany(ShippingDestination, 'item_information_id', 'id');
     }
+
+    public ListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
 }

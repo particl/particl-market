@@ -1,18 +1,19 @@
-import { inject, named } from 'inversify';
-import * as crypto from 'crypto-js';
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
+import * as resources from 'resources';
+import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
-import { MessageException } from '../exceptions/MessageException';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import * as resources from 'resources';
+import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class ItemCategoryFactory {
 
     public log: LoggerType;
-    private categoryArray: any;
-    private isFound: boolean;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -21,61 +22,76 @@ export class ItemCategoryFactory {
     }
 
     /**
+     * Converts a category to an array of category keys
+     * ['rootcatkey', 'subcatkey', ..., 'catkey']
      *
      * @param category : resources.ItemCategory
-     * @param rootCategoryWithRelated : ItemCategory
+     * @param rootCategoryWithRelated : resources.ItemCategory
      * @returns {Promise<string[]>}
      */
-    public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
-        const rootCategory: any = rootCategoryWithRelated;
-        this.categoryArray = [];
-        this.isFound = false;
-        if (rootCategory.id === category.parentItemCategoryId) { // rootcategory
-            this.categoryArray = [rootCategory.key];
-        } else {
-            await this.getInnerCategory(rootCategory, category.parentItemCategoryId);
-        }
-        this.categoryArray.push(category.key);
-        return this.categoryArray;
+    public async getArray(category: resources.ItemCategory): Promise<string[]> {
+        return await this.getArrayInner(category);
     }
 
     /**
      *
-     * @param categoryName : string
-     * @param parentId : number
-     * @returns {Promise<ItemCategoryCreateRequest>}
+     * @param {string[]} categoryArray
+     * @param {"resources".ItemCategory} rootCategory
+     * @returns {Promise<"resources".ItemCategory>}
      */
-    public async getModel(categoryName: string, parentId: number): Promise<ItemCategoryCreateRequest> {
+    public async getModel(categoryArray: string[], rootCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
+        for (const categoryKeyOrName of categoryArray) {
+            rootCategory = await this.findCategory(rootCategory, categoryKeyOrName);
+        }
         return {
-            name: categoryName,
-            parent_item_category_id: parentId
+            parent_item_category_id: rootCategory.parentItemCategoryId,
+            key: rootCategory.key,
+            name: rootCategory.name,
+            description: rootCategory.description
         } as ItemCategoryCreateRequest;
     }
 
     /**
-     * check the category in whole tree and return array of key from root to matching category
+     * return the ChildCategory having the given key or name
      *
-     * @param theObject : ItemCategory
-     * @param findValue : number(parent_item_category_id)
+     * @param {"resources".ItemCategory} rootCategory
+     * @param {string} keyOrName
+     * @returns {Promise<"resources".ItemCategory>}
+     */
+    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+
+        if (rootCategory.key === keyOrName) {
+            // root case
+            return rootCategory;
+        } else {
+            // searchBy the children for a match
+            const childCategories = rootCategory.ChildItemCategories;
+            const found = _.find(childCategories, (childCategory) => {
+                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
+            });
+            if (found) {
+                return found;
+            } else {
+                throw new NotFoundException(keyOrName);
+            }
+        }
+    }
+
+    /**
+     *
+     * @param {"resources".ItemCategory} category
+     * @param {string[]} categoryArray
      * @returns {Promise<string[]>}
      */
-    private async getInnerCategory(theObject: ItemCategory, findValue: number): Promise<string[]> {
-        const childCategories: any = theObject.ChildItemCategories;
-        if (childCategories.length > 0) {
-            for (const childCategory of childCategories) {
-                if (!this.isFound) {
-                    this.categoryArray.push(theObject['key']);
-                }
-                if (childCategory.parentItemCategoryId === findValue) {
-                    this.isFound = true;
-                    break;
-                } else if (!this.isFound) {
-                    await this.getInnerCategory(childCategory, findValue);
-                }
-            }
-        } else {
-            this.categoryArray = [];
+    private async getArrayInner(category: resources.ItemCategory, categoryArray: string[] = []): Promise<string[]> {
+
+        // add category key to beginning of the array
+        categoryArray.unshift(category.key);
+
+        // if category has ParentItemCategory, add it's key to array
+        if (!_.isEmpty(category.ParentItemCategory)) {
+            return await this.getArrayInner(category.ParentItemCategory, categoryArray);
         }
-        return this.categoryArray as any;
+        return categoryArray;
     }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * core.log.WinstonAdapter
  * ------------------------------------------------
@@ -10,6 +14,7 @@
 
 import * as winston from 'winston';
 import { Environment } from '../../core/helpers/Environment';
+import { DataDir } from '../../core/helpers/DataDir';
 
 
 export class WinstonAdapter implements interfaces.LoggerAdapter {
@@ -17,16 +22,31 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
     private logger: winston.LoggerInstance;
 
     constructor(private scope: string) {
-        this.logger = new winston.Logger({
-            transports: [
-                new winston.transports.Console({
+        const logs: any = [
+            new winston.transports.Console({
+                level: process.env.LOG_LEVEL,
+                timestamp: true,
+                handleExceptions: Environment.isProduction(),
+                json: Environment.isProduction(),
+                colorize: !Environment.isProduction()
+            })
+        ];
+
+        if (process.env.LOG_PATH) {
+            logs.push(
+                new winston.transports.File({
                     level: process.env.LOG_LEVEL,
-                    timestamp: Environment.isProduction(),
+                    filename: DataDir.getLogFile(),
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
-                    colorize: !Environment.isProduction()
-                })
-            ],
+                    maxsize: 52428800, // 50MB
+                    maxFiles: 5,
+                    colorize: false
+                }));
+        }
+
+        this.logger = new winston.Logger({
+            transports: logs,
             exitOnError: false
         });
     }

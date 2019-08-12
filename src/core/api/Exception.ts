@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * core.api.Exception
  * ------------------------------------------------
@@ -26,5 +30,9 @@ export class Exception extends Error {
 
     public toString(): string {
         return `${this.code} - ${this.constructor.name}:${this.message}`;
+    }
+
+    public getMessage(): string {
+        return `${this.message}`;
     }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
@@ -138,6 +142,14 @@ export const askProperties = async (name: string): Promise<any[]> => {
             properties.push(property);
         }
     }
+    for (const property of properties) {
+        const types = property.type.replace(/[()]/g, '').split(' ');
+        property.type = {
+            script: types[1],
+            database: types[0]
+        };
+    }
+    /*
     properties.map(p => {
         const types = p.type.replace(/[()]/g, '').split(' ');
         p.type = {
@@ -146,6 +158,7 @@ export const askProperties = async (name: string): Promise<any[]> => {
         };
         return p;
     });
+    */
     console.log('');
     return properties;
 };

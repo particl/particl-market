@@ -1,19 +1,21 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { CryptocurrencyAddress } from '../../src/api/models/CryptocurrencyAddress';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-
-import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/CryptocurrencyAddressCreateRequest';
-import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/CryptocurrencyAddressUpdateRequest';
+import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/model/CryptocurrencyAddressUpdateRequest';
+import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 
 describe('CryptocurrencyAddress', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -32,13 +34,13 @@ describe('CryptocurrencyAddress', () => {
 
     const testData = {
         profile_id: 0,
-        type: CryptocurrencyAddressType.NORMAL,
+        type: CryptoAddressType.NORMAL,
         address: '123'
     } as CryptocurrencyAddressCreateRequest;
 
     const testDataUpdated = {
         profile_id: 0,
-        type: CryptocurrencyAddressType.STEALTH,
+        type: CryptoAddressType.STEALTH,
         address: '456'
     } as CryptocurrencyAddressUpdateRequest;
 
@@ -46,14 +48,14 @@ describe('CryptocurrencyAddress', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
-        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault();
-        defaultProfile = defaultProfile.toJSON();
+        const orofileModel = await profileService.getDefault();
+        defaultProfile = orofileModel.toJSON();
     });
 
     test('Should create a new cryptocurrency address related to profile', async () => {

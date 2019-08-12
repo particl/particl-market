@@ -1,32 +1,33 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-
+import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
-import { ItemImage } from '../../src/api/models/ItemImage';
-import { ListingItem } from '../../src/api/models/ListingItem';
-import { ItemInformation } from '../../src/api/models/ItemInformation';
-
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-
-import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
-import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-
-import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
-
-import sharp = require('sharp');
-import piexif = require('piexifjs');
+import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
+import { ItemImageUpdateRequest } from '../../src/api/requests/model/ItemImageUpdateRequest';
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
+import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableItemImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,33 +37,42 @@ describe('ItemImage', () => {
 
     let testDataService: TestDataService;
     let itemImageService: ItemImageService;
-    let marketService: MarketService;
+    let itemImageDataService: ItemImageDataService;
     let listingItemService: ListingItemService;
-    let itemInformationService: ItemInformationService;
+    let marketService: MarketService;
+    let profileService: ProfileService;
 
-    let createdId;
-    let itemInformation;
-    let createdListingItem;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let listingItem: resources.ListingItem;
+    let itemImage: resources.ItemImage;
+
+    let imageHash;
 
     const testData = {
-        item_information_id: null,
-        hash: 'asdfasdfasdfasdf',
-        data: {
-            dataId: 'QmUwHMFY9GSiKgjqyZpgAv2LhBrh7GV8rtLuagbry9wmMU',
-            protocol: ImageDataProtocolType.IPFS,
-            encoding: null,
-            data: null
-        }
+        hash: 'hash',
+        data: [{
+            imageHash: 'hash',
+            dataId: 'http://dataid1',
+            protocol: ProtocolDSN.LOCAL,
+            imageVersion: ImageVersions.ORIGINAL.propName,
+            encoding: 'BASE64',
+            data: ImageProcessing.milkcatTall
+        }] as ItemImageDataCreateRequest[],
+        featured: false
     } as ItemImageCreateRequest;
 
     const testDataUpdated = {
-        hash: 'wqerqwerqwerqwerqwer',
-        data: {
-            dataId: null,
-            protocol: ImageDataProtocolType.LOCAL,
+        hash: 'hash',
+        data: [{
+            imageHash: 'hash',
+            dataId: 'http://dataid2',
+            protocol: ProtocolDSN.LOCAL,
+            imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: 'BASE64',
             data: ImageProcessing.milkcat
-        }
+        }] as ItemImageDataCreateRequest[],
+        featured: true
     } as ItemImageUpdateRequest;
 
 
@@ -70,43 +80,48 @@ describe('ItemImage', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
-        // create market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        const generateParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            false,                               // generateItemLocation
+            false,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            false,                               // generatePaymentInformation
+            false,                               // generateEscrow
+            false,                               // generateItemPrice
+            false,                               // generateMessagingInformation
+            false,                              // generateListingItemObjects
+            false,                              // generateObjectDatas
+            null,                               // listingItemTemplateHash
+            defaultProfile.address              // seller
+        ]).toParamsArray();
 
-        // create iteminformation
-        itemInformation = await testDataService.create<ItemInformation>({
-            model: 'iteminformation',
-            data: {
-                listing_item_id: createdListingItem.id,
-                title: 'TEST TITLE',
-                shortDescription: 'TEST SHORT DESCRIPTION',
-                longDescription: 'TEST LONG DESCRIPTION',
-                itemCategory: {
-                    key: 'cat_high_luxyry_items',
-                    name: 'Luxury Items',
-                    description: ''
-                }
-            } as any,
-                withRelated: true
-        } as TestDataCreateRequest);
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        listingItem = listingItems[0];
+
+        log.debug('created ListingItem: ', JSON.stringify(listingItem, null, 2));
+
+        const itemImageDatas: ItemImageDataCreateRequest[] = testData.data;
+        const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        imageHash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
     });
 
     afterAll(async () => {
@@ -115,165 +130,127 @@ describe('ItemImage', () => {
 
     test('Should throw ValidationException because there is no item_information_id', async () => {
         expect.assertions(1);
+
         await itemImageService.create(testData as ItemImageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new item image', async () => {
-        testData.item_information_id = itemInformation.id;
-        const itemImageModel: ItemImage = await itemImageService.create(testData as ItemImageCreateRequest);
-        createdId = itemImageModel.Id;
-        const result = itemImageModel.toJSON();
-        expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
-        expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
-        expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
+    test('Should create a new ItemImage', async () => {
 
-        if (!testData.data && testData.data != null) {
-            expect(result.ItemImageData.dataBig).toBeUndefined();
-            expect(result.ItemImageData.dataMedium).toBeUndefined();
-            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.ItemImageData.dataBig).toBeDefined();
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
+        // add the required data to testData
+        testData.item_information_id = listingItem.ItemInformation.id;
 
-                const newInfo = await imageBuffer.metadata();
+        itemImage = await itemImageService.create(testData).then(value => value.toJSON());
+        const result = itemImage;
 
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
+        const imageUrl = process.env.APP_HOST
+        + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+        + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
 
-                const newInfo = await imageBuffer.metadata();
+        expect(result.hash).toBe(imageHash);
+        expect(result.featured).toBeFalsy();
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ItemImageDatas.length).toBe(4);
 
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
+        // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
 
-    test('Should throw ValidationException because we want to create a empty item image', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemImage', async () => {
         expect.assertions(1);
         await itemImageService.create({} as ItemImageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item images with our new create one', async () => {
-        const itemImageCollection = await itemImageService.findAll();
-        const itemImage = itemImageCollection.toJSON();
-        expect(itemImage.length).toBe(1);
-        const result = itemImage[0];
-        expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageData).toBe(undefined); // doesnt fetch related
+    test('Should list ItemImages with our newly created one', async () => {
+        const itemImages: resources.ItemImage[] = await itemImageService.findAll().then(value => value.toJSON());
+        expect(itemImages.length).toBe(1);
+
+        const result: resources.ItemImage = itemImages[0];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.hash).toBe(imageHash);
+        expect(result.featured).toBeFalsy();
+        expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item image', async () => {
-        const itemImageModel: ItemImage = await itemImageService.findOne(createdId);
-        const result = itemImageModel.toJSON();
-        expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
-        expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
-        expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
+    test('Should return one ItemImage', async () => {
+        itemImage = await itemImageService.findOne(itemImage.id).then(value => value.toJSON());
 
-        if (!testData.data && testData.data != null) {
-            expect(result.ItemImageData.dataBig).toBeUndefined();
-            expect(result.ItemImageData.dataMedium).toBeUndefined();
-            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.ItemImageData.dataBig).toBeDefined();
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
+        const imageUrl = process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
 
-                const newInfo = await imageBuffer.metadata();
+        const result = itemImage;
+        expect(result.hash).toBe(imageHash);
+        expect(result.featured).toBeFalsy();
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
 
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
+        // TODO: When non-BASE64 resizing is implemented check image sizes.
+    });
 
-                const newInfo = await imageBuffer.metadata();
+    test('Should update the ItemImage', async () => {
 
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
+        itemImage = await itemImageService.update(itemImage.id, testDataUpdated).then(value => value.toJSON());
+        const result = itemImage;
+
+        const imageUrl = process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
+
+        const itemImageDatas: ItemImageDataCreateRequest[] = testDataUpdated.data;
+        const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        imageHash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
+
+        expect(result.hash).toBe(imageHash);
+        expect(result.featured).toBeTruthy();
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+
+        expect(result.ItemImageDatas.length).toBe(4);
+
+        // TODO: check images sizes
+    });
+
+    test('Should delete the ItemImage', async () => {
+        expect.assertions(7);
+
+        // find the listing item
+        listingItem = await listingItemService.findOne(listingItem.id).then(value => value.toJSON());
+        expect(listingItem.ItemInformation.ItemImages.length).toBe(1);
+
+        // destroy the create image
+        await itemImageService.destroy(listingItem.ItemInformation.ItemImages[0].id);
+
+        // make sure the image is destroyed
+        await itemImageService.findOne(listingItem.ItemInformation.ItemImages[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.ItemImages[0].id))
+        );
+
+        // make sure that the related imagedatas were also destroyed
+        for (const imageData of listingItem.ItemInformation.ItemImages[0].ItemImageDatas) {
+            await itemImageDataService.findOne(imageData.id).catch(e =>
+                expect(e).toEqual(new NotFoundException(imageData.id))
+            );
         }
-    });
 
-    test('Should throw ValidationException because there is no item_information_id', async () => {
-        expect.assertions(1);
-        await itemImageService.update(createdId, testDataUpdated as ItemImageUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        // destroy the created item
+        await listingItemService.destroy(listingItem.id);
+
+        // make sure the created item was destroyed
+        await listingItemService.findOne(listingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.id))
         );
+
     });
-
-    test('Should update the item image', async () => {
-        testDataUpdated.item_information_id = itemInformation.id;
-        const itemImageModel: ItemImage = await itemImageService.update(createdId, testDataUpdated as ItemImageUpdateRequest);
-        const result = itemImageModel.toJSON();
-
-        expect(result.hash).toBe(testDataUpdated.hash);
-        expect(result.ItemImageData.dataId).toBe(testDataUpdated.data.dataId);
-        expect(result.ItemImageData.protocol).toBe(testDataUpdated.data.protocol);
-        expect(result.ItemImageData.encoding).toBe(testDataUpdated.data.encoding);
-
-        if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.ItemImageData.dataBig).toBeUndefined();
-            expect(result.ItemImageData.dataMedium).toBeUndefined();
-            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.ItemImageData.dataBig).toBeDefined();
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
-    });
-
-    test('Should delete the item image', async () => {
-        expect.assertions(3);
-        await listingItemService.destroy(createdListingItem.id);
-
-        await listingItemService.findOne(createdListingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItem.id))
-        );
-        await itemInformationService.findOne(itemInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemInformation.id))
-        );
-        await itemImageService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
-        );
-    });
-
 });

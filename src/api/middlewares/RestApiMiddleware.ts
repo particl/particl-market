@@ -1,21 +1,29 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core } from '../../constants';
-
+import { Types, Core, Targets } from '../../constants';
+import { ServerStartedListener } from '../listeners/ServerStartedListener';
 
 export class RestApiMiddleware implements interfaces.Middleware {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Listener) @named(Targets.Listener.ServerStartedListener) private serverStartedListener: ServerStartedListener,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
-        // TODO: we don't really use the rest api for anything else than testing,
-        // so block requests from elsewhere than localhost
+
+        if (!this.serverStartedListener.isStarted) {
+            return res.failed(503, 'Server not fully started yet, is particld running?');
+        }
+
         next();
     }
 

@@ -1,66 +1,120 @@
-version: '3'
+version: '3.6'
 
 services:
   app1:
     build:
       context: ./
     volumes:
-      - ./data/app1:/app/data
+      - .:/app/:delegated
+#      - ./yarn.lock:/app/yarn.lock
+#      - ./data/app1_dist:/app/dist
+      - ./data/app1:/app/data:delegated
+      - ./data/app1_node_modules:/app/node_modules:delegated
     ports:
       - 3100:3100
-    command: npm run serve
+    command: bin/entrypoint.sh
     links:
       - particld1
-      - particld2
     depends_on:
       - particld1
-      - particld2
+    env_file:
+      - .env.docker-compose
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
-# RPC-CLIENT-CONFIG:
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld1
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
+      - STANDALONE=true
 
   app2:
     build:
       context: ./
     volumes:
-      - ./data/app2:/app/data
+      - .:/app/:delegated
+#      - ./yarn.lock:/app/yarn.lock
+#      - ./data/app2_dist:/app/dist
+      - ./data/app2:/app/data:delegated
+      - ./data/app2_node_modules:/app/node_modules:delegated
     ports:
       - 3200:3200
-    command: npm run serve
+    command: bin/entrypoint.sh
     links:
-      - particld1
       - particld2
     depends_on:
-      - particld1
       - particld2
+    env_file:
+      - .env.docker-compose
     environment:
       - NODE_ENV=development
       - APP_PORT=3200
-# RPC-CLIENT-CONFIG:
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld2
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
 
+#  gui1:
+#    image: market-gui
+#    build:
+#      context: ../particl-desktop
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ../particl-desktop/:/app/:delegated
+#      - ./data/gui1_node_modules:/app/node_modules:delegated
+#    ports:
+#      - 4300:4200
+#    command: bin/entrypoint.sh
+#    links:
+#      - app1
+#      - particld1
+#    depends_on:
+#      - app1
+#      - particld1
+#    environment:
+#      - NODE_ENV=development
+#      - GUI_ENV=docker1
+#      - PORT=4200
+
+#  gui2:
+#    image: market-gui
+#    build:
+#     context: ../particl-desktop
+#     dockerfile: Dockerfile
+#    volumes:
+#      - ../particl-desktop/:/app/:delegated
+#      - ./data/gui2_node_modules:/app/node_modules:delegated
+#    ports:
+#      - 4400:4200
+#    command: bin/entrypoint.sh
+#    links:
+#      - app2
+#      - particld2
+#    depends_on:
+#      - app2
+#      - particld2
+#    environment:
+#      - NODE_ENV=development
+#      - GUI_ENV=docker2
+#      - PORT=4200
+
   particld1:
-    image: ludx/particl:0.15.1.1
+    image: ludx/particl:0.18.1.1 # master # 0.16.2.0
     volumes:
-      - ./data/particl1:/root/.particl
+      - ./data/particl1:/root/.particl:cached
     ports:
-      - 52738:51738
       - 52935:51935
+      - 52936:51936
+      - 52938:51938
+#    command: entrypoint.sh particld -reindex-chainstate
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
       - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
-      - CONF_PRINTTOCONSOLE=1           # Send trace/debug info to console instead of debug.log file
+#      - CONF_RPCPORT=52935
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
 #      - CONF_ONLYNET=onion              # Only connect to nodes in network: ipv4, ipv6 or onion
 #      - CONF_PROXY=127.0.0.1:9050       # Connect through SOCKS5 proxy
 #      - CONF_ONION=127.0.0.1:9050       # Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: -proxy)
@@ -75,19 +129,24 @@ services:
 #      - CONF_DISCOVER=1                # Discover own IP address (default: 1 when listening and no -externalip)
 #      - CONF_BIND=127.0.0.1             # Bind to given address and always listen on it. Use [host]:port notation for IPv6
 #      - CONF_DEBUG=tor                    # Output debugging information: 0/1, addrman, alert, bench, cmpctblock, coindb, db, http, libevent, lock, mempool, mempoolrej, net, proxy, prune, rand, reindex, rpc, selectcoins, tor, zmq, qt.
+      - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:0.15.1.1
+    image: ludx/particl:0.18.1.1 # master # 0.16.2.0
     volumes:
-      - ./data/particl2:/root/.particl
+      - ./data/particl2:/root/.particl:cached
     ports:
-      - 53738:51738
       - 53935:51935
+      - 53936:51936
+      - 53938:51938
+#    command: entrypoint.sh particld -reindex-chainstate
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
       - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
-      - CONF_PRINTTOCONSOLE=1           # Send trace/debug info to console instead of debug.log file
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
       - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
       - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
       - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
+      - CREATEDEFAULTMASTERKEY=true
+

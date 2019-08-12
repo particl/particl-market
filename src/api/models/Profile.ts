@@ -1,19 +1,33 @@
+// Copyright (c) 2017-2019, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
+import { ShoppingCart } from './ShoppingCart';
+import { Market } from './Market';
+import { Wallet } from './Wallet';
 
 export class Profile extends Bookshelf.Model<Profile> {
+
+    public static RELATIONS = [
+        'ShippingAddresses',
+        'CryptocurrencyAddresses',
+        'FavoriteItems',
+        'ShoppingCart',
+        'Markets',
+        'Markets.Wallet',
+        'Wallets',
+        'Wallets.Markets'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
         if (withRelated) {
             return await Profile.where<Profile>({ id: value }).fetch({
-                withRelated: [
-                    'ShippingAddresses',
-                    'CryptocurrencyAddresses',
-                    'FavoriteItems'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Profile.where<Profile>({ id: value }).fetch();
@@ -23,14 +37,20 @@ export class Profile extends Bookshelf.Model<Profile> {
     public static async fetchByName(value: string, withRelated: boolean = true): Promise<Profile> {
         if (withRelated) {
             return await Profile.where<Profile>({ name: value }).fetch({
-                withRelated: [
-                    'ShippingAddresses',
-                    'CryptocurrencyAddresses',
-                    'FavoriteItems'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Profile.where<Profile>({ name: value }).fetch();
+        }
+    }
+
+    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Profile> {
+        if (withRelated) {
+            return await Profile.where<Profile>({ address: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Profile.where<Profile>({ address: value }).fetch();
         }
     }
 
@@ -46,16 +66,17 @@ export class Profile extends Bookshelf.Model<Profile> {
     public get Address(): string { return this.get('address'); }
     public set Address(value: string) { this.set('address', value); }
 
-    public get UpdatedAt(): Date { return this.get('updatedAt'); }
-    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
-
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+    public get UpdatedAt(): Date { return this.get('updatedAt'); }
+    public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public ShippingAddresses(): Collection<Address> {
         return this.hasMany(Address, 'profile_id', 'id');
     }
 
+    // TODO: the use of Address should be replaced with this
     public CryptocurrencyAddresses(): Collection<CryptocurrencyAddress> {
         return this.hasMany(CryptocurrencyAddress, 'profile_id', 'id');
     }
@@ -63,4 +84,17 @@ export class Profile extends Bookshelf.Model<Profile> {
     public FavoriteItems(): Collection<FavoriteItem> {
         return this.hasMany(FavoriteItem, 'profile_id', 'id');
     }
+
+    public ShoppingCart(): Collection<ShoppingCart> {
+        return this.hasMany(ShoppingCart, 'profile_id', 'id');
+    }
+
+    public Markets(): Collection<Market> {
+        return this.hasMany(Market, 'profile_id', 'id');
+    }
+
+    public Wallets(): Collection<Wallet> {
+        return this.hasMany(Wallet, 'profile_id', 'id');
+    }
+
 }
