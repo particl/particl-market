@@ -113,7 +113,7 @@ export class OmpService {
     private initializeOmp(coreRpcService: CoreRpcService): void {
         coreRpcService.isConnected().then((connected) => {
             if (!connected) {
-                setTimeout(this.initializeOmp, 500, coreRpcService);
+                setTimeout(() => { this.initializeOmp(coreRpcService); }, 500, coreRpcService);
                 return;
             }
             coreRpcService.getBlockchainInfo().then(
