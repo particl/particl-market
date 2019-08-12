@@ -75,7 +75,7 @@ export class ListingItemObjectService {
 
         for (const objectData of listingItemObjectDatas) {
             objectData.listing_item_object_id = listingItemObject.id;
-            this.log.debug('objectData: ', JSON.stringify(objectData, null, 2));
+            // this.log.debug('objectData: ', JSON.stringify(objectData, null, 2));
 
             await this.listingItemObjectDataService.create(objectData);
         }

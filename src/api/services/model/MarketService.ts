@@ -95,7 +95,7 @@ export class MarketService {
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
         const market: resources.Market = await this.marketRepo.create(body).then(value => value.toJSON());
         return await this.findOne(market.id, true);
     }
