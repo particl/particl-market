@@ -131,7 +131,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
                     this.log.debug(event.smsgMessage.type + ', new status: ', status);
                     const updatedSmsgMessage = await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, status)
                         .then(value => value.toJSON());
-                    this.log.debug('updatedSmsgMessage: ', JSON.stringify(updatedSmsgMessage, null, 2));
+                    // this.log.debug('updatedSmsgMessage: ', JSON.stringify(updatedSmsgMessage, null, 2));
 
                 })
                 .catch(async reason => {

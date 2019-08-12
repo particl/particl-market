@@ -82,7 +82,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('sellerRatio');
         }
 
-        this.log.debug('data.params: ' + data.params);
+        // this.log.debug('data.params: ' + data.params);
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'string') {
