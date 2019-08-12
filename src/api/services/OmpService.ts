@@ -17,12 +17,10 @@ import { Config } from 'omp-lib/dist/abstract/config';
 
 export class OmpService {
 
-    public static version: string;
-
     public static getMPM(message: ActionMessageInterface): MPM {
         return {
             action: message,
-            version: OmpService.version // ompVersion()
+            version: ompVersion()
         } as MPM;
     }
 
@@ -34,9 +32,6 @@ export class OmpService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        const json = require('node_modules/omp-lib/package.json');
-        OmpService.version = json.version;
-
         this.initializeOmp(coreRpcService);
     }
 
