@@ -26,8 +26,8 @@ export class ItemImageDataRepository {
         return list as Bookshelf.Collection<ItemImageData>;
     }
 
-    public async findAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
-        return await this.ItemImageDataModel.fetchAllOriginalsByImageHash(hash, withRelated);
+    public async findAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
+        return await this.ItemImageDataModel.fetchAllByImageHashAndVersion(hash, version, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {
