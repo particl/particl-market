@@ -13,14 +13,13 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
         'ItemImage'
     ];
 
-    public static async fetchAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Collection<ItemImageData>> {
+    public static async fetchAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Collection<ItemImageData>> {
         const proposalResultCollection = ItemImageData.forge<Model<ItemImageData>>()
             .query(qb => {
                 qb.where('image_hash', '=', hash);
-                qb.where('image_version', '=', 'ORIGINAL');
+                qb.where('image_version', '=', version);
             })
             .orderBy('id', SearchOrder.DESC);
-
 
         if (withRelated) {
             return await proposalResultCollection.fetchAll({
