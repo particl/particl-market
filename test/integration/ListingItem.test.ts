@@ -40,6 +40,8 @@ import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listi
 import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 import { hash } from 'omp-lib/dist/hasher/hash';
+import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
+import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -57,6 +59,7 @@ describe('ListingItem', () => {
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
     let itemImageService: ItemImageService;
+    let itemImageDataService: ItemImageDataService;
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
@@ -69,6 +72,7 @@ describe('ListingItem', () => {
 
     let createdListingItem1: resources.ListingItem;
     let createdListingItem2: resources.ListingItem;
+    let createdListingItem3: resources.ListingItem;
     let updatedListingItem1: resources.ListingItem;
 
     let profile: resources.Profile;
@@ -82,12 +86,12 @@ describe('ListingItem', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
-
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
@@ -226,6 +230,15 @@ describe('ListingItem', () => {
                 await itemImageService.findOne(itemImageId, false).catch(e =>
                     expect(e).toEqual(new NotFoundException(itemImageId))
                 );
+
+                if (!_.isEmpty(item.ItemInformation.ItemImages[0].ItemImageDatas)) {
+                    const itemImage: resources.ItemImage = item.ItemInformation.ItemImages[0];
+                    const data = await itemImageDataService.loadImageFile(itemImage.hash, ImageVersions.ORIGINAL.propName)
+                        .catch(reason => {
+                            //
+                        });
+                    expect(data).toBeUndefined();
+                }
             }
         }
 
@@ -325,6 +338,10 @@ describe('ListingItem', () => {
         testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
+        // generate random images so that they can be deleted
+        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+
         createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
@@ -376,6 +393,10 @@ describe('ListingItem', () => {
         testDataToSave.market = market.receiveAddress;
         testDataToSave.seller = profile.address;
 
+        // generate random images so that they can be deleted
+        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+
         updatedListingItem1 = await listingItemService.update(createdListingItem2.id, testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(updatedListingItem1, testDataToSave);
@@ -383,11 +404,10 @@ describe('ListingItem', () => {
 
 
     test('Should delete the previously updated ListingItem', async () => {
-        expect.assertions(21);
+        expect.assertions(22);
         await listingItemService.destroy(updatedListingItem1.id);
         await expectListingItemWasDeleted(updatedListingItem1);
     });
-
 
     test('Should create a new ListingItem without PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic2));
@@ -401,6 +421,10 @@ describe('ListingItem', () => {
         testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
+        // generate random images so that they can be deleted
+        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+
         createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
@@ -408,7 +432,7 @@ describe('ListingItem', () => {
 
 
     test('Should delete the ListingItem with ItemInformation', async () => {
-        expect.assertions(6);
+        expect.assertions(7);
         await listingItemService.destroy(createdListingItem2.id);
         await expectListingItemWasDeleted(createdListingItem2);
     });
@@ -425,6 +449,10 @@ describe('ListingItem', () => {
         testDataToSave.seller = profile.address;
         testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
 
+        // generate random images so that they can be deleted
+        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+
         createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
 
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
@@ -432,18 +460,38 @@ describe('ListingItem', () => {
 
 
     test('Should delete the ListingItem with ItemInformation and PaymentInformation', async () => {
-        expect.assertions(11);
+        expect.assertions(12);
         await listingItemService.destroy(createdListingItem2.id);
         await expectListingItemWasDeleted(createdListingItem2);
     });
 
 
-    test('Should delete expired ListingItem', async () => {
+    test('Should delete expired ListingItema', async () => {
         await listingItemService.deleteExpiredListingItems();
         await listingItemService.findOne(createdListingItem1.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdListingItem1.id))
         );
     });
+
+    test('Should create a new ListingItem with 2 images and delete all data', async () => {
+        const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic2));
+
+        testDataToSave.market = market.receiveAddress;
+        testDataToSave.seller = profile.address;
+        testDataToSave.hash = hash(testDataToSave);     // TODO: FIX
+
+        // generate random images so that they can be deleted
+        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+
+        createdListingItem3 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
+
+        expectListingItemFromCreateRequest(createdListingItem3, testDataToSave);
+
+        await listingItemService.destroy(createdListingItem3.id);
+        await expectListingItemWasDeleted(createdListingItem3);
+
+    }, 600000); // timeout to 600s
 
     /*
     // TODO: not important now, but should be fixed later

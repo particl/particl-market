@@ -34,8 +34,8 @@ export class ItemImageDataService {
         return this.itemImageDataRepo.findAll();
     }
 
-    public async findAllOriginalsByImageHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
-        return await this.itemImageDataRepo.findAllOriginalsByImageHash(hash, withRelated);
+    public async findAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
+        return await this.itemImageDataRepo.findAllByImageHashAndVersion(hash, version, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {
@@ -126,10 +126,8 @@ export class ItemImageDataService {
     }
 
     public async destroy(id: number): Promise<void> {
-        // find the existing one without related
-        const itemImageData: resources.ItemImageData = await this.findOne(id, false)
-            .then(value => value.toJSON());
-
+        const itemImageData: resources.ItemImageData = await this.findOne(id, false).then(value => value.toJSON());
+        this.log.debug('destroy(), remove itemImageData, image: ' + itemImageData.data);
         await this.removeImageFile(itemImageData.imageHash, itemImageData.imageVersion);
         await this.itemImageDataRepo.destroy(id);
     }
@@ -162,17 +160,22 @@ export class ItemImageDataService {
      * @param imageVersion
      */
     public async removeImageFile(imageHash: string, imageVersion: string): Promise<void> {
+        this.log.debug('removeImageFile(), imageVersion: ', imageVersion);
 
-        const itemImageDatas: resources.ItemImageData[] = await this.findAllOriginalsByImageHash(imageHash)
-            .then(value => value.toJSON());
+        const itemImageDatas: resources.ItemImageData[] = await this.findAllByImageHashAndVersion(imageHash, imageVersion).then(value => value.toJSON());
+        if (itemImageDatas.length === 0) {
+            this.log.warn('removeImageFile(): no file to remove.');
+            return;
+        }
 
-        // only remove the file if theres just this one Image related to it
+        // only remove the file if there is just this one Image related to it
         if (itemImageDatas.length === 1) {
             const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-            // this.log.debug('removeImageFile(): ', filename);
+            this.log.debug('removeImageFile(), removed: ', filename);
             try {
                 fs.unlinkSync(filename);
             } catch (err) {
+                this.log.error('removeImageFile(), image file remove failed: ' + err);
                 throw new MessageException('Image remove failed: ' + err);
             }
         } else {

@@ -26,6 +26,7 @@ import { MessagingInformationUpdateRequest } from '../../requests/model/Messagin
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ListingItemObjectService } from './ListingItemObjectService';
+import { ItemImageService } from './ItemImageService';
 
 export class ListingItemService {
 
@@ -35,6 +36,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -312,7 +314,14 @@ export class ListingItemService {
     public async destroy(id: number): Promise<void> {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
-        this.log.debug('deleting listingItem:', listingItem.id);
+
+        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
+        // manually remove images
+        for (const image of listingItem.ItemInformation.ItemImages) {
+            await this.itemImageService.destroy(image.id);
+        }
+
+        this.log.debug('destroy(), deleting listingItem:', listingItem.id);
         await this.listingItemRepo.destroy(listingItem.id);
     }
 
@@ -322,10 +331,9 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
-       const listingItemsModel = await this.findAllExpired();
-       const listingItems = listingItemsModel.toJSON();
+       const listingItems: resources.ListingItem[] = await this.findAllExpired().then(value => value.toJSON());
        for (const listingItem of listingItems) {
-           if (listingItem.expiredAt <= Date()) {
+           if (listingItem.expiredAt <= Date.now()) {
                await this.destroy(listingItem.id);
            }
        }

@@ -302,6 +302,11 @@ export class ListingItemTemplateService {
             throw new MessageException('ListingItemTemplate has ListingItems.');
         }
 
+        // manually remove images
+        for (const image of listingItemTemplate.ItemInformation.ItemImages) {
+            await this.itemImageService.destroy(image.id);
+        }
+
         this.log.debug('deleting listingItemTemplate:', listingItemTemplate.id);
         await this.listingItemTemplateRepo.destroy(id);
     }
@@ -438,7 +443,7 @@ export class ListingItemTemplateService {
 
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
-        return await _.find(objectArray, (object) => {
+        return _.find(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }
