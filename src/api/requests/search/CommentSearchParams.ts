@@ -8,6 +8,8 @@ import { CommentType } from '../../enums/CommentType';
 
 export class CommentSearchParams extends RequestBody {
 
+    // TODO: create BaseSearchParams with page, pageLimit, order, orderField and extend that
+
     public commentHash: string;
 
     public page: number;
@@ -22,5 +24,5 @@ export class CommentSearchParams extends RequestBody {
 
     public target: string;
 
-    public parentCommentId: string;
+    public parentCommentId: number;
 }

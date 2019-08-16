@@ -67,7 +67,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                 qb.where('comments.type', '=', options.type);
                 qb.where('comments.target', '=', options.target);
 
-                if (options.parentCommentId === '') {
+                if (options.parentCommentId === undefined) {
                     qb.whereNull('comments.parent_comment_id');
                 }
 
@@ -116,7 +116,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('comments.target', '=', options.target);
                 }
 
-                if (options.parentCommentId === '') {
+                if (options.parentCommentId === undefined) {
                     qb.whereNull('comments.parent_comment_id');
                 }
 

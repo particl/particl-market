@@ -14,6 +14,11 @@ import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {EnumHelper} from '../../../core/helpers/EnumHelper';
+import {MarketType} from '../../enums/MarketType';
+import {CommentType} from '../../enums/CommentType';
+import * as resources from 'resources';
 
 export class CommentCountCommand extends BaseCommand implements RpcCommandInterface<number> {
 
@@ -28,21 +33,33 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
+     * data.params[]:
+     *  [0]: type, CommentType
+     *  [1]: target
+     *  [2]: parentComment: resources.Comment, optional
+     *
      * @param data
      * @returns {Promise<Comment>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<number> {
-        const countArgs = {
+        const parentComment: resources.Comment = data.params[2];
+
+        const commentSearchParams = {
             type: data.params[0],
             target: data.params[1],
-            parentCommentId: data.params[2]
+            parentCommentId: parentComment.id
         } as CommentSearchParams;
 
-        return await this.commentService.count(countArgs);
+        return await this.commentService.count(commentSearchParams);
     }
 
     /**
+     * data.params[]:
+     *  [0]: type, CommentType
+     *  [1]: target
+     *  [2]: parentCommentHash, optional
+     *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
@@ -53,14 +70,24 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('target');
         }
 
+        if (!EnumHelper.containsName(CommentType, data.params[0])) {
+            throw new InvalidParamException('type', 'CommentType');
+        } else if (data.params[1] && typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('target', 'string');
+        }
+
         let parentCommentHash;
         if (data.params.length >= 3) {
             parentCommentHash = data.params[2];
-            // Throws NotFoundException
+
+            if (data.params[2] && typeof data.params[2] !== 'string') {
+                throw new InvalidParamException('parentCommentHash', 'string');
+            }
+
             if (parentCommentHash && parentCommentHash.length > 0) {
-                data.params[2] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON().id)
+                data.params[2] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON())
                     .catch(() => {
-                        throw new ModelNotFoundException('Parent Comment');
+                        throw new ModelNotFoundException('Comment');
                     });
             }
         }
@@ -69,7 +96,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' [<type>] [<target>]';
+        return this.getName() + ' <type> <target> [parentCommentHash]';
     }
 
     public help(): string {
