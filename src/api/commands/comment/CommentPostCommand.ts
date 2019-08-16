@@ -12,10 +12,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { BaseCommand } from '../BaseCommand';
-
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-
 import { CommentService } from '../../services/model/CommentService';
 import { ProfileService } from '../../services/model/ProfileService';
 import { CommentType } from '../../enums/CommentType';
@@ -26,6 +24,7 @@ import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { CommentAddActionService } from '../../services/action/CommentAddActionService';
 import { ListingItemService } from '../../services/model/ListingItemService';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -44,27 +43,33 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * command description
+     * data.params[]:
+     *  [0]: profile, resources.Profile
+     *  [1]: receiver
+     *  [0]: type, CommentType
+     *  [3]: target
+     *  [4]: message
+     *  [5]: parentComment, resources.Comment, optional
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
-     * @returns {Promise<any>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const profile: resources.Profile = data.params[0];
         let receiver = data.params[1];
         const type  = CommentType[data.params[2]];
         const target = data.params[3];
         const message = data.params[4];
-        const parentComment = data.params.length > 5 ? data.params[5] : null;
+        const parentComment = data.params.length > 5 ? data.params[5] : undefined;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         if (!receiver) {
+            // TODO: if theres no receiver, we're posting to the default market, perhaps we should rather throw if receiver === undefined
             const market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
             receiver = market.receiveAddress;
         }
@@ -86,10 +91,10 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      * data.params[]:
      *  [0]: profileId
      *  [1]: receiver
-     *  [2]: type
+     *  [0]: type, CommentType
      *  [3]: target
      *  [4]: message
-     *  [5]: parentCommentHash
+     *  [5]: parentCommentHash, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -109,64 +114,69 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         const profileId = data.params[0];
+        const receiver = data.params[1];
+        const type = data.params[2];
+        const target = data.params[3];
+        const message = data.params[4];
+
         if (typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        }
-
-        const receiver = data.params[1];
-        if (typeof receiver !== 'string') {
+        } else if (typeof receiver !== 'string') {
             throw new InvalidParamException('receiver', 'string');
-        }
-
-        const type = data.params[2];
-        if (typeof type !== 'string' || !CommentType[type]) {
+        } else if (!EnumHelper.containsName(CommentType, type)) {
             throw new InvalidParamException('type', 'CommentType');
-        }
-
-        const target = data.params[3];
-        if (typeof target !== 'string') {
+        } else if (typeof target !== 'string') {
             throw new InvalidParamException('target', 'string');
-        }
-
-        const message = data.params[4];
-        if (typeof message !== 'string') {
+        } else if (typeof message !== 'string') {
             throw new InvalidParamException('message', 'string');
         }
 
-        let parentCommentHash;
+        let parentHash;
         if (data.params.length > 5) {
-            parentCommentHash = data.params[5];
-            if (typeof parentCommentHash !== 'string') {
+            parentHash = data.params[5];
+            if (typeof parentHash !== 'string') {
                 throw new InvalidParamException('parentCommentHash', 'string');
             }
         }
 
         // make sure profile with the id exists
-        data.params[0] = await this.profileService.findOne(profileId).then(value => value.toJSON())
-            .catch(() => {
+        data.params[0] = await this.profileService.findOne(profileId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                this.log.error('Profile not found: ' + reason);
                 throw new ModelNotFoundException('Profile');
             });
 
-        // Throws NotFoundException
-        if (parentCommentHash) {
-            data.params[5] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON())
+        if (parentHash) {
+            data.params[5] = await this.commentService.findOneByHash(parentHash)
+                .then(value => value.toJSON())
                 .catch(() => {
-                    throw new ModelNotFoundException('Parent Comment');
+                    throw new ModelNotFoundException('Comment');
                 });
         }
 
         if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
             await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
                 .catch(() => {
-                    throw new ModelNotFoundException('Listing Item');
+                    throw new ModelNotFoundException('ListingItem');
                 });
         }
 
         return data;
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileId> <receiver> <type> <target> <message> [parentHash]';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileId> <receiver> <type> <target> <message> [<parentHash>]';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>              - Numeric - The ID of the Profile. \n'
+            + '    <receiver>               - String - The receiver address. \n'
+            + '    <type>                   - ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of Comment.\n'
+            + '    <target>                 - String - The Comments targets hash. \n'
+            + '    <message>                - String - The message passed in the Comment. \n'
+            + '    <parentHash>             - [optional] String - The hash of the parent Comment.\n';
     }
 
     public description(): string {

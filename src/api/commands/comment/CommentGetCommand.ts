@@ -47,26 +47,23 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
         if (data.params.length < 1) {
-            throw new MissingParamException('id or hash');
+            throw new MissingParamException('hash');
         }
-
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [<commenId>|<hash>] ';
+        return this.getName() + ' <hash> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <commenId>          - [optional] Numeric - The ID of the comment we want to retrieve. \n'
             + '    <hash>              - [optional] String - The hash of the comment we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a comment via commentId or hash.';
+        return 'Get a comment via hash.';
     }
 
     public example(): string {

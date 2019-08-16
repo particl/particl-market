@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -14,11 +15,9 @@ import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {EnumHelper} from '../../../core/helpers/EnumHelper';
-import {MarketType} from '../../enums/MarketType';
-import {CommentType} from '../../enums/CommentType';
-import * as resources from 'resources';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { CommentType } from '../../enums/CommentType';
 
 export class CommentCountCommand extends BaseCommand implements RpcCommandInterface<number> {
 
@@ -58,7 +57,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      *  [0]: type, CommentType
      *  [1]: target
-     *  [2]: parentCommentHash, optional
+     *  [2]: parentHash, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -76,16 +75,17 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('target', 'string');
         }
 
-        let parentCommentHash;
+        let parentHash;
         if (data.params.length >= 3) {
-            parentCommentHash = data.params[2];
+            parentHash = data.params[2];
 
             if (data.params[2] && typeof data.params[2] !== 'string') {
-                throw new InvalidParamException('parentCommentHash', 'string');
+                throw new InvalidParamException('parentHash', 'string');
             }
 
-            if (parentCommentHash && parentCommentHash.length > 0) {
-                data.params[2] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON())
+            if (parentHash && parentHash.length > 0) {
+                data.params[2] = await this.commentService.findOneByHash(parentHash)
+                    .then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('Comment');
                     });
@@ -101,9 +101,9 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <type>                   - ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of comment.\n'
-            + '    <target>                 - String - The target of the comment.'
-            + '    <parentCommentHash>      - [optional] String - The hash of the parent comment.\n';
+            + '    <type>                   - ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of Comment.\n'
+            + '    <target>                 - String - The target of the Comment.'
+            + '    <parentHash>             - [optional] String - The hash of the parent Comment.\n';
     }
 
 
