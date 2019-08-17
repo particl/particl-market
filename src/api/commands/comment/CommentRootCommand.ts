@@ -40,7 +40,7 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return this.getName() + ' (count|get|search|post)  -  ' + this.description();
+        return this.usage() + ' -  ' + this.description() + ' \n';
     }
 
     public description(): string {
