@@ -150,7 +150,7 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
             age: 1000 * 30
         } as SmsgMessageSearchParams;
 
-        this.log.debug('SmsgMessageSearchParams: ', JSON.stringify(searchParams, null, 2));
+        // this.log.debug('SmsgMessageSearchParams: ', JSON.stringify(searchParams, null, 2));
         return searchParams;
     }
 }

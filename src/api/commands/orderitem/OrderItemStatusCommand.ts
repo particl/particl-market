@@ -74,25 +74,25 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             const mpaBids: resources.Bid[] = _.filter(listingItem.Bids, (bid) => {
                 return bid.type === MPAction.MPA_BID;
             });
-            this.log.debug('mpaBids:', JSON.stringify(mpaBids, null, 2));
+            // this.log.debug('mpaBids:', JSON.stringify(mpaBids, null, 2));
 
             for (const bid of mpaBids) {
 
                 // we are only creating a status if there's no specific buyer set or when the given buyer matches bid.bidder
                 if (!buyer || buyer === '*' || bid.bidder === buyer) {
 
-                    this.log.debug('listingItem.Bids:', JSON.stringify(listingItem.Bids, null, 2));
+                    // this.log.debug('listingItem.Bids:', JSON.stringify(listingItem.Bids, null, 2));
 
                     // find the childBids of the Bid
                     const childBids = _.filter(listingItem.Bids, (childBid) => {
                         return childBid.parentBidId === bid.id;
                     });
-                    this.log.debug('childBids:', JSON.stringify(childBids, null, 2));
+                    // this.log.debug('childBids:', JSON.stringify(childBids, null, 2));
 
                     if (!_.isEmpty(childBids)) {
                         // we have childBids and there could be multiple of them, so orderBy createdAt
                         const childBidsOrdered = _.orderBy(childBids, ['createdAt'], ['asc']);
-                        this.log.debug('childBidsOrdered: ', JSON.stringify(childBidsOrdered, null, 2));
+                        // this.log.debug('childBidsOrdered: ', JSON.stringify(childBidsOrdered, null, 2));
                         const orderItemStatus = new OrderItemStatusResponse(
                             listingItem.hash,
                             childBidsOrdered[0].type,
@@ -110,7 +110,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
                 }
             }
         }
-        this.log.debug('orderItemStatuses:', JSON.stringify(orderItemStatuses, null, 2));
+        // this.log.debug('orderItemStatuses:', JSON.stringify(orderItemStatuses, null, 2));
 
         return orderItemStatuses;
     }

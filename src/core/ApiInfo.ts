@@ -4,7 +4,6 @@
 
 import * as express from 'express';
 import { Environment } from './helpers/Environment';
-import { SwaggerUI } from './SwaggerUI';
 import { ApiMonitor } from './ApiMonitor';
 
 
@@ -23,10 +22,6 @@ export class ApiInfo {
                     const links = {
                         links: {}
                     };
-                    if (Environment.isTruthy(process.env.SWAGGER_ENABLED)) {
-                        links.links['swagger'] =
-                            `${app.get('host')}:${app.get('port')}${SwaggerUI.getRoute()}`;
-                    }
                     if (Environment.isTruthy(process.env.MONITOR_ENABLED)) {
                         links.links['monitor'] =
                             `${app.get('host')}:${app.get('port')}${ApiMonitor.getRoute()}`;

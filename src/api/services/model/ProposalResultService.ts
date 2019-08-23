@@ -111,8 +111,6 @@ export class ProposalResultService {
         }
 
         // we dont want to remove ListingItems that have related Bids
-        // const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-        //    .then(value => value.toJSON());
         if (!_.isEmpty(listingItem.Bids)) {
             return false;
         }
@@ -121,18 +119,34 @@ export class ProposalResultService {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();
         });
 
-        // Requirements to remove the ListingItem from the testnet market, these should also be configurable:
-        // at minimum, 10% of total network weight for removal
-        const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
-        const networkSupply = blockchainInfo.moneysupply * 100000000;
+        const keepOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.description === ItemVote.KEEP.toString();
+        });
 
-        const removalPercentage: number = process.env.LISTING_ITEM_REMOVE_PERCENTAGE || 0.1; // todo: configurable
-        if (removeOptionResult && (removeOptionResult.weight / networkSupply) * 100 >= removalPercentage) {
-            this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '%');
-            return true;
+        if (keepOptionResult === undefined || removeOptionResult === undefined) {
+            // no results for some reason -> dont remove
+            return false;
         }
-        // this.log.debug('ListingItem should NOT be destroyed');
-        return false;
+
+        const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        const networkSupply = blockchainInfo.moneysupply * 100000000; // vote weights are in satoshis
+
+        const removalPercentage: number = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE) || 0.1;
+        const voteCountNeededForRemoval = (networkSupply / 100) * removalPercentage;
+
+        if ((removeOptionResult.weight - keepOptionResult.weight) > voteCountNeededForRemoval) {
+            this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
+            this.log.debug('removeOptionResult.weight: ', removeOptionResult.weight);
+            this.log.debug('keepOptionResult.weight: ', keepOptionResult.weight);
+            this.log.debug('count: ' + (removeOptionResult.weight - keepOptionResult.weight) + ' / ' + voteCountNeededForRemoval);
+            return true;
+        } else {
+            this.log.debug('Votes for ListingItem removal do not exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
+            this.log.debug('removeOptionResult.weight: ', removeOptionResult.weight);
+            this.log.debug('keepOptionResult.weight: ', keepOptionResult.weight);
+            this.log.debug('count: ' + (removeOptionResult.weight - keepOptionResult.weight) + ' / ' + voteCountNeededForRemoval);
+            return false;
+        }
     }
 
 }

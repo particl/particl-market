@@ -66,7 +66,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             orderField: data.params[3],
             type: data.params[4],
             target: data.params[5],
-            parentCommentId: parentComment.id,
+            parentCommentId: parentComment.id
         } as CommentSearchParams;
 
         return await this.commentService.search(searchParams, withRelated);

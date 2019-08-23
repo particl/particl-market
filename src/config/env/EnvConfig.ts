@@ -15,7 +15,6 @@ export class EnvConfig {
 
     private defaultEnv = {
         NODE_ENV: EnvironmentType.DEVELOPMENT.toString(),
-        MARKETPLACE_VERSION: '0.0.1.0',
         APP_NAME: 'particl-market',
         APP_HOST: 'http://localhost',
         APP_URL_PREFIX: '/api',
@@ -32,7 +31,8 @@ export class EnvConfig {
         // DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
         // DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
         // DEFAULT_MARKETPLACE_ADDRESS: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
-        PAID_MESSAGE_RETENTION_DAYS: 4,
+        PAID_MESSAGE_RETENTION_DAYS: 7,
+        FREE_MESSAGE_RETENTION_DAYS: 7,
         MARKET_RPC_AUTH_DISABLED: false,
         MARKET_RPC_USER: 'test',
         MARKET_RPC_PASSWORD: 'test',
@@ -45,9 +45,6 @@ export class EnvConfig {
         API_INFO_ROUTE: '/info',
         CLI_ENABLED: true,
         CLI_ROUTE: '/cli',
-        SWAGGER_ENABLED: true,
-        SWAGGER_ROUTE: '/docs',
-        SWAGGER_FILE: '/src/api/swagger.json',
         MONITOR_ENABLED: true,
         MONITOR_ROUTE: '/status',
         DB_CLIENT: 'sqlite3',

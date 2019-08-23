@@ -130,6 +130,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new InvalidParamException('marketId', 'number');
         }
 
+        if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+        }
+
         if (data.params[3] !== undefined) {
             if (typeof data.params[3] !== 'boolean') {
                 throw new InvalidParamException('estimateFee', 'boolean');

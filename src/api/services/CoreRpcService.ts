@@ -96,7 +96,7 @@ export class CoreRpcService extends CtRpc {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    private activeWallet = '';
+    private activeWallet = 'market';
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

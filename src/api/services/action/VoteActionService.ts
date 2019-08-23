@@ -160,7 +160,7 @@ export class VoteActionService extends BaseActionService {
         const votes: resources.Vote[] = await this.voteService.findAllByVotersAndProposalHash(addresses, proposal.hash)
             .then(value => value.toJSON());
 
-        this.log.debug('getCombinedVote(), votes:', JSON.stringify(votes, null, 2));
+        // this.log.debug('getCombinedVote(), votes:', JSON.stringify(votes, null, 2));
 
         if (_.isEmpty(votes)) {
             throw new MessageException('No Votes found.');
@@ -323,7 +323,7 @@ export class VoteActionService extends BaseActionService {
             this.log.debug('proposal.id: ' + proposal.id);
             this.log.debug('vote.id: ' + vote.id);
             vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
-            this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
+            // this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
 
         } else {
             // Vote doesnt exist yet, so we need to create it.
@@ -339,7 +339,7 @@ export class VoteActionService extends BaseActionService {
                 smsgMessage);
 
             vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
-            this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
+            // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
         }
 
         // if (vote) {
@@ -347,11 +347,24 @@ export class VoteActionService extends BaseActionService {
         proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
         const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
-        this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-
         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
         // we can now check whether the ListingItem should be removed or not
         if (proposal.category === ProposalCategory.ITEM_VOTE) {
+
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                .then(value => value.toJSON());
+            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                .then(async remove => {
+
+                    // TODO: if user has voted for removal, then the item should stay removed
+                    // update the removed flag if its value is different from what it should be
+                    if (remove) {
+                        this.log.debug('updating the ListingItem removed flag to: ' + remove);
+                        // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
+                        // await this.listingItemService.destroy(listingItem.id);
+                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    }
+                });
 
             // if this vote is mine lets set/unset the removed flag
             const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
@@ -360,15 +373,6 @@ export class VoteActionService extends BaseActionService {
                 await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
             }
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                .then(value => value.toJSON());
-            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                .then(async remove => {
-                    if (remove) {
-                        this.log.debug('removing the ListingItem...');
-                        await this.listingItemService.destroy(listingItem.id);
-                    }
-                });
         }
         return vote;
         // }

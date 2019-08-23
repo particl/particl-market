@@ -28,6 +28,7 @@ import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { CommentService } from './CommentService';
 import { CommentType } from '../../enums/CommentType';
+import { ItemImageService } from './ItemImageService';
 
 export class ListingItemService {
 
@@ -37,6 +38,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
@@ -315,19 +317,26 @@ export class ListingItemService {
     public async destroy(id: number): Promise<void> {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
-        this.log.debug('deleting listingItem:', listingItem.id);
 
-        // Comments dont have a hard link to listing items
-        const listingComments = await this.commentService.findAllByTypeTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
+        // Comments dont have a hard link to listingitems
+        const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {
-                this.log.debug('deleting listingItem comment:', comment.id);
+                this.log.debug('destroy(), deleting Comment:', comment.id);
                 comment.destroy();
             } catch (error) {
                 // Just log the error, we dont want to stop the process if one of these fails.
                 this.log.error(error);
             }
         });
+
+        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
+        // manually remove images
+        for (const image of listingItem.ItemInformation.ItemImages) {
+            await this.itemImageService.destroy(image.id);
+        }
+
+        this.log.debug('destroy(), deleting ListingItem:', listingItem.id);
 
         await this.listingItemRepo.destroy(listingItem.id);
     }
@@ -338,10 +347,9 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
-       const listingItemsModel = await this.findAllExpired();
-       const listingItems = listingItemsModel.toJSON();
+       const listingItems: resources.ListingItem[] = await this.findAllExpired().then(value => value.toJSON());
        for (const listingItem of listingItems) {
-           if (listingItem.expiredAt <= Date()) {
+           if (listingItem.expiredAt <= Date.now()) {
                await this.destroy(listingItem.id);
            }
        }

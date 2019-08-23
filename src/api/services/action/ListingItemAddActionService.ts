@@ -43,6 +43,7 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
+        // this.log.debug('createMessage(), params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
             listingItem: params.listingItem
@@ -62,7 +63,14 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
         // TODO: create MessageValidator and move to base
-        return ListingItemAddValidator.isValid(marketplaceMessage);
+        this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+
+        try {
+            return ListingItemAddValidator.isValid(marketplaceMessage);
+        } catch (e) {
+            this.log.debug('ERROR:', e);
+            return false;
+        }
     }
 
     /**

@@ -6,18 +6,18 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { BidConfiguration, Cryptocurrency, MPM, ompVersion, OpenMarketProtocol } from 'omp-lib/dist/omp';
-import { CoreRpcService } from './CoreRpcService';
+import { CoreRpcService, BlockchainInfo } from './CoreRpcService';
 import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
 import { BidMessage } from '../messages/action/BidMessage';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import {Config} from 'omp-lib/dist/abstract/config';
+import { Config } from 'omp-lib/dist/abstract/config';
 
 export class OmpService {
 
-    private static getMPM(message: ActionMessageInterface): MPM {
+    public static getMPM(message: ActionMessageInterface): MPM {
         return {
             action: message,
             version: ompVersion()
@@ -32,9 +32,7 @@ export class OmpService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        const ompConfig = { network: 'testnet'} as Config;
-        this.omp = new OpenMarketProtocol(ompConfig);
-        this.omp.inject(Cryptocurrency.PART, coreRpcService);
+        this.initializeOmp(coreRpcService);
     }
 
     /**
@@ -112,5 +110,25 @@ export class OmpService {
         );
     }
 
-
+    private initializeOmp(coreRpcService: CoreRpcService): void {
+        coreRpcService.isConnected().then((connected) => {
+            if (!connected) {
+                setTimeout(() => { this.initializeOmp(coreRpcService); }, 500, coreRpcService);
+                return;
+            }
+            coreRpcService.getBlockchainInfo().then(
+                (blockInfo: BlockchainInfo) => {
+                    const chain = `${blockInfo.chain}net`;
+                    const ompConfig = { network: chain} as Config;
+                    this.omp = new OpenMarketProtocol(ompConfig);
+                    this.omp.inject(Cryptocurrency.PART, coreRpcService);
+                },
+                () => {
+                    const ompConfig = { network: 'testnet'} as Config;
+                    this.omp = new OpenMarketProtocol(ompConfig);
+                    this.omp.inject(Cryptocurrency.PART, coreRpcService);
+                }
+            );
+        });
+    }
 }

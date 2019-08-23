@@ -14,7 +14,6 @@ import * as http from 'http';
 import * as express from 'express';
 import { Logger } from './Logger';
 import { Environment } from './helpers/Environment';
-import { SwaggerUI } from './SwaggerUI';
 import { ApiMonitor } from './ApiMonitor';
 import { ApiInfo } from './ApiInfo';
 import { CliIndex } from './CliIndex';
@@ -79,9 +78,6 @@ export class Server {
         this.log.debug(``);
         if (Environment.isTruthy(process.env.API_INFO_ENABLED)) {
             this.log.debug(`API Info     : ${app.get('host')}:${app.get('port')}${ApiInfo.getRoute()}`);
-        }
-        if (Environment.isTruthy(process.env.SWAGGER_ENABLED)) {
-            this.log.debug(`Swagger      : ${app.get('host')}:${app.get('port')}${SwaggerUI.getRoute()}`);
         }
         if (Environment.isTruthy(process.env.CLI_ENABLED)) {
             this.log.debug(`CLI          : ${app.get('host')}:${app.get('port')}${CliIndex.getRoute()}`);

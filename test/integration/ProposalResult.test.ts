@@ -35,11 +35,11 @@ describe('ProposalResult', () => {
     let profileService: ProfileService;
     let marketService: MarketService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let createdListingItem: resources.ListingItem;
-    let createdProposal: resources.Proposal;
-    let createdProposalResult: resources.ProposalResult;
+    let profile: resources.Profile;
+    let market: resources.Market;
+    let listingItem: resources.ListingItem;
+    let proposal: resources.Proposal;
+    let proposalResult: resources.ProposalResult;
 
     const testData = {
         calculatedAt: new Date().getTime()
@@ -62,8 +62,8 @@ describe('ProposalResult', () => {
         await testDataService.clean();
 
         // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // create ListingItems
         const generateListingItemParams = new GenerateListingItemParams([
@@ -78,7 +78,7 @@ describe('ProposalResult', () => {
             true,                                       // generateListingItemObjects
             false,                                      // generateObjectDatas
             null,                                       // listingItemTemplateHash
-            defaultProfile.address                      // seller
+            profile.address                      // seller
         ]).toParamsArray();
 
         const listingItems = await testDataService.generate({
@@ -87,16 +87,16 @@ describe('ProposalResult', () => {
             withRelated: true,                          // return model
             generateParams: generateListingItemParams   // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
+        listingItem = listingItems[0];
 
         // create Proposal
         const generateProposalParams = new GenerateProposalParams([
             false,                                      // generateListingItemTemplate
             false,                                      // generateListingItem
-            createdListingItem.hash,                    // listingItemHash,
+            listingItem.hash,                           // listingItemHash,
             false,                                      // generatePastProposal,
             2,                                          // voteCount
-            defaultProfile.address                      // submitter
+            profile.address                             // submitter
         ]).toParamsArray();
 
         const proposals = await testDataService.generate({
@@ -105,7 +105,7 @@ describe('ProposalResult', () => {
             withRelated: true,                          // return model
             generateParams: generateProposalParams      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdProposal = proposals[0];
+        proposal = proposals[0];
 
     });
 
@@ -123,75 +123,81 @@ describe('ProposalResult', () => {
         );
     });
 
+    test('shouldRemoveListingItem should return correct result', async () => {
+        proposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash, true).then(value => value.toJSON());
+
+        log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        proposalResult.ProposalOptionResults[1].weight = 1000 * 100000000; // vote weights are in satoshis
+        let shouldRemove: boolean = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
+        expect(shouldRemove).toBeFalsy();
+
+        proposalResult.ProposalOptionResults[1].weight = 10000 * 100000000; // vote weights are in satoshis
+        shouldRemove = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
+        expect(shouldRemove).toBeTruthy();
+    });
+
     test('Should create a new ProposalResult without ProposalOptions', async () => {
 
-        testData.proposal_id = createdProposal.id;
+        testData.proposal_id = proposal.id;
 
-        const proposalResultModel: ProposalResult = await proposalResultService.create(testData);
-        createdProposalResult = proposalResultModel.toJSON();
+        proposalResult = await proposalResultService.create(testData).then(value => value.toJSON());
 
         // test the values
-        expect(createdProposalResult.Proposal).toBeDefined();
-        expect(createdProposalResult.Proposal.id).toBe(createdProposal.id);
-        expect(createdProposalResult.calculatedAt).toBe(testData.calculatedAt);
+        expect(proposalResult.Proposal).toBeDefined();
+        expect(proposalResult.Proposal.id).toBe(proposal.id);
+        expect(proposalResult.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should list ProposalResults with our newly created one', async () => {
-        const proposalResultCollection = await proposalResultService.findAll();
-        const proposalResult = proposalResultCollection.toJSON();
-        // log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+        const proposalResults: resources.ProposalResult[] = await proposalResultService.findAll().then(value => value.toJSON());
 
         // testDataService.generate creates first 1 empty result, then 1 when recalculating result
-        expect(proposalResult.length).toBe(3);
+        expect(proposalResults.length).toBe(3);
     });
 
     test('Should list all ProposalResults by proposalHash', async () => {
-        const proposalResultCollection = await proposalResultService.findAllByProposalHash(createdProposal.hash, true);
-        const proposalResult = proposalResultCollection.toJSON();
+        const proposalResults: resources.ProposalResult[] = await proposalResultService.findAllByProposalHash(proposal.hash, true)
+            .then(value => value.toJSON());
 
-        log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-        expect(proposalResult.length).toBe(3);
-        createdProposalResult = proposalResult[0];
+        // log.debug('proposalResults:', JSON.stringify(proposalResults, null, 2));
+        expect(proposalResults.length).toBe(3);
+        proposalResult = proposalResults[0];
 
-        const result = proposalResult[0];
+        const result: resources.ProposalResult = proposalResults[0];
         expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(createdProposal.id);
-        expect(proposalResult[0].id).toBeGreaterThan(proposalResult[1].id);
-
+        expect(result.Proposal.id).toBe(proposal.id);
     });
 
     test('Should return latest ProposalResult by proposalHash', async () => {
-        const proposalResultModel: ProposalResult = await proposalResultService.findLatestByProposalHash(createdProposal.hash);
-        const result = proposalResultModel.toJSON();
+        const result: resources.ProposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash).then(value => value.toJSON());
         expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(createdProposal.id);
-        expect(result.id).toBe(createdProposalResult.id);
+        expect(result.Proposal.id).toBe(proposal.id);
+        expect(result.id).toBe(proposalResult.id);
 
     });
 
     test('Should return one ProposalResult', async () => {
-        const proposalResultModel: ProposalResult = await proposalResultService.findOne(createdProposalResult.id);
-        const result: resources.ProposalResult = proposalResultModel.toJSON();
+        const result: resources.ProposalResult = await proposalResultService.findOne(proposalResult.id).then(value => value.toJSON());
 
         expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(createdProposal.id);
+        expect(result.Proposal.id).toBe(proposal.id);
         expect(result.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should update the ProposalResult', async () => {
-        const proposalResultModel: ProposalResult = await proposalResultService.update(createdProposalResult.id, testDataUpdated);
-        const result = proposalResultModel.toJSON();
+        const result: resources.ProposalResult = await proposalResultService.update(proposalResult.id, testDataUpdated)
+            .then(value => value.toJSON());
 
         expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(createdProposal.id);
+        expect(result.Proposal.id).toBe(proposal.id);
         expect(result.calculatedAt).toBe(testData.calculatedAt);
     });
 
     test('Should delete the ProposalResult', async () => {
         expect.assertions(1);
-        await proposalResultService.destroy(createdProposalResult.id);
-        await proposalResultService.findOne(createdProposalResult.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdProposalResult.id))
+        await proposalResultService.destroy(proposalResult.id);
+        await proposalResultService.findOne(proposalResult.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(proposalResult.id))
         );
     });
 

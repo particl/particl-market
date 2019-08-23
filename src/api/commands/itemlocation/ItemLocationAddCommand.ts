@@ -103,7 +103,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('country', 'string');
-        } else if (typeof data.params[2] !== 'string') {
+        } else if (data.params[2] && typeof data.params[2] !== 'string') {
             throw new InvalidParamException('address', 'string');
         }
 

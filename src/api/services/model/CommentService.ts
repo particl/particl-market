@@ -41,8 +41,8 @@ export class CommentService {
         return comment;
     }
 
-    public async findAllByTypeTarget(type: string, target: string): Promise<Bookshelf.Collection<Comment>> {
-        return this.commentRepo.findAllByTypeTarget(type, target);
+    public async findAllByTypeAndTarget(type: string, target: string): Promise<Bookshelf.Collection<Comment>> {
+        return this.commentRepo.findAllByTypeAndTarget(type, target);
     }
 
     public async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {

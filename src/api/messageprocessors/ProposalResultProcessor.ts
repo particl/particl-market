@@ -35,6 +35,8 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
     public async process(): Promise<void> {
 
+        // this.log.debug('process(), recalculate ProposalResults...');
+
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
             // category: ProposalCategory.ITEM_VOTE,
@@ -63,7 +65,7 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                         });
 
                     if (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now()) {
-                        this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
+                        this.log.debug('process(), recalculate proposal.hash: ', proposal.hash);
 
                         await this.proposalService.recalculateProposalResult(proposal);
                         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
@@ -86,6 +88,9 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                                 });
 
                         }
+                    } else {
+                        this.log.debug('process(), skip proposal.hash: ', proposal.hash);
+                        this.log.debug('process(), proposalResult.calculatedAt: ', proposalResult.calculatedAt);
                     }
                 }
             });

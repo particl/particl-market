@@ -27,6 +27,7 @@ services:
       - RPCHOSTNAME=particld1
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
+      - STANDALONE=true
 
   app2:
     build:
@@ -100,7 +101,7 @@ services:
 #      - PORT=4200
 
   particld1:
-    image: ludx/particl:0.18.1.0 # master # 0.16.2.0
+    image: ludx/particl:0.18.1.2 # master # 0.16.2.0
     volumes:
       - ./data/particl1:/root/.particl:cached
     ports:
@@ -131,7 +132,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:0.18.1.0 # master # 0.16.2.0
+    image: ludx/particl:0.18.1.2 # master # 0.16.2.0
     volumes:
       - ./data/particl2:/root/.particl:cached
     ports:

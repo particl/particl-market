@@ -54,8 +54,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         const fromAddress = profile.address;    // we are the seller, send from the profiles address which posted the item being bidded for
         const toAddress = bid.bidder;           // send to the address that sent the bid
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {

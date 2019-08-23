@@ -8,11 +8,10 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
 export class BidDataUpdateRequest extends RequestBody implements ModelRequestInterface {
-  @IsNotEmpty()
-  public bid_id: number;
+    @IsNotEmpty()
+    public key: string;
 
-  public key: string;
-
-  public value: string;
+    @IsNotEmpty()
+    public value: string;
 }
 // tslint:enable:variable-name

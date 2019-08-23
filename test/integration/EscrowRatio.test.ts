@@ -23,7 +23,6 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { Escrow } from '../../src/api/models/Escrow';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
@@ -41,11 +40,12 @@ describe('EscrowRatio', () => {
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
+
     let listingItemTemplate: resources.ListingItemTemplate;
-    let createdEscrow: resources.Escrow;
-    let createdEscrowRatio: resources.EscrowRatio;
+    let escrow: resources.Escrow;
+    let escrowRatio: resources.EscrowRatio;
 
     const testData = {
         buyer: 50,
@@ -71,24 +71,24 @@ describe('EscrowRatio', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // generate ListingItemTemplate without Escrow
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            false,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            true,       // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            true,       // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            false,      // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
 
         // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
@@ -104,11 +104,11 @@ describe('EscrowRatio', () => {
         // create Escrow without EscrowRatio
         const escrowData = {
             payment_information_id: listingItemTemplate.PaymentInformation.id,
-            type: EscrowType.MAD
+            type: EscrowType.MAD,
+            secondsToLock: 0
         } as EscrowCreateRequest;
 
-        const escrowModel: Escrow = await escrowService.create(escrowData);
-        createdEscrow = escrowModel.toJSON();
+        escrow = await escrowService.create(escrowData).then(value => value.toJSON());
 
     });
 
@@ -127,9 +127,9 @@ describe('EscrowRatio', () => {
     });
 
     test('Should create a new EscrowRatio', async () => {
-        testData['escrow_id'] = createdEscrow.id;
+        testData['escrow_id'] = escrow.id;
         const escrowRatioModel: EscrowRatio = await escrowRatioService.create(testData);
-        createdEscrowRatio = escrowRatioModel.toJSON();
+        escrowRatio = escrowRatioModel.toJSON();
         const result = escrowRatioModel.toJSON();
 
         expect(result.buyer).toBe(testData.buyer);
@@ -154,7 +154,7 @@ describe('EscrowRatio', () => {
     });
 
     test('Should return one EscrowRatio', async () => {
-        const escrowRatioModel: EscrowRatio = await escrowRatioService.findOne(createdEscrowRatio.id);
+        const escrowRatioModel: EscrowRatio = await escrowRatioService.findOne(escrowRatio.id);
         const result = escrowRatioModel.toJSON();
 
         expect(result.buyer).toBe(testData.buyer);
@@ -163,14 +163,14 @@ describe('EscrowRatio', () => {
 
     test('Should throw ValidationException because there is no escrow_id', async () => {
         expect.assertions(1);
-        await escrowRatioService.update(createdEscrowRatio.id, testDataUpdated).catch(e =>
+        await escrowRatioService.update(escrowRatio.id, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should update the EscrowRatio', async () => {
-        testDataUpdated['escrow_id'] = createdEscrow.id;
-        const escrowRatioModel: EscrowRatio = await escrowRatioService.update(createdEscrowRatio.id, testDataUpdated);
+        testDataUpdated['escrow_id'] = escrow.id;
+        const escrowRatioModel: EscrowRatio = await escrowRatioService.update(escrowRatio.id, testDataUpdated);
         const result = escrowRatioModel.toJSON();
 
         expect(result.buyer).toBe(testDataUpdated.buyer);
@@ -179,10 +179,10 @@ describe('EscrowRatio', () => {
 
     test('Should delete the EscrowRatio', async () => {
         expect.assertions(4);
-        await escrowRatioService.destroy(createdEscrowRatio.id);
+        await escrowRatioService.destroy(escrowRatio.id);
 
-        await escrowRatioService.findOne(createdEscrowRatio.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdEscrowRatio.id))
+        await escrowRatioService.findOne(escrowRatio.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowRatio.id))
         );
 
         // delete ListingItemTemplate
@@ -197,8 +197,8 @@ describe('EscrowRatio', () => {
         );
 
         // same with Escrow
-        await escrowService.findOne(createdEscrow.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdEscrow.id))
+        await escrowService.findOne(escrow.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrow.id))
         );
     });
 

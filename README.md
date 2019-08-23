@@ -16,8 +16,6 @@
 ```
 
 
-[![CircleCI](https://circleci.com/gh/particl/dapp-shell/tree/develop.svg?style=svg)](https://circleci.com/gh/particl/dapp-shell/tree/develop)
-
 ## Getting Started 
 ### Step 1:  Set up the Development Environment 
 You need to set up your development environment before you can do anything.
@@ -159,7 +157,6 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | Route       | Description |
 | ----------- | ----------- |
 | **/api/info** | Shows us the name, description and the version of the package.json |
-| **/api/docs** | This is the Swagger UI with our API documentation |
 | **/status**   | Shows a small monitor page for the server |
 | **/cli**      | Web based CLI to use the RPC commands |
 | **/api/rpc**  | RPC Server endpoint |
@@ -184,7 +181,6 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **src/api/repositories/**       | Repository / DB layer |
 | **src/api/requests/**           | Request bodys with validations |
 | **src/api/services/**           | Service layer |
-| **src/api/** swagger.json       | Swagger documentation |
 | **src/console/**                | Command line scripts |
 | **src/config/**                 | Configurations like database or logger |
 | **src/constants/**              | Global Constants |

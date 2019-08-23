@@ -15,8 +15,8 @@ export class SettingCreateRequest extends RequestBody implements ModelRequestInt
     @IsNotEmpty()
     public value: string;
 
-    // @IsNotEmpty()
     public profile_id: number;
+    public market_id: number;
 
 }
 // tslint:enable:variable-name

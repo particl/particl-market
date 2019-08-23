@@ -94,8 +94,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const fromAddress = profile.address;    // send from the given profiles address
         const toAddress = listingItem.seller;   // send to listingItem sellers address
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
@@ -104,6 +103,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             address
         } as BidRequest;
 
+        this.log.debug('postRequest: ', JSON.stringify(postRequest, null, 2));
         const response: SmsgSendResponse = await this.bidActionService.post(postRequest);
         return response;
 

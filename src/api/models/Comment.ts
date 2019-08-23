@@ -8,7 +8,6 @@ import { SearchOrder } from '../enums/SearchOrder';
 import { CommentType } from '../enums/CommentType';
 import { CommentSearchParams } from '../requests/search/CommentSearchParams';
 
-
 export class Comment extends Bookshelf.Model<Comment> {
 
     public static RELATIONS = [
@@ -36,7 +35,7 @@ export class Comment extends Bookshelf.Model<Comment> {
         }
     }
 
-    public static async findAllByTypeTarget(type: string, target: string): Promise<Collection<Comment>> {
+    public static async fetchAllByTypeAndTarget(type: string, target: string): Promise<Collection<Comment>> {
       const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.type', '=', type);
@@ -45,7 +44,7 @@ export class Comment extends Bookshelf.Model<Comment> {
       return await commentResultCollection.fetchAll();
     }
 
-    public static async findAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
+    public static async fetchAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
         const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.hash', '=', hash);
@@ -104,9 +103,6 @@ export class Comment extends Bookshelf.Model<Comment> {
 
         const commentCollection = Comment.forge<Model<Comment>>()
             .query( qb => {
-                if (options.commentHash) {
-                    qb.where('comments.hash', '=', options.commentHash);
-                }
 
                 if (CommentType[options.type]) {
                     qb.where('comments.type', '=', options.type);

@@ -38,10 +38,11 @@ describe('Escrow', () => {
     let listingItemTemplateService: ListingItemTemplateService;
     let paymentInformationService: PaymentInformationService;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
+
     let listingItemTemplate: resources.ListingItemTemplate;
-    let createdEscrow: resources.Escrow;
+    let escrow: resources.Escrow;
 
     const testData = {
         type: EscrowType.MAD,
@@ -74,28 +75,25 @@ describe('Escrow', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // generate ListingItemTemplate without Escrow
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            false,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            true,       // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            true,       // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            false,      // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
-
-        // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
-
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
             amount: 1,
@@ -119,9 +117,9 @@ describe('Escrow', () => {
 
     test('Should create a new Escrow', async () => {
         testData.payment_information_id = listingItemTemplate.PaymentInformation.id;
-        createdEscrow = await escrowService.create(testData)
-            .then(value => value.toJSON());
-        const result = createdEscrow;
+
+        escrow = await escrowService.create(testData).then(value => value.toJSON());
+        const result: resources.Escrow = escrow;
 
         expect(result.type).toBe(testData.type);
         expect(result.secondsToLock).toBe(testData.secondsToLock);
@@ -138,11 +136,10 @@ describe('Escrow', () => {
     });
 
     test('Should list Escrows with our new create one', async () => {
-        const escrow: resources.Escrow[] = await escrowService.findAll()
-            .then(value => value.toJSON());
-        expect(escrow.length).toBe(1);
+        const escrows: resources.Escrow[] = await escrowService.findAll().then(value => value.toJSON());
+        expect(escrows.length).toBe(1);
 
-        const result = escrow[0];
+        const result: resources.Escrow = escrows[0];
 
         expect(result.type).toBe(testData.type);
         expect(result.secondsToLock).toBe(testData.secondsToLock);
@@ -150,8 +147,7 @@ describe('Escrow', () => {
     });
 
     test('Should return one Escrow', async () => {
-        const result: resources.Escrow = await escrowService.findOne(createdEscrow.id)
-            .then(value => value.toJSON());
+        const result: resources.Escrow = await escrowService.findOne(escrow.id).then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.secondsToLock).toBe(testData.secondsToLock);
@@ -160,8 +156,7 @@ describe('Escrow', () => {
     });
 
     test('Should update the Escrow', async () => {
-        const result: resources.Escrow = await escrowService.update(createdEscrow.id, testDataUpdated)
-            .then(value => value.toJSON());
+        const result: resources.Escrow = await escrowService.update(escrow.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.secondsToLock).toBe(testDataUpdated.secondsToLock);
@@ -173,10 +168,10 @@ describe('Escrow', () => {
         expect.assertions(3);
 
         // delete Escrow
-        await escrowService.destroy(createdEscrow.id);
-        await escrowService.findOne(createdEscrow.id)
+        await escrowService.destroy(escrow.id);
+        await escrowService.findOne(escrow.id)
             .catch(e =>
-                expect(e).toEqual(new NotFoundException(createdEscrow.id))
+                expect(e).toEqual(new NotFoundException(escrow.id))
             );
 
         // delete ListingItemTemplate

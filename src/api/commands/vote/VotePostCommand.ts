@@ -64,7 +64,8 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         // send to given market address
         const toAddress = market.receiveAddress;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        // TODO: validate that the !daysRetention > process.env.FREE_MESSAGE_RETENTION_DAYS
+        // const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const daysRetention = Math.ceil((proposal.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
         const estimateFee = false;
 

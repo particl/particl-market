@@ -11,19 +11,16 @@ import { ApiInfo } from './ApiInfo';
 import { ApiMonitor } from './ApiMonitor';
 import { exceptionHandler } from './api/exceptionHandler';
 import { extendExpressResponse } from './api/extendExpressResponse';
-import { SwaggerUI } from './SwaggerUI';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
 import { SocketIoServer } from './SocketIoServer';
-import { EnvConfig } from '../config/env/EnvConfig';
 
 export class Bootstrap {
 
     public log: Logger = new Logger(__filename);
-    private envConfig: EnvConfig;
 
-    constructor(envConfig: EnvConfig) {
-        this.envConfig = envConfig;
+    constructor() {
+        // nothing explicit to do
     }
 
     public defineExpressApp(app: express.Application): express.Application {
@@ -43,9 +40,6 @@ export class Bootstrap {
 
         const cliIndex = new CliIndex();
         cliIndex.setup(app);
-
-        const swaggerUI = new SwaggerUI();
-        swaggerUI.setup(app);
     }
 
     public startServer(app: express.Application): http.Server {

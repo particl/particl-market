@@ -72,7 +72,10 @@ export abstract class BaseActionService implements ActionServiceInterface {
         }
 
         // validate it, extending class should implement
-        const validated = await this.validateMessage(marketplaceMessage).catch(reason => false);
+        const validated = await this.validateMessage(marketplaceMessage).catch(reason => {
+            this.log.error('ERROR:', reason);
+            return false;
+        });
         if (!validated) {
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
         }

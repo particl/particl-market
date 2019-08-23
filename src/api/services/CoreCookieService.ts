@@ -50,15 +50,19 @@ export class CoreCookieService {
         this.log.info('scheduleLoop(), cookie: ', cookie);
 
         if (cookie) {
-            const data = fs.readFileSync(cookie);
-            this.log.debug('cookie: ', data.toString());
-            const usernameAndPassword = data.toString().split(':', 2);
+            try {
+                const data = fs.readFileSync(cookie);
+                this.log.debug('cookie: ', data.toString());
+                const usernameAndPassword = data.toString().split(':', 2);
 
-            // set username and password to cookie values
-            this.DEFAULT_CORE_USER = usernameAndPassword[0];
-            this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
-            this.log.debug('set DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
-            this.log.debug('set DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
+                // set username and password to cookie values
+                this.DEFAULT_CORE_USER = usernameAndPassword[0];
+                this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
+                this.log.debug('set DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
+                this.log.debug('set DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
+            } catch (e) {
+                this.log.error('ERROR: Could not find the cookie file.');
+            }
         }
 
         this.getCookieLoop();
