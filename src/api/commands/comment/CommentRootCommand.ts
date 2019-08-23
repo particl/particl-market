@@ -35,6 +35,10 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (count|get|search|post)  -  ' + this.description();
     }
@@ -47,4 +51,7 @@ export class CommentRootCommand extends BaseCommand implements RpcCommandInterfa
         return 'Commands for Comments.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

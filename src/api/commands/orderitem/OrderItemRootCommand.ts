@@ -28,6 +28,10 @@ export class OrderItemRootCommand extends BaseCommand implements RpcCommandInter
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (status)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class OrderItemRootCommand extends BaseCommand implements RpcCommandInter
 
     public description(): string {
         return 'Commands for managing order items.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

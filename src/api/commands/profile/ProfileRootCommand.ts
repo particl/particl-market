@@ -29,6 +29,10 @@ export class ProfileRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (add|get|list|remove|address|favorite)  -  ' + this.description();
     }
@@ -39,5 +43,9 @@ export class ProfileRootCommand extends BaseCommand implements RpcCommandInterfa
 
     public description(): string {
         return 'Commands for managing Profile.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

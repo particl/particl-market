@@ -68,7 +68,8 @@ export class WalletListCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
+        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });

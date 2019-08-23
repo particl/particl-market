@@ -28,6 +28,10 @@ export class AddressRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (list|add|update|remove)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class AddressRootCommand extends BaseCommand implements RpcCommandInterfa
 
     public description(): string {
         return 'Manage shipping addresses associated with profiles.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

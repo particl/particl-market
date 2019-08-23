@@ -23,7 +23,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 

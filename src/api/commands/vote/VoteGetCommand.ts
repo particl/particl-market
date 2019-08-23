@@ -94,8 +94,14 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         return data;
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <profileId> <proposalHash>';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>                 - The id of the Profile. ' + ' \n'
+            + '    <proposalHash>              - The hash of the Proposal. ';
     }
 
     public description(): string {

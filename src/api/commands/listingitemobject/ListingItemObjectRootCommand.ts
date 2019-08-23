@@ -28,6 +28,10 @@ export class ListingItemObjectRootCommand extends BaseCommand implements RpcComm
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (searchBy)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class ListingItemObjectRootCommand extends BaseCommand implements RpcComm
 
     public description(): string {
         return 'Commands for managing listing items object.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

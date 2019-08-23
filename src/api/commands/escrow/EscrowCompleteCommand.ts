@@ -144,4 +144,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         return 'Complete an escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

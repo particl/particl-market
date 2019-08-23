@@ -28,11 +28,24 @@ export class ShoppingCartRootCommand extends BaseCommand implements RpcCommandIn
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (list|get|add|update|remove|clear)  -  ' + this.description();
     }
 
-    public description(): string {
-        return 'Commands for managing Shopping Cart.';
+    public help(): string {
+        return this.usage();
     }
+
+    public description(): string {
+        return 'Commands for managing ShoppingCart.';
+    }
+
+    public example(): string {
+        return this.getName() + '';
+    }
+
 }

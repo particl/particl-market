@@ -28,6 +28,10 @@ export class PaymentInformationRootCommand extends BaseCommand implements RpcCom
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (update)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class PaymentInformationRootCommand extends BaseCommand implements RpcCom
 
     public description(): string {
         return 'Commands for managing payment information.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

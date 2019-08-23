@@ -29,6 +29,10 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (searchBy|get|add|remove|post)  -  ' + this.description();
     }
@@ -39,5 +43,9 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
 
     public description(): string {
         return 'Commands for managing ListingItemTemplates.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

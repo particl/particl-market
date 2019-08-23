@@ -59,6 +59,10 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
         }
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (template <listingItemTemplateId>|item <listingItemId>) ';
     }

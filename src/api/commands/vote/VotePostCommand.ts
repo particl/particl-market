@@ -145,12 +145,19 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         return data;
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <profileId> <proposalHash> <proposalOptionId> ';
     }
 
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>                 - The id of the Profile. ' + ' \n'
+            + '    <proposalHash>              - The hash of the Proposal. ' + ' \n'
+            + '    <proposalOptionId>          - The id of the ProposalOption. ';
+    }
+
     public description(): string {
-        return 'Vote on a proposal specified via hash. ';
+        return 'Vote on a Proposal specified via hash. ';
     }
 
     public example(): string {

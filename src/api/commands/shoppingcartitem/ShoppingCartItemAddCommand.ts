@@ -55,19 +55,22 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
         }
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
-        return this.getName() + ' <cartId> (<itemId>|<hash>) ';
+        return this.getName() + ' <cartId> <listingItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart we want to use. \n'
-            + '    <itemId>                 - Id of the ListingItem we want to add to the cart. \n'
-            + '    <hash>                   - Hash of the ListingItem we want to add to the cart. ';
+            + '    <cartId>                 - The id of the ShoppingCart. \n'
+            + '    <listingItemId>          - The id of the ListingItem we want to add to the ShoppingCart.';
     }
 
     public description(): string {
-        return 'Add a new item into shopping cart as per given listingItem and cart.';
+        return 'Add a new ListingItem into ShoppingCart.';
     }
 
     public example(): string {

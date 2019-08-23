@@ -34,6 +34,10 @@ export class DataRootCommand extends BaseCommand implements RpcCommandInterface<
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (add|generate|clean)  -  ' + this.description();
     }
@@ -44,5 +48,9 @@ export class DataRootCommand extends BaseCommand implements RpcCommandInterface<
 
     public description(): string {
         return 'Commands for managing data.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

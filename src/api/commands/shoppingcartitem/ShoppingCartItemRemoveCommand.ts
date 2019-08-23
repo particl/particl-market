@@ -57,19 +57,22 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
         }
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
-        return this.getName() + ' <cartId> (<itemId>|<hash>) ';
+        return this.getName() + ' <cartId> <listingItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart we want to use. \n'
-            + '    <itemId>                 -  Id of the ListingItem we want to add to the cart. \n'
-            + '    <hash>                   -  Hash of the ListingItem we want to add to the cart. ';
+            + '    <cartId>                 - The id of the ShoppingCart. \n'
+            + '    <listingItemId>          - The id of the ListingItem we want to add to the ShoppingCart. \n';
     }
 
     public description(): string {
-        return 'Remove lisging-item from shopping cart as per given listingitem Id and cart Id.';
+        return 'Remove ShoppingCartItem from ShoppingCart.';
     }
 
     public example(): string {

@@ -180,6 +180,7 @@ export const Targets = {
             AdminCommand: 'AdminCommand'
         },
         BaseCommand: 'BaseCommand',
+        BaseSearchCommand: 'BaseSearchCommand',
         bid: {
             BidAcceptCommand: 'BidAcceptCommand',
             BidCancelCommand: 'BidCancelCommand',

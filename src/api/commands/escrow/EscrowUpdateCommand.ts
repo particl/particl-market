@@ -144,5 +144,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
         return 'Update the details of an Escrow.';
     }
 
-
+    public example(): string {
+        return '';
+    }
 }

@@ -78,8 +78,13 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
         return data;
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <proposalHash>';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <proposalHash>              - The hash of the Proposal. ';
     }
 
     public description(): string {

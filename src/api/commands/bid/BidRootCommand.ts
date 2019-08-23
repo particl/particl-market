@@ -28,6 +28,10 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (searchBy|accept|cancel|reject|send)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
 
     public description(): string {
         return 'Commands for managing bids.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

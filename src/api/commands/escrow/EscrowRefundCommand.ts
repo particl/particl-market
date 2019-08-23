@@ -145,4 +145,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         return 'Refund an escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

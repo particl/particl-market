@@ -318,7 +318,7 @@ export class ListingItemService {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
 
-        // Comments dont have a hard link to listingitems
+        // Comments dont have a hard link to ListinItems
         const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {
@@ -331,7 +331,7 @@ export class ListingItemService {
         });
 
         this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
-        // manually remove images
+        // manually remove ItemImages
         for (const image of listingItem.ItemInformation.ItemImages) {
             await this.itemImageService.destroy(image.id);
         }
