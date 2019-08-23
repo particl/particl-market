@@ -90,7 +90,7 @@ describe('Setting', () => {
 
     test('Should list Settings with our new create one', async () => {
         const settings = await settingService.findAll().then(value => value.toJSON());
-        expect(settings.length).toBe(6); // 5 defaault ones
+        expect(settings.length).toBe(6); // 6 default ones
         const result = settings[5];
 
         // test the values
@@ -101,8 +101,8 @@ describe('Setting', () => {
     test('Should find all Settings by profileId', async () => {
         const settingCollection = await settingService.findAllByProfileId(profile.id);
         const setting = settingCollection.toJSON();
-        expect(setting.length).toBe(5);
-        const result = setting[4];
+        expect(setting.length).toBe(6);
+        const result = setting[5];
 
         // test the values
         expect(result.key).toBe(testData.key);
