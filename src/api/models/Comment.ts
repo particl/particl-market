@@ -99,7 +99,7 @@ export class Comment extends Bookshelf.Model<Comment> {
             || options.orderField === 'parent_comment_id')) {
             options.orderField = 'posted_at';
         }
-        options.page = options.page ||  0;
+        options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
 
         const commentCollection = Comment.forge<Model<Comment>>()
@@ -124,7 +124,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('comments.parent_comment_id', '=', options.parentCommentId);
                 }
             })
-            .orderBy(`comments.${options.orderField}`, options.order)
+            .orderBy(`${options.orderField}`, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

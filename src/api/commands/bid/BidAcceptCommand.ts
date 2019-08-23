@@ -11,19 +11,16 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/model/BidService';
 import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
-import {BidAcceptRequest} from '../../requests/action/BidAcceptRequest';
-import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
-import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
-import {BidRequest} from '../../requests/action/BidRequest';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 

@@ -20,6 +20,7 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus} from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -109,7 +110,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
         data.params[0] = data.params[0] ? data.params[0] : 0;
         if (typeof data.params[0] !== 'number') {
-            throw new MessageException('parameter page should be a number.');
+            throw new InvalidParamException('parameter page should be a number.');
         }
 
         data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;

@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -11,16 +12,17 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Comment } from '../../models/Comment';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { CommentType } from '../../enums/CommentType';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
+import { BaseSearchCommand } from '../BaseSearchCommand';
+import { CommentSearchOrderField } from '../../enums/SearchOrderField';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
-export class CommentSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
+export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
 
     public log: LoggerType;
 
@@ -33,153 +35,127 @@ export class CommentSearchCommand extends BaseCommand implements RpcCommandInter
         this.log = new Logger(__filename);
     }
 
+    public getAllowedSearchOrderFields(): string[] {
+        return EnumHelper.getNames(CommentSearchOrderField);
+    }
+
     /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: type, CommentType
+     *  [5]: target, string
+     *  [6]: parentComment, resources.Comment
+     *  [7]: withRelated, boolean
+     *
      * @param data
      * @returns {Promise<Comment>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
-        const searchArgs = {} as CommentSearchParams;
 
-        let withRelated;
-        if (typeof data.params[0] === 'number') {
-            searchArgs.page = data.params[0];
-            searchArgs.pageLimit = data.params[1];
-            const order: string = data.params[2];
-            searchArgs.order = SearchOrder[order] || SearchOrder.ASC;
-            searchArgs.orderField = data.params[3];
-            searchArgs.type = data.params[4];
-            searchArgs.target = data.params[5];
-            searchArgs.parentCommentId = data.params[6];
-            withRelated = data.params[7];
-        } else {
-            searchArgs.commentHash = data.params[0];
-            withRelated = data.params[1];
-        }
+        const parentComment: resources.Comment = data.params[6];
+        const withRelated = data.params[7];
 
-        return await this.commentService.search(searchArgs, withRelated);
+        const searchParams = {
+            page: data.params[0],
+            pageLimit: data.params[1],
+            order: data.params[2],
+            orderField: data.params[3],
+            type: data.params[4],
+            target: data.params[5],
+            parentCommentId: parentComment.id,
+        } as CommentSearchParams;
+
+        return await this.commentService.search(searchParams, withRelated);
     }
 
     /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: type, CommentType
+     *  [5]: target, string
+     *  [6]: parentCommentHash, string
+     *  [7]: withRelated, boolean
+     *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length >= 2) {
-            const hashOrPage = data.params[0];
-            if (typeof hashOrPage === 'number') {
-                // It's a page
-                if (hashOrPage < 0) {
-                    throw new InvalidParamException('page', 'number');
-                }
-                await this.validatePage(data);
-            } else if (typeof hashOrPage === 'string') {
-                // It's a commentHash
-            } else {
-                throw new InvalidParamException('hash|page', 'string|number');
-            }
-        }
-        return data;
-    }
+        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-    public async validatePage(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length >= 2) {
-            const pageLimit = data.params[1];
-            if (typeof pageLimit !== 'number' || pageLimit <= 0) {
-                throw new InvalidParamException('pageLimit', 'number');
-            }
-        }
-        if (data.params.length >= 3) {
-            const order = data.params[2];
-            if (typeof order !== 'string' || !SearchOrder[order]) {
-                throw new InvalidParamException('order', 'SearchOrder');
-            }
+        // type, CommentType
+        if (data.params.length >= 5
+            && (typeof data.params[4] !== 'string' || !EnumHelper.containsName(CommentType, data.params[4]))) {
+            throw new InvalidParamException('type', 'CommentType');
         }
 
-        if (data.params.length >= 4) {
-            const orderField = data.params[3];
-            if (typeof orderField !== 'string'
-                || !(orderField === 'id'
-                    || orderField === 'hash'
-                    || orderField === 'sender'
-                    || orderField === 'receiver'
-                    || orderField === 'target'
-                    || orderField === 'message'
-                    || orderField === 'type'
-                    || orderField === 'posted_at'
-                    || orderField === 'received_at'
-                    || orderField === 'expired_at'
-                    || orderField === 'updated_at'
-                    || orderField === 'created_at'
-                    || orderField === 'parent_comment_id'
-                    || orderField === 'market_id')) {
-                throw new InvalidParamException('orderField', 'string');
-            }
-        }
-
-        let type;
-        if (data.params.length >= 5) {
-            type = data.params[4];
-            if (typeof type !== 'string' || !CommentType[type]) {
-                throw new InvalidParamException('type', 'CommentType');
-            }
-        }
-
-        let target;
+        // target, string
         if (data.params.length >= 6) {
-            target = data.params[5];
-            if (typeof target !== 'string') {
+            if (typeof data.params[5] !== 'string') {
                 throw new InvalidParamException('target', 'string');
             }
-        }
 
-        let parentCommentHash;
-        if (data.params.length >= 7) {
-            parentCommentHash = data.params[6];
-            // Throws NotFoundException
-            if (parentCommentHash && parentCommentHash.length > 0) {
-                data.params[6] = await this.commentService.findOneByHash(parentCommentHash).then(value => value.toJSON().id)
+            // make sure the target ListingItem exists
+            if (data.params[4] === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+                && data.params[5]) {
+                await this.listingItemService.findOneByHash(data.params[5])
+                    .then(value => value.toJSON())
                     .catch(() => {
-                        throw new ModelNotFoundException('Parent Comment');
+                        throw new ModelNotFoundException('ListingItem');
                     });
             }
         }
 
-        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS && target) {
-            await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
-                .catch(() => {
-                    throw new ModelNotFoundException('Listing Item');
-                });
+        // parentCommentHash, string
+        if (data.params.length >= 7) {
+            if (data.params[6] && typeof data.params[6] !== 'string') {
+                throw new InvalidParamException('parentCommentHash', 'string');
+            }
+
+            if (data.params[6] && data.params[6].length > 0) {
+                // make sure the parent Comment exists
+                data.params[6] = await this.commentService.findOneByHash(data.params[6])
+                    .then(value => value.toJSON())
+                    .catch(() => {
+                        throw new ModelNotFoundException('Comment');
+                    });
+            }
+        }
+
+        if (data.params.length >= 8 && typeof data.params[7] !== 'boolean') {
+            throw new InvalidParamException('withRelated', 'boolean');
         }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' (<commentHash> [<withRelated>]| [<page> [<pageLimit> [<order> [<orderField> [<type> [<target> [<withRelated>]]]]]]])';
+        return this.getName() + '  <page> <pageLimit> <order> <orderField> [<type> [<target> [<parentCommentHash>]]]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <commentHash>            - String - The comments hash.\n'
-            + '    <page>                   - [optional] Numeric - The number page we want to \n'
-            + '                                view of searchBy comment results.\n'
-            + '    <pageLimit>              - [optional] Numeric - The number of results per page.\n'
-            + '    <order>                  - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. \n'
-            + '    <orderField>             - [optional] The field to order the results by. \n'
-            + '    <type>                   - [optional] ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of comment.\n'
-            + '    <target>                 - [optional] String - The target of the comment.\n'
-            + '    <parentCommentHash>      - [optional] String - The hash of the parent comment.\n'
-            + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
+            + '    <page>                   - Numeric - The number of result page we want to return. \n'
+            + '    <pageLimit>              - Numeric - The number of results per page. \n'
+            + '    <order>                  - SearchOrder - The order of the returned results. \n'
+            + '    <orderField>             - CommentSearchOrderField - The field to order the results by. \n'
+            + '    <type>                   - [optional] CommentType - The type of Comment.\n'
+            + '    <target>                 - [optional] String - The target of the Comment.\n'
+            + '    <parentCommentHash>      - [optional] String - The hash of the parent Comment.\n';
     }
 
-
     public description(): string {
-        return 'Search comments with the comment hash, or the page, page limit, order, order field, type, target, parentCommentHash and with related.';
+        return 'Search Comments.';
     }
 
     public example(): string {
-        return 'comment ' + this.getName() + ' commentHash \'8d5adf3a47bf796a834af487ad4475de4a85306a5a4213e9d761b731b0014c14\'';
+        return 'comment ' + this.getName() + ' 0 10 \'ASC\' \'STATE\'';
     }
 
 }

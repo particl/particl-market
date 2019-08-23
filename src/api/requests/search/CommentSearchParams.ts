@@ -2,27 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { RequestBody } from '../../../core/api/RequestBody';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { CommentType } from '../../enums/CommentType';
+import { BaseSearchParams } from './BaseSearchParams';
 
-export class CommentSearchParams extends RequestBody {
-
-    // TODO: create BaseSearchParams with page, pageLimit, order, orderField and extend that
-
-    public commentHash: string;
-
-    public page: number;
-
-    public pageLimit: number;
-
-    public order: SearchOrder;
-
-    public orderField: string;
+export class CommentSearchParams extends BaseSearchParams {
 
     public type: CommentType;
-
     public target: string;
-
     public parentCommentId: number;
 }

@@ -9,7 +9,7 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
-export class BaseCommand {
+export abstract class BaseCommand {
 
     public commands: CommandEnumType;
     public command: Command;
@@ -50,25 +50,15 @@ export class BaseCommand {
         return this.command.childCommands;
     }
 
-    public async validate(data: RpcRequest): Promise<RpcRequest> {
-        return data;
-    }
+    public abstract async validate(data: RpcRequest): Promise<RpcRequest>;
 
-    public help(): string {
-        return ' <TODO: Command.help()>';
-    }
+    public abstract help(): string;
 
-    public usage(): string {
-        return '<TODO: Command.usage()>';
-    }
+    public abstract usage(): string;
 
-    public description(): string {
-        return 'TODO: Command.description()';
-    }
+    public abstract description(): string;
 
-    public example(): any {
-        return null;
-    }
+    public abstract example(): string;
 
     public getName(): string {
         return this.command.commandName;
