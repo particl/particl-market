@@ -41,8 +41,13 @@ describe('Command', () => {
     });
 
     test('Should return correct childCommands for Command', async () => {
-        expect(Commands.MARKET_ROOT.childCommands).toHaveLength(2);
-        expect(Commands.MARKET_ROOT.childCommands.sort()).toEqual([Commands.MARKET_ADD, Commands.MARKET_LIST].sort());
+        expect(Commands.MARKET_ROOT.childCommands).toHaveLength(4);
+        expect(Commands.MARKET_ROOT.childCommands.sort()).toEqual([
+            Commands.MARKET_ADD,
+            Commands.MARKET_LIST,
+            Commands.MARKET_REMOVE,
+            Commands.MARKET_SETDEFAULT
+        ].sort());
     });
 
     test('Should return all types of Commands and all root Commands', async () => {
