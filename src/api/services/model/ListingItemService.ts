@@ -332,10 +332,11 @@ export class ListingItemService {
 
         this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
         // manually remove ItemImages
-        for (const image of listingItem.ItemInformation.ItemImages) {
-            await this.itemImageService.destroy(image.id);
+        if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
+            for (const image of listingItem.ItemInformation.ItemImages) {
+                await this.itemImageService.destroy(image.id);
+            }
         }
-
         this.log.debug('destroy(), deleting ListingItem:', listingItem.id);
 
         await this.listingItemRepo.destroy(listingItem.id);
