@@ -82,21 +82,8 @@ export class Comment extends Bookshelf.Model<Comment> {
             options.order = SearchOrder.ASC;
         }
 
-        if (!options.orderField
-            || !(options.orderField === 'id'
-            || options.orderField === 'hash'
-            || options.orderField === 'sender'
-            || options.orderField === 'receiver'
-            || options.orderField === 'target'
-            || options.orderField === 'message'
-            || options.orderField === 'type'
-            || options.orderField === 'posted_at'
-            || options.orderField === 'received_at'
-            || options.orderField === 'expired_at'
-            || options.orderField === 'updated_at'
-            || options.orderField === 'created_at'
-            || options.orderField === 'parent_comment_id')) {
-            options.orderField = 'posted_at';
+        if (!options.orderField) {
+            options.orderField = 'comments.posted_at';
         }
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
@@ -120,7 +107,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('comments.parent_comment_id', '=', options.parentCommentId);
                 }
             })
-            .orderBy(`${options.orderField}`, options.order)
+            .orderBy(options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
