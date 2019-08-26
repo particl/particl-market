@@ -12,7 +12,7 @@ import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBi
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('BidSearchCommand', () => {
 

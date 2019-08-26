@@ -139,7 +139,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             }
         }
 
-        // make sure profile with the id exists
+        // make sure Profile with the id exists
         data.params[0] = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
@@ -147,6 +147,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                 throw new ModelNotFoundException('Profile');
             });
 
+        // make sure Comment with the hash exists
         if (parentHash) {
             data.params[5] = await this.commentService.findOneByHash(parentHash)
                 .then(value => value.toJSON())
@@ -155,6 +156,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                 });
         }
 
+        // make sure ListingItem with the hash exists
         if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
             await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
                 .catch(() => {

@@ -185,8 +185,8 @@ export class TestDataService {
     /**
      * creates testdata from json
      *
-     * @param data
      * @returns {Promise<ListingItem>}
+     * @param body
      */
     @validate()
     public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
