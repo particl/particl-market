@@ -11,6 +11,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { CommentType } from '../../../src/api/enums/CommentType';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('CommentGetCommand', () => {
 
@@ -70,20 +73,73 @@ describe('CommentGetCommand', () => {
 
         const commentsQandA = await testUtil.generateData(
             CreatableModel.COMMENT,     // what to generate
-            1,                          // how many to generate
-            true,                       // return model
+            1,                  // how many to generate
+            true,            // return model
             generateCommentParamsQandA  // what kind of data to generate
         );
         createdCommentListingItemQandA = commentsQandA[0];
 
     });
 
-    test('Should return a number of comments for type and target', async () => {
+    test('Should fail to return a number of Comments because missing type', async () => {
         // comment get (<commentId> | <commendHash>)
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new MissingParamException('type').getMessage());
+    });
+
+    test('Should fail to return a number of Comments because missing target', async () => {
+        // comment get (<commentId> | <commendHash>)
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+            ]
+        );
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new MissingParamException('target').getMessage());
+    });
+
+    test('Should fail to return a number of Comments because invalid type', async () => {
+        // comment get (<commentId> | <commendHash>)
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+                false,
+                createdListingItemHash
+            ]
+        );
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+    });
+
+    test('Should fail to return a number of Comments because invalid target', async () => {
+        // comment get (<commentId> | <commendHash>)
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                false
+            ]
+        );
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
+    });
+
+    test('Should fail to return a number of Comments because invalid parentHash', async () => {
+        // comment get (<commentId> | <commendHash>)
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                createdListingItemHash,
+                false
+            ]
+        );
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('parentHash', 'string').getMessage());
+    });
+
+    test('Should return a number of Comments for type and target', async () => {
         const response = await testUtil.rpc(
-            commentCommand,
-            [
-                commentCountCommand, 
+            commentCommand, [commentCountCommand,
                 CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
                 createdListingItemHash
             ]
@@ -94,5 +150,7 @@ describe('CommentGetCommand', () => {
 
         expect(commentCount).toBe(1);
     });
+
+    // TODO: add test with parentHash
 
 });
