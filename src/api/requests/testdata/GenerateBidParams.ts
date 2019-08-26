@@ -52,10 +52,6 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
                 this.parentBidId = generateParams[6];
             }
         }
-
-        console.log('generateParams[6]:', generateParams[6]);
-        console.log('this.parentBidId:', this.parentBidId);
-
     }
 
     public toParamsArray(): any[] {

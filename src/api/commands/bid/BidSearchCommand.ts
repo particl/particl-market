@@ -114,7 +114,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         }
 
         data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
-        if (typeof data.params[0] !== 'number') {
+        if (typeof data.params[1] !== 'number') {
             throw new InvalidParamException('pageLimit', 'number');
         }
 

@@ -253,7 +253,7 @@ describe('CommentPostCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(404);
-        expect(response.error.error.message).toBe('Listing Item not found.');
+        expect(response.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
 
     test('Should fail to create a Comment of type LISTINGITEM_QUESTION_AND_ANSWERS because invalid message', async () => {
