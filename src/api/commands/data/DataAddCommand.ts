@@ -59,6 +59,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
      * @param rpcCommandFactory
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
         if (data.params.length < 1) {
             throw new MissingParamException('model');
         } else if (data.params.length < 2) {

@@ -83,11 +83,11 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
+    // TODO: test all paging params separately, missing+invalid
     test('Should fail to searchBy for Bids because invalid paging params', async () => {
-        // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid page']);
         res.expectJson();
-        res.expectStatusCode(404);
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe('parameter page should be a number.');
     });
 
