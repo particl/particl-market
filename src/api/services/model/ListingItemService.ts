@@ -26,6 +26,8 @@ import { MessagingInformationUpdateRequest } from '../../requests/model/Messagin
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ListingItemObjectService } from './ListingItemObjectService';
+import { CommentService } from './CommentService';
+import { CommentType } from '../../enums/CommentType';
 import { ItemImageService } from './ItemImageService';
 
 export class ListingItemService {
@@ -38,6 +40,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -315,13 +318,27 @@ export class ListingItemService {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
 
-        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
-        // manually remove images
-        for (const image of listingItem.ItemInformation.ItemImages) {
-            await this.itemImageService.destroy(image.id);
-        }
+        // Comments dont have a hard link to ListinItems
+        const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
+        listingComments.forEach((comment) => {
+            try {
+                this.log.debug('destroy(), deleting Comment:', comment.id);
+                comment.destroy();
+            } catch (error) {
+                // Just log the error, we dont want to stop the process if one of these fails.
+                this.log.error(error);
+            }
+        });
 
-        this.log.debug('destroy(), deleting listingItem:', listingItem.id);
+        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
+        // manually remove ItemImages
+        if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
+            for (const image of listingItem.ItemInformation.ItemImages) {
+                await this.itemImageService.destroy(image.id);
+            }
+        }
+        this.log.debug('destroy(), deleting ListingItem:', listingItem.id);
+
         await this.listingItemRepo.destroy(listingItem.id);
     }
 

@@ -62,10 +62,10 @@ export class ItemCategoryService {
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
 
         // If the request body was valid we will create the itemCategory
-        const itemCategory = await this.itemCategoryRepo.create(body);
+        const itemCategory: resources.ItemCategory = await this.itemCategoryRepo.create(body).then(value => value.toJSON());
 
         // finally find and return the created itemCategory
-        const newItemCategory = await this.findOne(itemCategory.Id);
+        const newItemCategory = await this.findOne(itemCategory.id);
         return newItemCategory;
     }
 

@@ -65,7 +65,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      * [0] timeStart | *, optional
      * [1] timeEnd | *, optional
-     * [2] category, optional
+     * [2] proposalCategory, optional
      * [3] order, optional
      *
      * @param {RpcRequest} data
@@ -75,7 +75,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
         let timeStart: number | string = '*';
         let timeEnd: number | string = '*';
-        let type: ProposalCategory = ProposalCategory.PUBLIC_VOTE;
+        let proposalCategory: ProposalCategory = ProposalCategory.PUBLIC_VOTE;
         let order: SearchOrder = SearchOrder.ASC;
 
         if (_.isString(data.params[0]) || (_.isFinite(data.params[0]) && +data.params[0] > 0) ) {
@@ -93,16 +93,16 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         }
 
         if (_.isString(data.params[2]) && data.params[2].length) {
-            type = data.params[2];
-            if (type.toUpperCase() === ProposalCategory.ITEM_VOTE.toString()) {
-                type = ProposalCategory.ITEM_VOTE;
-            } else if (type.toUpperCase() === ProposalCategory.PUBLIC_VOTE.toString()) {
-                type = ProposalCategory.PUBLIC_VOTE;
+            proposalCategory = data.params[2];
+            if (proposalCategory.toUpperCase() === ProposalCategory.ITEM_VOTE.toString()) {
+                proposalCategory = ProposalCategory.ITEM_VOTE;
+            } else if (proposalCategory.toUpperCase() === ProposalCategory.PUBLIC_VOTE.toString()) {
+                proposalCategory = ProposalCategory.PUBLIC_VOTE;
             } else {
-                type = ProposalCategory.PUBLIC_VOTE;
+                proposalCategory = ProposalCategory.PUBLIC_VOTE;
             }
         } else {
-            type = ProposalCategory.PUBLIC_VOTE; // default
+            proposalCategory = ProposalCategory.PUBLIC_VOTE; // default
         }
 
         if (_.isString(data.params[3]) && data.params[3].length) {
@@ -117,17 +117,25 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         data.params = [];
         data.params[0] = timeStart;
         data.params[1] = timeEnd;
-        data.params[2] = type;
+        data.params[2] = proposalCategory;
         data.params[3] = order;
         return data;
     }
 
+    public usage(): string {
+        return this.getName() + ' <startTime> <endTime> <proposalCategory> <order> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <startTime> <endTime> <category> <order> ';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <startTime>              - number | * - The startTime of the Proposal. \n'
+            + '    <endTime>                - number | * - The endTime of the Proposal. \n'
+            + '    <category>               - ProposalCategory \n'
+            + '    <order>                  - SearchOrder \n';
     }
 
     public description(): string {
-        return 'Command for retrieving proposals. ';
+        return 'Command for retrieving Proposals. ';
     }
 
     public example(): string {

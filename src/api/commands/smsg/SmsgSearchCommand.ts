@@ -51,6 +51,10 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
         return await this.smsgMessageService.searchBy(searchParams);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName()
             + ' [<page> [<pageLimit> [<ordering> [<type> [<status> [<msgid>]]]]]] ';

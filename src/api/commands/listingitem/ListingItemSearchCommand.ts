@@ -133,6 +133,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         return data;
     }
 
+    // TODO: fix this, these params are not optional
     public usage(): string {
         return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
             '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination>' +

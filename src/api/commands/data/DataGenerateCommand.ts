@@ -55,6 +55,8 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        this.log.info('data.params[]: ', JSON.stringify(data.params, null, 2));
+
         if (data.params.length < 1) {
             throw new MissingParamException('model');
         } else if (data.params.length < 2) {
@@ -71,7 +73,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('withRelated', 'boolean');
         }
 
-        if (!EnumHelper.containsName(CreatableModel, data.params[0])) {
+        if (!EnumHelper.containsValue(CreatableModel, data.params[0])) {
             throw new InvalidParamException('model', 'CreatableModel');
         }
 

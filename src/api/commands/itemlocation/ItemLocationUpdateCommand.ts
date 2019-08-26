@@ -178,6 +178,10 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
         return 'Update the details of an item location given by listingItemTemplateId.';
     }
 
+    public example(): string {
+        return '';
+    }
+
     /*
      * TODO: NOTE: This function may be duplicated between commands.
      */

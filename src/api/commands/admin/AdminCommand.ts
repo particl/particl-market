@@ -35,6 +35,10 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (data)  -  ' + this.description();
     }
@@ -45,5 +49,9 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
 
     public description(): string {
         return 'Admin root command.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

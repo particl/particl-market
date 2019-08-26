@@ -38,19 +38,21 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
         return await this.shoppingCartItemService.findAllByCartId(data.params[0]);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
-        return this.getName() + ' <cartId> [withRelated]';
+        return this.getName() + ' <cartId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart whose listingItem we want. \n '
-
-            + '    <withRelated>            - [optional] Boolean - Whether we want to include all sub objects. ';
+            + '    <cartId>                 - The Iid of the ShoppingCart. \n';
     }
 
     public description(): string {
-        return 'List all item of shopping cart as per given cartId.';
+        return 'List all ShoppingCartItems in ShoppingCart.';
     }
 
     public example(): string {

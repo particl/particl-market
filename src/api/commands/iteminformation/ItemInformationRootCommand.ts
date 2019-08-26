@@ -28,6 +28,10 @@ export class ItemInformationRootCommand extends BaseCommand implements RpcComman
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (get|update)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class ItemInformationRootCommand extends BaseCommand implements RpcComman
 
     public description(): string {
         return 'Commands for managing iteminformations.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

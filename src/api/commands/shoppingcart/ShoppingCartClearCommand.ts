@@ -36,17 +36,21 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
         return this.shoppingCartItemService.clearCart(data.params[0]);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <cartId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart we want to clear. ';
+            + '    <cartId>                 - The id of the ShoppingCart. ';
     }
 
     public description(): string {
-        return 'Clear shopping cart items, associated with given shopping cart id.';
+        return 'Clear ShoppingCart from ShoppingCartItems.';
     }
 
     public example(): string {

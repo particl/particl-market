@@ -28,6 +28,10 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (list|get|add|update|remove|searchBy)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
 
     public description(): string {
         return 'Commands for managing item categories.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

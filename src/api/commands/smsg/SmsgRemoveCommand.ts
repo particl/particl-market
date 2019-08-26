@@ -61,14 +61,13 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         // make sure SmsgMessage with the id exists
-        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOne(data.params[0])
+        data.params[0] = await this.smsgMessageService.findOne(data.params[0])
             .then(value => {
                 return value.toJSON();
             })
             .catch(reason => {
                 throw new ModelNotFoundException('SmsgMessage');
             });
-        data.params[0] = smsgMessage;
 
         return data;
     }
@@ -79,7 +78,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <smsgId>              -  The ID of the SmsgMessage we want to destroy. \n';
+            + '    <smsgId>              -  The id of the SmsgMessage we want to destroy. \n';
     }
 
     public description(): string {

@@ -35,8 +35,16 @@ export class VoteRootCommand extends BaseCommand implements RpcCommandInterface<
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
+    public usage(): string {
         return this.getName() + ' (get|list|post)  -  ' + this.description();
+    }
+
+    public help(): string {
+        return this.usage();
     }
 
     public description(): string {

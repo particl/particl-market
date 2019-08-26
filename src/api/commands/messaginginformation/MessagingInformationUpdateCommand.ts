@@ -129,4 +129,7 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
         return 'Update the details of messaging information associated with listingTemplateId.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

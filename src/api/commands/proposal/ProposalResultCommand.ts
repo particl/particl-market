@@ -64,12 +64,17 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
         return data;
     }
 
+    public usage(): string {
+        return this.getName() + ' <proposalHash>';
+    }
+
     public help(): string {
-        return this.getName() + ' results <proposalHash>';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <proposalHash>                - string - The hash of the Proposal. \n';
     }
 
     public description(): string {
-        return ' Command for checking the results of a proposal.';
+        return ' Command for checking the results of a Proposal.';
     }
 
     public example(): string {

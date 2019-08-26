@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Bookshelf as Database } from '../../config/Database';
+import {Bookshelf as Database} from '../../config/Database';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import * as _ from 'lodash';
@@ -94,9 +94,13 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
+import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
+import { CommentType } from '../enums/CommentType';
+import { CommentService } from './model/CommentService';
+import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
+import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { DefaultSettingService } from './DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
-
 
 export class TestDataService {
 
@@ -123,6 +127,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
@@ -213,6 +218,9 @@ export class TestDataService {
             case CreatableModel.ITEMIMAGE: {
                 return await this.itemImageService.create(body.data as ItemImageCreateRequest);
             }
+            case CreatableModel.COMMENT: {
+                return await this.commentService.create(body.data as CommentCreateRequest);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }
@@ -256,6 +264,10 @@ export class TestDataService {
             case CreatableModel.PROPOSAL: {
                 const generateParams = new GenerateProposalParams(body.generateParams);
                 return await this.generateProposals(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.COMMENT: {
+                const generateParams = new GenerateCommentParams(body.generateParams);
+                return await this.generateComments(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -853,6 +865,108 @@ export class TestDataService {
 
         // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;
+    }
+
+    // -------------------
+    // Comments
+    private async generateComments(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateCommentParams): Promise<resources.Comment[]> {
+
+        this.log.debug('generateComments, generateParams: ', generateParams);
+
+        // TODO: add template and item generation
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        const items: resources.Comment[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const commentCreateRequest = await this.generateCommentData(generateParams);
+            const commentModel = await this.commentService.create(commentCreateRequest);
+            const comment: resources.Comment = commentModel.toJSON();
+            items.push(comment);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateCommentData(generateParams: GenerateCommentParams): Promise<CommentCreateRequest> {
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generatePastComment) {
+            throw new NotImplementedException();
+        }
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let sender;
+        if (!generateParams.sender) {
+            const profile = defaultProfile.toJSON();
+            sender = profile.address;
+        } else {
+            sender = generateParams.sender;
+        }
+
+        let receiver;
+        if (!generateParams.receiver) {
+            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
+            const market = defaultMarket.toJSON();
+            receiver = market.receiveAddress;
+        } else {
+            receiver = generateParams.sender;
+        }
+
+        const target = generateParams.target;
+
+        const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
+
+        const currentTime = new Date().getTime();
+
+        // Generate comment in the past
+        const timeStart = generateParams.generatePastComment
+            ? _.random(1, (currentTime / 2), false)
+            : _.random(currentTime + 100, currentTime + 1000, false);
+
+        const timeEnd = generateParams.generatePastComment
+            ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
+            : _.random(currentTime + 1001, currentTime + 2000, false);
+
+
+        // TODO: parent comment create?
+
+        const smsgData: any = {
+            postedAt: timeStart,
+            receivedAt: timeStart,
+            expiredAt: timeEnd
+        };
+
+        const commentCreateRequest = {
+            sender,
+            receiver,
+            type,
+            target,
+            message: Faker.lorem.lines(1),
+            parentCommentId: null,
+            ...smsgData
+        } as CommentCreateRequest;
+
+        commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
+
+        return commentCreateRequest;
     }
 
     // -------------------

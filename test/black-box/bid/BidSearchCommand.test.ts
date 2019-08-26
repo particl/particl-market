@@ -12,6 +12,7 @@ import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBi
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('BidSearchCommand', () => {
 
@@ -72,6 +73,21 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
+    // TODO: test all paging params, for missing+invalid
+    test('Should fail to searchBy for Bids because invalid page', async () => {
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid']);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('page', 'number').getMessage());
+    });
+
+    test('Should fail to searchBy for Bids because invalid pageLimit', async () => {
+        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 0, 'invalid']);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('pageLimit', 'number').getMessage());
+    });
+
     test('Should fail to searchBy for Bids because invalid ListingItem.hash', async () => {
         // searchBy bid by item hash
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
@@ -80,15 +96,8 @@ describe('BidSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
+        // TODO: should be throwing ModelNotFoundException
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
-    });
-
-    test('Should fail to searchBy for Bids because invalid paging params', async () => {
-        // searchBy bid by item hash
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid page']);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('parameter page should be a number.');
     });
 
     test('Should generate a Bid and return one Bid when searched by ListingItem.hash', async () => {
@@ -118,7 +127,7 @@ describe('BidSearchCommand', () => {
         res.expectStatusCode(200);
         const result: resources.Bid[] = res.getBody()['result'];
 
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
 
         bid = result[0];
 

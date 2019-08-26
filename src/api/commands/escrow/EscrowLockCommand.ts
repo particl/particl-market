@@ -160,6 +160,10 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         return 'Lock an Escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
+
     private additionalParamsToKVS(data: RpcRequest): KVS[] {
         const additionalParams: KVS[] = [];
 

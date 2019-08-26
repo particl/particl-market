@@ -29,6 +29,10 @@ export class WalletRootCommand extends BaseCommand implements RpcCommandInterfac
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (list)  -  ' + this.description();
     }
@@ -39,5 +43,9 @@ export class WalletRootCommand extends BaseCommand implements RpcCommandInterfac
 
     public description(): string {
         return 'Commands for managing Wallets.';
+    }
+
+    public example(): string {
+        return this.getName() + '';
     }
 }
