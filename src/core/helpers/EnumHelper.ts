@@ -9,6 +9,10 @@ export class EnumHelper {
         return EnumHelper.getNames(e).indexOf(name) !== -1;
     }
 
+    public static containsValue(e: any, value: string): boolean {
+        return EnumHelper.getValues(e).indexOf(value) !== -1;
+    }
+
     public static getNamesAndValues<T extends number>(e: any): any[] {
         return EnumHelper.getNames(e).map(n => ({ name: n, value: e[n] as T }));
     }
