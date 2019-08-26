@@ -72,7 +72,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
-            "Invalid profile id"
+            'Invalid profile id'
         ]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -88,7 +88,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
-            "Invalid profile id"
+            'Invalid profile id'
         ]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -104,7 +104,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
-            "Invalid profile id"
+            'Invalid profile id'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -121,7 +121,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
-            "Invalid profile id"
+            'Invalid profile id'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -137,7 +137,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
-            "Invalid comment type"
+            'Invalid comment type'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -153,7 +153,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
-            "Invalid comment type"
+            'Invalid comment type'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -169,7 +169,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
-            "Invalid comment type"
+            'Invalid comment type'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -185,7 +185,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             invalidCommentType,
             createdListingItemHash,
-            "Invalid comment type"
+            'Invalid comment type'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -201,7 +201,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
-            "Invalid comment target"
+            'Invalid comment target'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -217,7 +217,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
-            "Invalid comment target"
+            'Invalid comment target'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -233,7 +233,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
-            "Invalid comment target"
+            'Invalid comment target'
         ]);
         response.expectJson();
         response.expectStatusCode(400);
@@ -249,7 +249,7 @@ describe('CommentPostCommand', () => {
             defaultMarket.receiveAddress,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             invalidTarget,
-            "Invalid comment target"
+            'Invalid comment target'
         ]);
         response.expectJson();
         response.expectStatusCode(404);

@@ -47,7 +47,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
         const commentSearchParams = {
             type: data.params[0],
             target: data.params[1],
-            parentCommentId: parentComment.id
+            parentCommentId: parentComment ? parentComment.id : undefined
         } as CommentSearchParams;
 
         return await this.commentService.count(commentSearchParams);
@@ -71,7 +71,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
 
         if (!EnumHelper.containsName(CommentType, data.params[0])) {
             throw new InvalidParamException('type', 'CommentType');
-        } else if (data.params[1] && typeof data.params[1] !== 'string') {
+        } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('target', 'string');
         }
 
@@ -79,7 +79,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
         if (data.params.length >= 3) {
             parentHash = data.params[2];
 
-            if (data.params[2] && typeof data.params[2] !== 'string') {
+            if (typeof parentHash !== 'string') {
                 throw new InvalidParamException('parentHash', 'string');
             }
 
