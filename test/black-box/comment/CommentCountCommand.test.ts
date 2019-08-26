@@ -11,9 +11,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { CommentType } from '../../../src/api/enums/CommentType';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('CommentGetCommand', () => {
 
@@ -151,6 +150,7 @@ describe('CommentGetCommand', () => {
         expect(commentCount).toBe(1);
     });
 
+    // TODO: add test with missing ListingItem hash
     // TODO: add test with parentHash
 
 });
