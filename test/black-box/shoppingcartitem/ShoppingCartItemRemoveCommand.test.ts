@@ -2,13 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import * as resources from 'resources';
 
 describe('ShoppingCartItemRemoveCommand', () => {
 
@@ -89,7 +89,7 @@ describe('ShoppingCartItemRemoveCommand', () => {
         res.expectStatusCode(200);
     });
 
-    test('Should fail to remove ShoppingCartItem from ShoppingCart using listingItem.hash because its allready removed', async () => {
+    test('Should fail to remove ShoppingCartItem from ShoppingCart using listingItem.hash because its already removed', async () => {
         const res = await testUtil.rpc(shoppingCartItemCommand, [shoppingCartItemRemoveCommand,
             defaultShoppingCart.id,
             listingItems[0].hash

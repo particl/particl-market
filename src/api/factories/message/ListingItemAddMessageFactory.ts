@@ -32,6 +32,7 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
@@ -54,16 +55,13 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
 
-        this.log.debug('get()');
-
+        if (!params.listingItem) {
+            throw new MissingParamException('listingItem');
+        }
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
-        this.log.debug('get(), information: ', JSON.stringify(information, null, 2));
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
-        this.log.debug('get(), payment: ', JSON.stringify(payment, null, 2));
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
-        this.log.debug('get(), messaging: ', JSON.stringify(messaging, null, 2));
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
-        this.log.debug('get(), objects: ', JSON.stringify(objects, null, 2));
 
         const item = {
             information,

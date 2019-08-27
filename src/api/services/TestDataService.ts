@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {Bookshelf as Database} from '../../config/Database';
+import { Bookshelf as Database } from '../../config/Database';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import * as _ from 'lodash';
@@ -48,7 +48,6 @@ import { GenerateListingItemParams } from '../requests/testdata/GenerateListingI
 import { GenerateProfileParams } from '../requests/testdata/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/testdata/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/testdata/GenerateProposalParams';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { AddressCreateRequest } from '../requests/model/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/model/CryptocurrencyAddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/model/BidDataCreateRequest';
@@ -101,6 +100,16 @@ import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParam
 import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { DefaultSettingService } from './DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
+import { GenerateSmsgMessageParams } from '../requests/testdata/GenerateSmsgMessageParams';
+import { SmsgMessageService } from './model/SmsgMessageService';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { CommentAction } from '../enums/CommentAction';
 
 export class TestDataService {
 
@@ -128,10 +137,12 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -268,6 +279,10 @@ export class TestDataService {
             case CreatableModel.COMMENT: {
                 const generateParams = new GenerateCommentParams(body.generateParams);
                 return await this.generateComments(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.SMSGMESSAGE: {
+                const generateParams = new GenerateSmsgMessageParams(body.generateParams);
+                return await this.generateSmsgMessages(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -890,8 +905,7 @@ export class TestDataService {
 
         for (let i = amount; i > 0; i--) {
             const commentCreateRequest = await this.generateCommentData(generateParams);
-            const commentModel = await this.commentService.create(commentCreateRequest);
-            const comment: resources.Comment = commentModel.toJSON();
+            const comment: resources.Comment = await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
             items.push(comment);
         }
 
@@ -1330,6 +1344,105 @@ export class TestDataService {
 
         const rand = Math.floor(Math.random() * categoryKeys.length);
         return categoryKeys[rand];
+    }
+
+    // -------------------
+    // SmsgMessages
+    private async generateSmsgMessages(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
+
+        this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
+
+        const items: resources.SmsgMessage[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const smsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
+            const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
+            items.push(smsgMessage);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateSmsgMessageData(generateParams: GenerateSmsgMessageParams): Promise<SmsgMessageCreateRequest> {
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let from: string;
+        if (!generateParams.from) {
+            const profile = defaultProfile.toJSON();
+            from = profile.address;
+        } else {
+            from = generateParams.from;
+        }
+
+        let to;
+        if (!generateParams.to) {
+            const market: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            to = market.receiveAddress;
+        } else {
+            to = generateParams.to;
+        }
+
+        const target = Faker.finance.bitcoinAddress();
+        const msgid = Faker.random.uuid();
+
+        let action: ActionMessageInterface;
+
+        let text: string;
+
+        if (generateParams.text) {
+            text = generateParams.text;
+        } else {
+            switch (generateParams.type) {
+                case MPAction.MPA_LISTING_ADD: {
+                    action = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddMessageCreateParams);
+                    break;
+                }
+                case MPAction.MPA_BID: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_PROPOSAL_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_VOTE: {
+                    throw new MessageException('Not implemented');
+                }
+                case CommentAction.MPA_COMMENT_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                default: {
+                    throw new MessageException('Not implemented');
+                }
+            }
+
+            text = JSON.stringify({
+                version: ompVersion(),
+                action
+            } as MarketplaceMessage);
+        }
+
+        const smsgMessageCreateRequest = {
+            type: generateParams.type,
+            status: generateParams.status,
+            direction: generateParams.direction,
+            read: generateParams.read,
+            paid: generateParams.paid,
+            received: generateParams.received,
+            sent: generateParams.sent,
+            expiration: generateParams.expiration,
+            daysretention: generateParams.daysretention,
+            from,
+            to,
+            text,
+            target,
+            msgid,
+            version: '0201',
+            payloadsize: 500
+        } as SmsgMessageCreateRequest;
+
+        return smsgMessageCreateRequest;
     }
 
 }

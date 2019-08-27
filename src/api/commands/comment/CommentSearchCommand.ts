@@ -36,7 +36,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public getAllowedSearchOrderFields(): string[] {
-        return EnumHelper.getNames(CommentSearchOrderField);
+        return EnumHelper.getValues(CommentSearchOrderField) as string[];
     }
 
     /**

@@ -63,11 +63,11 @@ export abstract class BaseSearchCommand extends BaseCommand {
         // make sure the params are of correct type
         if (typeof page !== 'number' || page < 0) {
             throw new InvalidParamException('page', 'number');
-        } else if (pageLimit !== 'number' || pageLimit <= 0) {
+        } else if (typeof pageLimit !== 'number' || pageLimit <= 0) {
             throw new InvalidParamException('pageLimit', 'number');
-        } else if (order !== 'string') {
+        } else if (typeof order !== 'string') {
             throw new InvalidParamException('order', 'string');
-        } else if (orderField !== 'string') {
+        } else if (typeof orderField !== 'string') {
             throw new InvalidParamException('orderField', 'string');
         }
 

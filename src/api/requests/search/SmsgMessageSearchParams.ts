@@ -2,30 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {IsEnum} from 'class-validator';
-import {RequestBody} from '../../../core/api/RequestBody';
-import {SearchOrder} from '../../enums/SearchOrder';
-import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { BaseSearchParams } from './BaseSearchParams';
+import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 // tslint:disable:variable-name
-export class SmsgMessageSearchParams extends RequestBody {
+export class SmsgMessageSearchParams extends BaseSearchParams {
 
-    @IsEnum(SearchOrder)
-    public order: SearchOrder = SearchOrder.DESC;
-    public orderByColumn = 'received';
+    public orderField = SmsgMessageSearchOrderField.SENT;
 
-    @IsEnum(ActionDirection)
-    public direction: ActionDirection = ActionDirection.INCOMING;
-
-    @IsEnum(SmsgMessageStatus)
+    public types: ActionMessageTypes[];
     public status: SmsgMessageStatus;
-
-    // TODO: is there a reason, why is this any[]? FIX
-    public types: any[]; // MPAction | ProposalMessageType | VoteMessageType | string;
-
-    public page = 0;
-    public pageLimit = 10;
+    public direction: ActionDirection;
 
     public age = 1000 * 60 * 2; // minimum message age in ms, 2 min
 

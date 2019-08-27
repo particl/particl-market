@@ -7,6 +7,7 @@ import { Collection, Model } from 'bookshelf';
 import { SearchOrder } from '../enums/SearchOrder';
 import { CommentType } from '../enums/CommentType';
 import { CommentSearchParams } from '../requests/search/CommentSearchParams';
+import { CommentSearchOrderField } from '../enums/SearchOrderField';
 
 export class Comment extends Bookshelf.Model<Comment> {
 
@@ -78,15 +79,11 @@ export class Comment extends Bookshelf.Model<Comment> {
     }
 
     public static async searchBy(options: CommentSearchParams, withRelated: boolean = true): Promise<Collection<Comment>> {
-        if (!options.order) {
-            options.order = SearchOrder.ASC;
-        }
 
-        if (!options.orderField) {
-            options.orderField = 'comments.posted_at';
-        }
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || CommentSearchOrderField.POSTED_AT;
 
         const commentCollection = Comment.forge<Model<Comment>>()
             .query( qb => {
@@ -107,7 +104,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('comments.parent_comment_id', '=', options.parentCommentId);
                 }
             })
-            .orderBy(options.orderField, options.order)
+            .orderBy('comments.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

@@ -8,10 +8,11 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import {CommentType} from '../../../src/api/enums/CommentType';
-import {GenerateListingItemParams} from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import {SearchOrder} from '../../../src/api/enums/SearchOrder';
-import {GenerateCommentParams} from '../../../src/api/requests/testdata/GenerateCommentParams';
+import { CommentType } from '../../../src/api/enums/CommentType';
+import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
+import { CommentSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('VoteGetCommand', () => {
 
@@ -37,11 +38,11 @@ describe('VoteGetCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
+        // get default Profile and Market
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
-        // create listing item
+        // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -54,7 +55,6 @@ describe('VoteGetCommand', () => {
             false   // generateListingItemObjects
         ]).toParamsArray();
 
-        // create listing item for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                              // how many to generate
@@ -99,7 +99,7 @@ describe('VoteGetCommand', () => {
             0,
             10,
             SearchOrder.DESC,
-            'message',
+            CommentSearchOrderField.MESSAGE,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             false
@@ -125,7 +125,7 @@ describe('VoteGetCommand', () => {
             0,
             10,
             SearchOrder.ASC,
-            'message',
+            CommentSearchOrderField.MESSAGE,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             createdListingItemHash,
             false
