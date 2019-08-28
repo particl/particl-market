@@ -52,7 +52,7 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
      *  [5]: status, SmsgMessageStatus, ENUM{NEW, PARSING_FAILED, PROCESSING, PROCESSED, PROCESSING_FAILED, WAITING}, * for all
      *  [6]: direction, ActionDirection, ENUM{INCOMING, OUTGOING, BOTH}, * for all
      *  [7]: age, number, SmsgMessage minimum message age in ms, default 2 min
-     *  [8]: msgid, string, * for all, optional
+     *  [8]: msgid, string, * for all, optional // todo: SmsgGetCommand
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
