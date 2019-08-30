@@ -280,7 +280,8 @@ export const Targets = {
         orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemShipCommand: 'OrderItemShipCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemHistoryCommand: 'OrderItemHistoryCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',

@@ -100,6 +100,7 @@ import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
 import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
+import { OrderItemHistoryCommand } from '../commands/orderitem/OrderItemHistoryCommand';
 import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
 import { OrderItemShipCommand } from '../commands/orderitem/OrderItemShipCommand';
 
@@ -246,6 +247,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemHistoryCommand) private orderItemHistoryCommand: OrderItemHistoryCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemShipCommand) private orderItemShipCommand: OrderItemShipCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
@@ -403,6 +405,7 @@ export class RpcCommandFactory {
         this.commands.push(orderSearchCommand);
 
         this.commands.push(orderItemRootCommand);
+        this.commands.push(orderItemHistoryCommand);
         this.commands.push(orderItemStatusCommand);
         this.commands.push(orderItemShipCommand);
 

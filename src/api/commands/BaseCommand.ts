@@ -22,9 +22,9 @@ export class BaseCommand {
     /**
      * execute the next command in data.params
      *
-     * @param rpcCommandFactory
-     * @param data
      * @returns {Promise<Bookshelf.Model<any>>}
+     * @param request
+     * @param commandFactory
      */
     public async executeNext(request: RpcRequest, commandFactory: RpcCommandFactory): Promise<BaseCommand> {
         const commandName = request.params.shift();
