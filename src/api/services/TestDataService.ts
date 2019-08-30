@@ -48,7 +48,6 @@ import { GenerateListingItemParams } from '../requests/testdata/GenerateListingI
 import { GenerateProfileParams } from '../requests/testdata/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/testdata/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/testdata/GenerateProposalParams';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { AddressCreateRequest } from '../requests/model/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/model/CryptocurrencyAddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/model/BidDataCreateRequest';
@@ -96,6 +95,17 @@ import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { DefaultSettingService } from './DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { ActionDirection } from '../enums/ActionDirection';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { SmsgMessageService } from './model/SmsgMessageService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
 
 
 export class TestDataService {
@@ -123,10 +133,13 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) public listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -433,6 +446,8 @@ export class TestDataService {
             this.log.debug('create listingitem start');
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                 .then(value => value.toJSON());
+            // TODO: make this optional/configurable
+            const savedSmsgMessage: resources.SmsgMessage = await this.createListingItemSmsgMessage(savedListingItem);
             this.log.debug('create listingitem end');
 
             items.push(savedListingItem);
@@ -442,6 +457,52 @@ export class TestDataService {
         this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
+    }
+
+    private async createListingItemSmsgMessage(listingItem: resources.ListingItem): Promise<resources.SmsgMessage> {
+
+        const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            listingItem
+        } as ListingItemAddMessageCreateParams);
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: listingItemAddMessage
+        };
+
+        // put the MarketplaceMessage in SmsgMessage
+        const listingItemSmsg = {
+            msgid: 'TESTMESSAGE-' + Faker.random.uuid(),
+            version: '0300',
+            location: 'inbox',
+            read: true,
+            paid: true,
+            payloadsize: 100,
+            received: Date.now(),
+            sent: Date.now(),
+            expiration: Date.now(),
+            daysretention: 7,
+            from: listingItem.seller,
+            to: listingItem.market,
+            text: JSON.stringify(marketplaceMessage)
+        } as CoreSmsgMessage;
+
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            status: SmsgMessageStatus.PROCESSED,
+            message: listingItemSmsg
+        });
+        return await this.smsgMessageService.create(smsgMessageCreateRequest)
+            .then(async smsgMessageModel => {
+
+                const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
+                this.log.debug('SAVED SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
+                return smsgMessage;
+            });
     }
 
     // -------------------

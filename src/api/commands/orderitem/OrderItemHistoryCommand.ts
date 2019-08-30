@@ -13,13 +13,12 @@ import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
+import { ListingItemService } from '../../services/model/ListingItemService';
 
 export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandInterface<resources.SmsgMessage[]> {
 
@@ -28,9 +27,10 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService
     ) {
-        super(Commands.ORDERITEM_STATUS);
+        super(Commands.ORDERITEM_HISTORY);
         this.log = new Logger(__filename);
     }
 
@@ -45,17 +45,35 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.SmsgMessage[]> {
 
         const orderItem: resources.OrderItem = data.params[0];
-        const smsgMessages: resources.SmsgMessage[] = [];
+        let smsgMessages: resources.SmsgMessage[] = [];
 
         this.log.debug('orderItem:', JSON.stringify(orderItem));
 
-        let bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.msgid).then(value => value.toJSON());
+        // get MPA_LISTING_ADD
+        const listingItemSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.ListingItem.msgid)
+            .then(value => value.toJSON());
+        smsgMessages.push(listingItemSmsgMessage);
+
+        // get MPA_BID
+        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.msgid)
+            .then(value => value.toJSON());
         smsgMessages.push(bidSmsgMessage);
 
-        orderItem.Bid.ChildBids = _.orderBy(orderItem.Bid.ChildBids, ['createdAt'], ['asc']);
+        // get the rest of the bid messages
         for (const childBid of orderItem.Bid.ChildBids) {
-            bidSmsgMessage = await this.smsgMessageService.findOneByMsgId(childBid.msgid).then(value => value.toJSON());
+            const childBidSmsgMessage = await this.smsgMessageService.findOneByMsgId(childBid.msgid).then(value => value.toJSON());
+            smsgMessages.push(childBidSmsgMessage);
         }
+
+        // sort by sent
+        smsgMessages = smsgMessages.sort((msg1, msg2) => {
+            if (msg1.sent > msg2.sent) {
+                return 1;
+            } else if (msg1.sent < msg2.sent) {
+                return -1;
+            }
+            return 0;
+        });
 
         return smsgMessages;
     }
@@ -77,11 +95,20 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
             throw new InvalidParamException('id', 'number');
         }
 
-        data.params[0] = await this.orderItemService.findOne(data.params[0], true)
+        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0], true)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('OrderItem');
             });
+        data.params[0] = orderItem;
+
+        if (_.isEmpty(orderItem.Bid)) {
+            throw new ModelNotFoundException('Bid');
+        }
+
+        if (_.isEmpty(orderItem.Bid.ListingItem)) {
+            throw new ModelNotFoundException('ListingItem');
+        }
 
         return data;
     }
