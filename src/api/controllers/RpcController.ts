@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as interfaces from '../../types/interfaces';
 import { inject, named } from 'inversify';
 import { controller, httpPost, response, requestBody } from 'inversify-express-utils';
 import { app } from '../../app';
@@ -9,12 +11,10 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import * as _ from 'lodash';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
-import * as interfaces from '../../types/interfaces';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);

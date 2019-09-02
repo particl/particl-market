@@ -12,9 +12,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-describe('SmsgSearchCommand', () => {
-
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+describe('SmsgRemoveCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
@@ -26,6 +24,7 @@ describe('SmsgSearchCommand', () => {
 
     const smsgCommand = Commands.SMSG_ROOT.commandName;
     const smsgSearchCommand = Commands.SMSG_SEARCH.commandName;
+    const smsgRemoveCommand = Commands.SMSG_REMOVE.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
@@ -39,6 +38,8 @@ describe('SmsgSearchCommand', () => {
 
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
+    let smsgMessageReceivedOnBuyerNode: resources.SmsgMessage;
+
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -236,17 +237,47 @@ describe('SmsgSearchCommand', () => {
         const resultSeller: resources.SmsgMessage[] = resSeller.getBody()['result'];
         expect(resultSeller).toHaveLength(2);   // OUTGOING + INCOMING
 
-        const resBuyer = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
+        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
+            smsgCommand,
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
+            15 * 60,
+            200,
+            '[0].type',
+            MPAction.MPA_LISTING_ADD,
+            '='
+        );
+        resSeller.expectJson();
+        resSeller.expectStatusCode(200);
+
+        const resultBuyer: resources.SmsgMessage[] = resBuyer.getBody()['result'];
+        expect(resultBuyer).toHaveLength(1);    // INCOMING
+
+        smsgMessageReceivedOnBuyerNode = resultBuyer[0];
+        log.debug('smsgMessageReceivedOnBuyerNode.msgid: ', smsgMessageReceivedOnBuyerNode.msgid);
+    });
+
+    // TODO: test for missing/invalid params
+
+    test('Should remove SmsgMessages from BUYER node', async () => {
+
+        log.debug('msgid: ', smsgMessageReceivedOnBuyerNode.msgid);
+
+        let res: any = await testUtilBuyerNode.rpc(smsgCommand, [smsgRemoveCommand,
+            smsgMessageReceivedOnBuyerNode.msgid
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
             0,
             10,
             SearchOrder.ASC
         ]);
-        resBuyer.expectJson();
-        resBuyer.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const resultBuyer: resources.SmsgMessage[] = resBuyer.getBody()['result'];
-        expect(resultBuyer).toHaveLength(1);    // INCOMING
+        const result: resources.SmsgMessage[] = res.getBody()['result'];
+        expect(result).toHaveLength(0);
     });
-
 
 });

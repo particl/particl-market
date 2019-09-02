@@ -4,33 +4,36 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { ActionDirection } from '../../../src/api/enums/ActionDirection';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
-describe('SmsgSearchCommand', () => {
+describe('OrderItemHistory', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
 
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
-
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
-    const smsgCommand = Commands.SMSG_ROOT.commandName;
-    const smsgSearchCommand = Commands.SMSG_SEARCH.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+    const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
+    const orderItemHistoryCommand = Commands.ORDERITEM_HISTORY.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const bidCommand = Commands.BID_ROOT.commandName;
+    const bidSendCommand = Commands.BID_SEND.commandName;
+    const bidSearchCommand = Commands.BID_SEARCH.commandName;
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
@@ -40,6 +43,8 @@ describe('SmsgSearchCommand', () => {
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
 
+    let bidOnBuyerNode: resources.Bid;
+
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const ORDER = SearchOrder.ASC;
@@ -48,6 +53,8 @@ describe('SmsgSearchCommand', () => {
     let sent = false;
 
     beforeAll(async () => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
         await testUtilSellerNode.cleanDb();
         await testUtilBuyerNode.cleanDb();
 
@@ -93,33 +100,18 @@ describe('SmsgSearchCommand', () => {
         listingItemTemplateOnSellerNode = listingItemTemplatesOnSellerNode[0];
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-    });
-
-
-    test('Both nodes should contain no SmsgMessages', async () => {
-        let res: any = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
+        // start with clean outputs in case something went wrong earlier
+        let res = await testUtilSellerNode.rpc(daemonCommand, ['lockunspent', true]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        let result: resources.SmsgMessage[] = res.getBody()['result'];
-        expect(result).toHaveLength(0);
-
-        res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
+        res = await testUtilBuyerNode.rpc(daemonCommand, ['lockunspent', true]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        result = res.getBody()['result'];
-        expect(result).toHaveLength(0);
-    });
+        log.debug('==> Setup DONE.');
 
+    });
 
     test('Should post ListingItem from SELLER node', async () => {
 
@@ -213,40 +205,109 @@ describe('SmsgSearchCommand', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Both nodes should contain SmsgMessage', async () => {
-        let resSeller: any = await testUtilSellerNode.rpcWaitFor(
-            smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
-            15 * 60,
-            200,
-            '[0].type',
-            MPAction.MPA_LISTING_ADD,
-            '='
-        );
-        resSeller.expectJson();
-        resSeller.expectStatusCode(200);
+    test('Should post Bid (MPA_BID) from BUYER node', async () => {
 
-        resSeller = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
+        // ListingItem should have been received on buyer node
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        sent = false;
+
+        log.debug('========================================================================================');
+        log.debug('BUYER POSTS MPA_BID for the ListingItem to the seller');
+        log.debug('========================================================================================');
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.hash,
+            buyerProfile.id,
+            buyerProfile.ShippingAddresses[0].id,
+            'colour',   // TODO: make sure created template/item has these options and test that these end up in the Order
+            'black',
+            'size',
+            'xl'
         ]);
-        resSeller.expectJson();
-        resSeller.expectStatusCode(200);
-        const resultSeller: resources.SmsgMessage[] = resSeller.getBody()['result'];
-        expect(resultSeller).toHaveLength(2);   // OUTGOING + INCOMING
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const resBuyer = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
-        resBuyer.expectJson();
-        resBuyer.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
 
-        const resultBuyer: resources.SmsgMessage[] = resBuyer.getBody()['result'];
-        expect(resultBuyer).toHaveLength(1);    // INCOMING
+        log.debug('==[ sent Bid /// buyer node -> seller node ]===================================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('item.hash: ' + listingItemReceivedOnBuyerNode.hash);
+        log.debug('item.seller: ' + listingItemReceivedOnBuyerNode.seller);
+        log.debug('bid.bidder: ' + buyerProfile.address);
+        log.debug('===============================================================================');
+
     });
 
+
+    test('Should have created Bid on BUYER node after posting the MPA_BID', async () => {
+
+        expect(sent).toBeTruthy();
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilBuyerNode.waitFor(5);
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER,
+            listingItemReceivedOnBuyerNode.hash,
+            MPAction.MPA_BID,
+            '*',
+            buyerProfile.address
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Bid = res.getBody()['result'];
+
+        log.debug('result bid: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].type).toBe(MPAction.MPA_BID);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedOnBuyerNode.hash);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+
+        // there should be no relation to ListingItemTemplate on the buyer side
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
+        bidOnBuyerNode = result[0];
+
+        // expect Order and OrderItem to be created
+        expect(result[0].OrderItem.id).toBeDefined();
+        expect(result[0].OrderItem.Order.id).toBeDefined();
+
+        // todo: this is not defined, should it be?
+        // expect(result[0].OrderItem.ListingItem.id).toBeDefined();
+
+        log.debug('==> Bid found on buyer node.');
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should receive OrderItem history with two SmsgMessages', async () => {
+
+        expect(sent).toBeTruthy();
+        expect(bidOnBuyerNode).toBeDefined();
+
+        const res = await testUtilBuyerNode.rpc(orderItemCommand, [orderItemHistoryCommand,
+            bidOnBuyerNode.OrderItem.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.SmsgMessage[] = res.getBody()['result'];
+        expect(result.length).toBe(2);
+        expect(result[0].type).toBe(MPAction.MPA_LISTING_ADD);
+        expect(result[0].direction).toBe(ActionDirection.INCOMING);
+        expect(result[1].type).toBe(MPAction.MPA_BID);
+        expect(result[1].direction).toBe(ActionDirection.OUTGOING);
+
+        log.debug('OrderItem history: ', JSON.stringify(result, null, 2));
+        log.debug('==> Correct OrderItem history received.');
+
+    }, 600000); // timeout to 600s
 
 });

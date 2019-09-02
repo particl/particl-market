@@ -12,13 +12,11 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
-describe('SmsgSearchCommand', () => {
+describe('SmsgResendCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
@@ -26,11 +24,16 @@ describe('SmsgSearchCommand', () => {
 
     const smsgCommand = Commands.SMSG_ROOT.commandName;
     const smsgSearchCommand = Commands.SMSG_SEARCH.commandName;
+    const smsgResendCommand = Commands.SMSG_RESEND.commandName;
+    const smsgRemoveCommand = Commands.SMSG_REMOVE.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const bidCommand = Commands.BID_ROOT.commandName;
+    const bidSendCommand = Commands.BID_SEND.commandName;
+    const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
@@ -39,6 +42,7 @@ describe('SmsgSearchCommand', () => {
 
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
+    let smsgMessageReceivedOnBuyerNode: resources.SmsgMessage;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -94,32 +98,6 @@ describe('SmsgSearchCommand', () => {
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
     });
-
-
-    test('Both nodes should contain no SmsgMessages', async () => {
-        let res: any = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        let result: resources.SmsgMessage[] = res.getBody()['result'];
-        expect(result).toHaveLength(0);
-
-        res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        result = res.getBody()['result'];
-        expect(result).toHaveLength(0);
-    });
-
 
     test('Should post ListingItem from SELLER node', async () => {
 
@@ -213,8 +191,9 @@ describe('SmsgSearchCommand', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Both nodes should contain SmsgMessage', async () => {
-        let resSeller: any = await testUtilSellerNode.rpcWaitFor(
+    test('Should have received SmsgMessage on BUYER node', async () => {
+
+        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
             smsgCommand,
             [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
             15 * 60,
@@ -223,30 +202,80 @@ describe('SmsgSearchCommand', () => {
             MPAction.MPA_LISTING_ADD,
             '='
         );
-        resSeller.expectJson();
-        resSeller.expectStatusCode(200);
-
-        resSeller = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
-        resSeller.expectJson();
-        resSeller.expectStatusCode(200);
-        const resultSeller: resources.SmsgMessage[] = resSeller.getBody()['result'];
-        expect(resultSeller).toHaveLength(2);   // OUTGOING + INCOMING
-
-        const resBuyer = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
-        ]);
         resBuyer.expectJson();
         resBuyer.expectStatusCode(200);
 
         const resultBuyer: resources.SmsgMessage[] = resBuyer.getBody()['result'];
         expect(resultBuyer).toHaveLength(1);    // INCOMING
+
+        smsgMessageReceivedOnBuyerNode = resultBuyer[0];
+        log.debug('smsgMessageReceivedOnBuyerNode.msgid: ', smsgMessageReceivedOnBuyerNode.msgid);
     });
 
+
+    test('Should remove SmsgMessages from BUYER node', async () => {
+
+        log.debug('msgid: ', smsgMessageReceivedOnBuyerNode.msgid);
+
+        let res: any = await testUtilBuyerNode.rpc(smsgCommand, [smsgRemoveCommand,
+            smsgMessageReceivedOnBuyerNode.msgid
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
+            0,
+            10,
+            SearchOrder.ASC
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.SmsgMessage[] = res.getBody()['result'];
+        expect(result).toHaveLength(0);
+    });
+
+
+    test('Should resend SmsgMessage from SELLER node', async () => {
+
+        let res: any = await testUtilSellerNode.rpc(smsgCommand, [smsgResendCommand,
+            smsgMessageReceivedOnBuyerNode.msgid
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        res = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
+            0,
+            10,
+            SearchOrder.ASC
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.SmsgMessage[] = res.getBody()['result'];
+        expect(result).toHaveLength(2); // one sent and one resent
+    });
+
+
+    test('Should have received SmsgMessage on BUYER node', async () => {
+
+        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
+            smsgCommand,
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
+            15 * 60,
+            200,
+            '[0].type',
+            MPAction.MPA_LISTING_ADD,
+            '='
+        );
+        resBuyer.expectJson();
+        resBuyer.expectStatusCode(200);
+
+        const resultBuyer: resources.SmsgMessage[] = resBuyer.getBody()['result'];
+        expect(resultBuyer).toHaveLength(1);    // INCOMING
+
+        smsgMessageReceivedOnBuyerNode = resultBuyer[0];
+        log.debug('smsgMessageReceivedOnBuyerNode.msgid: ', smsgMessageReceivedOnBuyerNode.msgid);
+    });
 
 });

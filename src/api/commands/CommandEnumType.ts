@@ -165,10 +165,11 @@ export class CommandEnumType extends Enum<Command> {
     public ORDER_ROOT: Command           = new Command('order', 'order', true,
         [this.ORDER_SEARCH], EnvironmentType.ALL);
 
+    public ORDERITEM_HISTORY: Command         = new Command('orderitemhistory', 'history', false);
     public ORDERITEM_STATUS: Command         = new Command('orderitemstatus', 'status', false);
     public ORDERITEM_SHIP: Command         = new Command('orderitemship', 'ship', false);
     public ORDERITEM_ROOT: Command           = new Command('orderitem', 'orderitem', true,
-        [this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
+        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
 
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 
@@ -189,8 +190,9 @@ export class CommandEnumType extends Enum<Command> {
 
     public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
     public SMSG_REMOVE: Command      = new Command('smsgremove', 'remove', false);
+    public SMSG_RESEND: Command      = new Command('smsgresend', 'resend', false);
     public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
-        [this.SMSG_SEARCH, this.SMSG_REMOVE], EnvironmentType.ALL);
+        [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
     public WALLET_LIST: Command      = new Command('walletlist', 'list', false);
     public WALLET_ROOT: Command        = new Command('wallet', 'wallet', true,

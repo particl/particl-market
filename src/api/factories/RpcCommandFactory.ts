@@ -100,6 +100,7 @@ import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
 import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
+import { OrderItemHistoryCommand } from '../commands/orderitem/OrderItemHistoryCommand';
 import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
 import { OrderItemShipCommand } from '../commands/orderitem/OrderItemShipCommand';
 
@@ -149,6 +150,7 @@ import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
+import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 
 import { WalletListCommand } from '../commands/wallet/WalletListCommand';
@@ -246,6 +248,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemHistoryCommand) private orderItemHistoryCommand: OrderItemHistoryCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemShipCommand) private orderItemShipCommand: OrderItemShipCommand,
         @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
@@ -309,6 +312,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRemoveCommand) private smsgRemoveCommand: SmsgRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgResendCommand) private smsgResendCommand: SmsgResendCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.wallet.WalletListCommand) private walletListCommand: WalletListCommand,
@@ -403,6 +407,7 @@ export class RpcCommandFactory {
         this.commands.push(orderSearchCommand);
 
         this.commands.push(orderItemRootCommand);
+        this.commands.push(orderItemHistoryCommand);
         this.commands.push(orderItemStatusCommand);
         this.commands.push(orderItemShipCommand);
 
@@ -466,6 +471,7 @@ export class RpcCommandFactory {
 
         this.commands.push(smsgSearchCommand);
         this.commands.push(smsgRemoveCommand);
+        this.commands.push(smsgResendCommand);
         this.commands.push(smsgRootCommand);
 
         this.commands.push(walletListCommand);

@@ -54,16 +54,14 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
 
-        this.log.debug('get()');
-
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
-        this.log.debug('get(), information: ', JSON.stringify(information, null, 2));
+        // this.log.debug('get(), information: ', JSON.stringify(information, null, 2));
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
-        this.log.debug('get(), payment: ', JSON.stringify(payment, null, 2));
+        // this.log.debug('get(), payment: ', JSON.stringify(payment, null, 2));
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
-        this.log.debug('get(), messaging: ', JSON.stringify(messaging, null, 2));
+        // this.log.debug('get(), messaging: ', JSON.stringify(messaging, null, 2));
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
-        this.log.debug('get(), objects: ', JSON.stringify(objects, null, 2));
+        // this.log.debug('get(), objects: ', JSON.stringify(objects, null, 2));
 
         const item = {
             information,
@@ -82,13 +80,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
         // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
-        if (params.listingItem.hash
-            && params.listingItem.hash !== message.hash) {
-            this.log.debug('params.listingItem.hash: ', params.listingItem.hash);
-            this.log.debug('message.hash: ', message.hash);
-
-            // this.log.debug('params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
-            // this.log.debug('message: ', JSON.stringify(message, null, 2));
+        if (params.listingItem.hash && params.listingItem.hash !== message.hash) {
             throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
         }
         return message;

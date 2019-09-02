@@ -64,7 +64,7 @@ describe('Happy Buy Flow', () => {
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
-    const ORDERING = SearchOrder.ASC;
+    const ORDER = SearchOrder.ASC;
     const DAYS_RETENTION = 2;
 
     const DELIVERY_CONTACT_PHONE = '+3584512345678';
@@ -320,7 +320,7 @@ describe('Happy Buy Flow', () => {
         await testUtilBuyerNode.waitFor(5);
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
+            PAGE, PAGE_LIMIT, ORDER,
             listingItemReceivedBuyerNode.hash,
             MPAction.MPA_BID,
             '*',
@@ -373,7 +373,7 @@ describe('Happy Buy Flow', () => {
             bidCommand,
             [
                 bidSearchCommand,
-                PAGE, PAGE_LIMIT, ORDERING,
+                PAGE, PAGE_LIMIT, ORDER,
                 listingItemReceivedBuyerNode.hash,
                 MPAction.MPA_BID,
                 '*',
@@ -467,7 +467,7 @@ describe('Happy Buy Flow', () => {
             bidCommand,
             [
                 bidSearchCommand,
-                PAGE, PAGE_LIMIT, ORDERING,
+                PAGE, PAGE_LIMIT, ORDER,
                 bidOnSellerNode.ListingItem.hash,
                 MPAction.MPA_ACCEPT,
                 '*',
@@ -563,7 +563,7 @@ describe('Happy Buy Flow', () => {
             bidCommand,
             [
                 bidSearchCommand,
-                PAGE, PAGE_LIMIT, ORDERING,
+                PAGE, PAGE_LIMIT, ORDER,
                 bidOnBuyerNode.ListingItem.hash,
                 MPAction.MPA_ACCEPT,
                 '*',
@@ -655,7 +655,7 @@ describe('Happy Buy Flow', () => {
         await testUtilBuyerNode.waitFor(5);
 
         const response: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
+            PAGE, PAGE_LIMIT, ORDER,
             bidOnBuyerNode.ListingItem.hash,
             OrderItemStatus.AWAITING_ESCROW
         ]);
