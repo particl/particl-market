@@ -45,7 +45,7 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.SmsgMessage[]> {
 
         const orderItem: resources.OrderItem = data.params[0];
-        let smsgMessages: resources.SmsgMessage[] = [];
+        const smsgMessages: resources.SmsgMessage[] = [];
 
         this.log.debug('orderItem:', JSON.stringify(orderItem));
 
@@ -66,7 +66,7 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
         }
 
         // sort by sent
-        smsgMessages = smsgMessages.sort((msg1, msg2) => {
+        smsgMessages.sort((msg1, msg2) => {
             if (msg1.sent > msg2.sent) {
                 return 1;
             } else if (msg1.sent < msg2.sent) {
