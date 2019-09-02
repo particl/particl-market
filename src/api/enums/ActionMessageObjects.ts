@@ -4,6 +4,8 @@
 
 export enum ActionMessageObjects {
 
+    RESENT_MSGID = 'resent.msgid',
+
     SHIPPING_MEMO = 'shipping.memo',    // MPA_SHIP
     ORDER_HASH = 'order.hash',          // MPA_BID
     TXID_LOCK = 'txid.lock',            // MPA_LOCK

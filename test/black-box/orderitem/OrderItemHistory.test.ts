@@ -37,12 +37,10 @@ describe('OrderItemHistory', () => {
 
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
-
     let buyerMarket: resources.Market;
     let sellerMarket: resources.Market;
 
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
-    let listingItemReceivedOnSellerNode: resources.ListingItem;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
 
     let bidOnBuyerNode: resources.Bid;
@@ -68,6 +66,7 @@ describe('OrderItemHistory', () => {
         log.debug('sellerProfile: ', sellerProfile.address);
         log.debug('buyerProfile: ', buyerProfile.address);
 
+        // get seller and buyer markets
         sellerMarket = await testUtilSellerNode.getDefaultMarket();
         buyerMarket = await testUtilBuyerNode.getDefaultMarket();
         expect(sellerMarket.id).toBeDefined();
@@ -147,8 +146,8 @@ describe('OrderItemHistory', () => {
         log.debug('item.category: [' + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.id + '] '
             + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.name);
         log.debug('========================================================================================');
-
     });
+
 
     test('Should get the updated ListingItemTemplate to get the hash', async () => {
         // sending should have succeeded for this test to work

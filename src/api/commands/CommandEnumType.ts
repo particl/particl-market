@@ -190,8 +190,9 @@ export class CommandEnumType extends Enum<Command> {
 
     public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
     public SMSG_REMOVE: Command      = new Command('smsgremove', 'remove', false);
+    public SMSG_RESEND: Command      = new Command('smsgresend', 'resend', false);
     public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
-        [this.SMSG_SEARCH, this.SMSG_REMOVE], EnvironmentType.ALL);
+        [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
     public WALLET_LIST: Command      = new Command('walletlist', 'list', false);
     public WALLET_ROOT: Command        = new Command('wallet', 'wallet', true,
