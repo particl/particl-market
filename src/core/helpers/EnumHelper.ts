@@ -21,7 +21,7 @@ export class EnumHelper {
         if (EnumHelper.isNumeric(e)) {
             return EnumHelper.getObjValues(e).filter(v => typeof v === 'string') as string[];
         } else {
-            return EnumHelper.getObjKeys(e) as string[];
+            return EnumHelper.getObjKeys(e);
         }
     }
 
