@@ -71,23 +71,25 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                 return kvs.key === ActionMessageObjects.RESENT_MSGID;
             });
 
-            let existingResentSmsgMessage: resources.SmsgMessage;
+            let existingResentSmsgMessage: resources.SmsgMessage | undefined;
             if (resentMsgIdKVS) {
                 existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
                     .then(value => value.toJSON())
                     .catch(error => {
                         return undefined;
                     });
+            } else {
+                existingResentSmsgMessage = undefined;
             }
 
-            if (!existingSmsgMessage && !existingResentSmsgMessage!) {
+            if (existingSmsgMessage !== undefined || existingResentSmsgMessage !== undefined) {
+                this.log.debug('SmsgMessage has already been received, skipping.');
+            } else {
                 const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
                     direction: ActionDirection.INCOMING,
                     message: msg
                 } as SmsgMessageCreateParams);
                 smsgMessageCreateRequests.push(smsgMessageCreateRequest);
-            } else {
-                this.log.debug('SmsgMessage has already been received, skipping.');
             }
 
         }
