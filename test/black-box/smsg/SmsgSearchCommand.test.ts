@@ -35,16 +35,14 @@ describe('SmsgSearchCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let smsgMessages: resources.SmsgMessage[];
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const ORDER = SearchOrder.ASC;
     const ORDER_FIELD = SmsgMessageSearchOrderField.RECEIVED;
     const DAYS_RETENTION = 7;
-
-    const listingItemTemplate: resources.ListingItemTemplate;
-    let smsgMessages: resources.SmsgMessage[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -82,8 +80,8 @@ describe('SmsgSearchCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams       // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-        listingItemTemplateOnSellerNode = listingItemTemplatesOnSellerNode[0];
-        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+        listingItemTemplate = listingItemTemplatesOnSellerNode[0];
+        expect(listingItemTemplate.id).toBeDefined();
 
         const messageParams = {
             listingItem: listingItemTemplate

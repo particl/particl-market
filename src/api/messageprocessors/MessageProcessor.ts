@@ -37,6 +37,7 @@ import { EscrowCompleteActionListener } from '../listeners/action/EscrowComplete
 import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
+import {SmsgMessageSearchOrderField} from '../enums/SearchOrderField';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -301,12 +302,11 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {number} amount
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    private async getSmsgMessages(types: ActionMessageTypes[],
-                                  status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
+    private async getSmsgMessages(types: ActionMessageTypes[], status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             direction: ActionDirection.INCOMING,
             status,
             types,

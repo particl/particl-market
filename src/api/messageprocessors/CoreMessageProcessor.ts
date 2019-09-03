@@ -73,7 +73,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
             let existingResentSmsgMessage: resources.SmsgMessage;
             if (resentMsgIdKVS) {
-                existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value as string, ActionDirection.INCOMING)
+                existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
                     .then(value => value.toJSON())
                     .catch(error => {
                         return undefined;
