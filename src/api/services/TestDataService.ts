@@ -110,6 +110,12 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { GovernanceAction } from '../enums/GovernanceAction';
 import { CommentAction } from '../enums/CommentAction';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+
 
 export class TestDataService {
 
@@ -117,12 +123,12 @@ export class TestDataService {
     public ignoreTables: string[] = ['sqlite_sequence', 'version', 'version_lock', 'knex_migrations', 'knex_migrations_lock'];
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
-        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
-        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) private defaultItemCategoryService: DefaultItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) private defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) private defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) private defaultSettingService: DefaultSettingService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -141,8 +147,9 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -152,7 +159,6 @@ export class TestDataService {
      * clean up the database
      * insert the default data
      *
-     * @param ignoreTables
      * @param seed
      * @returns {Promise<void>}
      */
@@ -460,6 +466,8 @@ export class TestDataService {
             this.log.debug('create listingitem start');
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                 .then(value => value.toJSON());
+            // TODO: make this optional/configurable
+            const savedSmsgMessage: resources.SmsgMessage = await this.createListingItemSmsgMessage(savedListingItem);
             this.log.debug('create listingitem end');
 
             items.push(savedListingItem);
@@ -469,6 +477,52 @@ export class TestDataService {
         this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
+    }
+
+    private async createListingItemSmsgMessage(listingItem: resources.ListingItem): Promise<resources.SmsgMessage> {
+
+        const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            listingItem
+        } as ListingItemAddMessageCreateParams);
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: listingItemAddMessage
+        };
+
+        // put the MarketplaceMessage in SmsgMessage
+        const listingItemSmsg = {
+            msgid: 'TESTMESSAGE-' + Faker.random.uuid(),
+            version: '0300',
+            location: 'inbox',
+            read: true,
+            paid: true,
+            payloadsize: 100,
+            received: Date.now(),
+            sent: Date.now(),
+            expiration: Date.now(),
+            daysretention: 7,
+            from: listingItem.seller,
+            to: listingItem.market,
+            text: JSON.stringify(marketplaceMessage)
+        } as CoreSmsgMessage;
+
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            status: SmsgMessageStatus.PROCESSED,
+            message: listingItemSmsg
+        });
+        return await this.smsgMessageService.create(smsgMessageCreateRequest)
+            .then(async smsgMessageModel => {
+
+                const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
+                this.log.debug('SAVED SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
+                return smsgMessage;
+            });
     }
 
     // -------------------

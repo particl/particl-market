@@ -4,10 +4,11 @@
 
 import * as resources from 'resources';
 import * from 'jest';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { GenerateSmsgMessageParams } from '../../../src/api/requests/testdata/GenerateSmsgMessageParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -32,6 +33,8 @@ describe('SmsgRemoveCommand', () => {
     let listingItemTemplate: resources.ListingItemTemplate;
     let smsgMessages: resources.SmsgMessage[];
 
+    const DAYS_RETENTION = 7;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -39,11 +42,12 @@ describe('SmsgRemoveCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
+        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            false,              // generateItemImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -55,7 +59,6 @@ describe('SmsgRemoveCommand', () => {
             defaultMarket.id    // marketId
         ]).toParamsArray();
 
-        // generate ListingItemTemplate
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
@@ -64,11 +67,11 @@ describe('SmsgRemoveCommand', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
+        // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const messageParams = {
             listingItem: listingItemTemplate
         } as ListingItemAddMessageCreateParams;
 
-        // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
             MPAction.MPA_LISTING_ADD,               // type
             SmsgMessageStatus.NEW,                  // status
@@ -78,7 +81,7 @@ describe('SmsgRemoveCommand', () => {
             Date.now(),                             // received
             Date.now() - (24 * 60 * 60 * 1000),     // sent
             Date.now() + (5 * 24 * 60 * 60 * 1000), // expiration
-            7,                                      // daysretention
+            DAYS_RETENTION,                         // daysretention
             defaultProfile.address,                 // from
             defaultMarket.address,                  // to
             messageParams                           // messageParams

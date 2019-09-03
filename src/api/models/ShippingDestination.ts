@@ -4,8 +4,7 @@
 
 import { Bookshelf } from '../../config/Database';
 import { ShippingDestinationSearchParams } from '../requests/search/ShippingDestinationSearchParams';
-import {ListingItemTemplate} from './ListingItemTemplate';
-import {ItemInformation} from './ItemInformation';
+import { ItemInformation } from './ItemInformation';
 
 export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
 

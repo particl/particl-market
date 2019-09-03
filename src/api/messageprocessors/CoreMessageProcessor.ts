@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
@@ -15,6 +17,9 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 
 export class CoreMessageProcessor implements MessageProcessorInterface {
 
@@ -23,7 +28,6 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 5000; // todo: configurable
 
-    // tslint:disable:max-line-length
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
@@ -33,7 +37,6 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
     ) {
         this.log = new Logger(__filename);
     }
-    // tslint:enable:max-line-length
 
     /**
      * polls for new smsgmessages and stores them in the database
@@ -47,7 +50,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         // this.log.debug('INCOMING messages.length: ', messages.length);
 
         // - fetch the CoreSmsgMessage from core
-        // - create the createrequests
+        // - create SmsgMessagesCreateRequests
         // - then save the CoreSmsgMessage to the db as SmsgMessages
 
         for (const message of messages) {
@@ -55,12 +58,38 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
 
-            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
-                direction: ActionDirection.INCOMING,
-                message: msg
-            } as SmsgMessageCreateParams);
+            // check whether an SmsgMessage with the msgid was already received and processed
+            const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msg.msgid, ActionDirection.INCOMING)
+                .then(value => value.toJSON())
+                .catch(error => {
+                    return undefined;
+                });
 
-            smsgMessageCreateRequests.push(smsgMessageCreateRequest);
+            // in case of resent SmsgMessasge, check whether an SmsgMessage with the previously sent msgid was already received and processed
+            const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);
+            const resentMsgIdKVS = _.find(marketplaceMessage.action.objects, (kvs: KVS) => {
+                return kvs.key === ActionMessageObjects.RESENT_MSGID;
+            });
+
+            let existingResentSmsgMessage: resources.SmsgMessage;
+            if (resentMsgIdKVS) {
+                existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value as string, ActionDirection.INCOMING)
+                    .then(value => value.toJSON())
+                    .catch(error => {
+                        return undefined;
+                    });
+            }
+
+            if (!existingSmsgMessage && !existingResentSmsgMessage!) {
+                const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+                    direction: ActionDirection.INCOMING,
+                    message: msg
+                } as SmsgMessageCreateParams);
+                smsgMessageCreateRequests.push(smsgMessageCreateRequest);
+            } else {
+                this.log.debug('SmsgMessage has already been received, skipping.');
+            }
+
         }
 
         // this.log.debug('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
