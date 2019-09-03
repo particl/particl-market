@@ -15,6 +15,8 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { ListingItemAddMessageCreateParams } from '../../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('SmsgRemoveCommand', () => {
 
@@ -73,9 +75,9 @@ describe('SmsgRemoveCommand', () => {
 
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
             MPAction.MPA_LISTING_ADD,               // type
-            SmsgMessageStatus.NEW,                  // status
+            SmsgMessageStatus.PROCESSED,            // status
             ActionDirection.INCOMING,               // direction
-            false,                                  // read
+            true,                                   // read
             true,                                   // paid
             Date.now(),                             // received
             Date.now() - (24 * 60 * 60 * 1000),     // sent
@@ -96,34 +98,33 @@ describe('SmsgRemoveCommand', () => {
 
     });
 
-    test('Should remove SmsgMessage using smsgMessage.id', async () => {
+    test('Should fail to remove SmsgMessage because missing msgid', async () => {
+        const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('msgid').getMessage());
+    });
+
+    test('Should fail to remove SmsgMessage because invalid msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
-            smsgMessages[0].id
+            true
         ]);
         res.expectJson();
-        res.expectStatusCode(200);
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
     });
 
     test('Should remove SmsgMessage using smsgMessage.msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
-            smsgMessages[1].msgid
+            smsgMessages[0].msgid
         ]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should fail to remove SmsgMessage using smsgMessage.id because its already removed', async () => {
+    test('Should fail to remove SmsgMessage because its already removed', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
-            smsgMessages[0].id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('SmsgMessage').getMessage());
-    });
-
-    test('Should fail to remove SmsgMessage using smsgMessage.msgid because its already removed', async () => {
-        const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
-            smsgMessages[1].msgid
+            smsgMessages[0].msgid
         ]);
         res.expectJson();
         res.expectStatusCode(404);

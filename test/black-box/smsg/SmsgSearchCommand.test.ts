@@ -92,7 +92,7 @@ describe('SmsgSearchCommand', () => {
             MPAction.MPA_LISTING_ADD,               // type
             SmsgMessageStatus.PROCESSED,            // status
             ActionDirection.INCOMING,               // direction
-            false,                                  // read
+            true,                                   // read
             true,                                   // paid
             Date.now(),                             // received
             Date.now() - (24 * 60 * 60 * 1000),     // sent

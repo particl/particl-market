@@ -31,7 +31,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: msgId
+     *  [0]: msgid
      *
      * @param data
      * @returns {Promise<void>}
@@ -60,7 +60,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: msgId
+     *  [0]: msgid
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -72,34 +72,27 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
             throw new MissingParamException('msgid');
         }
 
-        if (typeof data.params[0] === 'number') {
-            // make sure SmsgMessage with the id exists
-            data.params[0] = await this.smsgMessageService.findOne(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('SmsgMessage');
-                });
-        } else if (typeof data.params[0] === 'string') {
-            // make sure SmsgMessage with the msgid exists
-            data.params[0] = await this.smsgMessageService.findOneByMsgId(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('SmsgMessage');
-                });
-        } else {
-            throw new InvalidParamException('id or msgid', 'number or string');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('msgid', 'string');
         }
+
+        // make sure an SmsgMessage with the msgid exists
+        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('SmsgMessage');
+            });
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <id|msgid> ';
+        return this.getName() + ' <msgid> ';
     }
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <id>              -  The id of the SmsgMessage we want to destroy. \n'
             + '    <msgid>           -  The msgid of the SmsgMessage we want to destroy. \n';
     }
 
