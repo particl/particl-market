@@ -72,7 +72,7 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
             msgid: data.params[8]
         } as SmsgMessageSearchParams;
 
-        this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
+        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
 
         return await this.smsgMessageService.searchBy(searchParams);
     }
@@ -169,7 +169,7 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
     }
 
     public description(): string {
-            return 'Search SmsgMessages.';
+            return 'Search for SmsgMessages.';
     }
 
     public example(): string {

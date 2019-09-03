@@ -45,7 +45,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
                 this.smsgMessageService.destroy(smsgMessage.id);
             })
             .catch(reason => {
-                this.log.debug('OUTGOING SMSG with msgId not found');
+                this.log.debug('OUTGOING SMSG with msgid not found');
             });
 
         await this.smsgMessageService.findOneByMsgId(data.params[0], ActionDirection.INCOMING)
@@ -54,7 +54,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
                 this.smsgMessageService.destroy(smsgMessage.id);
             })
             .catch(reason => {
-                this.log.debug('INCOMING SMSG with msgId not found');
+                this.log.debug('INCOMING SMSG with msgid not found');
             });
     }
 
