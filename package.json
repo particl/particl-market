@@ -182,6 +182,7 @@
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
     "jest-sonar-reporter": "^2.0.0",
+    "node-slate-cli": "^1.1.0",
     "nodemon": "^1.19.1",
     "sonarqube-scanner": "^2.1.2",
     "trash-cli": "^1.4.0",
