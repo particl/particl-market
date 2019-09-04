@@ -27,6 +27,6 @@
   },
   "license": "GPL-2.0",
   "devDependencies": {
-    "node-slate-lib": "^1.1.8"
+    "node-slate-lib": "^1.1.9"
   }
 }

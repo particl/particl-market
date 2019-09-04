@@ -10,6 +10,8 @@ if [ -z "$1" ]
 fi
 TAG=$1
 
+yarn docs:build
+
 docker build -t particl-docs:latest -t docker.io/ludx/particl-docs:latest -t docker.io/ludx/particl-docs:$TAG -f Dockerfile.docs .
 docker push docker.io/ludx/particl-docs:$TAG
 docker push docker.io/ludx/particl-docs:latest

@@ -12,10 +12,12 @@
     <link href="css/print.css" rel="stylesheet" type="text/css" media="print" />
     <link href="css/highlight-monokai.css" rel="stylesheet" type="text/css" media="screen, print" />
     
+      <link href="css/changes.css" rel="stylesheet" type="text/css" media="screen, print" />
+    
     <script src="js/all.js" type="text/javascript"></script>
   </head>
 
-  <body class="" data-languages="[&#34;shell&#34;,&#34;javascript&#34;]">
+  <body class="" data-languages="[&#34;json&#34;]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -27,9 +29,7 @@
       
         <div class="lang-selector">
           
-            <a href="#" data-language-name="shell">shell</a>
-          
-            <a href="#" data-language-name="javascript">javascript</a>
+            <a href="#" data-language-name="json">json</a>
           
         </div>
       
@@ -48,7 +48,7 @@
           
             <li>Generated with <a href='https://github.com/xludx/node-slate-lib'>node-slate-lib</a></li>
           
-            <li>Build: 2019-09-04.develop.5318a538</li>
+            <li>Build: 2019-09-04.develop.e49b8d67</li>
         </ul>
       
     </div>
@@ -60,30 +60,816 @@
 <p>Welcome to the particl-market documentation site!</p>
 
         
-          <h1 id="models">Models</h1>
-<h2 id="jsonrpc">JSONRPC</h2>
+          <h1 id="installation">Installation</h1>
+<h2 id="docker">Docker</h2>
+<pre class="highlight "><code>$ docker-compose up <span class="hljs-comment">--build</span></code></pre><p>For development, the easiest way to run the marketplace is to run it using docker-compose. </p>
+<p>The default configuration will start up two marketplace instances and two particl-core&#39;s by default.</p>
+<ul>
+<li>particl-market1 rpc - <a href="http://localhost:3100/api/rpc/">http://localhost:3100/api/rpc/</a></li>
+<li>particl-market2 rpc -  <a href="http://localhost:3200/api/rpc/">http://localhost:3200/api/rpc/</a></li>
+<li>particl-core1 rpc -  <a href="http://localhost:52935/">http://localhost:52935/</a></li>
+<li>particl-core2 rpc -  <a href="http://localhost:53935/">http://localhost:53935/</a></li>
+</ul>
+
+        
+          <h1 id="rpc-api">RPC API</h1>
+<p>By default the Marketplace RPC endpoint can be found at /api/rpc.</p>
+<h2 id="making-a-request">Making a Request</h2>
+<p>An rpc call is made by creating and sending a POST request to the Servers RPC endpoint url.</p>
+<p>All requests follow the standard JSON-RPC 2.0 request object format:</p>
+<h3 id="parameters">Parameters</h3>
 <blockquote>
-<p>Example JSON:</p>
-</blockquote>
+<p>Example Request:</p>
 <pre class="highlight json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"1"</span>,
-  <span class="hljs-attr">"jsonrpc"</span> : <span class="hljs-string">"2.0"</span>
-}</code></pre><p>This endpoint deletes a specific kitten.</p>
-<h3 id="fields">Fields</h3>
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"list"</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
 <table>
 <thead>
 <tr>
 <th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>jsonrpc</td>
+<td>string</td>
+<td>Version of the JSON-RPC protocol. MUST be exactly &quot;2.0&quot;.</td>
+</tr>
+<tr>
+<td>method</td>
+<td>string</td>
+<td>Name of the method to be called.</td>
+</tr>
+<tr>
+<td>params</td>
+<td>any[]</td>
+<td>Parameters for the method to be called.</td>
+</tr>
+<tr>
+<td>id</td>
+<td>number | string</td>
+<td>Request identifier</td>
+</tr>
+</tbody></table>
+<h2 id="commands">Commands</h2>
+<p>The Request objects method-field and the first param of the params-field define the Command being called. The rest of the 
+params are passed on as arguments to the Command. </p>
+<p>Implementations of all the Commands are found in <a href="https://github.com/particl/particl-market/tree/develop/src/api/commands">src/api/commands</a>.</p>
+<h3 id="marketplace-cli">Marketplace CLI</h3>
+<p>Marketplace has its own web based cli, which can be used to quickly execute some commands. It can be found at <code>/cli</code>.</p>
+
+        
+          <h1 id="commands">Commands</h1>
+
+        
+          <h2 id="profiles">Profiles</h2>
+<p>Commands for managing Profiles.</p>
+<h3 id="profile-add">profile add</h3>
+<pre class="highlight "><code><span class="hljs-keyword">profile</span> <span class="hljs-built_in">add</span> <span class="hljs-symbol">&lt;name&gt;</span> [address]</code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/profile/ProfileAddCommand.ts">ProfileAddCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"add"</span>, <span class="hljs-string">"NEW-PROFILE"</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>name</td>
+<td>string</td>
+<td>*</td>
+<td>Name for the new Profile.</td>
+</tr>
+<tr>
+<td>address</td>
+<td>string</td>
+<td></td>
+<td>Particl address used to identify the Profile across the network.</td>
+</tr>
+</tbody></table>
+<h4 id="response">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"NEW-PROFILE"</span>,
+    <span class="hljs-attr">"address"</span>: <span class="hljs-string">"potRzCCvQeTupMnaMSTHT2biYwwyRCzsdD"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"ShippingAddresses"</span>: [],
+    <span class="hljs-attr">"CryptocurrencyAddresses"</span>: [],
+    <span class="hljs-attr">"FavoriteItems"</span>: [],
+    <span class="hljs-attr">"ShoppingCart"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041310</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041310</span>
+      }
+    ],
+    <span class="hljs-attr">"Markets"</span>: [],
+    <span class="hljs-attr">"Wallets"</span>: []
+  }
+}</code></pre></blockquote>
+<p><a href="#profile">Models/Profile</a></p>
+<h3 id="profile-get">profile get</h3>
+<pre class="highlight "><code>profile <span class="hljs-keyword">get</span> &lt;<span class="hljs-built_in">id</span>|<span class="hljs-built_in">name</span>&gt;</code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/profile/ProfileGetCommand.ts">ProfileGetCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-1">Request</h4>
+<blockquote>
+<p>Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"get"</span>, <span class="hljs-number">13</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<p>Either the id or the name is required.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>id</td>
-<td>The ID of request</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Profile.</td>
 </tr>
 <tr>
-<td>jsonrpc</td>
-<td>The jsonrpc version</td>
+<td>name</td>
+<td>string</td>
+<td>*</td>
+<td>Name of the Profile.</td>
+</tr>
+</tbody></table>
+<h4 id="response-1">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"NEW-PROFILE"</span>,
+    <span class="hljs-attr">"address"</span>: <span class="hljs-string">"potRzCCvQeTupMnaMSTHT2biYwwyRCzsdD"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"ShippingAddresses"</span>: [],
+    <span class="hljs-attr">"CryptocurrencyAddresses"</span>: [],
+    <span class="hljs-attr">"FavoriteItems"</span>: [],
+    <span class="hljs-attr">"ShoppingCart"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041310</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041310</span>
+      }
+    ],
+    <span class="hljs-attr">"Markets"</span>: [],
+    <span class="hljs-attr">"Wallets"</span>: []
+  }
+}</code></pre></blockquote>
+<p><a href="#profile">Models/Profile</a></p>
+<h3 id="profile-list">profile list</h3>
+<pre class="highlight "><code><span class="hljs-keyword">profile</span> <span class="hljs-keyword">list</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/profile/ProfileListCommand.ts">ProfileListCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-2">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"list"</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<h4 id="response-2">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: [
+    {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+      <span class="hljs-attr">"address"</span>: <span class="hljs-string">"pgtrQ5FgZ8zTyRSxfG7Guw54vPS5Ms7PaV"</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514234223</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234223</span>
+    },
+    {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"NEW-PROFILE"</span>,
+      <span class="hljs-attr">"address"</span>: <span class="hljs-string">"potRzCCvQeTupMnaMSTHT2biYwwyRCzsdD"</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041285</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041285</span>
+    }
+  ]
+}</code></pre></blockquote>
+<p><a href="#profile">Models/Profile[]</a></p>
+<h3 id="profile-remove">profile remove</h3>
+<pre class="highlight "><code><span class="hljs-keyword">profile</span> <span class="hljs-built_in">remove</span> <span class="hljs-symbol">&lt;id&gt;</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/profile/ProfileRemoveCommand.ts">ProfileRemoveCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-3">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"remove"</span>, <span class="hljs-number">14</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Profile.</td>
+</tr>
+</tbody></table>
+<h4 id="response-3">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>
+}</code></pre></blockquote>
+<p>200 OK, if all went well.</p>
+<h3 id="profile-update">profile update</h3>
+<pre class="highlight "><code><span class="hljs-keyword">profile</span> <span class="hljs-keyword">update</span> <span class="hljs-symbol">&lt;id&gt;</span> <span class="hljs-symbol">&lt;newName&gt;</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/profile/ProfileUpdateCommand.ts">ProfileUpdateCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-4">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"profile"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"update"</span>, <span class="hljs-number">14</span>, <span class="hljs-string">"NEW-NAME"</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>id</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Profile.</td>
+</tr>
+<tr>
+<td>newName</td>
+<td>string</td>
+<td>*</td>
+<td>New name for the Profile.</td>
+</tr>
+</tbody></table>
+<h4 id="response-4">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"NEW-NAME"</span>,
+    <span class="hljs-attr">"address"</span>: <span class="hljs-string">"potRzCCvQeTupMnaMSTHT2biYwwyRCzsdD"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041285</span>,
+    <span class="hljs-attr">"ShippingAddresses"</span>: [],
+    <span class="hljs-attr">"CryptocurrencyAddresses"</span>: [],
+    <span class="hljs-attr">"FavoriteItems"</span>: [],
+    <span class="hljs-attr">"ShoppingCart"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">14</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567619041310</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567619041310</span>
+      }
+    ],
+    <span class="hljs-attr">"Markets"</span>: [],
+    <span class="hljs-attr">"Wallets"</span>: []
+  }
+}</code></pre></blockquote>
+
+        
+          <h2 id="markets">Markets</h2>
+<p>Commands for managing Markets.</p>
+<h3 id="market-add">market add</h3>
+<pre class="highlight "><code>market add &lt;profileId&gt; &lt;name&gt; <span class="hljs-string">[type]</span> <span class="hljs-string">[receiveKey]</span> <span class="hljs-string">[receiveAddress]</span> <span class="hljs-string">[publishKey]</span> <span class="hljs-string">[publishAddress]</span> <span class="hljs-string">[walletId]</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketAddCommand.ts">MarketAddCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"market"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"add"</span>, <span class="hljs-number">3</span>, <span class="hljs-string">"second market"</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>profileId</td>
+<td>number</td>
+<td>*</td>
+<td></td>
+</tr>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>*</td>
+<td></td>
+</tr>
+<tr>
+<td>type</td>
+<td>string</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>receiveKey</td>
+<td>string</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>receiveAddress</td>
+<td>string</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>publishKey</td>
+<td>string</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>publishAddress</td>
+<td>string</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>walletId</td>
+<td>number</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h4 id="response">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">4</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"second market"</span>,
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"MARKETPLACE"</span>,
+    <span class="hljs-attr">"receiveKey"</span>: <span class="hljs-string">"7ukyVggjdfgXTa7rjcWRvymMGDezXtAF3YMMePXKb5wfR8KvaqaX"</span>,
+    <span class="hljs-attr">"receiveAddress"</span>: <span class="hljs-string">"pf6YKaJgX8YKHepMXPKNk1bxDp2FB5wtpx"</span>,
+    <span class="hljs-attr">"publishKey"</span>: <span class="hljs-string">"7ukyVggjdfgXTa7rjcWRvymMGDezXtAF3YMMePXKb5wfR8KvaqaX"</span>,
+    <span class="hljs-attr">"publishAddress"</span>: <span class="hljs-string">"pf6YKaJgX8YKHepMXPKNk1bxDp2FB5wtpx"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563626078910</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563626078910</span>,
+    <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">3</span>,
+    <span class="hljs-attr">"walletId"</span>: <span class="hljs-number">3</span>,
+    <span class="hljs-attr">"Profile"</span>: {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+      <span class="hljs-attr">"address"</span>: <span class="hljs-string">"pX4hZ22DWTurdMZy4cus6Ag6ES1T4SP3JK"</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563622517479</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563622517479</span>
+    },
+    <span class="hljs-attr">"Wallet"</span>: {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"market.dat"</span>,
+      <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563622517523</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563622517523</span>
+    }
+  }
+}</code></pre></blockquote>
+<p><a href="#market">Models/Market</a></p>
+<h3 id="market-list">market list</h3>
+<pre class="highlight "><code>market list <span class="hljs-string">[profileId]</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketListCommand.ts">MarketListCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-1">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"market"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"list"</span>, <span class="hljs-number">1</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>profileId</td>
+<td>number</td>
+<td></td>
+<td>Id of the Profile which Markets we want to receive, by default the default Profile id is used.</td>
+</tr>
+</tbody></table>
+<h4 id="response-1">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: [
+    {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+      <span class="hljs-attr">"type"</span>: <span class="hljs-string">"MARKETPLACE"</span>,
+      <span class="hljs-attr">"receiveKey"</span>: <span class="hljs-string">"4dgpQuxsDVxytK22ay8Ky7xTSDGJzPu2tnr14tyBoU7CmZC6dqM"</span>,
+      <span class="hljs-attr">"receiveAddress"</span>: <span class="hljs-string">"PZijh4WzjCWLbSgBkMUtLHZBaU6dSSmkqN"</span>,
+      <span class="hljs-attr">"publishKey"</span>: <span class="hljs-string">"4dgpQuxsDVxytK22ay8Ky7xTSDGJzPu2tnr14tyBoU7CmZC6dqM"</span>,
+      <span class="hljs-attr">"publishAddress"</span>: <span class="hljs-string">"PZijh4WzjCWLbSgBkMUtLHZBaU6dSSmkqN"</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1566932009137</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1565613938693</span>,
+      <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-attr">"walletId"</span>: <span class="hljs-number">1</span>
+    }
+  ]
+}</code></pre></blockquote>
+<p><a href="#market">Models/Market[]</a></p>
+<h3 id="market-remove">market remove</h3>
+<pre class="highlight "><code>market <span class="hljs-built_in">remove</span> <span class="hljs-symbol">&lt;profileId&gt;</span> <span class="hljs-symbol">&lt;marketId&gt;</span></code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketRemoveCommand.ts">MarketRemoveCommand.ts</a></p>
+<p>TODO description.</p>
+<h4 id="request-2">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"market"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"remove"</span>, <span class="hljs-number">14</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>profileId</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Profile.</td>
+</tr>
+<tr>
+<td>marketId</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Market.</td>
+</tr>
+</tbody></table>
+<h4 id="response-2">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>
+}</code></pre></blockquote>
+<p>200 OK, if all went well.</p>
+<h3 id="market-default">market default</h3>
+<pre class="highlight "><code>market<span class="hljs-built_in"> default </span>&lt;profileId&gt; &lt;marketId&gt;</code></pre><aside class="notice">
+since: 0.1.0
+</aside>
+
+<p><a href="https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketSetDefaultCommand.ts">MarketSetDefaultCommand.ts</a></p>
+<p>Sets the given Market as the default marketplace for given Profile.</p>
+<h4 id="request-3">Request</h4>
+<blockquote>
+<p>Example Request </p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"market"</span>,
+  <span class="hljs-attr">"params"</span>: [<span class="hljs-string">"default"</span>, <span class="hljs-number">3</span>, <span class="hljs-number">3</span>],
+  <span class="hljs-attr">"id"</span> : <span class="hljs-number">1</span>
+}</code></pre></blockquote>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>profileId</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Profile.</td>
+</tr>
+<tr>
+<td>marketId</td>
+<td>number</td>
+<td>*</td>
+<td>Id of the Market.</td>
+</tr>
+</tbody></table>
+<h4 id="response-3">Response</h4>
+<blockquote>
+<p>Example Response</p>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">3</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"MARKETPLACE"</span>,
+    <span class="hljs-attr">"receiveKey"</span>: <span class="hljs-string">"7x8HGAu9kKBeAxicfhpk2aAF9eemUbo92AHrhsYDnVboc9PAw4XR"</span>,
+    <span class="hljs-attr">"receiveAddress"</span>: <span class="hljs-string">"pmkTdd7HdLZBaudUNAZ1fuJueaFgpFhf86"</span>,
+    <span class="hljs-attr">"publishKey"</span>: <span class="hljs-string">"7x8HGAu9kKBeAxicfhpk2aAF9eemUbo92AHrhsYDnVboc9PAw4XR"</span>,
+    <span class="hljs-attr">"publishAddress"</span>: <span class="hljs-string">"pmkTdd7HdLZBaudUNAZ1fuJueaFgpFhf86"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563625955578</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563622515365</span>,
+    <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">3</span>,
+    <span class="hljs-attr">"walletId"</span>: <span class="hljs-number">3</span>,
+    <span class="hljs-attr">"Profile"</span>: {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+      <span class="hljs-attr">"address"</span>: <span class="hljs-string">"pgfhPqfKkKj9U6UsyC99wdf35ejfRdYcm3"</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563622514948</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563622514948</span>
+    },
+    <span class="hljs-attr">"Wallet"</span>: {
+      <span class="hljs-attr">"id"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"market.dat"</span>,
+      <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">3</span>,
+      <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1563622515171</span>,
+      <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1563622515171</span>
+    }
+  }
+}</code></pre></blockquote>
+
+        
+          <h1 id="models">Models</h1>
+<p>...</p>
+
+        
+          <h2 id="profile">Profile</h2>
+<pre class="highlight json"><code>{
+  <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
+  <span class="hljs-attr">"jsonrpc"</span>: <span class="hljs-string">"2.0"</span>,
+  <span class="hljs-attr">"result"</span>: {
+    <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+    <span class="hljs-attr">"address"</span>: <span class="hljs-string">"pgtrQ5FgZ8zTyRSxfG7Guw54vPS5Ms7PaV"</span>,
+    <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514234223</span>,
+    <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234223</span>,
+    <span class="hljs-attr">"ShippingAddresses"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">12</span>,
+        <span class="hljs-attr">"firstName"</span>: <span class="hljs-string">"Frami"</span>,
+        <span class="hljs-attr">"lastName"</span>: <span class="hljs-string">"Zemlak Inc"</span>,
+        <span class="hljs-attr">"title"</span>: <span class="hljs-string">"Douglas"</span>,
+        <span class="hljs-attr">"addressLine1"</span>: <span class="hljs-string">"26323 D'Amore Course"</span>,
+        <span class="hljs-attr">"addressLine2"</span>: <span class="hljs-string">"Apt. 806"</span>,
+        <span class="hljs-attr">"city"</span>: <span class="hljs-string">"Kertzmannborough"</span>,
+        <span class="hljs-attr">"state"</span>: <span class="hljs-string">"Illinois"</span>,
+        <span class="hljs-attr">"country"</span>: <span class="hljs-string">"MZ"</span>,
+        <span class="hljs-attr">"zipCode"</span>: <span class="hljs-string">"41555"</span>,
+        <span class="hljs-attr">"type"</span>: <span class="hljs-string">"SHIPPING_OWN"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514236888</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514236888</span>
+      },
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"firstName"</span>: <span class="hljs-string">"Frami"</span>,
+        <span class="hljs-attr">"lastName"</span>: <span class="hljs-string">"Zemlak Inc"</span>,
+        <span class="hljs-attr">"title"</span>: <span class="hljs-literal">null</span>,
+        <span class="hljs-attr">"addressLine1"</span>: <span class="hljs-string">"26323 D'Amore Course"</span>,
+        <span class="hljs-attr">"addressLine2"</span>: <span class="hljs-string">"Apt. 806"</span>,
+        <span class="hljs-attr">"city"</span>: <span class="hljs-string">"Kertzmannborough"</span>,
+        <span class="hljs-attr">"state"</span>: <span class="hljs-string">"Illinois"</span>,
+        <span class="hljs-attr">"country"</span>: <span class="hljs-string">"MZ"</span>,
+        <span class="hljs-attr">"zipCode"</span>: <span class="hljs-string">"41555"</span>,
+        <span class="hljs-attr">"type"</span>: <span class="hljs-string">"SHIPPING_BID"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514343888</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514343888</span>
+      }
+    ],
+    <span class="hljs-attr">"CryptocurrencyAddresses"</span>: [],
+    <span class="hljs-attr">"FavoriteItems"</span>: [],
+    <span class="hljs-attr">"ShoppingCart"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514234238</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234238</span>
+      }
+    ],
+    <span class="hljs-attr">"Markets"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+        <span class="hljs-attr">"type"</span>: <span class="hljs-string">"MARKETPLACE"</span>,
+        <span class="hljs-attr">"receiveKey"</span>: <span class="hljs-string">"7p1RiFvAGcmpwd4H18NnTS5aWc9bVfFfwShrrv9fwSYz3orJ3Y7c"</span>,
+        <span class="hljs-attr">"receiveAddress"</span>: <span class="hljs-string">"ppCCuPJqEUZ1Z1c4W5bsPoQrt1R7JVy7qQ"</span>,
+        <span class="hljs-attr">"publishKey"</span>: <span class="hljs-string">"7p1RiFvAGcmpwd4H18NnTS5aWc9bVfFfwShrrv9fwSYz3orJ3Y7c"</span>,
+        <span class="hljs-attr">"publishAddress"</span>: <span class="hljs-string">"ppCCuPJqEUZ1Z1c4W5bsPoQrt1R7JVy7qQ"</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567609642003</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234585</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"walletId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"Wallet"</span>: {
+          <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+          <span class="hljs-attr">"name"</span>: <span class="hljs-string">"market"</span>,
+          <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+          <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514234278</span>,
+          <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234278</span>
+        }
+      }
+    ],
+    <span class="hljs-attr">"Wallets"</span>: [
+      {
+        <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"name"</span>: <span class="hljs-string">"market"</span>,
+        <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+        <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567514234278</span>,
+        <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234278</span>,
+        <span class="hljs-attr">"Markets"</span>: [
+          {
+            <span class="hljs-attr">"id"</span>: <span class="hljs-number">13</span>,
+            <span class="hljs-attr">"name"</span>: <span class="hljs-string">"DEFAULT"</span>,
+            <span class="hljs-attr">"type"</span>: <span class="hljs-string">"MARKETPLACE"</span>,
+            <span class="hljs-attr">"receiveKey"</span>: <span class="hljs-string">"7p1RiFvAGcmpwd4H18NnTS5aWc9bVfFfwShrrv9fwSYz3orJ3Y7c"</span>,
+            <span class="hljs-attr">"receiveAddress"</span>: <span class="hljs-string">"ppCCuPJqEUZ1Z1c4W5bsPoQrt1R7JVy7qQ"</span>,
+            <span class="hljs-attr">"publishKey"</span>: <span class="hljs-string">"7p1RiFvAGcmpwd4H18NnTS5aWc9bVfFfwShrrv9fwSYz3orJ3Y7c"</span>,
+            <span class="hljs-attr">"publishAddress"</span>: <span class="hljs-string">"ppCCuPJqEUZ1Z1c4W5bsPoQrt1R7JVy7qQ"</span>,
+            <span class="hljs-attr">"updatedAt"</span>: <span class="hljs-number">1567609642003</span>,
+            <span class="hljs-attr">"createdAt"</span>: <span class="hljs-number">1567514234585</span>,
+            <span class="hljs-attr">"profileId"</span>: <span class="hljs-number">13</span>,
+            <span class="hljs-attr">"walletId"</span>: <span class="hljs-number">13</span>
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre><p><a href="https://github.com/particl/particl-market/tree/develop/src/api/models/Profile.ts">Profile.ts</a></p>
+<table>
+<thead>
+<tr>
+<th>Relations</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ShippingAddresses</td>
+<td>Address[]</td>
+<td>Shipping addresses stored for the Profile.</td>
+</tr>
+<tr>
+<td>CryptocurrencyAddresses</td>
+<td>CryptocurrencyAddress[]</td>
+<td></td>
+</tr>
+<tr>
+<td>FavoriteItems</td>
+<td>FavoriteItem[]</td>
+<td>Favorited ListingItems.</td>
+</tr>
+<tr>
+<td>ShoppingCart</td>
+<td>ShoppingCart[]</td>
+<td></td>
+</tr>
+<tr>
+<td>Markets</td>
+<td>Market[]</td>
+<td>Markets added to the Profile.</td>
+</tr>
+<tr>
+<td>Markets.Wallet</td>
+<td>Wallet</td>
+<td></td>
+</tr>
+<tr>
+<td>Wallets</td>
+<td>Wallet[]</td>
+<td></td>
+</tr>
+<tr>
+<td>Wallets.Markets</td>
+<td>Market[]</td>
+<td></td>
+</tr>
+</tbody></table>
+
+        
+          <h1 id="exceptions">Exceptions</h1>
+<p>...</p>
+
+        
+          <h1 id="changelog">Changelog</h1>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2019-09-04</td>
+<td>First version, added first words about installation/rpc api, Profiles and Markets commands and Profile model.</td>
 </tr>
 </tbody></table>
 
@@ -93,9 +879,7 @@
         
           <div class="lang-selector">
             
-              <a href="#" data-language-name="shell">shell</a>
-            
-              <a href="#" data-language-name="javascript">javascript</a>
+              <a href="#" data-language-name="json">json</a>
             
           </div>
         
