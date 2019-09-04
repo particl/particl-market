@@ -10,9 +10,10 @@ toc_footers:
 
 includes:
     - introduction
-    - authentication
-    - kittens
-    - errors
+#    - authentication
+#    - kittens
+#    - errors
+    - models
 
 search: true
 

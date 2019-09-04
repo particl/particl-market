@@ -48,7 +48,7 @@
           
             <li>Generated with <a href='https://github.com/xludx/node-slate-lib'>node-slate-lib</a></li>
           
-            <li>Build: 2019-09-04.develop.0c7183e8</li>
+            <li>Build: 2019-09-04.develop.5318a538</li>
         </ul>
       
     </div>
@@ -58,132 +58,18 @@
         
           <h1 id="introduction">Introduction</h1>
 <p>Welcome to the particl-market documentation site!</p>
-<aside class="notice">
-This documentation is generated for the v0.1.6.
-</aside>
-
-<p>Terms of service Email: Support License: Apache 2.0</p>
-<p>This API documentation page was created with <a href="https://github.com/lord/slate">Slate</a>.</p>
 
         
-          <h1 id="authentication">Authentication</h1>
+          <h1 id="models">Models</h1>
+<h2 id="jsonrpc">JSONRPC</h2>
 <blockquote>
-<p>To authorize, use this code:</p>
-</blockquote>
-<pre class="highlight shell"><code><span class="hljs-meta">#</span><span class="bash"> With shell, you can just pass the correct header with each request</span>
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"</code></pre><pre class="highlight javascript"><code><span class="hljs-keyword">const</span> kittn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kittn'</span>);
-
-<span class="hljs-keyword">let</span> api = kittn.authorize(<span class="hljs-string">'meowmeowmeow'</span>);</code></pre><blockquote>
-<p>Make sure to replace <code>meowmeowmeow</code> with your API key.</p>
-</blockquote>
-<p>Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our <a href="http://example.com/developers">developer portal</a>.</p>
-<p>Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:</p>
-<p><code>Authorization: meowmeowmeow</code></p>
-<aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
-</aside>
-
-        
-          <h1 id="kittens">Kittens</h1>
-<h2 id="get-all-kittens">Get All Kittens</h2>
-<pre class="highlight shell"><code>curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"</code></pre><pre class="highlight javascript"><code><span class="hljs-keyword">const</span> kittn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kittn'</span>);
-
-<span class="hljs-keyword">let</span> api = kittn.authorize(<span class="hljs-string">'meowmeowmeow'</span>);
-<span class="hljs-keyword">let</span> kittens = api.kittens.get();</code></pre><blockquote>
-<p>The above command returns JSON structured like this:</p>
-</blockquote>
-<pre class="highlight json"><code>[
-  {
-    <span class="hljs-attr">"id"</span>: <span class="hljs-number">1</span>,
-    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Fluffums"</span>,
-    <span class="hljs-attr">"breed"</span>: <span class="hljs-string">"calico"</span>,
-    <span class="hljs-attr">"fluffiness"</span>: <span class="hljs-number">6</span>,
-    <span class="hljs-attr">"cuteness"</span>: <span class="hljs-number">7</span>
-  },
-  {
-    <span class="hljs-attr">"id"</span>: <span class="hljs-number">2</span>,
-    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Max"</span>,
-    <span class="hljs-attr">"breed"</span>: <span class="hljs-string">"unknown"</span>,
-    <span class="hljs-attr">"fluffiness"</span>: <span class="hljs-number">5</span>,
-    <span class="hljs-attr">"cuteness"</span>: <span class="hljs-number">10</span>
-  }
-]</code></pre><p>This endpoint retrieves all kittens.</p>
-<h3 id="http-request">HTTP Request</h3>
-<p><code>GET http://example.com/api/kittens</code></p>
-<h3 id="query-parameters">Query Parameters</h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>include_cats</td>
-<td>false</td>
-<td>If set to true, the result will also include cats.</td>
-</tr>
-<tr>
-<td>available</td>
-<td>true</td>
-<td>If set to false, the result will include kittens that have already been adopted.</td>
-</tr>
-</tbody></table>
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-<h2 id="get-a-specific-kitten">Get a Specific Kitten</h2>
-<pre class="highlight shell"><code>curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"</code></pre><pre class="highlight javascript"><code><span class="hljs-keyword">const</span> kittn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kittn'</span>);
-
-<span class="hljs-keyword">let</span> api = kittn.authorize(<span class="hljs-string">'meowmeowmeow'</span>);
-<span class="hljs-keyword">let</span> max = api.kittens.get(<span class="hljs-number">2</span>);</code></pre><blockquote>
-<p>The above command returns JSON structured like this:</p>
+<p>Example JSON:</p>
 </blockquote>
 <pre class="highlight json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-number">2</span>,
-  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Max"</span>,
-  <span class="hljs-attr">"breed"</span>: <span class="hljs-string">"unknown"</span>,
-  <span class="hljs-attr">"fluffiness"</span>: <span class="hljs-number">5</span>,
-  <span class="hljs-attr">"cuteness"</span>: <span class="hljs-number">10</span>
-}</code></pre><p>This endpoint retrieves a specific kitten.</p>
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
-
-<h3 id="http-request-1">HTTP Request</h3>
-<p><code>GET http://example.com/kittens/&lt;ID&gt;</code></p>
-<h3 id="url-parameters">URL Parameters</h3>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ID</td>
-<td>The ID of the kitten to retrieve</td>
-</tr>
-</tbody></table>
-<h2 id="delete-a-specific-kitten">Delete a Specific Kitten</h2>
-<pre class="highlight shell"><code>curl "http://example.com/api/kittens/2"
-  -X DELETE
-  -H "Authorization: meowmeowmeow"</code></pre><pre class="highlight javascript"><code><span class="hljs-keyword">const</span> kittn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'kittn'</span>);
-
-<span class="hljs-keyword">let</span> api = kittn.authorize(<span class="hljs-string">'meowmeowmeow'</span>);
-<span class="hljs-keyword">let</span> max = api.kittens.delete(<span class="hljs-number">2</span>);</code></pre><blockquote>
-<p>The above command returns JSON structured like this:</p>
-</blockquote>
-<pre class="highlight json"><code>{
-  <span class="hljs-attr">"id"</span>: <span class="hljs-number">2</span>,
-  <span class="hljs-attr">"deleted"</span> : <span class="hljs-string">":("</span>
+  <span class="hljs-attr">"id"</span>: <span class="hljs-string">"1"</span>,
+  <span class="hljs-attr">"jsonrpc"</span> : <span class="hljs-string">"2.0"</span>
 }</code></pre><p>This endpoint deletes a specific kitten.</p>
-<h3 id="http-request-2">HTTP Request</h3>
-<p><code>DELETE http://example.com/kittens/&lt;ID&gt;</code></p>
-<h3 id="url-parameters-1">URL Parameters</h3>
+<h3 id="fields">Fields</h3>
 <table>
 <thead>
 <tr>
@@ -192,68 +78,12 @@ Remember — a happy kitten is an authenticated kitten!
 </tr>
 </thead>
 <tbody><tr>
-<td>ID</td>
-<td>The ID of the kitten to delete</td>
-</tr>
-</tbody></table>
-
-        
-          <h1 id="errors">Errors</h1>
-<aside class="notice">
-This error section is stored in a separate file in <code>includes/_errors.md</code>. Slate allows you to optionally separate out your docs into many files...just save them to the <code>includes</code> folder and add them to the top of your <code>index.md</code>'s frontmatter. Files are included in the order listed.
-</aside>
-
-<p>The Kittn API uses the following error codes:</p>
-<table>
-<thead>
-<tr>
-<th>Error Code</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>400</td>
-<td>Bad Request -- Your request is invalid.</td>
+<td>id</td>
+<td>The ID of request</td>
 </tr>
 <tr>
-<td>401</td>
-<td>Unauthorized -- Your API key is wrong.</td>
-</tr>
-<tr>
-<td>403</td>
-<td>Forbidden -- The kitten requested is hidden for administrators only.</td>
-</tr>
-<tr>
-<td>404</td>
-<td>Not Found -- The specified kitten could not be found.</td>
-</tr>
-<tr>
-<td>405</td>
-<td>Method Not Allowed -- You tried to access a kitten with an invalid method.</td>
-</tr>
-<tr>
-<td>406</td>
-<td>Not Acceptable -- You requested a format that isn&#39;t json.</td>
-</tr>
-<tr>
-<td>410</td>
-<td>Gone -- The kitten requested has been removed from our servers.</td>
-</tr>
-<tr>
-<td>418</td>
-<td>I&#39;m a teapot.</td>
-</tr>
-<tr>
-<td>429</td>
-<td>Too Many Requests -- You&#39;re requesting too many kittens! Slow down!</td>
-</tr>
-<tr>
-<td>500</td>
-<td>Internal Server Error -- We had a problem with our server. Try again later.</td>
-</tr>
-<tr>
-<td>503</td>
-<td>Service Unavailable -- We&#39;re temporarily offline for maintenance. Please try again later.</td>
+<td>jsonrpc</td>
+<td>The jsonrpc version</td>
 </tr>
 </tbody></table>
 

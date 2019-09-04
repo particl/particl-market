@@ -185,7 +185,7 @@
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
     "jest-sonar-reporter": "^2.0.0",
-    "node-slate-lib": "^1.1.6",
+    "node-slate-lib": "^1.1.8",
     "nodemon": "^1.19.1",
     "sonarqube-scanner": "^2.1.2",
     "trash-cli": "^1.4.0",

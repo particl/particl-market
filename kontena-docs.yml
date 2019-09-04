@@ -4,10 +4,16 @@ version: 0.1.0
 services:
 
   docs:
-    image: ludx/particl-market-ci:develop
+    image: ludx/particl-docs:latest
     instances: 1
     links:
       - loadbalancerstack/internet-lb
+    environment:
+        - NODE_ENV=development
+        - KONTENA_LB_MODE=http
+        - KONTENA_LB_BALANCE=roundrobin
+        - KONTENA_LB_INTERNAL_PORT=4567
+        - KONTENA_LB_VIRTUAL_HOSTS=docs.particl.xyz
     command: ./bin/docs-entrypoint.sh
     affinity:
       - node==kontena-agent1

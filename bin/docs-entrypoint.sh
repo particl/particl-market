@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
 
-yarn install --check-files
-npm run docs
+cp -rf package.docs.json package.json
+rm -rf yarn.lock
+yarn install
+yarn docs:serve 4567 "./docs" false
