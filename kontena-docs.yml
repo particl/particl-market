@@ -1,0 +1,16 @@
+---
+stack: ludx/market-docs-stack
+version: 0.1.0
+services:
+
+  docs:
+    image: ludx/particl-market-ci:develop
+    instances: 1
+    links:
+      - loadbalancerstack/internet-lb
+    command: ./bin/docs-entrypoint.sh
+    affinity:
+      - node==kontena-agent1
+    cpus: 1.0
+    mem_limit: 1g
+

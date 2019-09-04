@@ -143,6 +143,20 @@ $ npm run console make:model user
 * Go to `http://localhost:3000/cli` to access the CLI.
 * Type `help` to get a list of supported commands.
 
+## Documentation
+
+### Build
+Compile markdown to static site from ./src/docs to ./docs:
+```
+npm run docs:build
+```
+
+### Serve
+Run a dev documentation server that live-reloads at http://localhost:4567:
+```
+npm run docs:serve [PORT] [ROOT]
+```
+
 
 ## IoC
 Our IoC automatically looks through the `controllers`, `listeners` , `middlewares`, `services`,

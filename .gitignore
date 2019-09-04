@@ -66,4 +66,5 @@ codeship*.yml
 .scannerwork
 
 kontena.ovpn
+public/docs
 

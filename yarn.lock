@@ -5711,10 +5711,10 @@ node-pre-gyp@^0.12.0:
     semver "^5.3.0"
     tar "^4"
 
-node-slate-cli@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/node-slate-cli/-/node-slate-cli-1.1.0.tgz#757f5e8a1e1affb9db34c7dd4ff777315b511aa3"
-  integrity sha512-E+DOM9FXVM+ywSBXyFeFfNQinGnHg/CSKBjKFbv0QKS+dco96o7NjtzxUHL6V5R7Ioc0S6uYCyWinfGbVdjgow==
+node-slate-lib@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/node-slate-lib/-/node-slate-lib-1.1.6.tgz#fe9721570416d50ce8b776ff9e1af41c6d09cea2"
+  integrity sha512-sDzmPcn3WdoTVv9hB7G4dviKyH9ZhSZMTJ+RBjeA9ICyxmfIxtPPyxCgXMyuotyamw2860vJgtm/s8ojlin4xA==
   dependencies:
     chokidar "^2.0.4"
     clean-css "^4.2.1"

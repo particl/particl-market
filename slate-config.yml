@@ -1,0 +1,19 @@
+title: particl-market docs
+
+language_tabs:
+    - shell
+    - javascript
+
+toc_footers:
+    - For <a href='https://github.com/particl/particl-market'>particl-market</a> version 0.1.6
+    - Generated with <a href='https://github.com/xludx/node-slate-lib'>node-slate-lib</a>
+
+includes:
+    - introduction
+    - authentication
+    - kittens
+    - errors
+
+search: true
+
+highlight_theme: monokai

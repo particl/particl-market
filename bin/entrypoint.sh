@@ -11,5 +11,5 @@ ls -al /app
 yarn install --force
 # yarn remove omp-lib
 # yarn add omp-lib
-bin/ci-create-build-version.sh
+bin/create-build-version.sh
 yarn serve
