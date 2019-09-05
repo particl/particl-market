@@ -191,15 +191,14 @@ export class EscrowLockActionService extends BaseActionService {
                 const bid: resources.Bid = value.toJSON();
 
                 // mp@0.1.7: because of a bug in smsg, some messages might not have been received and 'smsg resend'-command was added to allow resending
-                // those smsgmessages to fix the buy flow. it was possible for buyers to not receive the MPA_LOCK, but receive the next MPA_SHIP which
-                // the seller sends after the first one. Now, if seller resends the MPA_LOCK after MPA_SHIP has been received, the Order and OrderItem
-                // statuses will be set to incorrect values and the buyer would be incorrectly again waiting for the MPA_SHIP message and wont be able
-                // to send the MPA_RELEASE message.
+                // those smsgmessages to fix the buy flow. it was possible for buyers to not receive the MPA_COMPLETE, but receive the next MPA_SHIP which
+                // the seller sends after the MPA_COMPLETE. Now, if seller resends the MPA_COMPLETE after MPA_SHIP has been received, the Order and OrderItem
+                // statuses will be set to incorrect values and the buyer would be incorrectly again waiting for the MPA_SHIP message to arrive and wont be
+                // able to send the MPA_RELEASE message to the seller.
 
-                // to fix this, if Order or OrderItem statuses are set to OrderStatus.SHIPPING and OrderItemStatus.SHIPPING -> dont update
-                // ...in other words, update if statuses are something else than SHIPPING
-                if (bid.ParentBid.OrderItem.status !== OrderItemStatus.SHIPPING
-                    && bid.ParentBid.OrderItem.Order.status !== OrderStatus.SHIPPING) {
+                // to fix this, update the statuses only if they are in the expected previous state set by MPA_ACCEPT (AWAITING_ESCROW)
+                if (bid.ParentBid.OrderItem.status === OrderItemStatus.AWAITING_ESCROW
+                    && bid.ParentBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
                     await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_LOCKED);
                     await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
                 }
