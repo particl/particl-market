@@ -19,17 +19,18 @@
 
 :root {
     /* colors */
-    --primary: #45D492;
-    --secondary: #1597DD;
-    --tertiary: #5949A7;
-    --success: #98C807;
-    --alert: #FF542C;
-    --warning: #FFCE00;
+    --primary: #45d492;
+    --secondary: #1597dd;
+    --tertiary: #5949a7;
+    --success: #98c807;
+    --alert: #ff542c;
+    --warning: #ffce00;
     --text: #212727;
     --text-muted: #343838;
     --text-darker: #181d1d;
     --bg: #fff;
-    --bg-muted: #F1F1F1;
+    --bg-muted: #f1f1f1;
+    --bg-darker: #d6d3d3;
     /* typography */
     --font: "Inter_UI", sans-serif;
 }
@@ -46,15 +47,28 @@ body,
 .content h5,
 .content h6 {
     font-family: var(--font);
+    font-size: 15px;
+}
+
+.content p,
+.content li,
+.content dt,
+.content dd {
     line-height: 1.5;
 }
 
 .content h1 {
+    font-size: 26px;
     font-weight: 700;
+    padding-top: 0.9em;
+    border-bottom: 0;
+    border-top: 1px solid var(--bg-darker);
+    background-image: linear-gradient(to bottom, var(--bg), var(--bg-muted));
 }
 .content h2 {
     font-size: 20px;
-    color: var(--main-color);
+    background: none;
+    border-top: 1px solid var(--bg-darker);
     padding-top: 0.8em;
     padding-bottom: 0.8em;
 }
@@ -93,4 +107,10 @@ body,
     width: 100%;
     padding-left: 10px;
     padding-top: 0.8em;
+}
+
+/* ---- Layout ---- */
+
+.page-wrapper { /* light content middle section */
+    background: var(--bg-muted);
 }
