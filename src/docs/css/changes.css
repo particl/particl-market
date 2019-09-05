@@ -31,6 +31,8 @@
     --bg: #fff;
     --bg-muted: #f1f1f1;
     --bg-darker: #d6d3d3;
+    --black: #212727;
+    --black-muted: #343838;
     /* typography */
     --font: "Inter_UI", sans-serif;
 }
@@ -60,7 +62,9 @@ body,
 .content h1 {
     font-size: 26px;
     font-weight: 700;
-    padding-top: 0.9em;
+    padding-top: 1.2em;
+    padding-bottom: 0.2em;
+    margin-bottom: 0.6em;
     border-bottom: 0;
     border-top: 1px solid var(--bg-darker);
     background-image: linear-gradient(to bottom, var(--bg), var(--bg-muted));
@@ -109,8 +113,40 @@ body,
     padding-top: 0.8em;
 }
 
+/* code examples */
+.content pre,
+.content blockquote {
+    background: var(--black-muted);
+    padding: 1em 28px;
+}
+
+/* code examples descriptions */
+.content blockquote > p {
+    background-color: #292d2d;
+    border-radius: 0;
+    padding: 10px 28px;
+    border-top: 1px solid #191e1e;
+    margin: -15px -28px 10px -28px;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
 /* ---- Layout ---- */
 
 .page-wrapper { /* light content middle section */
     background: var(--bg-muted);
+}
+
+.tocify-wrapper { /* TOC column */
+    background: var(--black);
+}
+
+.page-wrapper .dark-box { /* code examples column */
+    background: var(--black);
+}
+
+/* ---- Specific ---- */
+
+*::before { /* fix icons' webfont */
+    font-family: "Slate";
 }
