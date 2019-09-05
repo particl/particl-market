@@ -1,4 +1,4 @@
-/* ---- Imports ---- */
+/* ===================== IMPORTS ===================== */
 
 @font-face {
     font-family: 'Inter_UI';
@@ -15,7 +15,7 @@
          url("../fonts/Inter-UI-Bold.woff") format("woff");
 }
 
-/* ---- Variables ---- */
+/* ===================== VARIABLES ===================== */
 
 :root {
     /* colors */
@@ -37,7 +37,7 @@
     --font: "Inter_UI", sans-serif;
 }
 
-/* ---- General Styles ---- */
+/* ===================== GENERAL STYLES ===================== */
 
 html,
 body,
@@ -50,6 +50,13 @@ body,
 .content h6 {
     font-family: var(--font);
     font-size: 15px;
+}
+
+
+/* ===================== CONTENT ===================== */
+
+.page-wrapper { /* light content middle section */
+    background: var(--bg-muted);
 }
 
 .content p,
@@ -80,18 +87,15 @@ body,
 .content h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 
 .content h2 + div + h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 .content aside + div + h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 
 .content div + h3 {
@@ -113,6 +117,51 @@ body,
     padding-top: 0.8em;
 }
 
+
+/* ===================== SIDEBAR ===================== */
+
+.tocify-wrapper { /* TOC column */
+    background: var(--black);
+}
+
+/* ------- Search ------- */
+
+.tocify-wrapper > .search input {
+    padding: 10px 15px 10px 35px;
+    margin: 20px 0 0;
+    width: 230px;
+    background: var(--black-muted);
+    border-color: #444848;
+    font-weight: 400;
+}
+.tocify-wrapper > .search input:focus {
+    border-color: var(--primary);
+}
+.tocify-wrapper > .search::before {
+    top: 31px;
+    left: 14px;
+}
+.tocify-wrapper .search-results {
+    background: var(--black-muted);
+}
+.content .search-highlight {
+    border: none;
+    text-shadow: none;
+}
+
+/* ------- TOC ------- */
+
+#toc {
+    margin-top: 10px;
+}
+
+
+/* ===================== CODE EXAMPLES ===================== */
+
+.page-wrapper .dark-box { /* code examples column */
+    background: var(--black);
+}
+
 /* code examples */
 .content pre,
 .content blockquote {
@@ -131,21 +180,8 @@ body,
     font-size: 13px;
 }
 
-/* ---- Layout ---- */
 
-.page-wrapper { /* light content middle section */
-    background: var(--bg-muted);
-}
-
-.tocify-wrapper { /* TOC column */
-    background: var(--black);
-}
-
-.page-wrapper .dark-box { /* code examples column */
-    background: var(--black);
-}
-
-/* ---- Specific ---- */
+/* ===================== MISC ===================== */
 
 *::before { /* fix icons' webfont */
     font-family: "Slate";
