@@ -21,6 +21,8 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { ProposalService } from '../../services/model/ProposalService';
+import {OrderItemStatus} from '../../enums/OrderItemStatus';
+import {OrderStatus} from '../../enums/OrderStatus';
 
 export class OrderItemShipActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -59,28 +61,40 @@ export class OrderItemShipActionListener extends BaseActionListenr implements in
         return await this.bidService.findOneByHash(actionMessage.bid)
             .then(async bidModel => {
                 const parentBid: resources.Bid = bidModel.toJSON();
-                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
-                    .then(async listingItemModel => {
-                        const listingItem = listingItemModel.toJSON();
 
-                        const bidCreateParams = {
-                            msgid: smsgMessage.msgid,
-                            listingItem,
-                            bidder: smsgMessage.to,
-                            parentBid
-                        } as BidCreateParams;
+                // dont allow the MPA_SHIP to be processed before MPA_LOCK is received
+                // MPA_LOCK sets OrderStatus.PROCESSING && OrderItemStatus.ESCROW_LOCKED
+                if (parentBid.OrderItem.status === OrderItemStatus.ESCROW_LOCKED
+                    && parentBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
 
-                        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
-                            .then(async orderItemShipRequest => {
-                                return await this.orderItemShipActionService.createBid(actionMessage, orderItemShipRequest)
-                                    .then(value => {
-                                        return SmsgMessageStatus.PROCESSED;
-                                    })
-                                    .catch(reason => {
-                                        return SmsgMessageStatus.PROCESSING_FAILED;
-                                    });
-                            });
-                    });
+                    // escrow is locked
+                    return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
+                        .then(async listingItemModel => {
+                            const listingItem = listingItemModel.toJSON();
+
+                            const bidCreateParams = {
+                                msgid: smsgMessage.msgid,
+                                listingItem,
+                                bidder: smsgMessage.to,
+                                parentBid
+                            } as BidCreateParams;
+
+                            return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
+                                .then(async orderItemShipRequest => {
+                                    return await this.orderItemShipActionService.createBid(actionMessage, orderItemShipRequest)
+                                        .then(value => {
+                                            return SmsgMessageStatus.PROCESSED;
+                                        })
+                                        .catch(reason => {
+                                            return SmsgMessageStatus.PROCESSING_FAILED;
+                                        });
+                                });
+                        });
+                } else {
+                    // escrow is not locked yet, send to waiting queue, until escrow gets locked
+                    return SmsgMessageStatus.WAITING;
+                }
+
             })
             .catch(reason => {
                 // could not find previous bid
