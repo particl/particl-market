@@ -38,6 +38,7 @@ import { CoreRpcService } from '../CoreRpcService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionDirection } from '../../enums/ActionDirection';
+import * as _ from '@types/lodash';
 
 export class EscrowLockActionService extends BaseActionService {
 
@@ -189,8 +190,18 @@ export class EscrowLockActionService extends BaseActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
-                await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_LOCKED);
-                await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
+                // mp@0.1.7: because of a bug in smsg, some messages might not have been received and 'smsg resend'-command was added to allow resending
+                // those smsgmessages to fix the buy flow. it was possible for buyers to not receive the MPA_COMPLETE, but receive the next MPA_SHIP which
+                // the seller sends after the MPA_COMPLETE. Now, if seller resends the MPA_COMPLETE after MPA_SHIP has been received, the Order and OrderItem
+                // statuses will be set to incorrect values and the buyer would be incorrectly again waiting for the MPA_SHIP message to arrive and wont be
+                // able to send the MPA_RELEASE message to the seller.
+
+                // to fix this, update the statuses only if they are in the expected previous state set by MPA_ACCEPT (AWAITING_ESCROW)
+                if (bid.ParentBid.OrderItem.status === OrderItemStatus.AWAITING_ESCROW
+                    && bid.ParentBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
+                    await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.ESCROW_LOCKED);
+                    await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
+                }
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
