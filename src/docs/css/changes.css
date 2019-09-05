@@ -33,6 +33,10 @@
     --bg-darker: #d6d3d3;
     --black: #212727;
     --black-muted: #343838;
+
+    --menu-1st: #212727; /* 1st level menu */
+    --menu-2nd: #2a3131; /* 2nd */
+    --menu-3rd: #323a3a; /* 3rd */
     /* typography */
     --font: "Inter_UI", sans-serif;
 }
@@ -153,6 +157,50 @@ body,
 
 #toc {
     margin-top: 10px;
+}
+
+/* active item */
+.tocify-wrapper .tocify-focus,
+.tocify-wrapper .tocify-subheader .tocify-focus:last-child {
+    box-shadow: 3px 0 var(--primary) inset;
+    background: none; /* #45d49128; */
+}
+
+.tocify-item.tocify-focus {
+    position: relative;
+}
+.tocify-item.tocify-focus::after {
+    content: "";
+    display: block;
+    border-width: 8px;
+    border-color: transparent var(--bg-muted) transparent transparent;
+    border-style: solid;
+    width: 0;
+    height: 0;
+    position: absolute;
+    right: 0;
+    top: 8px;
+}
+
+.tocify-wrapper .tocify-item > a { /* TOC links */
+    padding: 2px 17px;
+}
+
+/* 2nd level links */
+.tocify-wrapper .tocify-subheader {
+    background: var(--menu-2nd);
+}
+
+/* 3rd level */
+.tocify-wrapper .tocify-subheader .tocify-subheader {
+    background: var(--menu-3rd);
+}
+.tocify-wrapper .tocify-subheader .tocify-subheader .tocify-item > a {
+    padding-left: 34px;
+}
+
+.tocify-wrapper .toc-footer li { /* "footer" info */
+    padding: 0 17px;
 }
 
 
