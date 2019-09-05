@@ -4,7 +4,6 @@
 
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from 'events';
@@ -38,7 +37,6 @@ import { CoreRpcService } from '../CoreRpcService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionDirection } from '../../enums/ActionDirection';
-import * as _ from '@types/lodash';
 
 export class EscrowLockActionService extends BaseActionService {
 
