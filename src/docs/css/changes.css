@@ -1,5 +1,60 @@
+/* ---- Imports ---- */
+
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
+    font-weight: 400;
+    src: url("../fonts/Inter-UI-Regular.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Regular.woff") format("woff");
+}
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
+    font-weight: 700;
+    src: url("../fonts/Inter-UI-Bold.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Bold.woff") format("woff");
+}
+
+/* ---- Variables ---- */
+
+:root {
+    /* colors */
+    --primary: #45D492;
+    --secondary: #1597DD;
+    --tertiary: #5949A7;
+    --success: #98C807;
+    --alert: #FF542C;
+    --warning: #FFCE00;
+    --text: #212727;
+    --text-muted: #343838;
+    --text-darker: #181d1d;
+    --bg: #fff;
+    --bg-muted: #F1F1F1;
+    /* typography */
+    --font: "Inter_UI", sans-serif;
+}
+
+/* ---- General Styles ---- */
+
+html,
+body,
+.content,
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+    font-family: var(--font);
+    line-height: 1.5;
+}
+
+.content h1 {
+    font-weight: 700;
+}
 .content h2 {
     font-size: 20px;
+    color: var(--main-color);
     padding-top: 0.8em;
     padding-bottom: 0.8em;
 }
