@@ -62,9 +62,9 @@ export class OrderItemShipActionListener extends BaseActionListenr implements in
             .then(async bidModel => {
                 const parentBid: resources.Bid = bidModel.toJSON();
 
-                // dont allow the MPA_SHIP to be processed before MPA_LOCK is received
-                // MPA_LOCK sets OrderStatus.PROCESSING && OrderItemStatus.ESCROW_LOCKED
-                if (parentBid.OrderItem.status === OrderItemStatus.ESCROW_LOCKED
+                // dont allow the MPA_SHIP to be processed before MPA_COMPLETE is received
+                // MPA_LOCK sets OrderStatus.PROCESSING && OrderItemStatus.ESCROW_COMPLETED
+                if (parentBid.OrderItem.status === OrderItemStatus.ESCROW_COMPLETED
                     && parentBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
 
                     // escrow is locked
