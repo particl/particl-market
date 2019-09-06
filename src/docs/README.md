@@ -8,6 +8,12 @@ Run the server:
 $ yarn run docs:serve 4567 <PATH TO particl-market/docs/>
 ```
 
+One-time compile:
+
+```bash
+$ yarn run docs:build
+```
+
 ## Dev notes
 
 ### Icons
