@@ -120,6 +120,13 @@ export class DefaultItemCategoryService {
         await this.insertOrUpdateCategory({ key: 'cat_wholesale_scientific_lab_services', name: 'Scientific / Lab Services', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
         await this.insertOrUpdateCategory({ key: 'cat_wholesale_other', name: 'Other', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
 
+        LEVEL1CHILD = await this.insertOrUpdateCategory({ key: 'cat_collectables', name: 'Hobbies and Collectables', description: '', parent_item_category_id: ROOT.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_collectables_non_sport_cards', name: 'Non-Sports Cards', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_collectables_sport_cards', name: 'Sports Cards', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_collectables_trading_cards_games', name: 'Trading Card Games (TCG)', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_collectables_coins', name: 'Coins', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_collectables_other', name: 'Other', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+
         this.log.debug('updated default categories');
     }
     // tslint:enable:max-line-length
