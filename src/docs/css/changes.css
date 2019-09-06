@@ -10,6 +10,13 @@
 @font-face {
     font-family: 'Inter_UI';
     font-style:  normal;
+    font-weight: 500;
+    src: url("../fonts/Inter-UI-Medium.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Medium.woff") format("woff");
+}
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
     font-weight: 700;
     src: url("../fonts/Inter-UI-Bold.woff2") format("woff2"),
          url("../fonts/Inter-UI-Bold.woff") format("woff");
@@ -26,7 +33,7 @@
     --alert: #ff542c;
     --warning: #ffce00;
     --text: #212727;
-    --text-muted: #727c7c;
+    --text-muted: #616b6b;
     --text-darker: #181d1d;
     --bg: #fff;
     --bg-muted: #f1f1f1;
@@ -56,18 +63,37 @@ body,
     font-size: 15px;
 }
 
-
-/* ===================== CONTENT ===================== */
-
-.page-wrapper { /* light content middle section */
-    background: var(--bg-muted);
-}
-
 .content p,
 .content li,
 .content dt,
 .content dd {
     line-height: 1.5;
+    color: var(--text-muted);
+}
+
+/* ------- Links ------- */
+
+.content a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 2px solid #d5dbd6;
+}
+.content a:hover,
+.content a:focus {
+    border-bottom-color: var(--primary);
+}
+
+/* ------- Lists ------- */
+
+.content li {
+    line-height: 1.7;
+}
+
+/* ===================== CONTENT ===================== */
+
+.page-wrapper { /* light content middle section */
+    background: var(--bg-muted);
 }
 
 .content h1 {
@@ -115,7 +141,25 @@ body,
     margin-bottom: 0.2em;
 }
 
-/* info messages */
+.content blockquote pre {
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 0.8em;
+}
+
+/* ------- Code (in content) ------- */
+
+.content p code {
+    background: #1597dd23;
+    color: var(--secondary);
+    text-shadow: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 3px 5px;
+}
+
+/* ------- Info messages ------- */
+
 .content aside.notice {
     background: #1597dd23;
     margin-bottom: 20px;
@@ -126,11 +170,8 @@ body,
     color: var(--secondary);
 }
 
-.content blockquote pre {
-    width: 100%;
-    padding-left: 10px;
-    padding-top: 0.8em;
-}
+
+/* ------- Tables ------- */
 
 .content table {
     display: table;
