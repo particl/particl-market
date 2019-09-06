@@ -26,11 +26,11 @@
     --alert: #ff542c;
     --warning: #ffce00;
     --text: #212727;
-    --text-muted: #343838;
+    --text-muted: #727c7c;
     --text-darker: #181d1d;
     --bg: #fff;
     --bg-muted: #f1f1f1;
-    --bg-darker: #d6d3d3;
+    --bg-darker: #e4e0e0;
     --black: #212727;
     --black-muted: #343838;
 
@@ -117,7 +117,7 @@ body,
 
 /* info messages */
 .content aside.notice {
-    background: #1597dd2f;
+    background: #1597dd23;
     margin-bottom: 20px;
 }
 .content aside.notice::before {
@@ -132,6 +132,33 @@ body,
     padding-top: 0.8em;
 }
 
+.content table {
+    display: table;
+    width: 50%; /* extend the table to 100% of "content" column */
+    margin: 1em 0;
+}
+.content table tr > *:first-child {
+    padding-left: 28px;
+}
+.content table tr > *:last-child {
+    padding-right: 28px;
+}
+.content table th {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid var(--bg-darker);
+}
+.content table tr:nth-child(2n+1) > td {
+    background-color: var(--bg);
+}
+.content table tr:nth-child(2n) > td {
+    background-color: #fbfbfb;
+}
+.content table tr,
+.content table tr:last-child {
+    border-bottom: 1px solid var(--bg-darker);
+}
 
 /* ===================== SIDEBAR ===================== */
 
