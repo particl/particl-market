@@ -49,10 +49,10 @@ export class AppConfig implements Configurable {
             }))
 
             // Serve static files like images from the public folder
-            .use(express.static(path.join(__dirname, '../..', 'public'), { maxAge: Infinity }))
+            .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: Infinity }))
 
             // A favicon is a visual cue that client software, like browsers, use to identify a site
-            .use(favicon(path.join(__dirname, '../..', 'public', 'favicon.ico')))
+            .use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')))
 
             // HTTP request logger middleware for node.js
             .use(morgan('dev', {
