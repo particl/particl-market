@@ -137,6 +137,8 @@ export class BidRejectActionService extends BaseActionService {
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.BID_REJECTED);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.REJECTED);
 
+                await this.bidService.unlockBidOutputs(bid);
+
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
     }
