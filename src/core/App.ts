@@ -22,6 +22,7 @@ import { Environment } from './helpers/Environment';
 import { MessageException } from '../api/exceptions/MessageException';
 import { envConfig } from '../config/EnvironmentConfig';
 import * as dotenv from 'dotenv';
+import { ZmqWorker } from './ZmqWorker';
 
 export interface Configurable {
     configure(app: App): void;
@@ -32,6 +33,7 @@ export class App {
     private express: express.Application = express();
     private server: Server;
     private socketIoServer: SocketIoServer;
+    private zmqWorker: ZmqWorker;
     private inversifyExpressServer: InversifyExpressServer;
     private ioc: IoC = new IoC();
     private log: Logger = new Logger(__filename);
@@ -141,6 +143,8 @@ export class App {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
+
+        this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
 
         this.log.info('App is ready!');
 
