@@ -86,7 +86,7 @@ export class BidService {
     }
 
     public async unlockBidOutputs(cancelBid: resources.Bid): Promise<void> {
-        const bidderInfo = await this.coreRpcService.getAddressInfo(cancelBid.bidder);
+        const bidderInfo = await this.coreRpcService.getAddressInfo(cancelBid.ParentBid.bidder);
         if (bidderInfo && bidderInfo.ismine) {
             await this.unlockOutputsFor(cancelBid.ParentBid.msgid, 'buyer');
         } else {
