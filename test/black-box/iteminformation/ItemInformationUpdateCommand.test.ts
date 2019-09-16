@@ -257,23 +257,30 @@ describe('ItemInformationUpdateCommand', () => {
 
     test('Should fail to update ItemInformation because the ListingItemTemplate has been published', async () => {
 
-        // post template
-        const daysRetention = 4;
-        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplate.id,
-            daysRetention,
-            defaultMarket.id
-        ]);
-        res.expectJson();
+        // create ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
 
-        // make sure we got the expected result from posting the template
-        let result: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-        const sent = result.result === 'Sent.';
-        if (!sent) {
-            log.debug(JSON.stringify(result, null, 2));
-        }
-        expect(result.result).toBe('Sent.');
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
 
         // then try to update
         const testData = [itemInformationUpdateCommand,
@@ -284,7 +291,7 @@ describe('ItemInformationUpdateCommand', () => {
             itemCategory.id
         ];
 
-        result = await testUtil.rpc(itemInformationCommand, testData);
+        const result = await testUtil.rpc(itemInformationCommand, testData);
         result.expectJson();
         result.expectStatusCode(400);
 

@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -11,9 +13,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import { SettingService } from '../../services/model/SettingService';
-import { ProfileService } from '../../services/model/ProfileService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class SettingRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -21,8 +24,7 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService
     ) {
         super(Commands.SETTING_REMOVE);
         this.log = new Logger(__filename);
@@ -30,8 +32,7 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
     /**
      * data.params[]:
-     *  [0]: profileId
-     *  [1]: key
+     *  [0]: setting: resources.Setting
      *
      * @param data
      * @param rpcCommandFactory
@@ -39,49 +40,56 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<void> {
-        const profileId = data.params[0];
-        const key = data.params[1];
-        return await this.settingService.destroyByKeyAndProfileId(key, profileId);
+        const setting = data.params[0];
+        return this.settingService.destroy(setting.id);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: settingId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MessageException('Missing profileId.');
+            throw new MissingParamException('settingId');
         }
 
-        if (data.params.length < 2) {
-            throw new MessageException('Missing key.');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('settingId', 'number');
         }
 
-        const profileId = data.params[0];
-        if (profileId && typeof profileId === 'string') {
-            throw new MessageException('profileId cant be a string.');
-        } else {
-            // make sure Profile with the id exists
-            await this.profileService.findOne(profileId) // throws if not found
-                .catch(reason => {
-                    throw new MessageException('Profile not found.');
-                });
-        }
+        // make sure Setting with the id exists
+        const setting: resources.Setting = await this.settingService.findOne(data.params[0])
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Setting');
+            });
+        data.params[0] = setting;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> ' + ' <key> ';
+        return this.getName() + ' <settingId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <profileId>              - The ID of the profile, which setting it belongs to. '
-            + '    <key>                    - key of the profile setting, which we want to remove. ';
+            + '    <settingId>              - The ID of the Setting. ';
     }
 
     public description(): string {
-        return 'Remove and destroy setting via profile id and key.';
+        return 'Remove a Setting.';
     }
 
     public example(): string {
-        return 'setting ' + this.getName() + ' 1 key';
+        return 'setting ' + this.getName() + ' 1';
     }
 }

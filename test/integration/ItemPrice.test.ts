@@ -44,8 +44,9 @@ describe('ItemPrice', () => {
 
     let itemPrice: resources.ItemPrice;
     let listingItemTemplate: resources.ListingItemTemplate;
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -61,8 +62,8 @@ describe('ItemPrice', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -71,13 +72,13 @@ describe('ItemPrice', () => {
             false,              // generateItemImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
-            false,               // generateItemPrice
+            false,              // generateItemPrice
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            defaultProfile.id,  // profileId
+            profile.id,         // profileId
             true,               // generateListingItem
-            defaultMarket.id    // marketId
+            market.id           // marketId
         ]).toParamsArray();
 
         // generate two ListingItemTemplates with ListingItems

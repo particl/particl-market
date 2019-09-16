@@ -16,7 +16,7 @@ import { Exception } from '../../core/api/Exception';
 
 export class InvalidParamException extends Exception {
     constructor(invalidParam: string, validType?: string) {
-        super(400, 'Invalid ' + invalidParam + (validType ? ', should be of type: ' + validType : '.'));
+        super(400, 'Invalid ' + invalidParam + (validType ? ', should be: ' + validType + '.' : '.'));
     }
 }
 

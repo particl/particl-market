@@ -36,7 +36,7 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {
-    marketId: number;
+    market: string;
     rootCategory: resources.ItemCategory;
     msgid: string;
 }
@@ -74,4 +74,15 @@ export interface SmsgMessageCreateParams extends ModelCreateParams {
     direction: ActionDirection;
     status?: SmsgMessageStatus;
     target?: string;
+}
+
+
+export interface CommentCreateParams extends ModelCreateParams {
+    msgid: string;
+    sender: string;
+    receiver: string;
+    type: string;
+    target: string;
+    message: string;
+    parentCommentId: number;
 }

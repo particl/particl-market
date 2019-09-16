@@ -37,6 +37,7 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
      * example: [ETH, BTC, XRP]
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<Bookshelf.Collection<PriceTicker>>}
      */
     @validate()
@@ -52,6 +53,10 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
         } else {
             throw new MessageException('Currency can\'t be blank');
         }
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
     }
 
     public usage(): string {

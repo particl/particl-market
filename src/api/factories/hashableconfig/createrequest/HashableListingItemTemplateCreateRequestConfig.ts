@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {BaseHashableConfig, HashableConfig, HashableFieldConfig, HashableFieldValueConfig} from 'omp-lib/dist/interfaces/configs';
-import {HashableCommonField, HashableItemField} from 'omp-lib/dist/interfaces/omp-enums';
+import { BaseHashableConfig, HashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
+import { HashableCommonField, HashableItemField } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class HashableListingItemTemplateCreateRequestConfig extends BaseHashableConfig {
     public fields = [{

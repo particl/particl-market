@@ -28,6 +28,10 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (add|update|remove|lock|refund|release)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
 
     public description(): string {
         return 'Commands for managing escrow.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

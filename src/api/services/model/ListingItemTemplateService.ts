@@ -302,6 +302,13 @@ export class ListingItemTemplateService {
             throw new MessageException('ListingItemTemplate has ListingItems.');
         }
 
+        // manually remove images
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+            for (const image of listingItemTemplate.ItemInformation.ItemImages) {
+                await this.itemImageService.destroy(image.id);
+            }
+        }
+
         this.log.debug('deleting listingItemTemplate:', listingItemTemplate.id);
         await this.listingItemTemplateRepo.destroy(id);
     }
@@ -423,21 +430,12 @@ export class ListingItemTemplateService {
      *
      */
     public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
-        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-        if (!_.isEmpty(itemImages)) {
-            // find image and set it to featured
-            const found = itemImages.find((img) => img.id === imageId && !img.featured);
-            if (found) {
-                await this.itemImageService.updateFeatured(found.id, true);
-            }
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
 
-            // check if other images are set to featured, unset as featured
-            const notFound = itemImages.filter((img) => img.id !== imageId && img.featured);
-            if (notFound.length) {
-                notFound.forEach( async (img) => await this.itemImageService.updateFeatured(img.id, false));
+            for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
+                const featured = itemImage.id === imageId;
+                await this.itemImageService.updateFeatured(itemImage.id, featured);
             }
-
-            this.log.info('Successfully set featured image');
             return await this.itemImageService.findOne(imageId);
         } else {
             this.log.error('ListingItemTemplate has no ItemImages.');
@@ -447,7 +445,7 @@ export class ListingItemTemplateService {
 
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
-        return await _.find(objectArray, (object) => {
+        return _.find(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }

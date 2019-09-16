@@ -1,23 +1,20 @@
 
 ```
-                            .   ..  . . .... ....... ........ .... ....................
- ___________    _______  ___________  _________    ______  __________  ______ .::::::::
- _\ ___.   /_____\_   /_ _\ ___.   /  _\      /___ _\ __/_ _\       /  _\   / :::::::::
- |"   /   / | __      "| |"   /   /__ !__    ____/ |"    / |"  /___/__ |"  /____  .::::
- | \_____/  | /        | |  \_      /   |"    /    |    /  |  /      / |  /    / .:::::
- !_____|    !_______/__| !____\____/    !____/     !___/   !________/  !______/ .::::::
-                                      .   . ..:.::. .....::. . . ....::.........:::::::
-         ________     _______  ___________  _____ . ..::. __________ _________ .:::::::
-  ______ /  _.  / _____\_   /_ _\ ___.   /  _\  /______ . _\ _.    / _\      /___  ::::
- __\ _  /   /  /_ | __      "| |"   /   /__ |" /   ___/___|" /    /__|__   _____/ .::::
- |"   \ `  /  / | | /        | |  \_      / |    \       /|  ____/  |  |"    /  .::::::
- !_____\__/_____| !_______/__| !____\____/  !_____\_____/ !_________|  !____/ .::::::::
-                                                           . .. . ...........::::::::l!
+                              .   ..  . . .... ....... ........ .... ....................
+   ___________    _______  ___________  _________    ______  __________  ______ .::::::::
+   _\ ___.   /_____\_   /_ _\ ___.   /  _\      /___ _\ __/_ _\       /  _\   / :::::::::
+   |"   /   / | __      "| |"   /   /__ !__    ____/ |"    / |"  /___/__ |"  /____  .::::
+   | \_____/  | /        | |  \_      /   |"    /    |    /  |  /      / |  /    / .:::::
+   !_____|    !_______/__| !____\____/    !____/     !___/   !________/  !______/ .::::::
+                                        .   . ..:.::. .....::. . . ....::.........:::::::
+           ________     _______  ___________  _____ . ..::. __________ _________ .:::::::
+    ______ /  _.  / _____\_   /_ _\ ___.   /  _\  /______ . _\ _.    / _\      /___  ::::
+   __\ _  /   /  /_ | __      "| |"   /   /__ |" /   ___/___|" /    /__|__   _____/ .::::
+   |"   \ `  /  / | | /        | |  \_      / |    \       /|  ____/  |  |"    /  .::::::
+   !_____\__/_____| !_______/__| !____\____/  !_____\_____/ !_________|  !____/ .::::::::
+                                                             . .. . ...........::::::::l!
 ```
 
-
- 
-[![CircleCI](https://circleci.com/gh/particl/dapp-shell/tree/develop.svg?style=svg)](https://circleci.com/gh/particl/dapp-shell/tree/develop)
 
 ## Getting Started 
 ### Step 1:  Set up the Development Environment 
@@ -42,11 +39,6 @@ And finally install Docker
 Fork this project. 
 
 Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
-
-Do it manually or run:
-```
-./bin/copy-env.sh
-```
 
 Then setup your application environment.
 ```
@@ -151,6 +143,20 @@ $ npm run console make:model user
 * Go to `http://localhost:3000/cli` to access the CLI.
 * Type `help` to get a list of supported commands.
 
+## Documentation
+
+### Build
+Compile markdown to static site from ./src/docs to ./docs:
+```
+npm run docs:build
+```
+
+### Serve
+Run a dev documentation server that live-reloads at http://localhost:4567:
+```
+npm run docs:serve [PORT] [ROOT]
+```
+
 
 ## IoC
 Our IoC automatically looks through the `controllers`, `listeners` , `middlewares`, `services`,
@@ -160,12 +166,11 @@ Our IoC automatically looks through the `controllers`, `listeners` , `middleware
 
 
 ## API Routes
-The route prefix is `/api` by default, but you can change this in the .env file. The route for the RPC API is `/api`.
+The route prefix is `/api` by default, but you can change this in the .env file. The route for the RPC API is `/api/rpc`.
 
 | Route       | Description |
 | ----------- | ----------- |
 | **/api/info** | Shows us the name, description and the version of the package.json |
-| **/api/docs** | This is the Swagger UI with our API documentation |
 | **/status**   | Shows a small monitor page for the server |
 | **/cli**      | Web based CLI to use the RPC commands |
 | **/api/rpc**  | RPC Server endpoint |
@@ -185,12 +190,11 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **src/api/listeners/**          | Event listeners |
 | **src/api/messageprocessors/**  | Marketplace messageprocessors |
 | **src/api/messages/**           | Marketplace messages |
-| **src/api/middlewares/**        | Express Middlewares like populateUser |
+| **src/api/middlewares/**        | Express Middlewares |
 | **src/api/models/**             | Bookshelf Models |
 | **src/api/repositories/**       | Repository / DB layer |
 | **src/api/requests/**           | Request bodys with validations |
 | **src/api/services/**           | Service layer |
-| **src/api/** swagger.json       | Swagger documentation |
 | **src/console/**                | Command line scripts |
 | **src/config/**                 | Configurations like database or logger |
 | **src/constants/**              | Global Constants |
@@ -210,82 +214,9 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 
 
 
-
-
-
-
 # About
 
 This project is based on Express Typescript Boilerplate
 [![Dependency Status](https://david-dm.org/w3tecch/express-typescript-boilerplate/status.svg?style=flat)](https://david-dm.org/w3tecch/express-typescript-boilerplate)
 [![Build Status](https://travis-ci.org/w3tecch/express-typescript-boilerplate.svg?branch=master)](https://travis-ci.org/w3tecch/express-typescript-boilerplate)
 [![Build status](https://ci.appveyor.com/api/projects/status/f8e7jdm8v58hcwpq/branch/master?svg=true&passingText=Windows%20passing&pendingText=Windows%20pending&failingText=Windows%20failing)](https://ci.appveyor.com/project/dweber019/express-typescript-boilerplate/branch/master)
-
-> A delightful way to building a RESTful API with NodeJs & TypeScript.
-> An Node.js RESTful API boilerplate featuring
-[Express](https://expressjs.com/),
-[Inversify](http://inversify.io/),
-[Winston](https://github.com/winstonjs/winston),
-[TypeScript](https://www.typescriptlang.org/),
-[TsLint](http://palantir.github.io/tslint/),
-[@types](https://www.npmjs.com/~types),
-[Jest](https://facebook.github.io/jest/),
-[Swagger](http://swagger.io/),
-[validatejs](https://validatejs.org/),
-[knex](http://knexjs.org/) and
-[bookshelf](http://bookshelfjs.org/)
-by [w3tech](https://github.com/w3tecch)
-
-## Features
-- **Beautiful Syntax** thanks to the awesome annotations from [Inversify Express Utils](https://github.com/inversify/inversify-express-utils).
-- **Easy API Testing** with included black-box testing.
-- **Dependency Injection** done with the nice framework from [Inversify](http://inversify.io/).
-- **Fast Database Building** with simple migration and seeding from [Knex](http://knexjs.org/).
-- **Simplified Database Query** with the ORM of [Knex](http://knexjs.org/) called [Bookshelf](http://bookshelfjs.org/).
-- **Clear Structure** with controllers, services, repositories, models, middlewares...
-- **Easy Exception Handling** with our own simple and easy to adopt logic. You will love it.
-- **Easy Data Seeding** with our own factories.
-- **Custom Commands** are also available in our setup and really easy to use or even extend.
-- **Scaffolding Commands** will speed up your development tremendously as you should focus on business code and not scaffolding.
-- **Smart Validation** thanks to [class-validator](https://github.com/pleerock/class-validator) with some nice annotations.
-- **API Documentation** thanks to [swagger](http://swagger.io/).
-- **API Monitoring** thanks to [express-status-monitor](https://github.com/RafalWilinski/express-status-monitor).
-- **Integrated Testing Tool** thanks to [Wallaby.js](https://wallabyjs.com/)
-
-## Documentations of our main dependencies
-* [Express](https://expressjs.com/)
-* [Knex](http://knexjs.org/)
-* [Bookshelf](http://bookshelfjs.org/)
-* [Bookshelf Cheatsheet](http://ricostacruz.com/cheatsheets/bookshelf.html)
-* [Inversify](http://inversify.io/)
-* [Inversify Express Utils](https://github.com/inversify/inversify-express-utils)
-* [class-validator](https://github.com/pleerock/class-validator)
-* [Jest](http://facebook.github.io/jest/)
-* [Auth0 API Documentation](https://auth0.com/docs/api/management/v2)
-* [swagger Documentation](http://swagger.io/)
-
-
-## Test Hacks
-```
-rm -rf /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
-mkdir -p /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
-./particld  --regtest -daemon -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test
-./particld -regtest -rpcuser=test -rpcpassword=test -daemon -datadir=/tmp/particl_testing/node2 -port=55555 -rpcport=51945 -connect=127.0.0.1
-./particld -regtest -daemon -datadir=/tmp/particl_testing/node3 -port=55556 -rpcport=51946 -connect=127.0.0.1
-sleep 5
-./particl-cli -regtest -rpcuser=test -rpcpassword=test reservebalance true 100000
-./particl-cli -rpcuser=test -rpcpassword=test -regtest walletsettings stakelimit '{"height":0}'
-./particl-cli -rpcuser=test -rpcpassword=test -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
-./particl-cli -rpcuser=test -rpcpassword=test -regtest getnewaddress
-./particl-cli -rpcuser=test -rpcpassword=test -regtest sendtypeto "part" "part" '[{"address":"pqZDE7YNWv5PJWidiaEG8tqfebkd6PNZDV", "amount":20000}]' "" "" 0 0 false '{"inputs":[{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":0},{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":1},{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":2}]}'
-./particl-cli -regtest -rpcuser=test -rpcpassword=test reservebalance false
-./particl-cli -rpcuser=test -rpcpassword=test -regtest walletsettings stakelimit '{"height":10}'
-./particl-cli -regtest -rpcuser=test -rpcpassword=test -rpcport=51945 extkeyimportmaster 'sección grito médula hecho pauta posada nueve ebrio bruto buceo baúl mitad'
-./particl-cli -regtest -rpcuser=test -rpcpassword=test -rpcport=51945 reservebalance true 20000
-
-```
-```
-./particl-cli -regtest -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test stop
-./particl-cli -regtest -datadir=/tmp/particl_testing/node2 -rpcuser=test -rpcpassword=test -rpcport=51945 stop
-./particl-cli -regtest -datadir=/tmp/particl_testing/node3 -rpcport=51946 stop
-```

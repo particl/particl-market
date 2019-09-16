@@ -28,6 +28,10 @@ export class SettingRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (set|remove|list|get)  -  ' + this.description();
     }
@@ -37,6 +41,11 @@ export class SettingRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'Make settings for profile.';
+        return 'Commands for managing Settings.';
     }
+
+    public example(): string {
+        return this.getName() + '';
+    }
+
 }

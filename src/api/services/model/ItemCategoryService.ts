@@ -14,6 +14,8 @@ import { ItemCategoryRepository } from '../../repositories/ItemCategoryRepositor
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 export class ItemCategoryService {
 
@@ -59,15 +61,11 @@ export class ItemCategoryService {
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
 
-        // todo: wtf?
-        if (body.parent_item_category_id === 0) {
-            delete body.parent_item_category_id;
-        }
         // If the request body was valid we will create the itemCategory
-        const itemCategory = await this.itemCategoryRepo.create(body);
+        const itemCategory: resources.ItemCategory = await this.itemCategoryRepo.create(body).then(value => value.toJSON());
 
         // finally find and return the created itemCategory
-        const newItemCategory = await this.findOne(itemCategory.Id);
+        const newItemCategory = await this.findOne(itemCategory.id);
         return newItemCategory;
     }
 
@@ -94,12 +92,13 @@ export class ItemCategoryService {
     }
 
     /**
-     * create categories from array and will return last category <ItemCategory> Model
+     * create custom categories (if needed) from array and will return last category <ItemCategory> Model
      *
+     * @param market receiveAddress
      * @param categoryArray : string[]
      * @returns {Promise<ItemCategory>}
      */
-    public async createCategoriesFromArray(categoryArray: string[]): Promise<resources.ItemCategory> {
+    public async createCustomCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
 
         let rootCategoryToSearchFrom: resources.ItemCategory = await this.findRoot().then(value => value.toJSON());
 
@@ -114,8 +113,10 @@ export class ItemCategoryService {
                 // category did not exist, so we need to create it
                 const categoryCreateRequest = {
                     name: categoryKeyOrName,
+                    market,
                     parent_item_category_id: rootCategoryToSearchFrom.id
                 } as ItemCategoryCreateRequest;
+                categoryCreateRequest.key = ConfigurableHasher.hash(categoryCreateRequest, new HashableListingItemTemplateConfig());
 
                 // create and assign it as existingCategoru
                 existingCategory = await this.create(categoryCreateRequest).then(value => value.toJSON());

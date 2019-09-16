@@ -1,0 +1,32 @@
+{
+  "name": "particl-marketplace-docs",
+  "version": "0.2.0",
+  "description": "",
+  "main": "dist/module.js",
+  "scripts": {
+    "docs": "npm run docs:build && npm run docs:serve",
+    "docs:build": "./node_modules/.bin/slate-cli build",
+    "docs:serve": "./node_modules/.bin/slate-cli serve"
+  },
+  "repository": "git+ssh://git@github.com:particl/particl-market.git",
+  "keywords": [
+    "particl"
+  ],
+  "homepage": "https://github.com/particl/particl-market#readme",
+  "contributors": [
+    {
+      "name": "Juha Kovanen",
+      "email": "juha@particl.io",
+      "url": "https://github.com/xludx"
+    }
+  ],
+  "files": [
+    "dist/**/*"
+  ],
+  "dependencies": {
+  },
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "node-slate-lib": "^1.1.9"
+  }
+}

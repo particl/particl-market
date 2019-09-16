@@ -15,8 +15,7 @@ export class ListingItemUpdateRequest extends RequestBody implements ModelReques
     @IsNotEmpty()
     public seller: string;
 
-    @IsNotEmpty()
-    public market_id: number;
+    public market: string;
 
     public itemInformation;
     public paymentInformation;

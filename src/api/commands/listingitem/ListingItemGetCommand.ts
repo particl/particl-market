@@ -15,6 +15,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -30,7 +32,7 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     *  [0]: id or hash
+     *  [0]: listingItem: resources.ListingItem
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -39,37 +41,68 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        if (typeof data.params[0] === 'number') {
-            return await this.listingItemService.findOne(data.params[0]);
-        } else {
-            return await this.listingItemService.findOneByHash(data.params[0]);
-        }
+        const listingItem: resources.ListingItem = data.params[0];
+        return await this.listingItemService.findOne(listingItem.id);
+
     }
 
+    /**
+     * data.params[]:
+     *  [0]: listingItemId
+     *
+     * TODO: this command should be refactored as in the future hash could return multiple items
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('id or hash');
+            throw new MissingParamException('listingItemId');
         }
+
+        // if (data.params[0] && typeof data.params[0] !== 'number') {
+        //    throw new InvalidParamException('listingItemId', 'number');
+        // }
+
+        let listingItem: resources.ListingItem;
+
+        if (typeof data.params[0] === 'number') {
+            listingItem = await this.listingItemService.findOne(data.params[0])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        } else if (typeof data.params[0] === 'string') {
+            listingItem = await this.listingItemService.findOneByHash(data.params[0])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        } else {
+            throw new InvalidParamException('listingItemId', 'number');
+        }
+
+        data.params[0] = listingItem;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [<listingItemId>|<hash>] ';
+        return this.getName() + ' <listingItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>          - [optional] Numeric - The ID of the listing item we want to retrieve. \n'
+            + '    <listingItemId>          - Numeric - The ID of the listing item we want to retrieve. \n'
             + '    <hash>                   - [optional] String - The hash of the listing item we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a listing item via listingItemId or hash.';
+        return 'Get a listing item via listingItemId.';
     }
 
     public example(): string {
-        return 'item ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb';
+        return 'item ' + this.getName() + ' 1';
     }
 }

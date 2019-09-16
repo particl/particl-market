@@ -3,10 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('SettingRemoveCommand', () => {
 
@@ -19,9 +22,9 @@ describe('SettingRemoveCommand', () => {
     const settingRemoveCommand = Commands.SETTING_REMOVE.commandName;
     const settingSetCommand = Commands.SETTING_SET.commandName;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
-    let createdSetting: resources.Setting;
+    let market: resources.Market;
+    let profile: resources.Profile;
+    let setting: resources.Setting;
 
     const testData = {
         key: 'key',
@@ -32,76 +35,61 @@ describe('SettingRemoveCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket();
 
         // create setting
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
-            defaultProfile.id,
             testData.key,
-            testData.value
+            testData.value,
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        createdSetting = res.getBody()['result'];
+        setting = res.getBody()['result'];
 
     });
 
-    test('Should fail to remove Setting using invalid profileId', async () => {
-        const invalidProfileId = 0;
-        const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            invalidProfileId,
-            testData.key
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Profile not found.`);
-    });
-
-    test('Should fail to remove Setting using invalid key', async () => {
-        const invalidKey = 'invalid-key';
-        const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            defaultProfile.id,
-            invalidKey
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier ${invalidKey} and ${defaultProfile.id} does not exist`);
-    });
-
-    test('Should fail to remove Setting because missing profileId', async () => {
+    test('Should fail to remove Setting because missing settingId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Missing profileId.`);
+        expect(res.error.error.message).toBe(new MissingParamException('settingId').getMessage());
     });
 
-    test('Should fail to remove Setting because missing key', async () => {
+    test('Should fail to remove Setting because invalid settingId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            defaultProfile.id
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('settingId', 'number').getMessage());
+    });
+
+    test('Should fail to remove Setting because Setting model not found', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Missing key.`);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Setting').getMessage());
     });
 
-    test('Should remove Setting by profileId and key', async () => {
+    test('Should remove Setting by settingId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            defaultProfile.id,
-            testData.key
+            setting.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should fail to delete already removed Setting', async () => {
+    test('Should fail to remove already removed Setting', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            defaultProfile.id,
-            testData.key
+            setting.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier ${testData.key} and ${defaultProfile.id} does not exist`);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Setting').getMessage());
     });
 
 });

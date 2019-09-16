@@ -13,11 +13,12 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressInfo, RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import { RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir } from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
 import { BlockchainInfo } from './CoreRpcService';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
+import { SettingValue } from '../enums/SettingValue';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -69,6 +70,19 @@ export interface RpcWalletInfo {
     private_keys_enabled: boolean;      // false if privatekeys are disabled for this wallet (enforced watch-only wallet)
 }
 
+export interface RpcMnemonic {
+    mnemonic: string;
+    master: string;
+}
+
+export interface RpcExtKeyGenesisImport {
+    result: string;
+    master_id: string;
+    master_label: string;
+    account_id: string;
+    account_label: string;
+    note: string;
+}
 
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
@@ -82,12 +96,15 @@ export class CoreRpcService extends CtRpc {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
+    private activeWallet = 'market';
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
     ) {
         super();
         this.log = new Logger(__filename);
+        this.activeWallet = process.env[SettingValue.DEFAULT_WALLET.toString()] ? process.env[SettingValue.DEFAULT_WALLET.toString()] : this.activeWallet;
     }
 
     public async isConnected(): Promise<boolean> {
@@ -107,6 +124,111 @@ export class CoreRpcService extends CtRpc {
             .catch(error => {
                 return false;
             });
+    }
+
+    public get currentWallet(): string {
+        return this.activeWallet;
+    }
+
+    public async setActiveWallet(wallet: string): Promise<void> {
+        this.activeWallet = wallet;
+
+        const walletLoaded = await this.walletLoaded(wallet);
+        if (!walletLoaded) {
+            await this.loadWallet(wallet);
+        }
+        await this.smsgSetWallet(wallet);
+        this.log.debug('ACTIVE WALLET SET TO: ' + wallet);
+    }
+
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listLoadedWallets(): Promise<string[]> {
+        return await this.call('listwallets');
+    }
+
+    /**
+     * Returns a list of wallets in the wallet directory.
+     *
+     * @returns {Promise<RpcWalletDir>}
+     */
+    public async listWalletDir(): Promise<RpcWalletDir> {
+        return await this.call('listwalletdir');
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletLoaded(name: string): Promise<boolean> {
+        return await this.listLoadedWallets()
+            .then(wallets => {
+                const loaded = _.includes(wallets, name);
+                this.log.debug('walletLoaded(): ', loaded);
+                return loaded;
+            });
+    }
+
+    /**
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async walletExists(name: string): Promise<boolean> {
+        return await this.listWalletDir()
+            .then(result => {
+                const found = _.find(result.wallets, wallet => {
+                    // this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
+                    return wallet.name === name;
+                });
+                const exists = found ? true : false;
+                this.log.debug('walletExists: ', exists);
+                return exists;
+            });
+    }
+
+    /**
+     * Creates and loads a new wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async createWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.call('createwallet', [name, disablePrivateKeys, blank]);
+    }
+
+    public async createAndLoadWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
+        return await this.createWallet(name, disablePrivateKeys, blank);
+    }
+
+    public async mnemonic(params: any[] = []): Promise<RpcMnemonic> {
+        return await this.call('mnemonic', params);
+    }
+
+    public async extKeyGenesisImport(params: any[] = []): Promise<RpcExtKeyGenesisImport> {
+        return await this.call('extkeygenesisimport', params);
+    }
+
+    /**
+     * Loads a wallet from a wallet file or directory.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async loadWallet(name: string): Promise<RpcWallet> {
+        return await this.call('loadwallet', [name]);
+    }
+
+    /**
+     * Set secure messaging to use the specified wallet.
+     * SMSG can only be enabled on one wallet.
+     * Call with no parameters to unset the active wallet.
+     *
+     * @returns {Promise<RpcWallet>}
+     */
+    public async smsgSetWallet(name?: string): Promise<RpcWallet> {
+        return await this.call('smsgsetwallet', [name]);
     }
 
     /**
@@ -579,39 +701,6 @@ export class CoreRpcService extends CtRpc {
 
     /**
      *
-     * @param minconf
-     * @param maxconf
-     * @param addresses
-     * @param includeUnsafe
-     * @param queryOptions
-     * @returns {Promise<any>}
-     */
-/*
-    public async listUnspentBlind(minconf: number = 0, maxconf?: number, addresses?: string[], includeUnsafe?: boolean,
-                                  queryOptions?: any): Promise<RpcUnspentOutput[]> {
-
-        const params: any[] = [minconf]; // [minconf, maxconf, addresses, includeUnsafe];
-
-        if (maxconf !== undefined) {
-            params.push(maxconf);
-        }
-
-        if (addresses !== undefined) {
-            params.push(addresses);
-        }
-
-        if (includeUnsafe !== undefined) {
-            params.push(includeUnsafe);
-        }
-
-        if (!_.isEmpty(queryOptions)) {
-            params.push(queryOptions);
-        }
-        return await this.call('listunspentblind', params);
-    }
-*/
-    /**
-     *
      * @param {boolean} unlock
      * @param prevouts
      * @param permanent
@@ -737,6 +826,7 @@ export class CoreRpcService extends CtRpc {
 
     }
 
+
     private getOptions(): any {
 
         const auth = {
@@ -760,9 +850,6 @@ export class CoreRpcService extends CtRpc {
     }
 
     private getUrl(): string {
-        // this.log.debug('Environment.isTestnet():', Environment.isTestnet());
-        // this.log.debug('Environment.isAlpha():', Environment.isAlpha());
-
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = process.env.RPC_PORT ?
             process.env.RPC_PORT :
@@ -773,7 +860,10 @@ export class CoreRpcService extends CtRpc {
                     (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
                 )
             );
-        const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '');
+
+        // const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '/wallet/');
+        const wallet = '/wallet/' + this.activeWallet;
+
         return `http://${host}:${port}${wallet}`;
     }
 

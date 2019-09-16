@@ -42,8 +42,8 @@ describe('Order', () => {
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
     let sellerProfile: resources.Profile;
 
     let listingItem1: resources.ListingItem;
@@ -67,16 +67,16 @@ describe('Order', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        // generate seller profile
-        const generateParams = new GenerateProfileParams([true, true, true]).toParamsArray();
+        // generate a seller profile in addition to the default one used for buyer
+        const generateProfileParams = new GenerateProfileParams().toParamsArray();
         const profiles: resources.Profile[] = await testDataService.generate({
-            model: CreatableModel.PROFILE,
-            amount: 1,
-            withRelated: true,
-            generateParams
+            model: CreatableModel.PROFILE,              // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateProfileParams       // what kind of data to generate
         } as TestDataGenerateRequest);
         sellerProfile = profiles[0];
 
@@ -88,12 +88,12 @@ describe('Order', () => {
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
-            true,               // generateMessagingInformation
+            false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             sellerProfile.id,   // profileId
             true,               // generateListingItem
-            defaultMarket.id    // marketId
+            market.id           // marketId
         ]).toParamsArray();
 
         // generate two ListingItemTemplates with ListingItems
@@ -109,14 +109,14 @@ describe('Order', () => {
         listingItem1 = listingItemTemplates[0].ListingItems[0];
         listingItem2 = listingItemTemplates[1].ListingItems[0];
 
-        // create a new bid from defaultProfile for ListingItem that is being sold by sellerProfile
+        // create a new bid from profile for ListingItem that is being sold by sellerProfile
         const bidParams = new GenerateBidParams([
-            false,                       // generateListingItemTemplate
-            false,                       // generateListingItem
-            listingItem1.hash,           // listingItemhash
-            MPAction.MPA_BID,            // type
-            defaultProfile.address,      // bidder
-            sellerProfile.address        // seller
+            false,                      // generateListingItemTemplate
+            false,                      // generateListingItem
+            listingItem1.hash,          // listingItemhash
+            MPAction.MPA_BID,           // type
+            profile.address,            // bidder
+            sellerProfile.address       // seller
         ]).toParamsArray();
 
         const bids: resources.Bid[] = await testDataService.generate({
@@ -127,17 +127,6 @@ describe('Order', () => {
         } as TestDataGenerateRequest);
         bid = bids[0];
 
-/*
-        // create a new bid for ListingItem that is being bought by local profile
-        bidCreateRequest2.listing_item_id = createdListingItem2.id;
-        bidCreateRequest2.bidder = defaultProfile.address;
-        bidCreateRequest2.address.profile_id = defaultProfile.id;
-        const bidModel2: Bid = await bidService.create(bidCreateRequest2);
-        createdBid2 = bidModel2.toJSON();
-        log.debug('createdBid2:', createdBid2);
-*/
-
-        // TODO: after-alpha ValidationException: Request body is not valid, should explain why
     });
 
     afterAll(async () => {

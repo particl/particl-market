@@ -14,7 +14,6 @@ import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
-import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { Proposal } from './Proposal';
 
@@ -45,7 +44,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItemTemplate',
         'ListingItemTemplate.Profile',
-        'Market',
         'Bids',
         'Bids.BidDatas',
         'Bids.OrderItem',
@@ -56,6 +54,22 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         // 'FlaggedItem.Proposal.ProposalResults',
     ];
 
+    public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
+        const ListingItemCollection = ListingItem.forge<Model<ListingItem>>()
+            .query(qb => {
+                qb.where('hash', '=', hash);
+            })
+            .orderBy('expiry_time', 'ASC');
+
+        if (withRelated) {
+            return await ListingItemCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItemCollection.fetchAll();
+        }
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
         if (withRelated) {
             return await ListingItem.where<ListingItem>({ id: value }).fetch({
@@ -63,16 +77,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             });
         } else {
             return await ListingItem.where<ListingItem>({ id: value }).fetch();
-        }
-    }
-
-    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ hash: value }).fetch();
         }
     }
 
@@ -240,11 +244,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
-    public get Removed(): string { return this.get('removed'); }
-    public set Removed(value: string) { this.set('removed', value); }
+    public get Removed(): boolean { return this.get('removed'); }
+    public set Removed(value: boolean) { this.set('removed', value); }
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
+
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }
@@ -297,10 +304,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public Bids(): Collection<Bid> {
         return this.hasMany(Bid, 'listing_item_id', 'id');
-    }
-
-    public Market(): Market {
-        return this.belongsTo(Market, 'market_id', 'id');
     }
 
     public FlaggedItem(): FlaggedItem {

@@ -17,7 +17,6 @@ import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ShippingPrice } from '../../src/api/models/ShippingPrice';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/ShippingPriceUpdateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -40,8 +39,11 @@ describe('ShippingPrice', () => {
     let escrowService: EscrowService;
     let itemPriceService: ItemPriceService;
 
-    let createdId;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let listingItemTemplate: resources.ListingItemTemplate;
+    let shippingPrice: resources.ShippingPrice;
 
     const testData = {
         domestic: 2.12,
@@ -68,24 +70,24 @@ describe('ShippingPrice', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        const defaultMarket = await marketService.getDefault().then(value => value.toJSON());
-
+        // get default profile + market
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            false,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            true,       // generatePaymentInformation
+            false,       // generateEscrow
+            true,       // generateItemPrice
+            false,      // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            false,       // generateListingItem
+            market.id   // marketId
         ]);
 
         const generateParams = templateGenerateParams.toParamsArray();
@@ -111,12 +113,11 @@ describe('ShippingPrice', () => {
     });
 
     test('Should create a new ShippingPrice', async () => {
-        testData['item_price_id'] = listingItemTemplate.PaymentInformation.ItemPrice.id;
-        log.debug('testData:', JSON.stringify(testData, null, 2));
-        const shippingPriceModel: ShippingPrice = await shippingPriceService.create(testData);
-        createdId = shippingPriceModel.Id;
+        testData.item_price_id = listingItemTemplate.PaymentInformation.ItemPrice.id;
 
-        const result = shippingPriceModel.toJSON();
+        shippingPrice = await shippingPriceService.create(testData).then(value => value.toJSON());
+
+        const result: resources.ShippingPrice = shippingPrice;
         expect(result.domestic).toBe(testData.domestic);
         expect(result.international).toBe(testData.international);
     });
@@ -129,19 +130,18 @@ describe('ShippingPrice', () => {
     });
 
     test('Should list ShippingPrices with our new create one', async () => {
-        const shippingPriceCollection = await shippingPriceService.findAll();
-        const shippingPrice = shippingPriceCollection.toJSON();
-        expect(shippingPrice.length).toBe(2);   // template + new one
+        const shippingPrices: resources.ShippingPrice[] = await shippingPriceService.findAll().then(value => value.toJSON());
+        expect(shippingPrices.length).toBe(2);   // template + new one
 
-        const result = shippingPrice[1];
+        const result = shippingPrices[1];
 
         expect(result.domestic).toBe(testData.domestic);
         expect(result.international).toBe(testData.international);
     });
 
     test('Should return one ShippingPrice', async () => {
-        const shippingPriceModel: ShippingPrice = await shippingPriceService.findOne(createdId);
-        const result = shippingPriceModel.toJSON();
+        shippingPrice = await shippingPriceService.findOne(shippingPrice.id).then(value => value.toJSON());
+        const result: resources.ShippingPrice = shippingPrice;
 
         expect(result.domestic).toBe(testData.domestic);
         expect(result.international).toBe(testData.international);
@@ -149,15 +149,15 @@ describe('ShippingPrice', () => {
 
     test('Should throw ValidationException because there is no item_price_id', async () => {
         expect.assertions(1);
-        await shippingPriceService.update(createdId, testDataUpdated as ShippingPriceUpdateRequest).catch(e =>
+        await shippingPriceService.update(shippingPrice.id, testDataUpdated as ShippingPriceUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should update the ShippingPrice', async () => {
-        testDataUpdated['item_price_id'] = listingItemTemplate.PaymentInformation.ItemPrice.id;
-        const shippingPriceModel: ShippingPrice = await shippingPriceService.update(createdId, testDataUpdated as ShippingPriceUpdateRequest);
-        const result = shippingPriceModel.toJSON();
+        testDataUpdated.item_price_id = listingItemTemplate.PaymentInformation.ItemPrice.id;
+        shippingPrice = await shippingPriceService.update(shippingPrice.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.ShippingPrice = shippingPrice;
 
         expect(result.domestic).toBe(testDataUpdated.domestic);
         expect(result.international).toBe(testDataUpdated.international);
@@ -165,9 +165,9 @@ describe('ShippingPrice', () => {
 
     test('Should delete the ShippingPrice', async () => {
         expect.assertions(4);
-        await shippingPriceService.destroy(createdId);
-        await shippingPriceService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await shippingPriceService.destroy(shippingPrice.id);
+        await shippingPriceService.findOne(shippingPrice.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPrice.id))
         );
 
         // delete listing-item-template

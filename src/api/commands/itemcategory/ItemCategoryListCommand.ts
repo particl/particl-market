@@ -35,6 +35,10 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
         return await this.itemCategoryService.findRoot();
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' ';
     }

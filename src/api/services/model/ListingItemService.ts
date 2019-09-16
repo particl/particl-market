@@ -17,8 +17,6 @@ import { ListingItemUpdateRequest } from '../../requests/model/ListingItemUpdate
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
-import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
-import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
@@ -27,30 +25,23 @@ import { MessagingInformationCreateRequest } from '../../requests/model/Messagin
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { SmsgService } from '../SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { EventEmitter } from 'events';
-import { ProposalService } from './ProposalService';
+import { CommentService } from './CommentService';
+import { CommentType } from '../../enums/CommentType';
+import { ItemImageService } from './ItemImageService';
 
 export class ListingItemService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -60,8 +51,19 @@ export class ListingItemService {
         return await this.listingItemRepo.findAll();
     }
 
-    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
-        return await this.listingItemRepo.findExpired();
+    public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return await this.listingItemRepo.findAllExpired();
+    }
+
+    /**
+     *
+     * @param {string} hash
+     * @param {boolean} withRelated
+     * @returns {Promise<ListingItem>}
+     */
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
+        const listingItems = await this.listingItemRepo.findAllByHash(hash, withRelated);
+        return listingItems;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -74,27 +76,30 @@ export class ListingItemService {
     }
 
     /**
+     * TODO: DEPRECATED, shouldnt be used
      *
      * @param {string} hash
      * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        const listingItem = await this.listingItemRepo.findOneByHash(hash, withRelated);
-        if (listingItem === null) {
+        // this.log.debug('findOneByHash(), hash: ', hash);
+        const listingItems = await this.findAllByHash(hash, withRelated);
+        // this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
+        if (listingItems.size() === 0) {
             this.log.warn(`ListingItem with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
         }
-        return listingItem;
+        return listingItems.at(0);
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
-        const smsgMessage = await this.listingItemRepo.findOneByMsgId(msgId, withRelated);
-        if (smsgMessage === null) {
-            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+        const listingItem = await this.listingItemRepo.findOneByMsgId(msgId, withRelated);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the msgid=${msgId} was not found!`);
             throw new NotFoundException(msgId);
         }
-        return smsgMessage;
+        return listingItem;
     }
 
     /**
@@ -195,6 +200,7 @@ export class ListingItemService {
         // set new values
         listingItem.hash = body.hash;
         listingItem.seller = body.seller;
+        listingItem.market = body.market;
         listingItem.expiryTime = body.expiryTime;
         listingItem.postedAt = body.postedAt;
         listingItem.expiredAt = body.expiredAt;
@@ -311,7 +317,28 @@ export class ListingItemService {
     public async destroy(id: number): Promise<void> {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
-        this.log.debug('deleting listingItem:', listingItem.id);
+
+        // Comments dont have a hard link to ListinItems
+        const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
+        listingComments.forEach((comment) => {
+            try {
+                this.log.debug('destroy(), deleting Comment:', comment.id);
+                comment.destroy();
+            } catch (error) {
+                // Just log the error, we dont want to stop the process if one of these fails.
+                this.log.error(error);
+            }
+        });
+
+        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
+        // manually remove ItemImages
+        if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
+            for (const image of listingItem.ItemInformation.ItemImages) {
+                await this.itemImageService.destroy(image.id);
+            }
+        }
+        this.log.debug('destroy(), deleting ListingItem:', listingItem.id);
+
         await this.listingItemRepo.destroy(listingItem.id);
     }
 
@@ -321,10 +348,9 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
-       const listingItemsModel = await this.findExpired();
-       const listingItems = listingItemsModel.toJSON();
+       const listingItems: resources.ListingItem[] = await this.findAllExpired().then(value => value.toJSON());
        for (const listingItem of listingItems) {
-           if (listingItem.expiredAt <= Date()) {
+           if (listingItem.expiredAt <= Date.now()) {
                await this.destroy(listingItem.id);
            }
        }

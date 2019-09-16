@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -11,18 +11,16 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ShoppingCartItem } from '../../src/api/models/ShoppingCartItem';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ShoppingCartItemService } from '../../src/api/services/model/ShoppingCartItemService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ShoppingCartItemCreateRequest } from '../../src/api/requests/model/ShoppingCartItemCreateRequest';
-import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
-describe('ShoppingCartList', () => {
+describe('ShoppingCartItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -34,18 +32,17 @@ describe('ShoppingCartList', () => {
     let shoppingCartItemService: ShoppingCartItemService;
     let listingItemService: ListingItemService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let defaultShoppingCart: resources.ShoppingCart;
+    let profile: resources.Profile;
+    let market: resources.Market;
+    let shoppingCart: resources.ShoppingCart;
 
-    let createdListingItem: resources.ListingItem;
-    let createdShoppingCartItem: resources.ShoppingCartItem;
+    let listingItem: resources.ListingItem;
+    let shoppingCartItem: resources.ShoppingCartItem;
 
     const testData = {
         shopping_cart_id: 0,
         listing_item_id: 0
     } as ShoppingCartItemCreateRequest;
-
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -59,36 +56,33 @@ describe('ShoppingCartList', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        // get default profile + market + shoppingcart
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        shoppingCart = profile.ShoppingCart[0];
 
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
-
-        // get default shoppingcart
-        defaultShoppingCart = defaultProfile.ShoppingCart[0];
-
-        const generateParams = new GenerateListingItemParams([
-            true,                               // generateItemInformation
-            true,                               // generateItemLocation
-            true,                               // generateShippingDestinations
-            false,                              // generateItemImages
-            true,                               // generatePaymentInformation
-            true,                               // generateEscrow
-            true,                               // generateItemPrice
-            true,                               // generateMessagingInformation
-            false,                              // generateListingItemObjects
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            true,       // generatePaymentInformation
+            true,       // generateEscrow
+            true,       // generateItemPrice
+            false,      // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,  // what to generate
-            amount: 1,                          // how many to generate
-            withRelated: true,                  // return model
-            generateParams                      // what kind of data to generate
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
+        listingItem = listingItemTemplates[0].ListingItems[0];
 
     });
 
@@ -97,16 +91,15 @@ describe('ShoppingCartList', () => {
     });
 
     test('Should create a new ShoppingCartItem', async () => {
-        testData.shopping_cart_id = defaultShoppingCart.id;
-        testData.listing_item_id = createdListingItem.id;
 
-        const shoppingCartItemModel: ShoppingCartItem = await shoppingCartItemService.create(testData);
-        createdShoppingCartItem = shoppingCartItemModel.toJSON();
+        testData.shopping_cart_id = shoppingCart.id;
+        testData.listing_item_id = listingItem.id;
 
-        // test the values
-        expect(createdShoppingCartItem.id).not.toBeUndefined();
-        expect(createdShoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
-        expect(createdShoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
+        shoppingCartItem = await shoppingCartItemService.create(testData).then(value => value.toJSON());
+
+        expect(shoppingCartItem.id).not.toBeUndefined();
+        expect(shoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
+        expect(shoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
     });
 
     test('Should throw ValidationException because we want to create a empty ShoppingCartItem', async () => {
@@ -117,32 +110,27 @@ describe('ShoppingCartList', () => {
     });
 
     test('Should list ShoppingCartItem with our new create one', async () => {
-        const shoppingCartItemCollection = await shoppingCartItemService.findAll();
-        const result = shoppingCartItemCollection.toJSON();
-
+        const result: resources.ShoppingCartItem[] = await shoppingCartItemService.findAll().then(value => value.toJSON());
         log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].id).toBe(createdShoppingCartItem.id);
+        expect(result[0].id).toBe(shoppingCartItem.id);
     });
 
     test('Should return one ShoppingCartItem', async () => {
-        const shoppingCartItemModel: ShoppingCartItem = await shoppingCartItemService.findOne(createdShoppingCartItem.id);
-        const result = shoppingCartItemModel.toJSON();
+        shoppingCartItem = await shoppingCartItemService.findOne(shoppingCartItem.id).then(value => value.toJSON());
+        const result: resources.ShoppingCartItem = shoppingCartItem;
 
-        // test the values
         expect(result.ShoppingCart.id).toBe(testData.shopping_cart_id);
         expect(result.ListingItem.id).toBe(testData.listing_item_id);
     });
 
-    test('Should find ShoppingCartItems by shoppingCart.id', async () => {
-        const listingItem: Bookshelf.Collection<ShoppingCartItem> = await shoppingCartItemService.findAllByCartId(defaultShoppingCart.id);
-        const result = listingItem.toJSON();
+    test('Should find ShoppingCartItems using shoppingCartId', async () => {
+        const result: resources.ShoppingCartItem[] = await shoppingCartItemService.findAllByCartId(shoppingCart.id).then(value => value.toJSON());
 
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
 
@@ -150,15 +138,14 @@ describe('ShoppingCartList', () => {
         expect(result[0].ListingItem.id).toBe(testData.listing_item_id);
     });
 
-    test('Should find ShoppingCartItems by shoppingCart.id and listingItem.id', async () => {
-        const listingItem: ShoppingCartItem = await shoppingCartItemService.findOneByCartIdAndListingItemId(defaultShoppingCart.id, testData.listing_item_id);
-        const result = listingItem.toJSON();
+    test('Should find ShoppingCartItems by shoppingCartId and listingItemId', async () => {
+        const result: resources.ShoppingCartItem = await shoppingCartItemService.findOneByCartIdAndListingItemId(shoppingCart.id, testData.listing_item_id)
+            .then(value => value.toJSON());
 
         expect(result.ListingItem.Bids).toBeDefined();
         expect(result.ListingItem.FlaggedItem).toBeDefined();
         expect(result.ListingItem.ItemInformation).toBeDefined();
         expect(result.ListingItem.ListingItemObjects).toBeDefined();
-        expect(result.ListingItem.Market).toBeDefined();
         expect(result.ListingItem.MessagingInformation).toBeDefined();
         expect(result.ListingItem.PaymentInformation).toBeDefined();
 
@@ -166,32 +153,27 @@ describe('ShoppingCartList', () => {
         expect(result.ListingItem.id).toBe(testData.listing_item_id);
     });
 
-    test('Should clear all ShoppingCartItems of ShoppingCart by shoppingCart.id', async () => {
-
-        const clearCart = await shoppingCartItemService.clearCart(defaultShoppingCart.id);
-
-        const listingItem: Bookshelf.Collection<ShoppingCartItem> = await shoppingCartItemService.findAllByCartId(defaultShoppingCart.id);
-        const result = listingItem.toJSON();
-        expect(result).toHaveLength(0); // check cart empty
+    test('Should clear all ShoppingCartItems of ShoppingCart by shoppingCartId', async () => {
+        const clearCart = await shoppingCartItemService.clearCart(shoppingCart.id);
+        const result: resources.ShoppingCartItem[] = await shoppingCartItemService.findAllByCartId(shoppingCart.id).then(value => value.toJSON());
+        expect(result).toHaveLength(0);
     });
 
     test('Should delete the ShoppingCartItems', async () => {
-
         expect.assertions(4);
 
-        testData.shopping_cart_id = defaultShoppingCart.id;
-        testData.listing_item_id = createdListingItem.id;
+        testData.shopping_cart_id = shoppingCart.id;
+        testData.listing_item_id = listingItem.id;
 
-        const shoppingCartItemModel: ShoppingCartItem = await shoppingCartItemService.create(testData);
-        createdShoppingCartItem = shoppingCartItemModel.toJSON();
+        shoppingCartItem = await shoppingCartItemService.create(testData).then(value => value.toJSON());
 
-        expect(createdShoppingCartItem.id).not.toBeUndefined();
-        expect(createdShoppingCartItem.shoppingCartId).toBe(testData.shopping_cart_id);
-        expect(createdShoppingCartItem.listingItemId).toBe(testData.listing_item_id);
+        expect(shoppingCartItem.id).not.toBeUndefined();
+        expect(shoppingCartItem.shoppingCartId).toBe(testData.shopping_cart_id);
+        expect(shoppingCartItem.listingItemId).toBe(testData.listing_item_id);
 
-        await shoppingCartItemService.destroy(createdShoppingCartItem.id);
-        await shoppingCartItemService.findOne(createdShoppingCartItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdShoppingCartItem.id))
+        await shoppingCartItemService.destroy(shoppingCartItem.id);
+        await shoppingCartItemService.findOne(shoppingCartItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(shoppingCartItem.id))
         );
 
     });

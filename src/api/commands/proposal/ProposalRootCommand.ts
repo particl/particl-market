@@ -35,8 +35,16 @@ export class ProposalRootCommand extends BaseCommand implements RpcCommandInterf
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
+    public usage(): string {
+        return this.getName() + ' (get|list|post|result)' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (get|list|post|result)  -  ' + this.description();
+        return this.usage();
     }
 
     public description(): string {

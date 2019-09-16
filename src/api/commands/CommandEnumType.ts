@@ -29,6 +29,13 @@ export class CommandEnumType extends Enum<Command> {
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
 
+    public COMMENT_POST: Command    = new Command('commentpost', 'post', false);
+    public COMMENT_GET: Command     = new Command('commentget', 'get', false);
+    public COMMENT_SEARCH: Command  = new Command('commentsearch', 'search', false);
+    public COMMENT_COUNT: Command   = new Command('commentcount', 'count', false);
+    public COMMENT_ROOT: Command    = new Command('comment', 'comment', true,
+        [this.COMMENT_POST, this.COMMENT_GET, this.COMMENT_SEARCH, this.COMMENT_COUNT], EnvironmentType.ALL);
+
     public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
     public ITEM_GET: Command            = new Command('itemget', 'get', false);
     public ITEM_POST_UPDATE: Command    = new Command('itempostupdate', 'update', false);
@@ -38,13 +45,12 @@ export class CommandEnumType extends Enum<Command> {
 
     public ESCROW_ADD: Command      = new Command('escrowadd', 'add', false);
     public ESCROW_UPDATE: Command   = new Command('escrowupdate', 'update', false);
-    public ESCROW_REMOVE: Command   = new Command('escrowremove', 'remove', false);
     public ESCROW_LOCK: Command     = new Command('escrowlock', 'lock', false);
     public ESCROW_REFUND: Command   = new Command('escrowrefund', 'refund', false);
     public ESCROW_RELEASE: Command  = new Command('escrowrelease', 'release', false);
     public ESCROW_COMPLETE: Command = new Command('escrowcomplete', 'complete', false);
     public ESCROW_ROOT: Command     = new Command('escrow', 'escrow', true,
-        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_REMOVE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE,
+        [this.ESCROW_ADD, this.ESCROW_UPDATE, this.ESCROW_LOCK, this.ESCROW_REFUND, this.ESCROW_RELEASE,
             this.ESCROW_COMPLETE], EnvironmentType.ALL);
 
     public PAYMENTINFORMATION_UPDATE: Command   = new Command('paymentinformationupdate', 'update', false);
@@ -137,8 +143,10 @@ export class CommandEnumType extends Enum<Command> {
 
     public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
     public MARKET_ADD: Command          = new Command('marketadd', 'add', false);
+    public MARKET_REMOVE: Command       = new Command('marketremove', 'remove', false);
+    public MARKET_SETDEFAULT: Command   = new Command('marketsetdefault', 'default', false);
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
-        [this.MARKET_LIST, this.MARKET_ADD], EnvironmentType.ALL);
+        [this.MARKET_LIST, this.MARKET_ADD, this.MARKET_REMOVE, this.MARKET_SETDEFAULT], EnvironmentType.ALL);
 
     public SHOPPINGCART_LIST: Command   = new Command('cartlist', 'list', false);
     public SHOPPINGCART_GET: Command    = new Command('cartget', 'get', false);
@@ -164,10 +172,11 @@ export class CommandEnumType extends Enum<Command> {
     public ORDER_ROOT: Command           = new Command('order', 'order', true,
         [this.ORDER_SEARCH], EnvironmentType.ALL);
 
+    public ORDERITEM_HISTORY: Command         = new Command('orderitemhistory', 'history', false);
     public ORDERITEM_STATUS: Command         = new Command('orderitemstatus', 'status', false);
     public ORDERITEM_SHIP: Command         = new Command('orderitemship', 'ship', false);
     public ORDERITEM_ROOT: Command           = new Command('orderitem', 'orderitem', true,
-        [this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
+        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
 
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 
@@ -187,8 +196,14 @@ export class CommandEnumType extends Enum<Command> {
         [this.SETTING_REMOVE, this.SETTING_GET, this.SETTING_LIST, this.SETTING_SET], EnvironmentType.ALL);
 
     public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
+    public SMSG_REMOVE: Command      = new Command('smsgremove', 'remove', false);
+    public SMSG_RESEND: Command      = new Command('smsgresend', 'resend', false);
     public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
-        [this.SMSG_SEARCH], EnvironmentType.ALL);
+        [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
+
+    public WALLET_LIST: Command      = new Command('walletlist', 'list', false);
+    public WALLET_ROOT: Command        = new Command('wallet', 'wallet', true,
+        [this.WALLET_LIST], EnvironmentType.ALL);
 
     constructor() {
         super();

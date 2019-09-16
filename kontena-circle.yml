@@ -117,9 +117,6 @@ services:
       - API_INFO_ROUTE=/info
       - CLI_ENABLED=true
       - CLI_ROUTE=/cli
-      - SWAGGER_ENABLED=true
-      - SWAGGER_ROUTE=/docs
-      - SWAGGER_FILE=/src/api/swagger.json
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3

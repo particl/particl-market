@@ -53,8 +53,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         const fromAddress = bid.OrderItem.Order.seller;  // we are the seller
         const toAddress = bid.OrderItem.Order.buyer;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {

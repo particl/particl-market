@@ -41,6 +41,10 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         return await this.testDataService.clean(seed);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' ';
     }

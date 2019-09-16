@@ -4,14 +4,14 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as fs from 'fs';
-import * as path from 'path';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -20,32 +20,27 @@ describe('ListingItemTemplatePostCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
-    const listingItemCommand = Commands.ITEM_ROOT.commandName;
-    const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
     let brokenListingItemTemplate: resources.ListingItemTemplate;
 
     let sent = false;
+    const daysRetention = 1;
 
     beforeAll(async () => {
-        await testUtilSellerNode.cleanDb();
-        await testUtilBuyerNode.cleanDb();
+        await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtilSellerNode.getDefaultProfile();
-        defaultMarket = await testUtilSellerNode.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket();
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -59,12 +54,12 @@ describe('ListingItemTemplatePostCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,   // generateListingItem
-            defaultMarket.id  // marketId
+            market.id  // marketId
         ]).toParamsArray();
 
-        const listingItemTemplates = await testUtilSellerNode.generateData(
+        const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             2,                          // how many to generate
             true,                    // return model
@@ -76,15 +71,108 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
+    test('Should fail to post because missing listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail to post because missing daysRetention', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('daysRetention').getMessage());
+    });
+
+    test('Should fail to post because missing marketId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
+    });
+
+    test('Should fail to add because invalid listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            'INVALID',
+            daysRetention,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+    test('Should fail to add because invalid daysRetention', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            'INVALID',
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
+    });
+
+    test('Should fail to add because invalid marketId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
+    test('Should fail to add because invalid estimateFee', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            market.id,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('estimateFee', 'boolean').getMessage());
+    });
+
+    test('Should fail to add because ListingItemTemplate not found', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            0,
+            daysRetention,
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
+    });
+
+    test('Should fail to add because Market not found', async () => {
+        const res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            0,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
+    });
+
     test('Should post a ListingItem in to the default market', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();
-
-        const daysRetention = 4;
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
             daysRetention,
-            defaultMarket.id
+            market.id
         ]);
         res.expectJson();
 
@@ -110,7 +198,7 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
     test('Should get the updated ListingItemTemplate with the hash', async () => {
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateGetCommand,
             listingItemTemplate.id
         ]);
         res.expectJson();
@@ -121,16 +209,17 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
-
+/*
+    // TODO: implement these as integration tests
     test('Should receive MPA_LISTING_ADD message on the same sellerNode, create a ListingItem and match with the existing ListingItemTemplate', async () => {
 
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
         // wait for some time...
-        await testUtilSellerNode.waitFor(5);
+        await testUtil.waitFor(5);
 
-        const response: any = await testUtilSellerNode.rpcWaitFor(
+        const response: any = await testUtil.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplate.hash],
             8 * 60,
@@ -184,7 +273,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('loadImageFile(): ', filename);
         const filedata = fs.readFileSync(filename, { encoding: 'base64' });
 
-        let res = await testUtilSellerNode.rpc(itemImageCommand, [itemImageAddCommand,
+        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
             brokenListingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -197,15 +286,15 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // Attempt to post listing
         const daysRetention = 4;
-        res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        res = await testUtil.rpc(templateCommand, [templatePostCommand,
             brokenListingItemTemplate.id,
             daysRetention,
-            defaultMarket.id
+            market.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBeDefined();
         expect(res.error.error.message).toBe('ListingItemTemplate information exceeds message size limitations');
     });
-
+*/
 });

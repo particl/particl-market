@@ -33,10 +33,6 @@ describe('ItemImageAddCommand', () => {
     let defaultMarket: resources.Market;
     let image: resources.Image;
 
-    const keys = [
-        'id', 'hash', 'updatedAt', 'createdAt'
-    ];
-
     let listingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
     let listingItemTemplate: resources.ListingItemTemplate;
     let itemImages: resources.ItemImageData[];
@@ -143,7 +139,6 @@ describe('ItemImageAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectDataRpc(keys);
         const result: any = res.getBody()['result'];
         image = result;
         itemImages = result.ItemImageDatas;
@@ -152,21 +147,33 @@ describe('ItemImageAddCommand', () => {
     });
 
     test('Should not be able to add ItemImage because ListingItemTemplate is not modifiable', async () => {
-        let res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplate.id,
+
+        // create ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateItemLocation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,  // generateListingItem
+            defaultMarket.id   // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
             2,
-            defaultMarket.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
 
-        // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
-        expect(result.result).toBe('Sent.');
-
-        await testUtil.waitFor(5);
-
-        res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -174,6 +181,7 @@ describe('ItemImageAddCommand', () => {
             ImageProcessing.milkcatWide
         ]);
         res.expectJson();
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
 

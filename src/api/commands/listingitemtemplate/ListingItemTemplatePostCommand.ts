@@ -75,7 +75,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const fromAddress = listingItemTemplate.Profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {
@@ -130,15 +130,24 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new InvalidParamException('marketId', 'number');
         }
 
-        if (data.params[3] && typeof data.params[3] !== 'boolean') {
-            throw new InvalidParamException('estimateFee', 'boolean');
-        } else if (!data.params[3]) {
+        if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+        }
+
+        if (data.params[3] !== undefined) {
+            if (typeof data.params[3] !== 'boolean') {
+                throw new InvalidParamException('estimateFee', 'boolean');
+            }
+        } else {
             data.params[3] = false;
         }
 
         // make sure required data exists and fetch it
         let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON()); // throws if not found
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
 
         // make sure the ListingItemTemplate has a paymentAddress and generate and update it, if it doesn't
         // paymentAddress is part of the hash, so it needs to be created before the hash (unless it already exists)
@@ -156,7 +165,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         const market: resources.Market = await this.marketService.findOne(data.params[2])
-            .then(value => value.toJSON()); // throws if not found
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
 
         // check size limit
         const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
@@ -178,7 +190,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - number - The ID of the listing item template that we want to post. \n'
             + '    <daysRetention>               - number - Days the listing will be retained by network.\n'
-            + '    <marketId>                    - number - Market id. '
+            + '    <marketId>                    - number - Market ID. '
             + '    <estimateFee>                 - [optional] boolean, Just estimate the Fee, dont post the Proposal. \n';
     }
 

@@ -9,6 +9,7 @@
             true,
             160
         ],
+	"max-union-size": false,
         "no-bitwise": false,
         "no-consecutive-blank-lines": false,
         "quotemark": [true, "single", "avoid-escape"],

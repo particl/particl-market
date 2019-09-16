@@ -5,6 +5,7 @@
 import * from 'jest';
 import * as resources from 'resources';
 import * as _ from 'lodash';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -43,9 +44,6 @@ import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updatereque
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
-import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import { SearchOrderField } from '../../src/api/enums/SearchOrderField';
 import { ConfigurableHasher, hash } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../src/api/factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
@@ -120,7 +118,7 @@ describe('ListingItemTemplate', async () => {
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
     });
 
@@ -414,7 +412,7 @@ describe('ListingItemTemplate', async () => {
                 expect(generatedListingItemTemplate.id).toBe(generatedListingItem.ListingItemTemplate.id);
 
                 // expect the listingitem to be posted to the correct market
-                expect(generatedListingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
+                expect(generatedListingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
                 // expect the item hash generated at the same time as template, matches with the templates one
                 // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
@@ -622,13 +620,14 @@ describe('ListingItemTemplate', async () => {
 
         // create ListingItem with relation to ListingItemTemplate
         testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
-        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.expiryTime = 4;
         testDataToSave.postedAt = new Date().getTime();
         testDataToSave.expiredAt = new Date().getTime();
         testDataToSave.receivedAt = new Date().getTime();
         testDataToSave.generatedAt = new Date().getTime();
+        testDataToSave.msgid = Faker.random.uuid();
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         const templateHash = ConfigurableHasher.hash(createdListingItemTemplate3, new HashableListingItemTemplateConfig());
@@ -651,7 +650,7 @@ describe('ListingItemTemplate', async () => {
         );
     });
 
-    // TODO: rewrite this whole f***ing suite
+    // TODO: rewrite this..
 /*
     // searchBy tests
     test('Should generate 10 templates for searchBy tests', async () => {

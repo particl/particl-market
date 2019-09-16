@@ -75,11 +75,9 @@ describe('MessageProcessor', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultMarket = await marketService.getDefault()
-            .then(value => value.toJSON());
-
-        defaultProfile = await profileService.getDefault()
-            .then(value => value.toJSON());
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length

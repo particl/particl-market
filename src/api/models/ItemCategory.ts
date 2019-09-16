@@ -85,6 +85,9 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
 
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
+
     public get Key(): string { return this.get('key'); }
     public set Key(value: string) { this.set('key', value); }
 

@@ -72,8 +72,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         const fromAddress = orderItem.Order.buyer;  // we are the seller
         const toAddress = orderItem.Order.seller;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
@@ -146,4 +145,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         return 'Refund an escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

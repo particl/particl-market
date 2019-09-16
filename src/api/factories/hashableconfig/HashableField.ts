@@ -38,3 +38,16 @@ export enum HashableItemImageField {
     IMAGE_DATA = 'itemImageData'
 }
 
+export enum HashableItemCategoryField {
+    CATEGORY_NAME = 'categoryName',
+    CATEGORY_MARKET = 'categoryMarket'
+}
+
+export enum HashableCommentAddField {
+    COMMENT_SENDER = 'sender',
+    COMMENT_RECEIVER = 'receiver',
+    COMMENT_TARGET = 'target',
+    COMMENT_MESSAGE = 'message',
+    COMMENT_TYPE = 'type',
+    COMMENT_PARENT_COMMENT_HASH = 'parent_comment_hash'
+}

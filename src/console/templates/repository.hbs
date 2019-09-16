@@ -27,14 +27,14 @@ export class {{name.capitalize}}Repository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<{{name.capitalize}}> {
-        return this.{{name.capitalize}}Model.fetchById(id, withRelated);
+        return await this.{{name.capitalize}}Model.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<{{name.capitalize}}> {
         const {{name.camelCase}} = this.{{name.capitalize}}Model.forge<{{name.capitalize}}>(data);
         try {
             const {{name.camelCase}}Created = await {{name.camelCase}}.save();
-            return this.{{name.capitalize}}Model.fetchById({{name.camelCase}}Created.id);
+            return await this.{{name.capitalize}}Model.fetchById({{name.camelCase}}Created.id);
         } catch (error) {
             throw new DatabaseException('Could not create the {{name.camelCase}}!', error);
         }
@@ -44,7 +44,7 @@ export class {{name.capitalize}}Repository {
         const {{name.camelCase}} = this.{{name.capitalize}}Model.forge<{{name.capitalize}}>({ id });
         try {
             const {{name.camelCase}}Updated = await {{name.camelCase}}.save(data, { patch: true });
-            return this.{{name.capitalize}}Model.fetchById({{name.camelCase}}Updated.id);
+            return await this.{{name.capitalize}}Model.fetchById({{name.camelCase}}Updated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the {{name.camelCase}}!', error);
         }

@@ -5,6 +5,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import { MarketType } from '../../enums/MarketType';
 
 // tslint:disable:variable-name
 export class MarketUpdateRequest extends RequestBody implements ModelRequestInterface {
@@ -12,9 +13,17 @@ export class MarketUpdateRequest extends RequestBody implements ModelRequestInte
     public name: string;
 
     @IsNotEmpty()
-    public private_key: string;
+    public type: MarketType;
 
     @IsNotEmpty()
-    public address: string;
+    public receiveKey: string;
+
+    @IsNotEmpty()
+    public receiveAddress: string;
+
+    public publishKey: string;
+    public publishAddress: string;
+
+    public wallet_id: number;
 }
 // tslint:enable:variable-name

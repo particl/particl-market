@@ -3,8 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { app } from '../../src/app';
-import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
@@ -14,9 +14,7 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { FlaggedItemService } from '../../src/api/services/model/FlaggedItemService';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
@@ -24,6 +22,7 @@ import { GenerateProposalParams } from '../../src/api/requests/testdata/Generate
 import { FlaggedItemCreateRequest } from '../../src/api/requests/model/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../../src/api/models/FlaggedItem';
 import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedItemUpdateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('FlaggedItem', () => {
 
@@ -39,12 +38,12 @@ describe('FlaggedItem', () => {
     let listingItemService: ListingItemService;
     let proposalService: ProposalService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
-    let createdListingItem: resources.ListingItem;
-    let createdProposal: resources.Proposal;
-    let createdFlaggedItem: resources.FlaggedItem;
+    let listingItem: resources.ListingItem;
+    let proposal: resources.Proposal;
+    let flaggedItem: resources.FlaggedItem;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -59,44 +58,40 @@ describe('FlaggedItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        // get default market
-        defaultMarket = await marketService.getDefault().then(value => value.toJSON());
-
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                                       // generateItemInformation
-            true,                                       // generateItemLocation
-            true,                                       // generateShippingDestinations
-            false,                                      // generateItemImages
-            true,                                       // generatePaymentInformation
-            true,                                       // generateEscrow
-            true,                                       // generateItemPrice
-            true,                                       // generateMessagingInformation
-            true,                                       // generateListingItemObjects
-            false,                                      // generateObjectDatas
-            null,                                       // listingItemTemplateHash
-            defaultProfile.address                      // seller
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            false,      // generateShippingDestinations
+            false,      // generateItemImages
+            false,      // generatePaymentInformation
+            false,      // generateEscrow
+            false,      // generateItemPrice
+            false,      // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,          // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemParams   // what kind of data to generate
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
+        listingItem = listingItemTemplates[0].ListingItems[0];
 
         // create Proposal
         const generateProposalParams = new GenerateProposalParams([
             false,                                      // generateListingItemTemplate
             false,                                      // generateListingItem
-            createdListingItem.hash,                    // listingItemHash,
+            listingItem.hash,                    // listingItemHash,
             false,                                      // generatePastProposal,
             0,                                          // voteCount
-            defaultProfile.address                      // submitter
+            profile.address                      // submitter
         ]).toParamsArray();
 
         const proposals = await testDataService.generate({
@@ -105,7 +100,7 @@ describe('FlaggedItem', () => {
             withRelated: true,                          // return model
             generateParams: generateProposalParams      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdProposal = proposals[0];
+        proposal = proposals[0];
 
     });
 
@@ -119,16 +114,16 @@ describe('FlaggedItem', () => {
 
     test('Should create a new FlaggedItem', async () => {
         const testData = {
-            listing_item_id: createdListingItem.id,
-            proposal_id: createdProposal.id,
+            listing_item_id: listingItem.id,
+            proposal_id: proposal.id,
             reason: 'I AM SO OFFENDED BY THIS'
         } as FlaggedItemCreateRequest;
 
         const flaggedItemModel: FlaggedItem = await flaggedItemService.create(testData);
-        createdFlaggedItem = flaggedItemModel.toJSON();
+        flaggedItem = flaggedItemModel.toJSON();
 
-        expect(createdFlaggedItem.Proposal.id).toBe(createdProposal.id);
-        expect(createdFlaggedItem.ListingItem.id).toBe(createdListingItem.id);
+        expect(flaggedItem.Proposal.id).toBe(proposal.id);
+        expect(flaggedItem.ListingItem.id).toBe(listingItem.id);
     });
 
     test('Should list FlaggedItems with our newly created one', async () => {
@@ -138,17 +133,17 @@ describe('FlaggedItem', () => {
     });
 
     test('Should return one FlaggedItem', async () => {
-        const flaggedItemModel: FlaggedItem = await flaggedItemService.findOne(createdFlaggedItem.id);
+        const flaggedItemModel: FlaggedItem = await flaggedItemService.findOne(flaggedItem.id);
         const result: resources.FlaggedItem = flaggedItemModel.toJSON();
-        expect(result.Proposal.id).toBe(createdFlaggedItem.Proposal.id);
-        expect(result.ListingItem.id).toBe(createdListingItem.id);
+        expect(result.Proposal.id).toBe(flaggedItem.Proposal.id);
+        expect(result.ListingItem.id).toBe(listingItem.id);
     });
 
     test('Should throw ValidationException because there is no reason', async () => {
         expect.assertions(1);
         const testData = {} as FlaggedItemUpdateRequest;
 
-        await flaggedItemService.update(createdFlaggedItem.id, testData).catch(e =>
+        await flaggedItemService.update(flaggedItem.id, testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -158,21 +153,21 @@ describe('FlaggedItem', () => {
             reason: 'REASON'
         } as FlaggedItemUpdateRequest;
 
-        const flaggedItemModel: FlaggedItem = await flaggedItemService.update(createdFlaggedItem.id, testData);
+        const flaggedItemModel: FlaggedItem = await flaggedItemService.update(flaggedItem.id, testData);
         const result: resources.FlaggedItem = flaggedItemModel.toJSON();
 
         // test the values
-        expect(result.Proposal.id).toBe(createdFlaggedItem.Proposal.id);
-        expect(result.ListingItem.id).toBe(createdFlaggedItem.ListingItem.id);
+        expect(result.Proposal.id).toBe(flaggedItem.Proposal.id);
+        expect(result.ListingItem.id).toBe(flaggedItem.ListingItem.id);
 
-        createdFlaggedItem = result;
+        flaggedItem = result;
     });
 
     test('Should delete the FlaggedItem', async () => {
         expect.assertions(1);
-        await flaggedItemService.destroy(createdFlaggedItem.id);
-        await flaggedItemService.findOne(createdFlaggedItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdFlaggedItem.id))
+        await flaggedItemService.destroy(flaggedItem.id);
+        await flaggedItemService.findOne(flaggedItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(flaggedItem.id))
         );
     });
 

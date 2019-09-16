@@ -2,9 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
-import { app } from '../../src/app';
 import * as Bookshelf from 'bookshelf';
+import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
@@ -18,7 +19,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../../src/api/requests/model/FavoriteItemUpdateRequest';
-import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
@@ -54,13 +54,8 @@ describe('FavoriteItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // create ListingItems
         const generateListingItemParams = new GenerateListingItemParams([
@@ -202,16 +197,16 @@ describe('FavoriteItem', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ListingItem).toBeDefined();
         expect(result[0].ListingItem.id).toBe(createdListingItem2.id);
+        expect(result[0].ListingItem.market).toBeDefined();
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
         expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
-        expect(result[0].ListingItem.Market).toBeDefined();
         expect(result[0].ListingItem.MessagingInformation).toBeDefined();
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
         expect(result[0].ListingItem.hash).not.toBeNull();
         expect(result[0].ListingItem.listingItemTemplateId).toBeNull();
-        expect(result[0].ListingItem.marketId).toBe(defaultMarket.id);
+        expect(result[0].ListingItem.market).toBe(defaultMarket.receiveAddress);
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(defaultProfile.id);
     });

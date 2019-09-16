@@ -10,13 +10,13 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class SettingCreateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public profile_id: number;
-
-    @IsNotEmpty()
     public key: string;
 
     @IsNotEmpty()
     public value: string;
+
+    public profile_id: number;
+    public market_id: number;
 
 }
 // tslint:enable:variable-name

@@ -9,7 +9,7 @@ import { ItemImage } from './ItemImage';
 import { ShippingDestination } from './ShippingDestination';
 import { ItemCategory } from './ItemCategory';
 import { ListingItemTemplate } from './ListingItemTemplate';
-import {ListingItem} from './ListingItem';
+import { ListingItem } from './ListingItem';
 
 export class ItemInformation extends Bookshelf.Model<ItemInformation> {
 

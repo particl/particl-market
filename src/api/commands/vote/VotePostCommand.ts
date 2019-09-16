@@ -41,9 +41,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: profile: resources.Profile
-     *  [1]: proposalHash: resources.Proposal
-     *  [2]: proposalOptionId: resources.ProposalOption
+     *  [0]: market: resources.Market
+     *  [2]: profile: resources.Profile
+     *  [3]: proposalHash: resources.Proposal
+     *  [4]: proposalOptionId: resources.ProposalOption
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -61,9 +62,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
+        // TODO: validate that the !daysRetention > process.env.FREE_MESSAGE_RETENTION_DAYS
+        // const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const daysRetention = Math.ceil((proposal.expiredAt - new Date().getTime()) / 1000 / 60 / 60 / 24);
         const estimateFee = false;
 
@@ -109,14 +111,14 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new InvalidParamException('proposalOptionId', 'number');
         }
 
-        // TODO: might want to let users specify this.
-        const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
-
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
+
+        // TODO: might want to let users specify this.
+        const market: resources.Market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // make sure Proposal with the id exists
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
@@ -143,12 +145,19 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         return data;
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <profileId> <proposalHash> <proposalOptionId> ';
     }
 
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>                 - The id of the Profile. ' + ' \n'
+            + '    <proposalHash>              - The hash of the Proposal. ' + ' \n'
+            + '    <proposalOptionId>          - The id of the ProposalOption. ';
+    }
+
     public description(): string {
-        return 'Vote on a proposal specified via hash. ';
+        return 'Vote on a Proposal specified via hash. ';
     }
 
     public example(): string {

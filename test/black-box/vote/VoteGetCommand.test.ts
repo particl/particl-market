@@ -9,6 +9,9 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('VoteGetCommand', () => {
 
@@ -26,6 +29,7 @@ describe('VoteGetCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
+
     let proposal: resources.Proposal;
     let createdVote: resources.Vote;
 
@@ -58,16 +62,76 @@ describe('VoteGetCommand', () => {
 
     });
 
+
+    test('Should fail to get because missing profileId', async () => {
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+    });
+
+    test('Should fail to get because missing proposalHash', async () => {
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('proposalHash').getMessage());
+    });
+
+    test('Should fail to add because invalid profileId', async () => {
+
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
+            'INVALID',
+            proposal.hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail to add because invalid profileId', async () => {
+
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
+            defaultProfile.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
+    });
+
+    test('Should fail to add because Profile not found', async () => {
+
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
+            0,
+            proposal.hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+    });
+
+    test('Should fail to add because Proposal not found', async () => {
+
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
+            defaultProfile.id,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Proposal').getMessage());
+    });
+
     test('Should fail to return a Vote', async () => {
 
-        const response: any = await testUtil.rpc(voteCommand, [
-            voteGetCommand,
+        const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             defaultProfile.id,
             proposal.hash
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
-        expect(response.error.error.message).toBe('No Votes found.');
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('No Votes found.');
     });
 
     test('Should create and return a Vote', async () => {
@@ -104,7 +168,6 @@ describe('VoteGetCommand', () => {
         createdVote = vote;
 
         expect(vote).hasOwnProperty('ProposalOption');
-        expect(vote.weight).toBeGreaterThan(1);
         expect(vote.voter).toBe(defaultProfile.address);
         expect(vote.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });

@@ -105,7 +105,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             throw new InvalidParamException('address', 'string');
         }
 
-        if (data.params.length > 3 && data.params.length !== 7) {
+        if (data.params.length > 3) {
             if (data.params.length < 5) {
                 throw new MissingParamException('gpsMarkerDescription');
             } else if (data.params.length < 6) {
@@ -176,6 +176,10 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
 
     public description(): string {
         return 'Update the details of an item location given by listingItemTemplateId.';
+    }
+
+    public example(): string {
+        return '';
     }
 
     /*

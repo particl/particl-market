@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
@@ -60,7 +61,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (!data.params[0]) {
+        if (data.params.length < 1) {
             throw new MissingParamException('categoryId');
         }
 
@@ -72,7 +73,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(categoryId)
             .then(value => {
                 const category = value.toJSON();
-                if (category.key) {
+                if (_.includes(category.key, 'cat_')) {
                     throw new MessageException('Default Category cant be removed.');
                 }
                 return category;
@@ -80,6 +81,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
             .catch(reason => {
                 throw new ModelNotFoundException('ItemCategory');
             });
+
         data.params[0] = itemCategory;
 
         const searchParams = {

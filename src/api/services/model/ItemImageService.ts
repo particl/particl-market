@@ -207,10 +207,6 @@ export class ItemImageService {
 
             // save all ItemImageDatas
             for (const imageData of imageDatas) {
-                // const fileName = await this.itemImageDataService.saveImageFile(imageData.data, body.hash, imageData.imageVersion);
-                // imageData.data = fileName;
-
-                this.log.debug('imageData: ', JSON.stringify(imageData, null, 2));
                 await this.itemImageDataService.create(imageData);
             }
 
@@ -234,6 +230,14 @@ export class ItemImageService {
     }
 
     public async destroy(id: number): Promise<void> {
+        const itemImage: resources.ItemImage = await this.findOne(id, true).then(value => value.toJSON());
+        this.log.debug('destroy(), remove image, hash: ', itemImage.hash);
+
+        // find and remove ItemImageDatas and files
+        for (const imageData of itemImage.ItemImageDatas) {
+            await this.itemImageDataService.destroy(imageData.id);
+        }
+
         await this.itemImageRepo.destroy(id);
     }
 }

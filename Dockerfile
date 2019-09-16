@@ -15,7 +15,7 @@ COPY yarn.lock /app
 #RUN yarn install
 #COPY . /app/
 #RUN bin/ci-create-dbs.sh
-#RUN bin/ci-create-build-version.sh
+#RUN bin/create-build-version.sh
 #VOLUME /app/data
 #VOLUME /app/
 #CMD [ "yarn", "serve" ]

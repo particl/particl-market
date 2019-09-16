@@ -25,6 +25,7 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidService } from '../../services/model/BidService';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -36,6 +37,7 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -58,43 +60,39 @@ export class ListingItemAddActionListener extends BaseActionListenr implements i
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // - first get the Market, fail if it doesn't exist
-        //   - todo: this shouldnt really happen, but if it does, make sure the msg will not be reprocessed?
         // - if ListingItem contains a custom category, create them
         // - fetch the root category with related to create the listingItemCreateRequest
         // - create the ListingItem locally with the listingItemCreateRequest
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 
-        return await this.marketService.findByAddress(smsgMessage.to)
-            .then(async marketModel => {
-                const market: resources.Market = marketModel.toJSON();
-                const category: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(actionMessage.item.information.category);
-                const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
 
-                const listingItemCreateRequest = await this.listingItemFactory.get({
-                        msgid: smsgMessage.msgid,
-                        marketId: market.id,
-                        rootCategory
-                    } as ListingItemCreateParams,
-                    actionMessage,
-                    smsgMessage);
+        // todo: custom categories not supported yet, this propably needs to be refactored
+        const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
+            smsgMessage.to, actionMessage.item.information.category);
+        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
 
-                return await this.listingItemService.create(listingItemCreateRequest)
-                    .then(async value => {
-                        const listingItem: resources.ListingItem = value.toJSON();
-                        await this.createFlaggedItemIfNeeded(listingItem);
-                        await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
-                        this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        const listingItemCreateRequest = await this.listingItemFactory.get({
+                msgid: smsgMessage.msgid,
+                market: smsgMessage.to,
+                rootCategory
+            } as ListingItemCreateParams,
+            actionMessage,
+            smsgMessage);
+
+        return await this.listingItemService.create(listingItemCreateRequest)
+            .then(async value => {
+                const listingItem: resources.ListingItem = value.toJSON();
+
+                await this.createFlaggedItemIfNeeded(listingItem);
+                await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+
+                this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
+                return SmsgMessageStatus.PROCESSED;
+
             })
             .catch(reason => {
-                this.log.error('PROCESSING ERROR: ', reason);
+                this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

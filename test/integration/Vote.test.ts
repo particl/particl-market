@@ -54,13 +54,9 @@ describe('Vote', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
-
-        // get default market
-        const defaultMarketModel = await marketService.getDefault();
-        defaultMarket = defaultMarketModel.toJSON();
+        // get default profile + market
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         // create ListingItems
         const generateListingItemParams = new GenerateListingItemParams([
@@ -145,9 +141,9 @@ describe('Vote', () => {
             expiredAt: new Date().getTime() + 1000000
         } as VoteCreateRequest;
 
-        const voteModel: Vote = await voteService.create(testData);
-        createdVote = voteModel.toJSON();
-        const result = createdVote;
+        createdVote = await voteService.create(testData)
+            .then(value => value.toJSON());
+        const result: resources.Vote = createdVote;
 
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
         expect(result.voter).toBe(testData.voter);
@@ -158,19 +154,19 @@ describe('Vote', () => {
     });
 
     test('Should list Votes with our newly created one', async () => {
-        const voteCollection = await voteService.findAll();
-        const vote = voteCollection.toJSON();
-        expect(vote.length).toBe(21); // 20 + the one created
+        const votes: resources.Vote[] = await voteService.findAll()
+            .then(value => value.toJSON());
+        expect(votes.length).toBe(21); // 20 + the one created
 
-        const result = vote[20];
+        const result: resources.Vote = votes[20];
         expect(result.voter).toBe(createdVote.voter);
         expect(result.block).toBe(createdVote.block);
         expect(result.weight).toBe(createdVote.weight);
     });
 
     test('Should return one Vote', async () => {
-        const voteModel: Vote = await voteService.findOne(createdVote.id);
-        const result = voteModel.toJSON();
+        const result: resources.Vote = await voteService.findOne(createdVote.id)
+            .then(value => value.toJSON());
 
         expect(result.ProposalOption).toBeDefined();
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);

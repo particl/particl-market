@@ -74,8 +74,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const fromAddress = orderItem.Order.buyer;  // we are the buyer
         const toAddress = orderItem.Order.seller;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
@@ -159,6 +158,10 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
 
     public description(): string {
         return 'Lock an Escrow.';
+    }
+
+    public example(): string {
+        return '';
     }
 
     private additionalParamsToKVS(data: RpcRequest): KVS[] {

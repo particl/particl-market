@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -22,6 +24,8 @@ import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/Cryptoc
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
 import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
+import { SettingValue } from '../../enums/SettingValue';
+import { WalletService } from './WalletService';
 
 export class ProfileService {
 
@@ -32,6 +36,7 @@ export class ProfileService {
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) public shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -40,16 +45,22 @@ export class ProfileService {
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.getDefault(withRelated);
+
+        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+            .then(value => value.toJSON());
+        const defaultProfileSetting = defaultProfileSettings[0];
+        this.log.debug('getDefault(), defaultProfileSetting: ', defaultProfileSetting.value);
+
+        const profile = await this.findOne(+defaultProfileSetting.value, withRelated);
         if (profile === null) {
             this.log.warn(`Default Profile was not found!`);
-            throw new NotFoundException('DEFAULT');
+            throw new NotFoundException(defaultProfileSetting.value);
         }
         return profile;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
-        return this.profileRepo.findAll();
+        return await this.profileRepo.findAll();
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Profile> {
@@ -81,10 +92,10 @@ export class ProfileService {
 
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ProfileCreateRequest = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
-        if ( !body.address ) {
+        if (_.isEmpty(body.address)) {
             body.address = await this.getNewAddress();
         }
 
@@ -95,32 +106,39 @@ export class ProfileService {
         delete body.cryptocurrencyAddresses;
         const settings = body.settings || [];
         delete body.settings;
+        const wallet = body.wallet;
+        delete body.wallet;
 
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
+
         // then create related models
         for (const address of shippingAddresses) {
             address.profile_id = profile.Id;
-            await this.addressService.create(address as AddressCreateRequest);
+            await this.addressService.create(address);
         }
 
         for (const cryptoAddress of cryptocurrencyAddresses) {
             cryptoAddress.profile_id = profile.Id;
-            await this.cryptocurrencyAddressService.create(cryptoAddress as CryptocurrencyAddressCreateRequest);
+            await this.cryptocurrencyAddressService.create(cryptoAddress);
         }
 
         for (const setting of settings) {
             setting.profile_id = profile.Id;
-            await this.settingService.create(setting as SettingCreateRequest);
+            await this.settingService.create(setting);
         }
 
-        const shoppingCartData = {
-            name: 'DEFAULT',
-            profile_id: profile.Id
-        };
+        if (!_.isEmpty(wallet)) {
+            wallet.profile_id = profile.Id;
+            await this.walletService.create(wallet);
+        }
 
         // create default shoppingCart
-        const defaultShoppingCart = await this.shoppingCartService.create(shoppingCartData as ShoppingCartCreateRequest);
+        await this.shoppingCartService.create({
+            name: 'DEFAULT',
+            profile_id: profile.Id
+        } as ShoppingCartCreateRequest);
+
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;

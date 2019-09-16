@@ -72,8 +72,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         const fromAddress = orderItem.Order.seller;
         const toAddress = orderItem.Order.buyer;
 
-        // TODO: currently hardcoded!!! parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10)
-        const daysRetention = 2;
+        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
@@ -145,4 +144,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         return 'Complete an escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

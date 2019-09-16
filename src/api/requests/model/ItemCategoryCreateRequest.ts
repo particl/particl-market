@@ -9,14 +9,18 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ItemCategoryCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    // @IsNotEmpty()
     public parent_item_category_id: number;
 
+    public id: number;  // todo: what do we need this for in here?
+
+    @IsNotEmpty()
     public key: string;
-    public id: number;
 
     @IsNotEmpty()
     public name: string;
+
+    @IsNotEmpty()
+    public market: string;
 
     public description: string;
 }

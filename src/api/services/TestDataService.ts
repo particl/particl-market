@@ -7,6 +7,7 @@ import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import * as _ from 'lodash';
 import * as Faker from 'faker';
+import * as jpeg from 'jpeg-js';
 import { inject, named } from 'inversify';
 import { request, validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -47,7 +48,6 @@ import { GenerateListingItemParams } from '../requests/testdata/GenerateListingI
 import { GenerateProfileParams } from '../requests/testdata/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/testdata/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/testdata/GenerateProposalParams';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { AddressCreateRequest } from '../requests/model/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/model/CryptocurrencyAddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/model/BidDataCreateRequest';
@@ -93,6 +93,28 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
+import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
+import { CommentType } from '../enums/CommentType';
+import { CommentService } from './model/CommentService';
+import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
+import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
+import { DefaultSettingService } from './DefaultSettingService';
+import { SettingValue } from '../enums/SettingValue';
+import { GenerateSmsgMessageParams } from '../requests/testdata/GenerateSmsgMessageParams';
+import { SmsgMessageService } from './model/SmsgMessageService';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { CommentAction } from '../enums/CommentAction';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
 
 export class TestDataService {
@@ -101,11 +123,12 @@ export class TestDataService {
     public ignoreTables: string[] = ['sqlite_sequence', 'version', 'version_lock', 'knex_migrations', 'knex_migrations_lock'];
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
-        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) private defaultItemCategoryService: DefaultItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) private defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) private defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) private defaultSettingService: DefaultSettingService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -119,10 +142,14 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) private orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -132,7 +159,6 @@ export class TestDataService {
      * clean up the database
      * insert the default data
      *
-     * @param ignoreTables
      * @param seed
      * @returns {Promise<void>}
      */
@@ -145,18 +171,28 @@ export class TestDataService {
 
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            await this.defaultItemCategoryService.seedDefaultCategories()
-                .catch( reason => {
-                    this.log.debug('failed seeding default categories: ' + reason);
-                });
-            await this.defaultProfileService.seedDefaultProfile()
+            // seed the default Profile
+            const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
-            await this.defaultMarketService.seedDefaultMarket()
+
+            await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
+
+            // seed the default market
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default market: ' + reason);
                 });
+
+            // seed the default categories
+            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress)
+                .catch( reason => {
+                    this.log.debug('failed seeding default categories: ' + reason);
+                });
+
         }
 
         this.log.info('cleanup & default seeds done.');
@@ -166,8 +202,8 @@ export class TestDataService {
     /**
      * creates testdata from json
      *
-     * @param data
      * @returns {Promise<ListingItem>}
+     * @param body
      */
     @validate()
     public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
@@ -198,6 +234,9 @@ export class TestDataService {
             }
             case CreatableModel.ITEMIMAGE: {
                 return await this.itemImageService.create(body.data as ItemImageCreateRequest);
+            }
+            case CreatableModel.COMMENT: {
+                return await this.commentService.create(body.data as CommentCreateRequest);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -243,10 +282,40 @@ export class TestDataService {
                 const generateParams = new GenerateProposalParams(body.generateParams);
                 return await this.generateProposals(body.amount, body.withRelated, generateParams);
             }
+            case CreatableModel.COMMENT: {
+                const generateParams = new GenerateCommentParams(body.generateParams);
+                return await this.generateComments(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.SMSGMESSAGE: {
+                const generateParams = new GenerateSmsgMessageParams(body.generateParams);
+                return await this.generateSmsgMessages(body.amount, body.withRelated, generateParams);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }
         }
+    }
+
+    /**
+     * Generates an random colored image with specified width, height and quality
+     * @param width width of the image
+     * @param height height of the image
+     * @param quality quality of the image
+     */
+    public async generateRandomImage(width: number = 200, height: number = 200, quality: number = 50): Promise<string> {
+        const frameData = Buffer.alloc(width * height * 4);
+        let i = 0;
+        while (i < frameData.length) {
+            frameData[i++] = Math.floor(Math.random() * 256);
+        }
+        const rawImageData = {
+            data: frameData,
+            width,
+            height
+        };
+        const image: jpeg.RawImageData<Buffer> = jpeg.encode(rawImageData, quality);
+        return image.data.toString('base64');
+
     }
 
     /**
@@ -289,7 +358,8 @@ export class TestDataService {
             'shopping_cart',
             'item_categories',
             'markets',
-            'users',        // todo: not needed
+            'wallets',
+            'settings',
             'price_ticker', // todo: price_tickers
             'flagged_items',
             'currency_prices',
@@ -337,13 +407,14 @@ export class TestDataService {
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
-                const market: resources.Market = generateParams.marketId
-                    ? await this.marketService.getDefault().then(value => value.toJSON())
+                this.log.debug('listingItemTemplate.Profile.id: ', listingItemTemplate.Profile.id);
+                const market: resources.Market = generateParams.marketId === undefined || generateParams.marketId === null
+                    ? await this.marketService.getDefaultForProfile(listingItemTemplate.Profile.id).then(value => value.toJSON())
                     : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
 
                 const listingItemCreateRequest = {
                     seller: listingItemTemplate.Profile.address,
-                    market_id: market.id,
+                    market: market.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
@@ -364,7 +435,7 @@ export class TestDataService {
                 const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                     .then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-                //  this.log.debug('created listingItem, hash: ', listingItem.hash);
+                // this.log.debug('created listingItem, hash: ', listingItem.hash);
 
                 listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
 
@@ -390,11 +461,13 @@ export class TestDataService {
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // const fromAddress = await this.coreRpcService.getNewAddress();
-            // const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
+            // const market: resources.Market = await this.marketService.getDefaultForProfile().then(value => value.toJSON());
 
             this.log.debug('create listingitem start');
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
                 .then(value => value.toJSON());
+            // TODO: make this optional/configurable
+            const savedSmsgMessage: resources.SmsgMessage = await this.createListingItemSmsgMessage(savedListingItem);
             this.log.debug('create listingitem end');
 
             items.push(savedListingItem);
@@ -404,6 +477,52 @@ export class TestDataService {
         this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
+    }
+
+    private async createListingItemSmsgMessage(listingItem: resources.ListingItem): Promise<resources.SmsgMessage> {
+
+        const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            listingItem
+        } as ListingItemAddMessageCreateParams);
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: listingItemAddMessage
+        };
+
+        // put the MarketplaceMessage in SmsgMessage
+        const listingItemSmsg = {
+            msgid: 'TESTMESSAGE-' + Faker.random.uuid(),
+            version: '0300',
+            location: 'inbox',
+            read: true,
+            paid: true,
+            payloadsize: 100,
+            received: Date.now(),
+            sent: Date.now(),
+            expiration: Date.now(),
+            daysretention: 7,
+            from: listingItem.seller,
+            to: listingItem.market,
+            text: JSON.stringify(marketplaceMessage)
+        } as CoreSmsgMessage;
+
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            status: SmsgMessageStatus.PROCESSED,
+            message: listingItemSmsg
+        });
+        return await this.smsgMessageService.create(smsgMessageCreateRequest)
+            .then(async smsgMessageModel => {
+
+                const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
+                this.log.debug('SAVED SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
+                return smsgMessage;
+            });
     }
 
     // -------------------
@@ -818,6 +937,107 @@ export class TestDataService {
     }
 
     // -------------------
+    // Comments
+    private async generateComments(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateCommentParams): Promise<resources.Comment[]> {
+
+        this.log.debug('generateComments, generateParams: ', generateParams);
+
+        // TODO: add template and item generation
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        const items: resources.Comment[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const commentCreateRequest = await this.generateCommentData(generateParams);
+            const comment: resources.Comment = await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
+            items.push(comment);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateCommentData(generateParams: GenerateCommentParams): Promise<CommentCreateRequest> {
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generatePastComment) {
+            throw new NotImplementedException();
+        }
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let sender;
+        if (!generateParams.sender) {
+            const profile = defaultProfile.toJSON();
+            sender = profile.address;
+        } else {
+            sender = generateParams.sender;
+        }
+
+        let receiver;
+        if (!generateParams.receiver) {
+            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
+            const market = defaultMarket.toJSON();
+            receiver = market.receiveAddress;
+        } else {
+            receiver = generateParams.sender;
+        }
+
+        const target = generateParams.target;
+
+        const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
+
+        const currentTime = new Date().getTime();
+
+        // Generate comment in the past
+        const timeStart = generateParams.generatePastComment
+            ? _.random(1, (currentTime / 2), false)
+            : _.random(currentTime + 100, currentTime + 1000, false);
+
+        const timeEnd = generateParams.generatePastComment
+            ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
+            : _.random(currentTime + 1001, currentTime + 2000, false);
+
+
+        // TODO: parent comment create?
+
+        const smsgData: any = {
+            postedAt: timeStart,
+            receivedAt: timeStart,
+            expiredAt: timeEnd
+        };
+
+        const commentCreateRequest = {
+            sender,
+            receiver,
+            type,
+            target,
+            message: Faker.lorem.lines(1),
+            parentCommentId: null,
+            ...smsgData
+        } as CommentCreateRequest;
+
+        commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
+
+        return commentCreateRequest;
+    }
+
+    // -------------------
     // profiles
 
     private async generateProfiles(
@@ -905,6 +1125,18 @@ export class TestDataService {
                 key: Faker.random.word(),
                 value: Faker.random.word()
             } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_NAME.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_NAME]
+            } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY]
+            } as SettingCreateRequest);
+            settings.push({
+                key: SettingValue.DEFAULT_MARKETPLACE_ADDRESS.toString(),
+                value: process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]
+            } as SettingCreateRequest);
         }
         return settings;
     }
@@ -922,13 +1154,13 @@ export class TestDataService {
             .then(value => value.toJSON());
 
         // get default market
-        const defaultMarket: resources.Market = await this.marketService.getDefault()
+        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id)
             .then(value => value.toJSON());
 
         // set seller to given address or get a new one
         const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress();
 
-        const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
+        const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
@@ -939,7 +1171,7 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id,
+            market: defaultMarket.receiveAddress,
             msgid: '' + new Date().getTime(),
             expiryTime: 4,
             postedAt: new Date().getTime(),
@@ -994,19 +1226,19 @@ export class TestDataService {
         } as ItemLocationCreateRequest;
     }
 
-    private generateItemImagesData(amount: number): ItemImageCreateRequest[] {
+    private async generateItemImagesData(amount: number): Promise<ItemImageCreateRequest[]> {
         const items: ItemImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             const fakeHash = Faker.random.uuid();
+            const data = await this.generateRandomImage(20, 20);
             const item = {
                 hash: fakeHash,
                 data: [{
-                    // itemHash: fakeHash,
                     dataId: Faker.internet.url(),
                     protocol: ProtocolDSN.LOCAL,
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     encoding: 'BASE64',
-                    data: ImageProcessing.milkcatSmall
+                    data
                 }] as ItemImageDataCreateRequest[]
             } as ItemImageCreateRequest;
             items.push(item);
@@ -1014,14 +1246,15 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): ItemInformationCreateRequest {
+    private async generateItemInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
+        Promise<ItemInformationCreateRequest> {
 
         const shippingDestinations = generateParams.generateShippingDestinations
             ? this.generateShippingDestinationsData(_.random(1, 5))
             : [];
 
         const itemImages = generateParams.generateItemImages
-            ? this.generateItemImagesData(_.random(1, 2))
+            ? await this.generateItemImagesData(_.random(1, 2))
             : [];
 
         const itemLocation = generateParams.generateItemLocation
@@ -1070,11 +1303,9 @@ export class TestDataService {
                     domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
                     international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
                 } as ShippingPriceCreateRequest,
-                // TODO: omp-lib generates these, so we cant use these right now
                 cryptocurrencyAddress: {
-                    type: CryptoAddressType.STEALTH, // Faker.random.arrayElement(Object.getOwnPropertyNames(CryptoAddressType)),
+                    type: CryptoAddressType.STEALTH,
                     address: (await this.coreRpcService.getNewStealthAddress()).address
-                    // profile_id: 0 // TODO: should be linked to profile
                 } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;
@@ -1121,12 +1352,13 @@ export class TestDataService {
     }
 
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
-        const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
+        const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
-        const profile: resources.Profile = generateParams.profileId === null
+        // todo: use undefined
+        const profile: resources.Profile = generateParams.profileId === null || generateParams.profileId === undefined
             ? await this.profileService.getDefault().then(value => value.toJSON())
             : await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
 
@@ -1139,7 +1371,7 @@ export class TestDataService {
             profile_id: profile.id
         } as ListingItemTemplateCreateRequest;
 
-        // this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+        this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         return listingItemTemplateCreateRequest;
     }
 
@@ -1166,6 +1398,105 @@ export class TestDataService {
 
         const rand = Math.floor(Math.random() * categoryKeys.length);
         return categoryKeys[rand];
+    }
+
+    // -------------------
+    // SmsgMessages
+    private async generateSmsgMessages(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
+
+        this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
+
+        const items: resources.SmsgMessage[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const smsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
+            const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
+            items.push(smsgMessage);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateSmsgMessageData(generateParams: GenerateSmsgMessageParams): Promise<SmsgMessageCreateRequest> {
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let from: string;
+        if (!generateParams.from) {
+            const profile = defaultProfile.toJSON();
+            from = profile.address;
+        } else {
+            from = generateParams.from;
+        }
+
+        let to;
+        if (!generateParams.to) {
+            const market: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            to = market.receiveAddress;
+        } else {
+            to = generateParams.to;
+        }
+
+        const target = Faker.finance.bitcoinAddress();
+        const msgid = Faker.random.uuid();
+
+        let action: ActionMessageInterface;
+
+        let text: string;
+
+        if (generateParams.text) {
+            text = generateParams.text;
+        } else {
+            switch (generateParams.type) {
+                case MPAction.MPA_LISTING_ADD: {
+                    action = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddMessageCreateParams);
+                    break;
+                }
+                case MPAction.MPA_BID: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_PROPOSAL_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_VOTE: {
+                    throw new MessageException('Not implemented');
+                }
+                case CommentAction.MPA_COMMENT_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                default: {
+                    throw new MessageException('Not implemented');
+                }
+            }
+
+            text = JSON.stringify({
+                version: ompVersion(),
+                action
+            } as MarketplaceMessage);
+        }
+
+        const smsgMessageCreateRequest = {
+            type: generateParams.type,
+            status: generateParams.status,
+            direction: generateParams.direction,
+            read: generateParams.read,
+            paid: generateParams.paid,
+            received: generateParams.received,
+            sent: generateParams.sent,
+            expiration: generateParams.expiration,
+            daysretention: generateParams.daysretention,
+            from,
+            to,
+            text,
+            target,
+            msgid,
+            version: '0201',
+            payloadsize: 500
+        } as SmsgMessageCreateRequest;
+
+        return smsgMessageCreateRequest;
     }
 
 }

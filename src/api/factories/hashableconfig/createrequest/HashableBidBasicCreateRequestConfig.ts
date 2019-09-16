@@ -4,7 +4,6 @@
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { HashableBidField, HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
-import {HashableBidReleaseField} from '../HashableField';
 
 // TODO: rename
 export class HashableBidBasicCreateRequestConfig extends BaseHashableConfig {

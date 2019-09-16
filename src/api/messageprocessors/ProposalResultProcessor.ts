@@ -35,6 +35,8 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
 
     public async process(): Promise<void> {
 
+        // this.log.debug('process(), recalculate ProposalResults...');
+
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
             // category: ProposalCategory.ITEM_VOTE,
@@ -63,21 +65,32 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
                         });
 
                     if (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now()) {
-                        this.log.debug('time to recalculate ProposalResult for: ', proposal.hash);
+                        this.log.debug('process(), recalculate proposal.hash: ', proposal.hash);
 
                         await this.proposalService.recalculateProposalResult(proposal);
                         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
                         // we can now check whether the ListingItem should be removed or not
                         if (proposal.category === ProposalCategory.ITEM_VOTE) {
-                            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                                .then(value => value.toJSON());
-                            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                                .then(async remove => {
-                                    if (remove) {
-                                        await this.listingItemService.destroy(listingItem.id);
-                                    }
+
+                            await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
+                                .then(async value => {
+                                    const listingItem: resources.ListingItem = value.toJSON();
+                                    await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
+                                        .then(async remove => {
+                                            if (remove) {
+                                                await this.listingItemService.destroy(listingItem.id);
+                                            }
+                                        });
+
+                                })
+                                .catch( reason => {
+                                    // TODO: listingItem already removed?
                                 });
+
                         }
+                    } else {
+                        this.log.debug('process(), skip proposal.hash: ', proposal.hash);
+                        this.log.debug('process(), proposalResult.calculatedAt: ', proposalResult.calculatedAt);
                     }
                 }
             });

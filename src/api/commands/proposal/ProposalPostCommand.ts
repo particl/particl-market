@@ -23,6 +23,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -70,7 +71,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
@@ -121,11 +122,15 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('option2Description');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (data.params[0] !== undefined && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[3] && typeof data.params[3] !== 'number') {
+        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('proposalTitle', 'string');
+        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('proposalDescription', 'string');
+        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'number') {
             throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] && typeof data.params[4] !== 'boolean') {
+        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'boolean') {
             throw new InvalidParamException('estimateFee', 'boolean');
         }
 
@@ -135,9 +140,13 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
                 throw new ModelNotFoundException('Profile');
             });
 
+        if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+        }
+
         // get the default market.
         // TODO: Might want to let users specify this later.
-        const market: resources.Market = await this.marketService.getDefault().then(value => value.toJSON());
+        const market: resources.Market = await this.marketService.getDefaultForProfile(data.params[0].id).then(value => value.toJSON());
 
         data.params.unshift(market);
         return data;

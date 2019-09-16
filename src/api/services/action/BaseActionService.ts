@@ -72,9 +72,17 @@ export abstract class BaseActionService implements ActionServiceInterface {
         }
 
         // validate it, extending class should implement
-        const validated = await this.validateMessage(marketplaceMessage).catch(reason => false);
+        const validated = await this.validateMessage(marketplaceMessage).catch(reason => {
+            this.log.error('ERROR:', reason);
+            return false;
+        });
         if (!validated) {
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
+        }
+
+        // return smsg fee estimate, if thats what was requested
+        if (params.sendParams.estimateFee) {
+            return await this.smsgService.estimateFee(marketplaceMessage, params.sendParams);
         }
 
         // if message is paid, make sure we have enough balance to pay for it
@@ -83,11 +91,6 @@ export abstract class BaseActionService implements ActionServiceInterface {
             if (!canAfford) {
                 throw new MessageException('Not enough balance to send the message.');
             }
-        }
-
-        // return smsg fee estimate, if thats what was requested
-        if (params.sendParams.estimateFee) {
-            return await this.smsgService.estimateFee(marketplaceMessage, params.sendParams);
         }
 
         // do whatever still needs to be done before sending the message, extending class should implement

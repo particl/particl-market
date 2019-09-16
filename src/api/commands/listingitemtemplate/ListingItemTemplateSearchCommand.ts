@@ -157,6 +157,6 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     }
 
     public example(): string {
-        return 'template ' + this.getName() + ' 1 10 ASC STATE 1 \'pet exorcism\' 74 true';
+        return 'template ' + this.getName() + ' 0 10 \'ASC\' \'STATE\' 1 \'pet exorcism\' 74 true';
     }
 }

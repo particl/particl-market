@@ -1,0 +1,41 @@
+.content h2 {
+    font-size: 20px;
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+}
+
+.content h3 {
+    font-size: 17px;
+    margin-top: 0.8em;
+    /*margin: 0px;*/
+}
+
+.content h2 + div + h3 {
+    font-size: 17px;
+    margin-top: 0.8em;
+    /*margin: 0px;*/
+}
+.content aside + div + h3 {
+    font-size: 17px;
+    margin-top: 0.8em;
+    /*margin: 0px;*/
+}
+
+.content div + h3 {
+    margin-top: 2.8em;
+}
+
+.content h4 {
+    font-size: 15px;
+}
+
+.content aside {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+.content blockquote pre {
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 0.8em;
+}

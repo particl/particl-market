@@ -14,13 +14,15 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ListingItemCreateRequest extends RequestBody implements ModelRequestInterface {
 
     public hash: string;
+
+    @IsNotEmpty()
     public msgid: string;
 
     @IsNotEmpty()
     public seller: string;
 
     @IsNotEmpty()
-    public market_id: number;
+    public market: string;
 
     public listing_item_template_id: number;
 

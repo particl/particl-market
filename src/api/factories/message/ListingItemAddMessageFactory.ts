@@ -32,6 +32,7 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
@@ -53,6 +54,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
      */
 
     public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
+
+        if (!params.listingItem) {
+            throw new MissingParamException('listingItem');
+        }
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
@@ -75,13 +80,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
         // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
-        if (params.listingItem.hash
-            && params.listingItem.hash !== message.hash) {
-            this.log.debug('params.listingItem.hash: ', params.listingItem.hash);
-            this.log.debug('message.hash: ', message.hash);
-
-            // this.log.debug('params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
-            // this.log.debug('message: ', JSON.stringify(message, null, 2));
+        if (params.listingItem.hash && params.listingItem.hash !== message.hash) {
             throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
         }
         return message;
@@ -235,10 +234,14 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             // cryptoAddress can be used to override the one set on the template
             address = cryptoAddress;
         } else {
-            address = {
-                type: itemPrice.CryptocurrencyAddress.type,
-                address: itemPrice.CryptocurrencyAddress.address
-            } as CryptoAddress;
+            if (itemPrice.CryptocurrencyAddress) {
+                address = {
+                    type: itemPrice.CryptocurrencyAddress.type,
+                    address: itemPrice.CryptocurrencyAddress.address
+                } as CryptoAddress;
+            } else {
+                address = {} as CryptoAddress;
+            }
         }
 
         return [{
@@ -284,23 +287,31 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
     private async getItemObject(value: resources.ListingItemObject): Promise<ItemObject> {
-        // check Table and Dropdown
-        if (value.type === 'TABLE') {
-            return {
-                type: 'TABLE',
-                description: value.description,
-                table: await this.getObjectDataOptions(value.ListingItemObjectDatas)
-            } as ItemObject;
-        } else if (value.type === 'DROPDOWN') {
-            return {
-                type: 'DROPDOWN',
-                description: value.description,
-                objectId: value.objectId,
-                forceInput: value.forceInput,
-                options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
-            } as ItemObject;
-        } else {
-            throw new NotImplementedException();
+        switch (value.type) {
+            case 'TABLE':
+                return {
+                    type: 'TABLE',
+                    description: value.description,
+                    table: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            case 'DROPDOWN':
+                return {
+                    type: 'DROPDOWN',
+                    description: value.description,
+                    objectId: value.objectId,
+                    forceInput: value.forceInput,
+                    options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            case 'CHECKBOX':
+                return {
+                    type: 'CHECKBOX',
+                    description: value.description,
+                    objectId: value.objectId,
+                    forceInput: value.forceInput,
+                    options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+                } as ItemObject;
+            default:
+                throw new NotImplementedException();
         }
     }
 

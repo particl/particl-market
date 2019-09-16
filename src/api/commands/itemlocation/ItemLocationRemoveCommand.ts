@@ -17,6 +17,7 @@ import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -73,6 +74,11 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
             throw new ModelNotFoundException('ItemLocation');
         }
 
+        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+        if (!isModifiable) {
+            throw new ModelNotModifiableException('ListingItemTemplate');
+        }
+
         data.params[0] = listingItemTemplate;
 
         return data;
@@ -89,5 +95,9 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
 
     public description(): string {
         return 'Remove and destroy an item location associated with listingItemTemplateId.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

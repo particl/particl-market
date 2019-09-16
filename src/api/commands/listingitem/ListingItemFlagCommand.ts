@@ -62,13 +62,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // get the ListingItem market
-        const market: resources.Market = listingItem.Market;
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, listingItem.market)
+            .then(value => value.toJSON()); // throws if not found
 
         // send from the template profiles address
         const fromAddress = profile.address;
 
         // send to given market address
-        const toAddress = market.address;
+        const toAddress = market.receiveAddress;
 
         const postRequest = {
             sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),
@@ -86,7 +87,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: listingItemHash
+     *  [0]: listingItemId
      *  [1]: profileId
      *  [2]: reason, optional
      *
@@ -96,18 +97,18 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('listingItemHash');
+            throw new MissingParamException('listingItemId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('profileId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('listingItemHash', 'string');
+        if (data.params[0] && typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
         } else if (data.params[1] && typeof data.params[1] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         }
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(data.params[0])
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0])
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
@@ -137,17 +138,21 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemHash> <profileId> ';
+        return this.getName() + ' <listingItemId> <profileId> [reason]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemHash>  - String - The hash of the ListingItem we want to report. \n'
+            + '    <listingItemId>    - Numeric - The ID of the ListingItem we want to report. \n'
             + '    <profileId>        - Numeric - The ID of the Profile used to report the item. \n'
             + '    <reason>           - String - Optional reason for the flagging';
     }
 
     public description(): string {
         return 'Report a ListingItem.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

@@ -176,22 +176,30 @@ export class ItemInformationService {
     }
 
     public async destroy(id: number): Promise<void> {
+        const itemImage: resources.ItemImage = await this.findOne(id, true).then(value => value.toJSON());
+        // find the existing one without related
+        const itemInformation: resources.ItemInformation = await this.findOne(id, true).then(value => value.toJSON());
+
+        // manually remove images
+        for (const image of itemInformation.ItemImages) {
+            await this.itemImageService.destroy(image.id);
+        }
         await this.itemInformationRepo.destroy(id);
     }
 
     /**
      * fetch or create the given ItemCategory from db
-     * @param itemCategory
      * @returns {Promise<ItemCategory>}
+     * @param createRequest
      */
-    private async getOrCreateItemCategory(itemCategory: ItemCategoryCreateRequest): Promise<ItemCategory> {
+    private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        if (itemCategory.key) {
-            result = await this.itemCategoryService.findOneByKey(itemCategory.key);
-        } else if (itemCategory.id) {
-            result = await this.itemCategoryService.findOne(itemCategory.id);
+        if (createRequest.key) {
+            result = await this.itemCategoryService.findOneByKey(createRequest.key);
+        } else if (createRequest.id) {
+            result = await this.itemCategoryService.findOne(createRequest.id);
         } else {
-            result = await this.itemCategoryService.create(itemCategory);
+            result = await this.itemCategoryService.create(createRequest);
         }
 
         return result;

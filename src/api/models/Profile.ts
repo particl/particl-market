@@ -8,6 +8,8 @@ import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
 import { ShoppingCart } from './ShoppingCart';
+import { Market } from './Market';
+import { Wallet } from './Wallet';
 
 export class Profile extends Bookshelf.Model<Profile> {
 
@@ -15,7 +17,11 @@ export class Profile extends Bookshelf.Model<Profile> {
         'ShippingAddresses',
         'CryptocurrencyAddresses',
         'FavoriteItems',
-        'ShoppingCart'
+        'ShoppingCart',
+        'Markets',
+        'Markets.Wallet',
+        'Wallets',
+        'Wallets.Markets'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
@@ -82,4 +88,13 @@ export class Profile extends Bookshelf.Model<Profile> {
     public ShoppingCart(): Collection<ShoppingCart> {
         return this.hasMany(ShoppingCart, 'profile_id', 'id');
     }
+
+    public Markets(): Collection<Market> {
+        return this.hasMany(Market, 'profile_id', 'id');
+    }
+
+    public Wallets(): Collection<Wallet> {
+        return this.hasMany(Wallet, 'profile_id', 'id');
+    }
+
 }

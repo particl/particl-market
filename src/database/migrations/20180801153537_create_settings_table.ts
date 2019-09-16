@@ -13,11 +13,17 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('key').notNullable();
             table.string('value').notNullable();
 
-            table.integer('profile_id').unsigned().notNullable();
+            table.integer('profile_id').unsigned().nullable();
             table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
+
+            table.integer('market_id').unsigned().nullable();
+            table.foreign('market_id').references('id').inTable('markets').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
+            table.unique(['key', 'profile_id', 'market_id']);
+
         })
     ]);
 };

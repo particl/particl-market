@@ -11,7 +11,7 @@
  */
 
 import { Factory } from '../../core/database/Factory';
-import { User } from '../../api/models/User';
+import { Profile } from '../../api/models/Profile';
 
 export * from '../../core/database/Factory';
 
@@ -19,9 +19,10 @@ export * from '../../core/database/Factory';
 const factory = Factory.getInstance();
 
 /**
- * USER - Factory
+ * Profile - Factory
  */
-factory.define(User, (faker: Faker.FakerStatic) => {
+factory.define(Profile, (faker: Faker.FakerStatic) => {
+    // TODO: ...
     const gender = faker.random.number(1);
     const fn = faker.name.firstName(gender);
     const ln = faker.name.lastName(gender);
@@ -30,7 +31,6 @@ factory.define(User, (faker: Faker.FakerStatic) => {
         firstName: fn,
         lastName: ln,
         email: e,
-        auth0UserId: 'auth0|' + e,
         picture: faker.internet.avatar()
     };
 });

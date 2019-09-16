@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import {SmsgResendCommand} from '../api/commands/smsg/SmsgResendCommand';
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -17,6 +19,7 @@ export const Targets = {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
+        Comment: 'Comment',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
@@ -51,13 +54,14 @@ export const Targets = {
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
         SmsgMessage: 'SmsgMessage',
-        User: 'User',
-        Vote: 'Vote'
+        Vote: 'Vote',
+        Wallet: 'Wallet'
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
+        CommentRepository: 'CommentRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         CurrencyPriceRepository: 'CurrencyPriceRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
@@ -92,8 +96,8 @@ export const Targets = {
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
         SmsgMessageRepository: 'SmsgMessageRepository',
-        UserRepository: 'UserRepository',
-        VoteRepository: 'VoteRepository'
+        VoteRepository: 'VoteRepository',
+        WalletRepository: 'WalletRepository'
     },
     Service:     {
         action: {
@@ -103,6 +107,7 @@ export const Targets = {
             BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
             BidRejectActionService: 'BidRejectActionService',
+            CommentAddActionService: 'CommentAddActionService',
             EscrowCompleteActionService: 'EscrowCompleteActionService',
             EscrowLockActionService: 'EscrowLockActionService',
             EscrowRefundActionService: 'EscrowRefundActionService',
@@ -117,11 +122,13 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        DefaultSettingService: 'DefaultSettingService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
             BidService: 'BidService',
+            CommentService: 'CommentService',
             CryptocurrencyAddressService: 'CryptocurrencyAddressService',
             CurrencyPriceService: 'CurrencyPriceService',
             EscrowRatioService: 'EscrowRatioService',
@@ -156,8 +163,8 @@ export const Targets = {
             ShoppingCartItemService: 'ShoppingCartItemService',
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
-            UserService: 'UserService',
-            VoteService: 'VoteService'
+            VoteService: 'VoteService',
+            WalletService: 'WalletService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -175,6 +182,7 @@ export const Targets = {
             AdminCommand: 'AdminCommand'
         },
         BaseCommand: 'BaseCommand',
+        BaseSearchCommand: 'BaseSearchCommand',
         bid: {
             BidAcceptCommand: 'BidAcceptCommand',
             BidCancelCommand: 'BidCancelCommand',
@@ -185,6 +193,13 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        comment: {
+            CommentPostCommand: 'CommentPostCommand',
+            CommentGetCommand: 'CommentGetCommand',
+            CommentSearchCommand: 'CommentSearchCommand',
+            CommentCountCommand: 'CommentCountCommand',
+            CommentRootCommand: 'CommentRootCommand'
+        },
         currencyprice: {
             CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         },
@@ -251,8 +266,8 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
-            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
+            ListingItemTemplateCompressCommand: 'ListingItemTemplateCompressCommand',
             ListingItemTemplateFeatureImageCommand: 'ListingItemTemplateFeatureImageCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
@@ -261,10 +276,11 @@ export const Targets = {
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
             ListingItemTemplateSizeCommand: 'ListingItemTemplateSizeCommand'
         },
-        ListingItemTemplateCloneCommand: 'ListingItemTemplateCloneCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
+            MarketRemoveCommand: 'MarketRemoveCommand',
+            MarketSetDefaultCommand: 'MarketSetDefaultCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
@@ -278,7 +294,8 @@ export const Targets = {
         orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemShipCommand: 'OrderItemShipCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemHistoryCommand: 'OrderItemHistoryCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -333,7 +350,13 @@ export const Targets = {
         },
         smsg: {
             SmsgRootCommand: 'SmsgRootCommand',
+            SmsgRemoveCommand: 'SmsgRemoveCommand',
+            SmsgResendCommand: 'SmsgResendCommand',
             SmsgSearchCommand: 'SmsgSearchCommand'
+        },
+        wallet: {
+            WalletRootCommand: 'WalletRootCommand',
+            WalletListCommand: 'WalletListCommand'
         },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
@@ -347,16 +370,19 @@ export const Targets = {
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
                 HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
-                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
+                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig',
+                HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig'
             },
             HashableField: 'HashableField',
             message: {
                 HashableBidMessageConfig: 'HashableBidMessageConfig',
                 HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
-                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
+                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig',
+                HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig'
             },
             model: {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
@@ -374,11 +400,13 @@ export const Targets = {
             MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
-            VoteMessageFactory: 'VoteMessageFactory'
+            VoteMessageFactory: 'VoteMessageFactory',
+            CommentAddMessageFactory: 'CommentAddMessageFactory'
         },
         MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
             BidFactory: 'BidFactory',
+            CommentFactory: 'CommentFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             ModelCreateParams: 'ModelCreateParams',
@@ -416,7 +444,8 @@ export const Targets = {
             ListingItemAddActionListener: 'ListingItemAddActionListener',
             OrderItemShipActionListener: 'OrderItemShipActionListener',
             ProposalAddActionListener: 'ProposalAddActionListener',
-            VoteActionListener: 'VoteActionListener'
+            VoteActionListener: 'VoteActionListener',
+            CommentAddActionListener: 'CommentAddActionListener'
         },
         ActionListenerInterface: 'ActionListenerInterface',
         BaseActionListenr: 'BaseActionListenr',

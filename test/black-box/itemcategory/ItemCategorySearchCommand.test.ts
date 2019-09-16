@@ -21,6 +21,9 @@ describe('ItemCategorySearchCommand', () => {
     const categoryListCommand = Commands.CATEGORY_LIST.commandName;
     const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
 
+    let market: resources.Market;
+    let profile: resources.Profile;
+
     let rootCategory: resources.ItemCategory;
     let customCategory: resources.ItemCategory;
 
@@ -32,6 +35,9 @@ describe('ItemCategorySearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        market = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+
         // first get the rootCategory
         let res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
@@ -40,6 +46,7 @@ describe('ItemCategorySearchCommand', () => {
 
         // create a custom category
         res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            market.id,
             categoryData.name,
             categoryData.description,
             rootCategory.id
@@ -69,7 +76,7 @@ describe('ItemCategorySearchCommand', () => {
     test('Should fail to searchBy ItemCategories because missing searchBy string', async () => {
         const res = await testUtil.rpc(categoryCommand, [categorySearchCommand]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('searchBy').getMessage());
     });
 
