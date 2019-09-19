@@ -263,7 +263,7 @@ export class CommentAddActionService extends BaseActionService {
                     hash: comment.ParentComment.hash
                 };
             }
-            
+
             this.notificationService.send(notification);
         } catch (e) {
             this.log.error('Error processing comment notifications: ', e);
