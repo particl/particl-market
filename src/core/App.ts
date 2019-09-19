@@ -66,6 +66,10 @@ export class App {
         return this.server;
     }
 
+    get SocketIOServer(): SocketIoServer {
+        return this.socketIoServer;
+    }
+
     public Logger(scope: string): Logger {
         return new Logger(scope || __filename);
     }
