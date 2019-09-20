@@ -1,6 +1,6 @@
 # RPC API
 
-By default the Marketplace RPC endpoint can be found at /api/rpc.
+By default the Marketplace RPC endpoint can be found at `/api/rpc`.
 
 ## Making a Request
 
