@@ -133,6 +133,8 @@ export class ServerStartedListener implements interfaces.Listener {
                         if (process.env.NODE_ENV !== 'test') {
                             this.expiredListingItemProcessor.scheduleProcess();
                             this.proposalResultProcessor.scheduleProcess();
+
+                            // fetch all unread messages
                             this.coreMessageProcessor.schedulePoll();
                             this.messageProcessor.schedulePoll();
                         }

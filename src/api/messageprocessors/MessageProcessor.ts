@@ -113,55 +113,55 @@ export class MessageProcessor implements MessageProcessorInterface {
                 // send event to the eventTypes processor
                 switch (smsgMessage.type) {
                     case MPAction.MPA_LISTING_ADD:
-                        this.log.debug('SENDING: ', ListingItemAddActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', ListingItemAddActionListener.Event.toString());
                         this.eventEmitter.emit(ListingItemAddActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_BID:
-                        this.log.debug('SENDING: ', BidActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', BidActionListener.Event.toString());
                         this.eventEmitter.emit(BidActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_ACCEPT:
-                        this.log.debug('SENDING: ', BidAcceptActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', BidAcceptActionListener.Event.toString());
                         this.eventEmitter.emit(BidAcceptActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_CANCEL:
-                        this.log.debug('SENDING: ', BidCancelActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', BidCancelActionListener.Event.toString());
                         this.eventEmitter.emit(BidCancelActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_REJECT:
-                        this.log.debug('SENDING: ', BidRejectActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', BidRejectActionListener.Event.toString());
                         this.eventEmitter.emit(BidRejectActionListener.Event, marketplaceEvent);
                         break;
                     case MPAction.MPA_LOCK:
-                        this.log.debug('SENDING: ', EscrowLockActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', EscrowLockActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowLockActionListener.Event, marketplaceEvent);
                         break;
                     case MPActionExtended.MPA_COMPLETE:
-                        this.log.debug('SENDING: ', EscrowCompleteActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', EscrowCompleteActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowCompleteActionListener.Event, marketplaceEvent);
                         break;
                     case MPActionExtended.MPA_SHIP:
-                        this.log.debug('SENDING: ', OrderItemShipActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', OrderItemShipActionListener.Event.toString());
                         this.eventEmitter.emit(OrderItemShipActionListener.Event, marketplaceEvent);
                         break;
                     case MPActionExtended.MPA_RELEASE:
-                        this.log.debug('SENDING: ', EscrowReleaseActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', EscrowReleaseActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowReleaseActionListener.Event, marketplaceEvent);
                         break;
                     case MPActionExtended.MPA_REFUND:
-                        this.log.debug('SENDING: ', EscrowRefundActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', EscrowRefundActionListener.Event.toString());
                         this.eventEmitter.emit(EscrowRefundActionListener.Event, marketplaceEvent);
                         break;
                     case GovernanceAction.MPA_PROPOSAL_ADD:
-                        this.log.debug('SENDING: ', ProposalAddActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', ProposalAddActionListener.Event.toString());
                         this.eventEmitter.emit(ProposalAddActionListener.Event, marketplaceEvent);
                         break;
                     case GovernanceAction.MPA_VOTE:
-                        this.log.debug('SENDING: ', VoteActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', VoteActionListener.Event.toString());
                         this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
                         break;
                     case CommentAction.MPA_COMMENT_ADD:
-                        this.log.debug('SENDING: ', CommentAddActionListener.Event.toString());
+                        this.log.debug('EMITTING: ', CommentAddActionListener.Event.toString());
                         this.eventEmitter.emit(CommentAddActionListener.Event, marketplaceEvent);
                         break;
                     default:

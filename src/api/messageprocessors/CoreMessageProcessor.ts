@@ -55,7 +55,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
         for (const message of messages) {
             // todo: this is an old problem and should be tested again if we could get rid of this now
-            // get the message again using smsg, since the smsginbox doesnt return expiration
+            // get the message again using smsg, since the smsginbox doesnt return location && read (0.18.1.4)
             const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
 
             // check whether an SmsgMessage with the same msgid can already be found
