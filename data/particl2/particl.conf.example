@@ -23,8 +23,9 @@ printtoconsole=1
 debuglogfile=debug.log # | 0
 
 walletrejectlongchains=true
-zmqpubsmsg=tcp://127.0.0.1:29001
-zmqpubrawblock=tcp://127.0.0.1:29001
-zmqpubrawtx=tcp://127.0.0.1:29001
-zmqpubhashtx=tcp://127.0.0.1:29001
-zmqpubhashblock=tcp://127.0.0.1:29001
+zmqpubsmsg=tcp://127.0.0.1:54235
+zmqpubrawblock=tcp://127.0.0.1:54235
+zmqpubrawtx=tcp://127.0.0.1:54235
+zmqpubhashtx=tcp://127.0.0.1:54235
+zmqpubhashblock=tcp://127.0.0.1:54235
+

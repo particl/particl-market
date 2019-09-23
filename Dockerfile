@@ -1,4 +1,5 @@
-FROM mhart/alpine-node:9.6.1
+FROM mhart/alpine-node:10.16.3
+# 9.6.1
 
 ENV BUILD_PACKAGES git wget curl bash make gcc g++ python libc6-compat build-base openssl-dev ca-certificates libssl1.0 openssl libstdc++
 ENV NPM_PACKAGES wait-port yarn ts-node tslint typescript

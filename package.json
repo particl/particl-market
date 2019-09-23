@@ -108,6 +108,7 @@
     "multer": "^1.4.1",
     "omp-lib": "0.1.113",
     "particl-bitcore-lib": "^0.16.0",
+    "particl-zmq": "^1.0.4",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",
@@ -125,9 +126,10 @@
     "tar": "^2.2.2",
     "ts-enums": "0.0.6",
     "tslib": "^1.7.1",
+    "typescript": "2.4.1",
     "web-request": "^1.0.7",
     "winston": "^2.4.4",
-    "zeromq-ng": "^5.0.0-beta.15"
+    "zeromq": "^5.1.0"
   },
   "jest": {
     "transform": {
@@ -182,6 +184,7 @@
     "@types/request-promise": "^4.1.36",
     "@types/serve-favicon": "^2.2.28",
     "@types/winston": "^2.3.3",
+    "@types/zeromq": "^4.6.2",
     "cross-env": "^5.0.1",
     "jest": "^20.0.4",
     "jest-cli": "^20.0.4",
@@ -195,7 +198,6 @@
     "tslint": "5.11.0",
     "tslint-clean-code": "^0.2.7",
     "tslint-sonarts": "^1.8.0",
-    "typescript": "^2.4.1",
     "zombie": "^6.1.2"
   }
 }
