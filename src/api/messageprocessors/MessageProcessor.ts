@@ -37,7 +37,7 @@ import { EscrowCompleteActionListener } from '../listeners/action/EscrowComplete
 import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
-import {SmsgMessageSearchOrderField} from '../enums/SearchOrderField';
+import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
 
 export class MessageProcessor implements MessageProcessorInterface {
 

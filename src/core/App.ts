@@ -40,7 +40,6 @@ export class App {
 
     constructor() {
 
-        console.log('App() constructor');
         // if envConfig isn't given, use ProductionEnvConfig
         this.bootstrapApp = new Bootstrap();
 
@@ -49,7 +48,6 @@ export class App {
         loggerConfig.configure();
 
         if (process.env.EXPRESS_ENABLED) {
-            this.log.info('Defining app...');
             this.bootstrapApp.defineExpressApp(this.express);
         }
     }
