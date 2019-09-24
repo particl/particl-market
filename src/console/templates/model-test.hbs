@@ -21,6 +21,8 @@ describe('{{name.capitalize}}', () => {
 
     let testDataService: TestDataService;
     let {{name.camelCase}}Service: {{name.capitalize}}Service;
+    let profileService: ProfileService;
+    let marketService: MarketService;
 
     let {{name.camelCase}}: resources.{{name.capitalize}};
 
@@ -44,6 +46,8 @@ describe('{{name.capitalize}}', () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
+
+
     });
 
     afterAll(async () => {
@@ -60,12 +64,10 @@ describe('{{name.capitalize}}', () => {
         {{/each}}
     });
 
-    test('Should throw ValidationException because we want to create a empty {{name.lowerCase}}', async () => {
-        expect.assertions(1);
-        await {{name.camelCase}}Service.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
+    test('Should list {{name.capitalize}}s with our new create one', async () => {
+        const {{name.camelCase}}s: resources.{{name.capitalize}}[] = await {{name.camelCase}}Service.findAll()
+            .then(value => value.toJSON());
+        expect({{name.camelCase}}s.length).toBe(1);
 
     test('Should list {{name.lowerCase}}s with our new create one', async () => {
 
@@ -94,7 +96,7 @@ describe('{{name.capitalize}}', () => {
         {{/each}}
     });
 
-    test('Should delete the {{name.lowerCase}}', async () => {
+    test('Should delete the {{name.capitalize}}', async () => {
         expect.assertions(1);
         await {{name.camelCase}}Service.destroy({{name.camelCase}}.id);
         await {{name.camelCase}}Service.findOne({{name.camelCase}}.id).catch(e =>

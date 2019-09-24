@@ -1,0 +1,36 @@
+title: particl-market docs
+
+language_tabs:
+#    - shell
+    - json
+#    - shell
+#    - javascript
+
+# todo: add alias to language_tabs
+#language_tabs_name:
+#   - cli
+#    - json
+#    - curl
+#    - javascript
+
+toc_footers:
+    - For <a href='https://github.com/particl/particl-market'>particl-market</a> version 0.1.6
+    - Generated with <a href='https://github.com/xludx/node-slate-lib'>node-slate-lib</a>
+
+includes:
+    - introduction
+    - installation
+    - rpc
+    - commands
+    - commands/profile
+    - commands/market
+    - models
+    - models/profile
+    - exceptions
+    - changelog
+#    - kittens
+#    - errors
+
+search: true
+
+highlight_theme: monokai

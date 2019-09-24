@@ -21,8 +21,8 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { ProposalService } from '../../services/model/ProposalService';
-import {OrderItemStatus} from '../../enums/OrderItemStatus';
-import {OrderStatus} from '../../enums/OrderStatus';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { OrderStatus } from '../../enums/OrderStatus';
 
 export class OrderItemShipActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 

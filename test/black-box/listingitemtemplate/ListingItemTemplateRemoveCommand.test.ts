@@ -126,19 +126,19 @@ describe('ListingItemTemplateRemoveCommand', () => {
     test('Should fail to remove ListingItemTemplate because ListingItemTemplate has related ListingItems', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            true,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            defaultProfile.id,  // profileId
+            true,               // generateListingItem
+            defaultMarket.id    // marketId
         ]).toParamsArray();
 
         // generate ListingItemTemplate with ListingItem
@@ -156,7 +156,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
         expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
 
-        // remove Listing item template
+        // remove ListingItemTemplate
         const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
         result.expectJson();
 //        result.expectStatusCode(400);

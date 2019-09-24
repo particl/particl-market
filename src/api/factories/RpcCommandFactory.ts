@@ -162,6 +162,12 @@ import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
 import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
 
+import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
+import { CommentPostCommand } from '../commands/comment/CommentPostCommand';
+import { CommentSearchCommand } from '../commands/comment/CommentSearchCommand';
+import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
+import { CommentCountCommand } from '../commands/comment/CommentCountCommand';
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -178,6 +184,12 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.comment.CommentRootCommand) private commentRootCommand: CommentRootCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentPostCommand) private commentPostCommand: CommentPostCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentGetCommand) private commentGetCommand: CommentGetCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentSearchCommand) private commentSearchCommand: CommentSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.comment.CommentCountCommand) private commentCountCommand: CommentCountCommand,
 
         @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
 
@@ -336,6 +348,12 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+
+        this.commands.push(commentRootCommand);
+        this.commands.push(commentPostCommand);
+        this.commands.push(commentGetCommand);
+        this.commands.push(commentSearchCommand);
+        this.commands.push(commentCountCommand);
 
         this.commands.push(adminCommand);
 

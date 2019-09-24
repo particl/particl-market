@@ -75,6 +75,7 @@ export class DefaultProfileService {
 
             // create the default profile setting
             await this.settingService.create({
+                profile_id: profile.id,
                 key: SettingValue.DEFAULT_PROFILE_ID.toString(),
                 value: '' + profile.id
             } as SettingCreateRequest);

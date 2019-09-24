@@ -37,6 +37,10 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         return helpStr;
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public generateHelp( commands: string[], rpcCommandFactory: RpcCommandFactory ): string {
         if ( commands.length <= 0 ) {
             let helpStr = '';

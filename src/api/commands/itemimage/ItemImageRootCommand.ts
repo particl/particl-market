@@ -28,6 +28,10 @@ export class ItemImageRootCommand extends BaseCommand implements RpcCommandInter
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (list|add|remove)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class ItemImageRootCommand extends BaseCommand implements RpcCommandInter
 
     public description(): string {
         return 'Commands for managing item images.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

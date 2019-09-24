@@ -28,6 +28,10 @@ export class ShoppingCartItemRootCommand extends BaseCommand implements RpcComma
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + '(list|add|remove)  -  ' + this.description();
     }
@@ -37,6 +41,11 @@ export class ShoppingCartItemRootCommand extends BaseCommand implements RpcComma
     }
 
     public description(): string {
-        return 'Commands for managing Shopping Cart Items.';
+        return 'Commands for managing ShoppingCartItems.';
     }
+
+    public example(): string {
+        return this.getName() + '';
+    }
+
 }

@@ -49,7 +49,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
         // this.log.debug('INCOMING messages.length: ', messages.length);
 
-        // - fetch the CoreSmsgMessage from core
+        // - fetch the CoreSmsgMessages from core one by one
         // - create SmsgMessagesCreateRequests
         // - then save the CoreSmsgMessage to the db as SmsgMessages
 
@@ -58,14 +58,14 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
 
-            // check whether an SmsgMessage with the msgid was already received and processed
+            // check whether an SmsgMessage with the same msgid can already be found
             const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msg.msgid, ActionDirection.INCOMING)
                 .then(value => value.toJSON())
                 .catch(error => {
                     return undefined;
                 });
 
-            // in case of resent SmsgMessasge, check whether an SmsgMessage with the previously sent msgid was already received and processed
+            // in case of resent SmsgMessasge, check whether an SmsgMessage with the previously sent msgid can already be found
             const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);
             const resentMsgIdKVS = _.find(marketplaceMessage.action.objects, (kvs: KVS) => {
                 return kvs.key === ActionMessageObjects.RESENT_MSGID;
@@ -73,6 +73,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
             let existingResentSmsgMessage: resources.SmsgMessage | undefined;
             if (resentMsgIdKVS) {
+                this.log.debug('SmsgMessage was resent: ', resentMsgIdKVS.value);
+
                 existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
                     .then(value => value.toJSON())
                     .catch(error => {
@@ -82,8 +84,9 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                 existingResentSmsgMessage = undefined;
             }
 
+            // if the msgid exists OR the resent msgid exists, skip
             if (existingSmsgMessage !== undefined || existingResentSmsgMessage !== undefined) {
-                this.log.debug('SmsgMessage has already been received, skipping.');
+                this.log.debug('SmsgMessage with same msgid has already been received, skipping.');
             } else {
                 const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
                     direction: ActionDirection.INCOMING,
@@ -95,6 +98,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         }
 
         // this.log.debug('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
+        const msgids = smsgMessageCreateRequests.map(cr => cr.msgid);
+        this.log.debug('SAVING msgids:', JSON.stringify(msgids, null, 2));
 
         // store all in db
         await this.smsgMessageService.createAll(smsgMessageCreateRequests)
@@ -102,7 +107,9 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                 // after messages are stored, remove them
                 for (const msgid of idsProcessed) {
                     await this.smsgService.smsg(msgid, true, true)
-                        .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
+                        .then(value => {
+                            this.log.debug('REMOVED: ', JSON.stringify(value, null, 2));
+                        })
                         .catch(reason => {
                             this.log.error('ERROR: ', reason);
                         });

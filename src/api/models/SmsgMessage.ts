@@ -2,13 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {Bookshelf as Database, Bookshelf} from '../../config/Database';
-import {Collection, Model} from 'bookshelf';
-import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
+import { Bookshelf as Database, Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import * as _ from 'lodash';
-import {Logger as LoggerType} from '../../core/Logger';
-import {ActionDirection} from '../enums/ActionDirection';
-import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { SearchOrder } from '../enums/SearchOrder';
+import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -28,6 +30,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC.toString();
+        options.orderField = options.orderField || SmsgMessageSearchOrderField.SENT.toString();
+
+        if (!options.age) {
+            options.age = 0;
+        }
 
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
@@ -49,9 +57,9 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
                 }
 
                 qb.where('smsg_messages.created_at', '<', Date.now() - options.age);
-
+                // qb.debug(true);
             })
-            .orderBy(options.orderByColumn, options.order)
+            .orderBy('smsg_messages.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

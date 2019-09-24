@@ -36,17 +36,21 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
         return this.shoppingCartService.destroy(data.params[0]);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <cartId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart we want to remove. ';
+            + '    <cartId>                 - The Id of the ShoppingCart we want to remove. ';
     }
 
     public description(): string {
-        return 'Destroy a shopping cart associated with given cartId.';
+        return 'Destroy a ShoppingCart associated with given cartId.';
     }
 
     public example(): string {

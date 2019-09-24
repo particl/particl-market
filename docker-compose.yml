@@ -101,7 +101,7 @@ services:
 #      - PORT=4200
 
   particld1:
-    image: ludx/particl:0.18.1.3 # master # 0.16.2.0
+    image: ludx/particl:0.18.1.4
     volumes:
       - ./data/particl1:/root/.particl:cached
     ports:
@@ -132,7 +132,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:0.18.1.3 # master # 0.16.2.0
+    image: ludx/particl:0.18.1.4
     volumes:
       - ./data/particl2:/root/.particl:cached
     ports:

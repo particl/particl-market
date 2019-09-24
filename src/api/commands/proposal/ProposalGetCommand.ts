@@ -55,12 +55,17 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
         return data;
     }
 
+    public usage(): string {
+        return this.getName() + ' <proposalHash>';
+    }
+
     public help(): string {
-        return this.getName() + ' <proposalHash> ';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <proposalHash>                - string - The hash of the Proposal. \n';
     }
 
     public description(): string {
-        return 'Get a proposal by its hash. ';
+        return 'Get Proposal by its hash. ';
     }
 
     public example(): string {

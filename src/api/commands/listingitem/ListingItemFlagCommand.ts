@@ -151,4 +151,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public description(): string {
         return 'Report a ListingItem.';
     }
+
+    public example(): string {
+        return '';
+    }
 }

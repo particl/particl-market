@@ -162,4 +162,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         return 'Release an escrow.';
     }
 
+    public example(): string {
+        return '';
+    }
 }

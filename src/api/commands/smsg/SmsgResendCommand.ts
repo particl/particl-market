@@ -20,9 +20,7 @@ import { SmsgService } from '../../services/SmsgService';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
@@ -64,6 +62,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
             value: smsgMessage.msgid
         } as KVS);
 
+        this.log.debug('RESENDING: ', JSON.stringify(marketplaceMessage, null, 2));
         const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, sendParams);
         await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
 
@@ -72,7 +71,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: msgId
+     *  [0]: msgid
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -81,12 +80,12 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('msgId');
+            throw new MissingParamException('msgid');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('msgId', 'string');
+            throw new InvalidParamException('msgid', 'string');
         }
 
         // make sure an outgoing SmsgMessage with the msgid exists
@@ -103,12 +102,12 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' <smsgId> ';
+        return this.getName() + ' <msgid> ';
     }
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <msgId>              -  The msgId of the SmsgMessage we want to resend. \n';
+            + '    <msgid>              -  The msgid of the SmsgMessage we want to resend. \n';
     }
 
     public description(): string {

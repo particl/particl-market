@@ -16,7 +16,7 @@ export const envConfig = (): EnvConfig => {
     console.log('envConfig(), ...');
 
     // if (config) {
-    //    console.log('envConfig(), allready created...');
+    //    console.log('envConfig(), already created...');
     //    return config;
     // }
 

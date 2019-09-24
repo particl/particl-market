@@ -43,8 +43,12 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
         return response;
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
-        return this.getName() + ' <command> [<arg> [<arg> [ ... ]]]  -  ' + this.description();
+        return this.getName() + ' <command> [arg] [arg] [...]  -  ' + this.description();
     }
 
     public help(): string {
@@ -55,5 +59,9 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
 
     public description(): string {
         return 'Perform an rpc command on the Particl daemon.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

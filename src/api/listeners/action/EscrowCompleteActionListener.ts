@@ -84,7 +84,7 @@ export class EscrowCompleteActionListener extends BaseActionListenr implements i
             })
             .catch(reason => {
                 // could not find previous bid
-                this.log.error('ERROR, reason: ', reason);
+                this.log.error('ERROR, (MPA_COMPLETE) reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

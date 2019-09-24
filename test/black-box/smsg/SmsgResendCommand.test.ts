@@ -11,6 +11,7 @@ import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('SmsgResendCommand', () => {
 
@@ -31,9 +32,6 @@ describe('SmsgResendCommand', () => {
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
-    const bidCommand = Commands.BID_ROOT.commandName;
-    const bidSendCommand = Commands.BID_SEND.commandName;
-    const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
@@ -47,6 +45,8 @@ describe('SmsgResendCommand', () => {
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const ORDER = SearchOrder.ASC;
+    const ORDER_FIELD = SmsgMessageSearchOrderField.RECEIVED;
+
     const DAYS_RETENTION = 2;
 
     let sent = false;
@@ -195,7 +195,7 @@ describe('SmsgResendCommand', () => {
 
         const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
             smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD],
             15 * 60,
             200,
             '[0].type',
@@ -224,9 +224,7 @@ describe('SmsgResendCommand', () => {
         res.expectStatusCode(200);
 
         res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -245,9 +243,7 @@ describe('SmsgResendCommand', () => {
         res.expectStatusCode(200);
 
         res = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -261,7 +257,7 @@ describe('SmsgResendCommand', () => {
 
         const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
             smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER],
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD],
             15 * 60,
             200,
             '[0].type',

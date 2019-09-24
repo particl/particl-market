@@ -37,17 +37,21 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
         return await this.shoppingCartService.findOne(data.params[0]);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <cartId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart we want to get. ';
+            + '    <cartId>                 - The id of the ShoppingCart. ';
     }
 
     public description(): string {
-        return 'Get shopping cart by given cart id';
+        return 'Get ShoppingCart by given id';
     }
 
     public example(): string {

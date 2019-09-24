@@ -93,19 +93,28 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
+import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
+import { CommentType } from '../enums/CommentType';
+import { CommentService } from './model/CommentService';
+import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
+import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { DefaultSettingService } from './DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
-import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
-import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
-import { ActionDirection } from '../enums/ActionDirection';
-import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
-import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { GenerateSmsgMessageParams } from '../requests/testdata/GenerateSmsgMessageParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
+import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { CommentAction } from '../enums/CommentAction';
+import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
+import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
 
 export class TestDataService {
@@ -114,12 +123,12 @@ export class TestDataService {
     public ignoreTables: string[] = ['sqlite_sequence', 'version', 'version_lock', 'knex_migrations', 'knex_migrations_lock'];
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
-        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
-        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) private defaultItemCategoryService: DefaultItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) private defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) private defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultSettingService) private defaultSettingService: DefaultSettingService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -133,13 +142,14 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) public listingItemAddMessageFactory: ListingItemAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) private orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -149,7 +159,6 @@ export class TestDataService {
      * clean up the database
      * insert the default data
      *
-     * @param ignoreTables
      * @param seed
      * @returns {Promise<void>}
      */
@@ -193,8 +202,8 @@ export class TestDataService {
     /**
      * creates testdata from json
      *
-     * @param data
      * @returns {Promise<ListingItem>}
+     * @param body
      */
     @validate()
     public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
@@ -225,6 +234,9 @@ export class TestDataService {
             }
             case CreatableModel.ITEMIMAGE: {
                 return await this.itemImageService.create(body.data as ItemImageCreateRequest);
+            }
+            case CreatableModel.COMMENT: {
+                return await this.commentService.create(body.data as CommentCreateRequest);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -269,6 +281,14 @@ export class TestDataService {
             case CreatableModel.PROPOSAL: {
                 const generateParams = new GenerateProposalParams(body.generateParams);
                 return await this.generateProposals(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.COMMENT: {
+                const generateParams = new GenerateCommentParams(body.generateParams);
+                return await this.generateComments(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.SMSGMESSAGE: {
+                const generateParams = new GenerateSmsgMessageParams(body.generateParams);
+                return await this.generateSmsgMessages(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -917,6 +937,107 @@ export class TestDataService {
     }
 
     // -------------------
+    // Comments
+    private async generateComments(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateCommentParams): Promise<resources.Comment[]> {
+
+        this.log.debug('generateComments, generateParams: ', generateParams);
+
+        // TODO: add template and item generation
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        const items: resources.Comment[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const commentCreateRequest = await this.generateCommentData(generateParams);
+            const comment: resources.Comment = await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
+            items.push(comment);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateCommentData(generateParams: GenerateCommentParams): Promise<CommentCreateRequest> {
+        if (generateParams.generateListingItem) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generateListingItemTemplate) {
+            throw new NotImplementedException();
+        }
+
+        if (generateParams.generatePastComment) {
+            throw new NotImplementedException();
+        }
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let sender;
+        if (!generateParams.sender) {
+            const profile = defaultProfile.toJSON();
+            sender = profile.address;
+        } else {
+            sender = generateParams.sender;
+        }
+
+        let receiver;
+        if (!generateParams.receiver) {
+            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
+            const market = defaultMarket.toJSON();
+            receiver = market.receiveAddress;
+        } else {
+            receiver = generateParams.sender;
+        }
+
+        const target = generateParams.target;
+
+        const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
+
+        const currentTime = new Date().getTime();
+
+        // Generate comment in the past
+        const timeStart = generateParams.generatePastComment
+            ? _.random(1, (currentTime / 2), false)
+            : _.random(currentTime + 100, currentTime + 1000, false);
+
+        const timeEnd = generateParams.generatePastComment
+            ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
+            : _.random(currentTime + 1001, currentTime + 2000, false);
+
+
+        // TODO: parent comment create?
+
+        const smsgData: any = {
+            postedAt: timeStart,
+            receivedAt: timeStart,
+            expiredAt: timeEnd
+        };
+
+        const commentCreateRequest = {
+            sender,
+            receiver,
+            type,
+            target,
+            message: Faker.lorem.lines(1),
+            parentCommentId: null,
+            ...smsgData
+        } as CommentCreateRequest;
+
+        commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
+
+        return commentCreateRequest;
+    }
+
+    // -------------------
     // profiles
 
     private async generateProfiles(
@@ -1277,6 +1398,105 @@ export class TestDataService {
 
         const rand = Math.floor(Math.random() * categoryKeys.length);
         return categoryKeys[rand];
+    }
+
+    // -------------------
+    // SmsgMessages
+    private async generateSmsgMessages(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
+
+        this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
+
+        const items: resources.SmsgMessage[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const smsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
+            const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
+            items.push(smsgMessage);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateSmsgMessageData(generateParams: GenerateSmsgMessageParams): Promise<SmsgMessageCreateRequest> {
+
+        const defaultProfile = await this.profileService.getDefault();
+
+        let from: string;
+        if (!generateParams.from) {
+            const profile = defaultProfile.toJSON();
+            from = profile.address;
+        } else {
+            from = generateParams.from;
+        }
+
+        let to;
+        if (!generateParams.to) {
+            const market: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            to = market.receiveAddress;
+        } else {
+            to = generateParams.to;
+        }
+
+        const target = Faker.finance.bitcoinAddress();
+        const msgid = Faker.random.uuid();
+
+        let action: ActionMessageInterface;
+
+        let text: string;
+
+        if (generateParams.text) {
+            text = generateParams.text;
+        } else {
+            switch (generateParams.type) {
+                case MPAction.MPA_LISTING_ADD: {
+                    action = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddMessageCreateParams);
+                    break;
+                }
+                case MPAction.MPA_BID: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_PROPOSAL_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                case GovernanceAction.MPA_VOTE: {
+                    throw new MessageException('Not implemented');
+                }
+                case CommentAction.MPA_COMMENT_ADD: {
+                    throw new MessageException('Not implemented');
+                }
+                default: {
+                    throw new MessageException('Not implemented');
+                }
+            }
+
+            text = JSON.stringify({
+                version: ompVersion(),
+                action
+            } as MarketplaceMessage);
+        }
+
+        const smsgMessageCreateRequest = {
+            type: generateParams.type,
+            status: generateParams.status,
+            direction: generateParams.direction,
+            read: generateParams.read,
+            paid: generateParams.paid,
+            received: generateParams.received,
+            sent: generateParams.sent,
+            expiration: generateParams.expiration,
+            daysretention: generateParams.daysretention,
+            from,
+            to,
+            text,
+            target,
+            msgid,
+            version: '0201',
+            payloadsize: 500
+        } as SmsgMessageCreateRequest;
+
+        return smsgMessageCreateRequest;
     }
 
 }

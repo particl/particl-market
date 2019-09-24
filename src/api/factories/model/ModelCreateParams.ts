@@ -75,3 +75,14 @@ export interface SmsgMessageCreateParams extends ModelCreateParams {
     status?: SmsgMessageStatus;
     target?: string;
 }
+
+
+export interface CommentCreateParams extends ModelCreateParams {
+    msgid: string;
+    sender: string;
+    receiver: string;
+    type: string;
+    target: string;
+    message: string;
+    parentCommentId: number;
+}

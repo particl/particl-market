@@ -303,8 +303,10 @@ export class ListingItemTemplateService {
         }
 
         // manually remove images
-        for (const image of listingItemTemplate.ItemInformation.ItemImages) {
-            await this.itemImageService.destroy(image.id);
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+            for (const image of listingItemTemplate.ItemInformation.ItemImages) {
+                await this.itemImageService.destroy(image.id);
+            }
         }
 
         this.log.debug('deleting listingItemTemplate:', listingItemTemplate.id);

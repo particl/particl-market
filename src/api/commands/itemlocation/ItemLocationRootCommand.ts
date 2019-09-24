@@ -28,6 +28,10 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' (add|update|remove)  -  ' + this.description();
     }
@@ -38,5 +42,9 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
 
     public description(): string {
         return 'Commands for managing itemlocation.';
+    }
+
+    public example(): string {
+        return '';
     }
 }

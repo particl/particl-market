@@ -121,7 +121,7 @@ describe('SettingListCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.length).toBe(6);  // there are 4 settings created on startup
+        expect(result.length).toBe(7);  // there are 5 settings created on startup
     });
 
     // TODO: create market specific settings, add tests

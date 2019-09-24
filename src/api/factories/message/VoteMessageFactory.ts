@@ -23,12 +23,8 @@ export class VoteMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param {VoteMessageType} voteMessageType
-     * @param proposalHash
-     * @param proposalOptionHash
-     * @param voter
-     * @param signature
      * @returns {Promise<VoteMessage>}
+     * @param params
      */
     public async get(params: VoteMessageCreateParams): Promise<VoteMessage> {
 

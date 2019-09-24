@@ -52,7 +52,7 @@ describe('ListingItemFlagCommand', () => {
             true,                       // generateListingItemObjects
             false,                      // generateObjectDatas
             null,                       // listingItemTemplateHash
-            profile.address,     // seller
+            profile.address,            // seller
             null                        // categoryId
         ]).toParamsArray();
 

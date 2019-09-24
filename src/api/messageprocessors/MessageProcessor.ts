@@ -35,6 +35,9 @@ import { ProposalAddActionListener } from '../listeners/action/ProposalAddAction
 import { VoteActionListener } from '../listeners/action/VoteActionListener';
 import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
 import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
+import { CommentAction } from '../enums/CommentAction';
+import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
+import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -51,6 +54,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         MPActionExtended.MPA_SHIP];
     private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
     private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
+    private COMMENT_MESSAGES = [CommentAction.MPA_COMMENT_ADD];
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
@@ -156,6 +160,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                         this.log.debug('SENDING: ', VoteActionListener.Event.toString());
                         this.eventEmitter.emit(VoteActionListener.Event, marketplaceEvent);
                         break;
+                    case CommentAction.MPA_COMMENT_ADD:
+                        this.log.debug('SENDING: ', CommentAddActionListener.Event.toString());
+                        this.eventEmitter.emit(CommentAddActionListener.Event, marketplaceEvent);
+                        break;
                     default:
                         this.log.error('ERROR: Received a message type thats missing a Listener.');
                         throw new NotImplementedException();
@@ -223,6 +231,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      amount: 1,  nextInverval: this.DEFAULT_INTERVAL},
             {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
             {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
+            {types: this.COMMENT_MESSAGES,      status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
             {types: [],                         status: SmsgMessageStatus.WAITING,  amount: 10, nextInverval: this.DEFAULT_INTERVAL}
         ];
 
@@ -293,12 +302,11 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {number} amount
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    private async getSmsgMessages(types: ActionMessageTypes[],
-                                  status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
+    private async getSmsgMessages(types: ActionMessageTypes[], status: SmsgMessageStatus, amount: number = 10): Promise<resources.SmsgMessage[]> {
 
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             direction: ActionDirection.INCOMING,
             status,
             types,
