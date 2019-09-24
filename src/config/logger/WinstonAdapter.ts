@@ -27,7 +27,8 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                 level: process.env.LOG_LEVEL,
                 timestamp: true,
                 handleExceptions: Environment.isProduction(),
-                json: Environment.isProduction(),
+                // json: Environment.isProduction(),
+                json: false,
                 colorize: !Environment.isProduction()
             })
         ];
@@ -38,7 +39,8 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                     level: process.env.LOG_LEVEL,
                     filename: DataDir.getLogFile(),
                     handleExceptions: Environment.isProduction(),
-                    json: Environment.isProduction(),
+                    // json: Environment.isProduction(),
+                    json: false,
                     maxsize: 52428800, // 50MB
                     maxFiles: 5,
                     colorize: false
