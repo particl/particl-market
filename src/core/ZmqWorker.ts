@@ -3,21 +3,26 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Logger } from './Logger';
-import { Core, Types } from '../constants';
+import {Core, Targets, Types} from '../constants';
 import { EventEmitter } from './api/events';
 import { IoC } from './IoC';
 import * as ParticlZmq from 'particl-zmq';
+import {MessageProcessor} from '../api/messageprocessors/MessageProcessor';
+import {CoreMessageProcessor} from '../api/messageprocessors/CoreMessageProcessor';
 
 export class ZmqWorker {
 
     public zmq: ParticlZmq;
 
     private log = new Logger(__filename);
-    private eventEmitter;
+    private eventEmitter: EventEmitter;
+    private coreMessageProcessor: CoreMessageProcessor;
 
     constructor(ioc: IoC) {
         this.eventEmitter = ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
         this.eventEmitter.setMaxListeners(10);
+        this.coreMessageProcessor = ioc.container.getNamed<CoreMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CoreMessageProcessor);
+
         this.zmq = this.configure();
     }
 
@@ -47,8 +52,10 @@ export class ZmqWorker {
 
         particld.connect();
 
-        particld.on('smsg', (msgid) => {
+        particld.on('smsg', async (msgid) => {
             this.log.debug('ZMQ: receive(smsg): ', msgid.toString('hex'));
+            msgid = msgid.toString('hex').slice(4);
+            await this.coreMessageProcessor.process(msgid);
         });
 
         particld.on('hashblock', (hash) => {

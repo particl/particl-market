@@ -75,7 +75,7 @@ export class SmsgService {
                     numsent: 0
                 } as SmsgZmqPushResult;
             }
-            from = lastSmsgMessage.received;
+            from = Math.trunc(lastSmsgMessage.received / 1000);
         }
 
         if (!to) {

@@ -107,6 +107,7 @@
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
     "omp-lib": "0.1.113",
+    "p-queue": "^6.1.1",
     "particl-bitcore-lib": "^0.16.0",
     "particl-zmq": "^1.0.4",
     "path": "^0.12.7",
