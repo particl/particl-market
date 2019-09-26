@@ -20,6 +20,8 @@ import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
+import PQueue, { Options } from 'p-queue';
+import PriorityQueue, { PriorityQueueOptions } from 'p-queue/dist/priority-queue';
 
 export class CoreMessageProcessor implements MessageProcessorInterface {
 
@@ -27,6 +29,9 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
     private timeout: any;
     private interval = 5000; // todo: configurable
+
+    private queue: PQueue;
+    private count = 0;
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
@@ -36,6 +41,68 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
         this.log = new Logger(__filename);
+
+        const options = {
+            concurrency: 1,             // concurrency limit
+            autoStart: true,            // auto-execute tasks as soon as they're added
+            throwOnTimeout: false       // throw on timeout
+        } as Options<PriorityQueue, PriorityQueueOptions>;
+        this.queue = new PQueue(options);
+        this.queue
+            .on('active', () => {
+                // emitted as each item is processed in the queue for the purpose of tracking progress.
+                console.log(`working on item #${++this.count}. queue size: ${this.queue.size}, tasks pending: ${this.queue.pending}`);
+            })
+            .start();
+    }
+
+    public async process(msgid: string): Promise<void> {
+        this.log.debug('PROCESS msgid: ', msgid);
+
+        // get the message and set it as read
+        const msg: CoreSmsgMessage = await this.smsgService.smsg(msgid, false, true);
+
+        if (await this.isMarketplaceMessage(msg)) {
+            // has this message already been processed?
+            const isProcessed = await this.isCoreMessageAlreadyProcessed(msg);
+
+            if (!isProcessed) {
+                this.log.debug('ADD TO QUEUE msgid: ', msgid);
+
+                this.queue.add(async () => {
+
+                    // get the SmsgMessageCreateRequest
+                    const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+                        direction: ActionDirection.INCOMING,
+                        message: msg
+                    } as SmsgMessageCreateParams);
+
+                    this.log.debug('SAVING msgid:', JSON.stringify(msgid, null, 2));
+
+                    // store in db
+                    await this.smsgMessageService.create(smsgMessageCreateRequest)
+                        .then(async (value) => {
+                            const smsgMessage: resources.SmsgMessage = value.toJSON();
+                            this.log.debug('CREATED msgid:', JSON.stringify(smsgMessage.msgid, null, 2));
+
+                            // after the smsgMessage is stored, remove it
+                            await this.smsgService.smsg(msgid, true, true)
+                                .then(removed => {
+                                    this.log.debug('REMOVED: ', JSON.stringify(removed.msgid, null, 2));
+                                });
+                        });
+
+
+                });
+            } else {
+                this.log.debug('ALREADY PROCESSED msgid: ', msgid);
+            }
+
+        } else {
+            this.log.debug('Not a MarketplaceMessage, ignoring: ', msgid);
+        }
+
+        return;
     }
 
     /**
@@ -44,6 +111,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
      */
+/*
     public async process(messages: CoreSmsgMessage[]): Promise<void> {
 
         const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
@@ -153,12 +221,13 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             this.interval
         );
     }
-
+*/
     /**
      * main poller
      *
      * @returns {Promise<void>}
      */
+/*
     private async poll(): Promise<void> {
         await this.smsgService.smsgInbox('unread', '', {updatestatus: false})
             .then( async messages => {
@@ -177,4 +246,53 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                 return;
             });
     }
+*/
+    private async isMarketplaceMessage(msg: CoreSmsgMessage): Promise<boolean> {
+        try {
+            const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);
+            return marketplaceMessage.action ? true : false;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    private async isCoreMessageAlreadyProcessed(msg: CoreSmsgMessage): Promise<boolean> {
+
+        // check whether an SmsgMessage with the same msgid can already be found
+        const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msg.msgid, ActionDirection.INCOMING)
+            .then(value => value.toJSON())
+            .catch(error => {
+                return undefined;
+            });
+
+        // in case of resent SmsgMessasge, ...
+        const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);
+        const resentMsgIdKVS = _.find(marketplaceMessage.action.objects, (kvs: KVS) => {
+            return kvs.key === ActionMessageObjects.RESENT_MSGID;
+        });
+
+        let existingResentSmsgMessage: resources.SmsgMessage | undefined;
+
+        // ...check whether an SmsgMessage with the previously sent msgid can already be found
+        if (resentMsgIdKVS) {
+            this.log.debug('SmsgMessage was resent: ', resentMsgIdKVS.value);
+
+            existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
+                .then(value => value.toJSON())
+                .catch(error => {
+                    return undefined;
+                });
+        } else {
+            existingResentSmsgMessage = undefined;
+        }
+
+        // if the msgid exists OR the resent msgid exists, skip
+        if (existingSmsgMessage !== undefined || existingResentSmsgMessage !== undefined) {
+            this.log.debug('SmsgMessage with same msgid has already been processed, skipping.');
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

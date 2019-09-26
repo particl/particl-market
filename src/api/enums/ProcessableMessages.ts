@@ -9,4 +9,5 @@ import * as resources from 'resources';
 export type ProcessableMessages = ActionMessageInterface
                                 // | ListingItemMessageInterface
                                 | CoreSmsgMessage[]
-                                | resources.SmsgMessage[];
+                                | resources.SmsgMessage[]
+                                | string;
