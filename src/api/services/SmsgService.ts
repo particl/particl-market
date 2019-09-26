@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -11,13 +13,7 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MessageException } from '../exceptions/MessageException';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
-import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
-import * as resources from "resources";
-import {ActionDirection} from '../enums/ActionDirection';
-import * as _ from '@types/lodash';
-import {KVS} from 'omp-lib/dist/interfaces/common';
-import {ActionMessageObjects} from '../enums/ActionMessageObjects';
-import {SmsgMessageCreateParams} from '../factories/model/ModelCreateParams';
+import { SmsgMessageService } from './model/SmsgMessageService';
 
 export interface SmsgInboxOptions {
     updatestatus?: boolean;     // Update read status if true. default=true.
@@ -28,6 +24,17 @@ export interface CoreSmsgMessageResult {
     messages: CoreSmsgMessage[];
     result: string;             // amount
 }
+
+export interface SmsgZmqPushOptions {
+    timefrom: number;           // Skip messages received before timestamp. (core default=0)
+    timeto: number;             // Skip messages received after timestamp. (core default=max_int)
+    unreadonly: boolean;        // Resend only unread messages. (core default=true)
+}
+
+export interface SmsgZmqPushResult {
+    numsent: number;           // Number of notifications sent
+}
+
 
 export class SmsgService {
 
@@ -42,137 +49,47 @@ export class SmsgService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     /**
-     * fetch new unread messages from particl-core and save them as SmsgMessages
+     * request new unread messages to be sent through zmq
      *
+     * @param from, messages received before timestamp
+     * @param to, messages received after timestamp
      */
-    public async processNewCoreSmsgMessages(): Promise<void> {
-        const options = {
-            updatestatus: true
-        } as SmsgInboxOptions;
-
-        // fetch all unread messages and mark them read
-        await this.smsgInbox('unread', '', options)
-            .then( async messages => {
-                if (messages.result !== '0') {
-                    this.log.debug('found ' + messages.result + ' new unread smsgmessages');
-
-                    // process CoreSmsgMessage in chunks of 10 at a time for SQLite insert
-                    const messagesChunks: CoreSmsgMessage[][] = SmsgService.chunk(messages.messages, 10);
-
-                    let processedAmount = 0;
-                    for (const messagesChunk of messagesChunks) {
-                        processedAmount = processedAmount + messagesChunk.length;
-                        await this.process(messagesChunk);
-                        this.log.debug('processed ' + processedAmount + '/' + messages.result + ' of new unread smsgmessages');
-                    }
-
-                } else {
-                    this.log.debug('no new unread smsgmessages...');
-                }
-                return;
-            })
-            .catch( reason => {
-                this.log.error('fetchNewCoreSmsgMessages(), error: ' + reason);
-                return;
-            });
-    }
-
-    /**
-     * polls for new smsgmessages and stores them in the database
-     *
-     * @param {SmsgMessage[]} messages
-     * @returns {Promise<void>}
-     */
-    public async process(messages: CoreSmsgMessage[]): Promise<void> {
-
-        const smsgMessageCreateRequests: SmsgMessageCreateRequest[] = [];
-        // this.log.debug('INCOMING messages.length: ', messages.length);
-
-        // - fetch the CoreSmsgMessage from core
-        // - create SmsgMessagesCreateRequests
-        // - then save the CoreSmsgMessage to the db as SmsgMessages
-
-        for (const message of messages) {
-            // todo: this is an old problem and should be tested again if we could get rid of this now
-            // get the message again using smsg, since the smsginbox doesnt return location && read (0.18.1.4)
-            const msg: CoreSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
-
-            // check whether an SmsgMessage with the msgid was already received and processed
-            const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msg.msgid, ActionDirection.INCOMING)
-                .then(value => value.toJSON())
-                .catch(error => {
+    public async pushUnreadCoreSmsgMessages(from?: number, to?: number): Promise<SmsgZmqPushResult> {
+        if (!from) {
+            const lastSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findLast()
+                .then(value => {
+                    return value.toJSON();
+                })
+                .catch(reason => {
                     return undefined;
                 });
-
-            // in case of resent SmsgMessasge, check whether an SmsgMessage with the previously sent msgid was already received and processed
-            const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);
-            const resentMsgIdKVS = _.find(marketplaceMessage.action.objects, (kvs: KVS) => {
-                return kvs.key === ActionMessageObjects.RESENT_MSGID;
-            });
-
-            let existingResentSmsgMessage: resources.SmsgMessage | undefined;
-            if (resentMsgIdKVS) {
-                existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
-                    .then(value => value.toJSON())
-                    .catch(error => {
-                        return undefined;
-                    });
-            } else {
-                existingResentSmsgMessage = undefined;
+            if (!lastSmsgMessage) {
+                return {
+                    numsent: 0
+                } as SmsgZmqPushResult;
             }
-
-            if (existingSmsgMessage !== undefined || existingResentSmsgMessage !== undefined) {
-                this.log.debug('SmsgMessage has already been received, skipping.');
-            } else {
-                const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
-                    direction: ActionDirection.INCOMING,
-                    message: msg
-                } as SmsgMessageCreateParams);
-                smsgMessageCreateRequests.push(smsgMessageCreateRequest);
-            }
-
+            from = lastSmsgMessage.received;
         }
 
-        // this.log.debug('process(), smsgMessageCreateRequests: ', JSON.stringify(smsgMessageCreateRequests, null, 2));
+        if (!to) {
+            to = Math.trunc(Date.now() / 1000);
+        }
 
-        // store all in db
-        await this.smsgMessageService.createAll(smsgMessageCreateRequests)
-            .then(async (idsProcessed) => {
-                // after messages are stored, remove them
-                for (const msgid of idsProcessed) {
-                    await this.smsgService.smsg(msgid, true, true)
-                        .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
-                        .catch(reason => {
-                            this.log.error('ERROR: ', reason);
-                        });
-                }
-            })
-            .catch(async (reason) => {
-                this.log.error('ERROR: ', reason);
-                if ((smsgMessageCreateRequests.length > 1) && (reason.errno === 19) && String(reason.code).includes('SQLITE_CONSTRAINT')) {
-                    // Parse individual messages if the batch write failed due to a sqlite constrainst error,
-                    // which results in the entire batched write failing
-                    this.log.debug('process(): Parsing individual messages');
-                    for (const smsgMessageCreateRequest of smsgMessageCreateRequests) {
-                        await this.smsgMessageService.create(smsgMessageCreateRequest)
-                            .then(async message => {
-                                this.log.debug(`Created single message ${smsgMessageCreateRequest.msgid}`);
-                                await this.smsgService.smsg(smsgMessageCreateRequest.msgid, true, true)
-                                    .then(value => this.log.debug('REMOVED: ', JSON.stringify(value, null, 2)))
-                                    .catch((reason2) => this.log.error('ERROR: ', reason2));
-                            })
-                            .catch(err => this.log.debug(`Failed processing single message ${smsgMessageCreateRequest.msgid}`));
-                    }
-                }
-            });
+        const result: SmsgZmqPushResult = await this.smsgZmqPush({
+            timefrom: from,             // timefrom, the last SmsgMessage received time
+            timeto: to,                 // timeto, now
+            unreadonly: true
+        } as SmsgZmqPushOptions);
 
-        return;
+        this.log.debug('requestUnreadCoreSmsgMessagesSinceShutdown(), numsent:', result.numsent);
+        return result;
     }
 
     /**
@@ -397,4 +314,21 @@ export class SmsgService {
                 return false;
             });
     }
+
+    /**
+     * ﻿Resend ZMQ notifications.
+     * smsgzmqpush <options>
+     *
+     * @param options
+     * @returns {Promise<SmsgZmqPushResult>}
+     */
+    public async smsgZmqPush(options: SmsgZmqPushOptions): Promise<SmsgZmqPushResult> {
+        return await this.coreRpcService.call('smsgzmqpush', [options])
+            .then(response => {
+                this.log.debug('smsgZmqPush, response: ' + JSON.stringify(response, null, 2));
+                return response;
+            });
+    }
+
+
 }

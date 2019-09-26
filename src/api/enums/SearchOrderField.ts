@@ -29,6 +29,7 @@ export enum CommentSearchOrderField {
 }
 
 export enum SmsgMessageSearchOrderField {
+    ID = 'id',
     RECEIVED = 'received',
     SENT = 'sent'
 }

@@ -19,6 +19,6 @@ export class SmsgMessageSearchParams extends BaseSearchParams {
 
     public age = 1000 * 60 * 2; // minimum message age in ms, 2 min
 
-    public msgid;
+    public msgid: string;
 }
 // tslint:enable:variable-name

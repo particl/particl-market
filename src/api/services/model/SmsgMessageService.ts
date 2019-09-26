@@ -16,6 +16,7 @@ import { SmsgMessageUpdateRequest } from '../../requests/model/SmsgMessageUpdate
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class SmsgMessageService {
 
@@ -36,6 +37,16 @@ export class SmsgMessageService {
 
     public async findAll(): Promise<Bookshelf.Collection<SmsgMessage>> {
         return this.smsgMessageRepo.findAll();
+    }
+
+    public async findLast(): Promise<SmsgMessage> {
+        const smsgMessage = await this.smsgMessageRepo.findLast();
+        this.log.debug('findLast(), smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+        if (!smsgMessage) {
+            this.log.warn(`SmsgMessage not found!`);
+            throw new MessageException('SmsgMessage not found.');
+        }
+        return smsgMessage;
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<SmsgMessage> {

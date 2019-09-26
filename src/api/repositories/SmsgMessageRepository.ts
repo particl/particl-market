@@ -38,6 +38,10 @@ export class SmsgMessageRepository {
         return this.SmsgMessageModel.fetchById(id, withRelated);
     }
 
+    public async findLast(): Promise<SmsgMessage> {
+        return await this.SmsgMessageModel.fetchLast();
+    }
+
     public async findOneByMsgIdAndDirection(msgId: string,
                                             direction: ActionDirection = ActionDirection.INCOMING,
                                             withRelated: boolean = true): Promise<SmsgMessage> {

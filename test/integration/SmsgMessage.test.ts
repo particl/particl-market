@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
+import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
@@ -25,6 +25,7 @@ import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';
 import { GovernanceAction } from '../../src/api/enums/GovernanceAction';
 import { SmsgMessageCreateParams } from '../../src/api/factories/model/ModelCreateParams';
 import { ActionDirection } from '../../src/api/enums/ActionDirection';
+import { SmsgMessageSearchOrderField } from '../../src/api/enums/SearchOrderField';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -57,7 +58,7 @@ describe('SmsgMessage', () => {
             '\"shipping_destinations\":[],\"images\":[]},\"payment\":{\"type\":\"SALE\",\"escrow\":{\"type\":\"MAD\",\"ratio\":{\"buyer\":100,' +
             '\"seller\":100}},\"cryptocurrency\":[{\"currency\":\"PART\",\"base_price\":1,\"shipping_price\":{\"domestic\":1,\"international\":1}}]},' +
             '\"messaging\":[],\"objects\":[],\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",\"expiryTime\":4}}}'
-    };
+    } as CoreSmsgMessage;
 
     const proposalMessage = {
         msgid: '000000005b7bf070170e376faf6555c6cdf8efe9982554bc0b5388ec',
@@ -80,7 +81,7 @@ describe('SmsgMessage', () => {
             '\"proposalHash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\",' +
             '\"hash\":\"bd1e498cfa1ed48616e8e142feb60406cb3d112b79b265f2807afc828e733fc5\"}],' +
             '\"hash\":\"4b9bd65e277e90b9a9698ec804d8fa2832d69d17df230aa82a4145b34bde5244\"}}'
-    };
+    } as CoreSmsgMessage;
 
     const voteMessage = {
         msgid: '000000005b6d87a774b506ee07f3af86ee777618e5a40a77703defe4',
@@ -98,7 +99,7 @@ describe('SmsgMessage', () => {
         text: '{\"version\":\"0.0.1.0\",\"action\":{\"type":\"MPA_VOTE\",' +
             '\"proposalHash\":\"75f0ccdfa65c5b09562b840b1ed862b56155a734c0ec7d0f73d9bc59b6093428\",' +
             '\"optionId\":1,\"voter\":\"poJJukenuB455RciQ6a1JPe7frNxBLUqLw\",\"block\":217484,\"weight\":1}}'
-    };
+    } as CoreSmsgMessage;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -199,8 +200,7 @@ describe('SmsgMessage', () => {
         log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, voteMessage);
 
-        const smsgMessageModel = await smsgMessageService.create(smsgMessageCreateRequest);
-        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+        const result: resources.SmsgMessage = await smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
         log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
@@ -213,15 +213,12 @@ describe('SmsgMessage', () => {
     });
 
     test('Should list all SmsgMessages', async () => {
-        const smsgMessageCollection = await smsgMessageService.findAll();
-        smsgMessages = smsgMessageCollection.toJSON();
-
+        smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
         expect(smsgMessages.length).toBe(3);
     });
 
     test('Should find one SmsgMessage using id', async () => {
-        const smsgMessageModel: SmsgMessage = await smsgMessageService.findOne(smsgMessages[0].id);
-        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+        const result: resources.SmsgMessage = await smsgMessageService.findOne(smsgMessages[0].id).then(value => value.toJSON());
 
         expect(result.type).toBe(smsgMessages[0].type);
         expect(result.status).toBe(smsgMessages[0].status);
@@ -237,8 +234,7 @@ describe('SmsgMessage', () => {
     });
 
     test('Should find one SmsgMessage using msgid', async () => {
-        const smsgMessageModel: SmsgMessage = await smsgMessageService.findOneByMsgId(smsgMessages[0].msgid);
-        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+        const result: resources.SmsgMessage = await smsgMessageService.findOneByMsgId(smsgMessages[0].msgid).then(value => value.toJSON());
 
         expect(result.type).toBe(smsgMessages[0].type);
         expect(result.status).toBe(smsgMessages[0].status);
@@ -258,8 +254,7 @@ describe('SmsgMessage', () => {
         const updatedData = smsgMessages[0];
         updatedData.text = '';
 
-        const smsgMessageModel: SmsgMessage = await smsgMessageService.update(smsgMessages[0].id, updatedData);
-        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+        const result: resources.SmsgMessage = await smsgMessageService.update(smsgMessages[0].id, updatedData).then(value => value.toJSON());
 
         // test the values
         // expect(result.value).toBe(testDataUpdated.value);
@@ -279,29 +274,26 @@ describe('SmsgMessage', () => {
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             status: SmsgMessageStatus.NEW,
             types: [MPAction.MPA_LISTING_ADD],
             age: 0
         } as SmsgMessageSearchParams;
 
-        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
-        smsgMessages = smsgMessageCollection.toJSON();
-
+        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
         expect(smsgMessages.length).toBe(1);
     });
 
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD]', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             status: SmsgMessageStatus.NEW,
             types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD],
             age: 0
         } as SmsgMessageSearchParams;
 
-        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
-        smsgMessages = smsgMessageCollection.toJSON();
+        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         expect(smsgMessages.length).toBe(2);
     });
@@ -309,14 +301,13 @@ describe('SmsgMessage', () => {
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             status: SmsgMessageStatus.NEW,
             types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 
-        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
-        smsgMessages = smsgMessageCollection.toJSON();
+        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         expect(smsgMessages.length).toBe(3);
         expect(smsgMessages[0].received).toBeGreaterThan(smsgMessages[2].received);
@@ -326,14 +317,13 @@ describe('SmsgMessage', () => {
         const types: any[] = [];
         const searchParams = {
             order: SearchOrder.ASC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             status: SmsgMessageStatus.NEW,
             types,
             age: 0
         } as SmsgMessageSearchParams;
 
-        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
-        smsgMessages = smsgMessageCollection.toJSON();
+        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         expect(smsgMessages.length).toBe(3);
         expect(smsgMessages[0].received).toBeLessThan(smsgMessages[2].received);
@@ -350,8 +340,7 @@ describe('SmsgMessage', () => {
         const updatedData = message;
         updatedData.status = SmsgMessageStatus.PROCESSING;
 
-        const smsgMessageModel: SmsgMessage = await smsgMessageService.update(message.id, updatedData);
-        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+        const result: resources.SmsgMessage = await smsgMessageService.update(message.id, updatedData).then(value => value.toJSON());
 
         // test the values
         // expect(result.value).toBe(testDataUpdated.value);
@@ -371,16 +360,31 @@ describe('SmsgMessage', () => {
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
-            orderByColumn: 'received',
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
             status: SmsgMessageStatus.NEW,
             types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE],
             age: 0
         } as SmsgMessageSearchParams;
 
-        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
-        smsgMessages = smsgMessageCollection.toJSON();
+        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
         expect(smsgMessages.length).toBe(2);
+    });
+
+    test('Should find the last inserted SmsgMessage', async () => {
+
+        smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
+        expect(smsgMessages.length).toBe(3);
+        let latest: resources.SmsgMessage = smsgMessages[0];
+        for (const msg of smsgMessages) {
+            if (msg.id > latest.id) {
+                latest = msg;
+            }
+        }
+
+        const smsgMessage: resources.SmsgMessage = await smsgMessageService.findLast().then(value => value.toJSON());
+        expect(smsgMessage.received).toBe(latest.received);
+
     });
 
     // todo: add searchby tests, missing msgid at least

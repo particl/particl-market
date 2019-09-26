@@ -2,15 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Bookshelf as Database, Bookshelf } from '../../config/Database';
-import { Collection, Model } from 'bookshelf';
+import {Bookshelf as Database, Bookshelf} from '../../config/Database';
+import {Collection, Model} from 'bookshelf';
 import * as _ from 'lodash';
-import { Logger as LoggerType } from '../../core/Logger';
-import { ActionDirection } from '../enums/ActionDirection';
-import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
-import { SearchOrder } from '../enums/SearchOrder';
-import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
-import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import {Logger as LoggerType} from '../../core/Logger';
+import {ActionDirection} from '../enums/ActionDirection';
+import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
+import {SearchOrder} from '../enums/SearchOrder';
+import {SmsgMessageSearchOrderField} from '../enums/SearchOrderField';
+import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -72,6 +72,32 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
         } else {
             return await messageCollection.fetchAll();
         }
+    }
+
+    public static async fetchLast(): Promise<SmsgMessage> {
+
+        const options = {
+            page: 0,
+            pageLimit: 1,
+            order: SearchOrder.DESC.toString(),
+            orderField: SmsgMessageSearchOrderField.ID.toString(),
+            direction: ActionDirection.INCOMING
+        } as SmsgMessageSearchParams;
+
+        const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
+            .query(qb => {
+                qb.where('smsg_messages.direction', '=', options.direction.toString());
+            })
+            .orderBy('smsg_messages.' + options.orderField, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
+            });
+        const allMessages = await messageCollection.fetchAll({
+            withRelated: this.RELATIONS
+        });
+        // this.log.debug('fetchLast(), allMessages:', JSON.stringify(allMessages, null, 2));
+        return allMessages.first();
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<SmsgMessage> {
