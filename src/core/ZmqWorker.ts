@@ -3,12 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Logger } from './Logger';
-import {Core, Targets, Types} from '../constants';
+import { Core, Targets, Types } from '../constants';
 import { EventEmitter } from './api/events';
 import { IoC } from './IoC';
 import * as ParticlZmq from 'particl-zmq';
-import {MessageProcessor} from '../api/messageprocessors/MessageProcessor';
-import {CoreMessageProcessor} from '../api/messageprocessors/CoreMessageProcessor';
+import { CoreMessageProcessor } from '../api/messageprocessors/CoreMessageProcessor';
 
 export class ZmqWorker {
 
@@ -98,20 +97,4 @@ export class ZmqWorker {
         return particld;
     }
 
-/*
-    private receiver(clientSocket: zmq.Socket): void {
-        if (!clientSocket.closed) {
-            setTimeout(async () => {
-                const [msg] = await this.clientSocket.receive();
-                this.log.debug('receive(): ', msg.toString());
-                this.receiver(clientSocket);
-            }, 100);
-        } else {
-            setTimeout(async () => {
-                this.log.debug('receive(): clientSocket.closed');
-                this.receiver(clientSocket);
-            }, 1000);
-        }
-    }
-*/
 }

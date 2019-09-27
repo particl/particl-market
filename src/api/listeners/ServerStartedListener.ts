@@ -140,7 +140,7 @@ export class ServerStartedListener implements interfaces.Listener {
                             // this.coreMessageProcessor.schedulePoll();        // smsg's are pushed through zmq
 
                             // poll for new messages to be processed
-                            this.messageProcessor.schedulePoll();
+                            // this.messageProcessor.schedulePoll();
 
                             // request new messages to be pushed through zmq
                             await this.smsgService.pushUnreadCoreSmsgMessages();

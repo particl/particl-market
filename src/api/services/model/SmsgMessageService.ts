@@ -83,7 +83,7 @@ export class SmsgMessageService {
     public async create( @request(SmsgMessageCreateRequest) data: SmsgMessageCreateRequest): Promise<SmsgMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the smsgMessage
         const smsgMessage = await this.smsgMessageRepo.create(body);
