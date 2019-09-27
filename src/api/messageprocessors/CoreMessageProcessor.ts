@@ -20,23 +20,55 @@ import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
-import PQueue, { Options } from 'p-queue';
+import PQueue, { DefaultAddOptions, Options } from 'p-queue';
 import PriorityQueue, { PriorityQueueOptions } from 'p-queue/dist/priority-queue';
+import { MessageQueuePriority } from '../enums/MessageQueuePriority';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
+import { BidActionListener } from '../listeners/action/BidActionListener';
+import { BidAcceptActionListener } from '../listeners/action/BidAcceptActionListener';
+import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
+import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
+import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
+import { MPActionExtended } from '../enums/MPActionExtended';
+import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
+import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
+import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
+import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
+import { VoteActionListener } from '../listeners/action/VoteActionListener';
+import { CommentAction } from '../enums/CommentAction';
+import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+
 
 export class CoreMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
-    private timeout: any;
-    private interval = 5000; // todo: configurable
-
     private queue: PQueue;
-    private count = 0;
+    private actionQueue: PQueue;
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Listener) @named(Targets.Listener.action.ListingItemAddActionListener) private listingItemAddActionListener: ListingItemAddActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.BidActionListener) private bidActionListener: BidActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.BidAcceptActionListener) private bidAcceptActionListener: BidAcceptActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.BidCancelActionListener) private bidCancelActionListener: BidCancelActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.BidRejectActionListener) private bidRejectActionListener: BidRejectActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.EscrowLockActionListener) private escrowLockActionListener: EscrowLockActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.EscrowCompleteActionListener) private escrowCompleteActionListener: EscrowCompleteActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.OrderItemShipActionListener) private orderItemShipActionListener: OrderItemShipActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.EscrowReleaseActionListener) private escrowReleaseActionListener: EscrowReleaseActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.EscrowRefundActionListener) private escrowRefundActionListener: EscrowRefundActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.ProposalAddActionListener) private proposalAddActionListener: ProposalAddActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.VoteActionListener) private voteActionListener: VoteActionListener,
+        @inject(Types.Listener) @named(Targets.Listener.action.CommentAddActionListener) private commentAddActionListener: CommentAddActionListener,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -47,13 +79,23 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             autoStart: true,            // auto-execute tasks as soon as they're added
             throwOnTimeout: false       // throw on timeout
         } as Options<PriorityQueue, PriorityQueueOptions>;
+
         this.queue = new PQueue(options);
         this.queue
             .on('active', () => {
                 // emitted as each item is processed in the queue for the purpose of tracking progress.
-                console.log(`working on item #${++this.count}. queue size: ${this.queue.size}, tasks pending: ${this.queue.pending}`);
+                this.log.debug(`QUEUE: queue size: ${this.queue.size}, tasks pending: ${this.queue.pending}`);
             })
             .start();
+
+        this.actionQueue = new PQueue(options);
+        this.actionQueue
+            .on('active', () => {
+                // emitted as each item is processed in the queue for the purpose of tracking progress.
+                this.log.debug(`ACTIONQUEUE: queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
+            })
+            .start();
+
     }
 
     public async process(msgid: string): Promise<void> {
@@ -67,33 +109,118 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             const isProcessed = await this.isCoreMessageAlreadyProcessed(msg);
 
             if (!isProcessed) {
-                this.log.debug('ADD TO QUEUE msgid: ', msgid);
+                this.log.debug('ADDING SMSG TO QUEUE msgid: ', msgid);
 
-                this.queue.add(async () => {
+                await this.queue.add(async () => {
 
-                    // get the SmsgMessageCreateRequest
-                    const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
-                        direction: ActionDirection.INCOMING,
-                        message: msg
-                    } as SmsgMessageCreateParams);
-
-                    this.log.debug('SAVING msgid:', JSON.stringify(msgid, null, 2));
-
-                    // store in db
-                    await this.smsgMessageService.create(smsgMessageCreateRequest)
-                        .then(async (value) => {
-                            const smsgMessage: resources.SmsgMessage = value.toJSON();
-                            this.log.debug('CREATED msgid:', JSON.stringify(smsgMessage.msgid, null, 2));
-
-                            // after the smsgMessage is stored, remove it
-                            await this.smsgService.smsg(msgid, true, true)
-                                .then(removed => {
-                                    this.log.debug('REMOVED: ', JSON.stringify(removed.msgid, null, 2));
-                                });
+                    const smsgMessage: resources.SmsgMessage = await this.saveSmsgMessage(msg);
+                    const marketplaceMessage: MarketplaceMessage | undefined = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage)
+                        .then(value => value)
+                        .catch(async reason => {
+                            this.log.error('Could not parse the MarketplaceMessage.');
+                            return undefined;
                         });
 
+                    if (marketplaceMessage && smsgMessage.type) {
+                        if (MPAction.MPA_LISTING_ADD === smsgMessage.type) {
+                            // no need to store the listing data "twice"
+                            smsgMessage.text = '';
+                        }
+                        const marketplaceEvent: MarketplaceMessageEvent = {
+                            smsgMessage,
+                            marketplaceMessage
+                        };
+                        this.log.debug('SMSGMESSAGE: '
+                            + smsgMessage.from + ' => ' + smsgMessage.to
+                            + ' : ' + smsgMessage.type
+                            + ' : ' + smsgMessage.status
+                            + ' : ' + smsgMessage.msgid);
 
-                });
+                        this.log.debug('ADDING MPAction TO QUEUE msgid: ', msgid);
+
+                        // add the action processing function to the messageprocessing queue
+                        switch (smsgMessage.type) {
+                            case MPAction.MPA_LISTING_ADD:
+                                await this.actionQueue.add(() => this.listingItemAddActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_LISTING_ADD
+                                } as DefaultAddOptions);
+                                break;
+                            case MPAction.MPA_BID:
+                                await this.actionQueue.add(() => this.bidActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_BID
+                                } as DefaultAddOptions);
+                                break;
+                            case MPAction.MPA_ACCEPT:
+                                await this.actionQueue.add(() => this.bidAcceptActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_ACCEPT
+                                } as DefaultAddOptions);
+                                break;
+                            case MPAction.MPA_CANCEL:
+                                await this.actionQueue.add(() => this.bidCancelActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_CANCEL
+                                } as DefaultAddOptions);
+                                break;
+                            case MPAction.MPA_REJECT:
+                                await this.actionQueue.add(() => this.bidRejectActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_REJECT
+                                } as DefaultAddOptions);
+                                break;
+                            case MPAction.MPA_LOCK:
+                                await this.actionQueue.add(() => this.escrowLockActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_LOCK
+                                } as DefaultAddOptions);
+                                break;
+                            case MPActionExtended.MPA_COMPLETE:
+                                await this.actionQueue.add(() => this.escrowCompleteActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_COMPLETE
+                                } as DefaultAddOptions);
+                                break;
+                            case MPActionExtended.MPA_SHIP:
+                                await this.actionQueue.add(() => this.orderItemShipActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_SHIP
+                                } as DefaultAddOptions);
+                                break;
+                            case MPActionExtended.MPA_RELEASE:
+                                await this.actionQueue.add(() => this.escrowReleaseActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_RELEASE
+                                } as DefaultAddOptions);
+                                break;
+                            case MPActionExtended.MPA_REFUND:
+                                await this.actionQueue.add(() => this.escrowRefundActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_REFUND
+                                } as DefaultAddOptions);
+                                break;
+                            case GovernanceAction.MPA_PROPOSAL_ADD:
+                                await this.actionQueue.add(() => this.proposalAddActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_PROPOSAL_ADD
+                                } as DefaultAddOptions);
+                                break;
+                            case GovernanceAction.MPA_VOTE:
+                                await this.actionQueue.add(() => this.voteActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_VOTE
+                                } as DefaultAddOptions);
+                                break;
+                            case CommentAction.MPA_COMMENT_ADD:
+                                await this.actionQueue.add(() => this.commentAddActionListener.onEvent(marketplaceEvent), {
+                                    priority: MessageQueuePriority.MPA_COMMENT_ADD
+                                } as DefaultAddOptions);
+                                break;
+                            default:
+                                this.log.error('ERROR: Received a message type thats missing a Listener.');
+                                throw new NotImplementedException();
+                        }
+                    } else {
+                        // parsing failed, log some error data and update the smsgMessage
+                        this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+                        this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
+                        this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
+                        await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
+                    }                    // add event processing to the queue
+
+                }, {
+                    priority: MessageQueuePriority.SMSGMESSAGE
+                } as DefaultAddOptions);
+
             } else {
                 this.log.debug('ALREADY PROCESSED msgid: ', msgid);
             }
@@ -104,6 +231,31 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
         return;
     }
+
+    private async saveSmsgMessage(msg: CoreSmsgMessage): Promise<resources.SmsgMessage> {
+        // get the SmsgMessageCreateRequest
+        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get({
+            direction: ActionDirection.INCOMING,
+            message: msg
+        } as SmsgMessageCreateParams);
+
+        this.log.debug('SAVING msgid:', JSON.stringify(msg.msgid, null, 2));
+
+        // store in db
+        return await this.smsgMessageService.create(smsgMessageCreateRequest)
+            .then(async (value) => {
+                const smsgMessage: resources.SmsgMessage = value.toJSON();
+                this.log.debug('CREATED msgid:', JSON.stringify(smsgMessage.msgid, null, 2));
+
+                // after the smsgMessage is stored, remove it
+                await this.smsgService.smsg(msg.msgid, true, true)
+                    .then(removed => {
+                        this.log.debug('REMOVED: ', JSON.stringify(removed.msgid, null, 2));
+                    });
+                return smsgMessage;
+            });
+    }
+
 
     /**
      * polls for new smsgmessages and stores them in the database
@@ -247,6 +399,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
             });
     }
 */
+
+
     private async isMarketplaceMessage(msg: CoreSmsgMessage): Promise<boolean> {
         try {
             const marketplaceMessage: MarketplaceMessage = JSON.parse(msg.text);

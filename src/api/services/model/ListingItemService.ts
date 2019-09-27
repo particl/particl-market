@@ -175,7 +175,7 @@ export class ListingItemService {
         // finally find and return the created listingItem
         const result = await this.findOne(listingItem.id);
 
-        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
 
