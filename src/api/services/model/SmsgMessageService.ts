@@ -41,7 +41,7 @@ export class SmsgMessageService {
 
     public async findLast(): Promise<SmsgMessage> {
         const smsgMessage = await this.smsgMessageRepo.findLast();
-        this.log.debug('findLast(), smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+        // this.log.debug('findLast(), smsgMessage:', JSON.stringify(smsgMessage, null, 2));
         if (!smsgMessage) {
             this.log.warn(`SmsgMessage not found!`);
             throw new MessageException('SmsgMessage not found.');
