@@ -12,7 +12,7 @@ import { DefaultItemCategoryService } from '../services/DefaultItemCategoryServi
 import { DefaultProfileService } from '../services/DefaultProfileService';
 import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
-import { MessageProcessor } from '../messageprocessors/MessageProcessor';
+import { WaitingMessageProcessor } from '../messageprocessors/WaitingMessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
@@ -37,7 +37,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.WaitingMessageProcessor) public waitingMessageProcessor: WaitingMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
@@ -136,11 +136,8 @@ export class ServerStartedListener implements interfaces.Listener {
                             this.expiredListingItemProcessor.scheduleProcess();
                             this.proposalResultProcessor.scheduleProcess();
 
-                            // fetch all unread messages
-                            // this.coreMessageProcessor.schedulePoll();        // smsg's are pushed through zmq
-
-                            // poll for new messages to be processed
-                            // this.messageProcessor.schedulePoll();
+                            // poll for waiting smsgmessages to be processed
+                            this.waitingMessageProcessor.schedulePoll();
 
                             // request new messages to be pushed through zmq
                             await this.smsgService.pushUnreadCoreSmsgMessages();
@@ -165,7 +162,7 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.log.info('connection with particld disconnected.');
 
                 // stop message polling
-                this.messageProcessor.stop();
+                this.waitingMessageProcessor.stop();
                 this.interval = 1000;
             }
 

@@ -22,7 +22,7 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { SmsgMessageService } from '../../../src/api/services/model/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../../../src/api/requests/model/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../../src/api/factories/model/SmsgMessageFactory';
-import { MessageProcessor } from '../../../src/api/messageprocessors/MessageProcessor';
+import { WaitingMessageProcessor } from '../../../src/api/messageprocessors/WaitingMessageProcessor';
 import { SmsgMessageSearchParams } from '../../../src/api/requests/search/SmsgMessageSearchParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -49,7 +49,7 @@ describe('MessageProcessor', () => {
     let listingItemAddMessageFactory: ListingItemAddMessageFactory;
     let listingItemFactory: ListingItemFactory;
     let smsgMessageFactory: SmsgMessageFactory;
-    let messageProcessor: MessageProcessor;
+    let messageProcessor: WaitingMessageProcessor;
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -70,7 +70,7 @@ describe('MessageProcessor', () => {
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
         listingItemAddMessageFactory = app.IoC.getNamed<ListingItemAddMessageFactory>(Types.Factory, Targets.Factory.message.ListingItemAddMessageFactory);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
-        messageProcessor = app.IoC.getNamed<MessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.MessageProcessor);
+        messageProcessor = app.IoC.getNamed<WaitingMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.MessageProcessor);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();

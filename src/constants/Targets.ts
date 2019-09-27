@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import {SmsgResendCommand} from '../api/commands/smsg/SmsgResendCommand';
+import {WaitingMessageProcessor} from '../api/messageprocessors/WaitingMessageProcessor';
 
 /**
  * constants.Targets
@@ -422,7 +423,7 @@ export const Targets = {
     MessageProcessor:     {
         CoreMessageProcessor: 'CoreMessageProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
-        MessageProcessor: 'MessageProcessor',
+        WaitingMessageProcessor: 'WaitingMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         ProposalResultProcessor: 'ProposalResultProcessor'
     },
