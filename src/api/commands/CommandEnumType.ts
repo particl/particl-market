@@ -79,7 +79,7 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMIMAGE_ROOT: Command          = new Command('itemimage', 'image', true,
         [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE], EnvironmentType.ALL);
 
-    public ITEMINFORMATION_GET: Command    = new Command('iteminformationget', 'get', false);
+    public ITEMINFORMATION_GET: Command     = new Command('iteminformationget', 'get', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
     public ITEMINFORMATION_ROOT: Command    = new Command('iteminformation', 'information', true,
         [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_UPDATE], EnvironmentType.ALL);
@@ -164,46 +164,50 @@ export class CommandEnumType extends Enum<Command> {
     public SHOPPINGCARTITEM_ROOT: Command   = new Command('cartitem', 'cartitem', true,
         [this.SHOPPINGCARTITEM_LIST, this.SHOPPINGCARTITEM_ADD, this.SHOPPINGCARTITEM_REMOVE], EnvironmentType.ALL);
 
-    public ITEMOBJECT_SEARCH: Command         = new Command('itemobjectsearch', 'search', false);
-    public ITEMOBJECT_ROOT: Command           = new Command('itemobject', 'itemobject', true,
+    public ITEMOBJECT_SEARCH: Command   = new Command('itemobjectsearch', 'search', false);
+    public ITEMOBJECT_ROOT: Command     = new Command('itemobject', 'itemobject', true,
         [this.ITEMOBJECT_SEARCH], EnvironmentType.ALL);
 
-    public ORDER_SEARCH: Command         = new Command('ordersearch', 'search', false);
-    public ORDER_ROOT: Command           = new Command('order', 'order', true,
+    public ORDER_SEARCH: Command        = new Command('ordersearch', 'search', false);
+    public ORDER_ROOT: Command          = new Command('order', 'order', true,
         [this.ORDER_SEARCH], EnvironmentType.ALL);
 
-    public ORDERITEM_HISTORY: Command         = new Command('orderitemhistory', 'history', false);
-    public ORDERITEM_STATUS: Command         = new Command('orderitemstatus', 'status', false);
-    public ORDERITEM_SHIP: Command         = new Command('orderitemship', 'ship', false);
-    public ORDERITEM_ROOT: Command           = new Command('orderitem', 'orderitem', true,
+    public ORDERITEM_HISTORY: Command   = new Command('orderitemhistory', 'history', false);
+    public ORDERITEM_STATUS: Command    = new Command('orderitemstatus', 'status', false);
+    public ORDERITEM_SHIP: Command      = new Command('orderitemship', 'ship', false);
+    public ORDERITEM_ROOT: Command      = new Command('orderitem', 'orderitem', true,
         [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
 
-    public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
+    public PRICETICKER_ROOT: Command    = new Command('priceticker', 'priceticker', true);
 
-    public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
+    public CURRENCYPRICE_ROOT: Command  = new Command('currencyprice', 'currencyprice', true);
 
-    public VOTE_POST: Command         = new Command('votepost', 'post', false);
-    public VOTE_GET: Command         = new Command('voteget', 'get', false);
-    public VOTE_LIST: Command         = new Command('votelist', 'list', false);
+    public VOTE_POST: Command           = new Command('votepost', 'post', false);
+    public VOTE_GET: Command            = new Command('voteget', 'get', false);
+    public VOTE_LIST: Command           = new Command('votelist', 'list', false);
     public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
         [this.VOTE_POST, this.VOTE_GET, this.VOTE_LIST], EnvironmentType.ALL);
 
-    public SETTING_REMOVE: Command         = new Command('settingremove', 'remove', false);
+    public SETTING_REMOVE: Command      = new Command('settingremove', 'remove', false);
     public SETTING_GET: Command         = new Command('settingget', 'get', false);
-    public SETTING_LIST: Command         = new Command('settinglist', 'list', false);
-    public SETTING_SET: Command           = new Command('settingset', 'set', false);
-    public SETTING_ROOT: Command           = new Command('setting', 'setting', true,
+    public SETTING_LIST: Command        = new Command('settinglist', 'list', false);
+    public SETTING_SET: Command         = new Command('settingset', 'set', false);
+    public SETTING_ROOT: Command        = new Command('setting', 'setting', true,
         [this.SETTING_REMOVE, this.SETTING_GET, this.SETTING_LIST, this.SETTING_SET], EnvironmentType.ALL);
 
-    public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
-    public SMSG_REMOVE: Command      = new Command('smsgremove', 'remove', false);
-    public SMSG_RESEND: Command      = new Command('smsgresend', 'resend', false);
-    public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
+    public SMSG_SEARCH: Command         = new Command('smsgsearch', 'search', false);
+    public SMSG_REMOVE: Command         = new Command('smsgremove', 'remove', false);
+    public SMSG_RESEND: Command         = new Command('smsgresend', 'resend', false);
+    public SMSG_ROOT: Command           = new Command('smsg', 'smsg', true,
         [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
-    public WALLET_LIST: Command      = new Command('walletlist', 'list', false);
-    public WALLET_ROOT: Command        = new Command('wallet', 'wallet', true,
+    public WALLET_LIST: Command         = new Command('walletlist', 'list', false);
+    public WALLET_ROOT: Command         = new Command('wallet', 'wallet', true,
         [this.WALLET_LIST], EnvironmentType.ALL);
+
+    public BLACKLIST_LIST: Command      = new Command('blacklistlist', 'list', false);
+    public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,
+        [this.BLACKLIST_LIST], EnvironmentType.ALL);
 
     constructor() {
         super();

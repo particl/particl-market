@@ -137,7 +137,7 @@ export class ServerStartedListener implements interfaces.Listener {
                             this.proposalResultProcessor.scheduleProcess();
 
                             // poll for waiting smsgmessages to be processed
-                            this.waitingMessageProcessor.schedulePoll();
+                            // this.waitingMessageProcessor.schedulePoll();
 
                             // request new messages to be pushed through zmq
                             await this.smsgService.pushUnreadCoreSmsgMessages();
@@ -162,7 +162,7 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.log.info('connection with particld disconnected.');
 
                 // stop message polling
-                this.waitingMessageProcessor.stop();
+                this.waitingMessageProcessor.stop = true;
                 this.interval = 1000;
             }
 

@@ -115,6 +115,10 @@ import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { GenerateBlacklistParams } from '../requests/testdata/GenerateBlacklistParams';
+import { BlacklistService } from './model/BlacklistService';
+import {BlacklistCreateRequest} from '../requests/model/BlacklistCreateRequest';
+import {BlacklistType} from '../enums/BlacklistType';
 
 
 export class TestDataService {
@@ -144,6 +148,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) private blacklistService: BlacklistService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
@@ -289,6 +294,10 @@ export class TestDataService {
             case CreatableModel.SMSGMESSAGE: {
                 const generateParams = new GenerateSmsgMessageParams(body.generateParams);
                 return await this.generateSmsgMessages(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.BLACKLIST: {
+                const generateParams = new GenerateBlacklistParams(body.generateParams);
+                return await this.generateBlacklists(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -1497,6 +1506,37 @@ export class TestDataService {
         } as SmsgMessageCreateRequest;
 
         return smsgMessageCreateRequest;
+    }
+
+    // -------------------
+    // Blacklists
+
+    private async generateBlacklists(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateBlacklistParams): Promise<resources.Blacklist[]> {
+
+        this.log.debug('generateBlacklists, generateParams: ', generateParams);
+
+        const items: resources.Blacklist[] = [];
+
+        for (let i = amount; i > 0; i--) {
+            const blacklistCreateRequest = await this.generateBlacklistData(generateParams);
+            const blacklist: resources.Blacklist = await this.blacklistService.create(blacklistCreateRequest).then(value => value.toJSON());
+            items.push(blacklist);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateBlacklistData(generateParams: GenerateBlacklistParams): Promise<BlacklistCreateRequest> {
+
+        const type = generateParams.type ? generateParams.type : Faker.random.arrayElement(Object.getOwnPropertyNames(BlacklistType));
+        const blacklistCreateRequest = {
+            type,
+            hash: Faker.random.uuid()
+        } as BlacklistCreateRequest;
+
+        return blacklistCreateRequest;
     }
 
 }

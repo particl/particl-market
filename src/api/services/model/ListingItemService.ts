@@ -330,7 +330,6 @@ export class ListingItemService {
             }
         });
 
-        this.log.debug('destroy(), listingItem.ItemInformation.ItemImages.length: ', listingItem.ItemInformation.ItemImages.length);
         // manually remove ItemImages
         if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
             for (const image of listingItem.ItemInformation.ItemImages) {

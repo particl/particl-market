@@ -1,10 +1,3 @@
-// Copyright (c) 2017-2019, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
-import {SmsgResendCommand} from '../api/commands/smsg/SmsgResendCommand';
-import {WaitingMessageProcessor} from '../api/messageprocessors/WaitingMessageProcessor';
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -20,6 +13,7 @@ export const Targets = {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
+        Blacklist: 'Blacklist',
         Comment: 'Comment',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         CurrencyPrice: 'CurrencyPrice',
@@ -62,6 +56,7 @@ export const Targets = {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
+        BlacklistRepository: 'BlacklistRepository',
         CommentRepository: 'CommentRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         CurrencyPriceRepository: 'CurrencyPriceRepository',
@@ -129,6 +124,7 @@ export const Targets = {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
             BidService: 'BidService',
+            BlacklistService: 'BlacklistService',
             CommentService: 'CommentService',
             CryptocurrencyAddressService: 'CryptocurrencyAddressService',
             CurrencyPriceService: 'CurrencyPriceService',
@@ -193,14 +189,18 @@ export const Targets = {
             BidSearchCommand: 'BidSearchCommand',
             BidSendCommand: 'BidSendCommand'
         },
+        blacklist: {
+            BlacklistListCommand: 'BlacklistListCommand',
+            BlacklistRootCommand: 'BlacklistRootCommand'
+        },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
         comment: {
-            CommentPostCommand: 'CommentPostCommand',
-            CommentGetCommand: 'CommentGetCommand',
-            CommentSearchCommand: 'CommentSearchCommand',
             CommentCountCommand: 'CommentCountCommand',
-            CommentRootCommand: 'CommentRootCommand'
+            CommentGetCommand: 'CommentGetCommand',
+            CommentPostCommand: 'CommentPostCommand',
+            CommentRootCommand: 'CommentRootCommand',
+            CommentSearchCommand: 'CommentSearchCommand'
         },
         currencyprice: {
             CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
@@ -219,7 +219,6 @@ export const Targets = {
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
-            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowRootCommand: 'EscrowRootCommand',
             EscrowUpdateCommand: 'EscrowUpdateCommand'
         },
@@ -282,8 +281,8 @@ export const Targets = {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
             MarketRemoveCommand: 'MarketRemoveCommand',
-            MarketSetDefaultCommand: 'MarketSetDefaultCommand',
-            MarketRootCommand: 'MarketRootCommand'
+            MarketRootCommand: 'MarketRootCommand',
+            MarketSetDefaultCommand: 'MarketSetDefaultCommand'
         },
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
@@ -294,10 +293,10 @@ export const Targets = {
             OrderSearchCommand: 'OrderSearchCommand'
         },
         orderitem: {
+            OrderItemHistoryCommand: 'OrderItemHistoryCommand',
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemShipCommand: 'OrderItemShipCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand',
-            OrderItemHistoryCommand: 'OrderItemHistoryCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -351,20 +350,20 @@ export const Targets = {
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
         smsg: {
-            SmsgRootCommand: 'SmsgRootCommand',
             SmsgRemoveCommand: 'SmsgRemoveCommand',
             SmsgResendCommand: 'SmsgResendCommand',
+            SmsgRootCommand: 'SmsgRootCommand',
             SmsgSearchCommand: 'SmsgSearchCommand'
-        },
-        wallet: {
-            WalletRootCommand: 'WalletRootCommand',
-            WalletListCommand: 'WalletListCommand'
         },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
+        },
+        wallet: {
+            WalletListCommand: 'WalletListCommand',
+            WalletRootCommand: 'WalletRootCommand'
         }
     },
     Factory:     {
@@ -372,19 +371,19 @@ export const Targets = {
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
+                HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig',
                 HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
                 HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
-                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig',
-                HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig'
+                HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
             },
             HashableField: 'HashableField',
             message: {
                 HashableBidMessageConfig: 'HashableBidMessageConfig',
+                HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig',
                 HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
-                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig',
-                HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig'
+                HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
             },
             model: {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
@@ -395,6 +394,7 @@ export const Targets = {
         message: {
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
+            CommentAddMessageFactory: 'CommentAddMessageFactory',
             EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
@@ -402,8 +402,7 @@ export const Targets = {
             MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
-            VoteMessageFactory: 'VoteMessageFactory',
-            CommentAddMessageFactory: 'CommentAddMessageFactory'
+            VoteMessageFactory: 'VoteMessageFactory'
         },
         MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
@@ -423,9 +422,9 @@ export const Targets = {
     MessageProcessor:     {
         CoreMessageProcessor: 'CoreMessageProcessor',
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
-        WaitingMessageProcessor: 'WaitingMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
-        ProposalResultProcessor: 'ProposalResultProcessor'
+        ProposalResultProcessor: 'ProposalResultProcessor',
+        WaitingMessageProcessor: 'WaitingMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
@@ -439,6 +438,7 @@ export const Targets = {
             BidActionListener: 'BidActionListener',
             BidCancelActionListener: 'BidCancelActionListener',
             BidRejectActionListener: 'BidRejectActionListener',
+            CommentAddActionListener: 'CommentAddActionListener',
             EscrowCompleteActionListener: 'EscrowCompleteActionListener',
             EscrowLockActionListener: 'EscrowLockActionListener',
             EscrowRefundActionListener: 'EscrowRefundActionListener',
@@ -446,8 +446,7 @@ export const Targets = {
             ListingItemAddActionListener: 'ListingItemAddActionListener',
             OrderItemShipActionListener: 'OrderItemShipActionListener',
             ProposalAddActionListener: 'ProposalAddActionListener',
-            VoteActionListener: 'VoteActionListener',
-            CommentAddActionListener: 'CommentAddActionListener'
+            VoteActionListener: 'VoteActionListener'
         },
         ActionListenerInterface: 'ActionListenerInterface',
         BaseActionListenr: 'BaseActionListenr',

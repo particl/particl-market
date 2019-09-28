@@ -8,9 +8,9 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
-import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
-import { {{name.capitalize}}CreateRequest } from '../../src/api/requests/{{name.capitalize}}CreateRequest';
-import { {{name.capitalize}}UpdateRequest } from '../../src/api/requests/{{name.capitalize}}UpdateRequest';
+import { {{name.capitalize}}Service } from '../../src/api/services/model/{{name.capitalize}}Service';
+import { {{name.capitalize}}CreateRequest } from '../../src/api/requests/model/{{name.capitalize}}CreateRequest';
+import { {{name.capitalize}}UpdateRequest } from '../../src/api/requests/model/{{name.capitalize}}UpdateRequest';
 
 
 describe('{{name.capitalize}}', () => {
@@ -68,10 +68,9 @@ describe('{{name.capitalize}}', () => {
         const {{name.camelCase}}s: resources.{{name.capitalize}}[] = await {{name.camelCase}}Service.findAll()
             .then(value => value.toJSON());
         expect({{name.camelCase}}s.length).toBe(1);
+    });
 
     test('Should list {{name.lowerCase}}s with our new create one', async () => {
-
-        const wallet: resources.Wallet[] = await walletService.findAll().then(value => value.toJSON());
 
         const {{name.camelCase}}s: resources.{{name.capitalize}}[] = await {{name.camelCase}}Service.findAll().then(value => value.toJSON());
         expect({{name.camelCase}}s.length).toBe(1);
