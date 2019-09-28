@@ -21,12 +21,12 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
     public static async fetchAllByType(type: BlacklistType): Promise<Collection<Blacklist>> {
         const blacklistResultCollection = Blacklist.forge<Model<Blacklist>>()
             .query(qb => {
-                qb.where('blacklist.type', '=', type);
+                qb.where('blacklists.type', '=', type);
             });
         return await blacklistResultCollection.fetchAll();
     }
 
-    public get tableName(): string { return 'blacklist'; }
+    public get tableName(): string { return 'blacklists'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
