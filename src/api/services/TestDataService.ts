@@ -117,8 +117,8 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { GenerateBlacklistParams } from '../requests/testdata/GenerateBlacklistParams';
 import { BlacklistService } from './model/BlacklistService';
-import {BlacklistCreateRequest} from '../requests/model/BlacklistCreateRequest';
-import {BlacklistType} from '../enums/BlacklistType';
+import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest';
+import { BlacklistType } from '../enums/BlacklistType';
 
 
 export class TestDataService {
@@ -377,7 +377,9 @@ export class TestDataService {
             'proposal_options',
             'proposals',
             'votes',
-            'smsg_messages'
+            'smsg_messages',
+            'comments',
+            'blacklists'
         ];
 
         this.log.debug('cleaning ' + tablesToClean.length + ' tables...');
