@@ -206,6 +206,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                                 } as DefaultAddOptions);
                                 break;
                             default:
+                                // a valid mp message, possibly should be handled by a bot
+                                // TODO: pass it on to using zmq to all listening bots
                                 this.log.error('ERROR: Received a message type thats missing a Listener.');
                                 throw new NotImplementedException();
                         }

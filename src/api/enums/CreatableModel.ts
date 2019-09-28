@@ -21,7 +21,8 @@ export enum CreatableModel {
     ITEMIMAGE = 'itemimage',
     PROPOSAL = 'proposal',
     COMMENT = 'comment',
-    SMSGMESSAGE = 'smsgmessage'
+    SMSGMESSAGE = 'smsgmessage',
+    BLACKLIST = 'blacklist'
 
 
 }

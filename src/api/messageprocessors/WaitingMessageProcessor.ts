@@ -38,14 +38,16 @@ import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipAc
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
 import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
+import pForever from 'p-forever';
+import delay from 'delay';
 
 export class WaitingMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
-    private interval: any;
+    public stop = false;
+    // private interval: any;
     private pollCount = 0;
-
     private DEFAULT_INTERVAL = 5 * 1000;
 
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
@@ -63,6 +65,19 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
         this.log = new Logger(__filename);
+        this.start();
+    }
+
+    public async start(): Promise<void> {
+
+        await pForever(async () => {
+            await this.poll();
+            if (this.stop) {
+                return pForever.end;
+            }
+            await delay(this.DEFAULT_INTERVAL);
+        });
+        this.start();
     }
 
     /**
@@ -185,7 +200,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
         }
     }
-
+/*
     public stop(): void {
         if (this.interval) {
             clearInterval(this.interval);
@@ -208,7 +223,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
         }, pollingInterval);
 
     }
-
+*/
     /**
      * main poller
      *
@@ -216,15 +231,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
      */
     public async poll(emitEvent: boolean = true): Promise<number> {  // public for tests
 
-        const startTime = new Date().getTime();
-
-        // fetch and process new ProposalMessages
-        // fetch and process new VoteMessages
-        // fetch and process new ListingItemMessages
-        // fetch and process new BidMessages
-        // fetch and process new EscrowMessages
-        // fetch and process the waiting ones
-
+        const startTime = Date.now();
         const searchParams = [
             // poll only for the waiting messages
             // {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
@@ -290,7 +297,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
         }
 
-        // this.log.debug('MessageProcessor.poll #' + this.pollCount + ': ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('WaitingMessageProcessor.poll #' + this.pollCount + ': ' + (Date.now() - startTime) + 'ms');
         this.pollCount++;
 
         return nextInterval;

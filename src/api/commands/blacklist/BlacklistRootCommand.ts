@@ -12,14 +12,14 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 
-export class MarketRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class BlacklistRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.MARKET_ROOT);
+        super(Commands.BLACKLIST_ROOT);
         this.log = new Logger(__filename);
     }
 
@@ -33,7 +33,7 @@ export class MarketRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' (list|add|remove|default)  -  ' + this.description();
+        return this.getName() + ' (list)  -  ' + this.description();
     }
 
     public help(): string {
@@ -41,7 +41,7 @@ export class MarketRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Commands for managing markets';
+        return 'Commands for blacklisting hashes';
     }
 
     public example(): string {

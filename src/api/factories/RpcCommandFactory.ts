@@ -168,6 +168,9 @@ import { CommentSearchCommand } from '../commands/comment/CommentSearchCommand';
 import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
 import { CommentCountCommand } from '../commands/comment/CommentCountCommand';
 
+import { BlacklistListCommand } from '../commands/blacklist/BlacklistListCommand';
+import { BlacklistRootCommand } from '../commands/blacklist/BlacklistRootCommand';
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -329,6 +332,9 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.wallet.WalletListCommand) private walletListCommand: WalletListCommand,
         @inject(Types.Command) @named(Targets.Command.wallet.WalletRootCommand) private walletRootCommand: WalletRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistListCommand) private blacklistListCommand: BlacklistListCommand,
+        @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistRootCommand) private blacklistRootCommand: BlacklistRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -494,6 +500,9 @@ export class RpcCommandFactory {
 
         this.commands.push(walletListCommand);
         this.commands.push(walletRootCommand);
+
+        this.commands.push(blacklistListCommand);
+        this.commands.push(blacklistRootCommand);
 
         this.commands.push(helpCommand);
 
