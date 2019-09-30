@@ -168,6 +168,7 @@ export const Targets = {
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
+        NotificationService: 'NotificationService',
         TestDataService: 'TestDataService'
     },
     Command:     {

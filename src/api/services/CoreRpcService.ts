@@ -826,6 +826,11 @@ export class CoreRpcService extends CtRpc {
 
     }
 
+    public async isAddressMine(address: string): Promise<boolean> {
+        const checkAddress = await this.getAddressInfo(address);
+
+        return (checkAddress && checkAddress.ismine);
+    }
 
     private getOptions(): any {
 

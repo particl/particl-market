@@ -25,6 +25,9 @@ import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest'
 import { CommentCreateParams } from '../../factories/model/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
 import { CommentAddValidator } from '../../messages/validator/CommentValidator';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { NotificationType } from '../../enums/NotificationType';
+import { NotificationService } from '../NotificationService';
 
 export interface CommentTicket {
     address: string;
@@ -44,6 +47,8 @@ export class CommentAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
 
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -193,6 +198,8 @@ export class CommentAddActionService extends BaseActionService {
             // called from send(), we already created the Comment so nothing else needs to be done
         }
 
+        this.processNotifications(comment);
+
         // this.log.debug('processComment(), comment:', JSON.stringify(comment, null, 2));
         return comment;
     }
@@ -229,6 +236,38 @@ export class CommentAddActionService extends BaseActionService {
         } as CommentTicket;
 
         return await this.coreRpcService.verifyMessage(commentAddMessage.sender, commentAddMessage.signature, commentTicket);
+    }
+
+    private async processNotifications(comment: resources.Comment): Promise<void> {
+        try {
+            const isMyComment = await this.coreRpcService.isAddressMine(comment.sender);
+
+            // Dont need notifications about my own comments
+            if (isMyComment) {
+                return;
+            }
+
+            const notification: MarketplaceNotification = {
+                event: NotificationType.NEW_COMMENT,
+                payload: {
+                    id: comment.id,
+                    hash: comment.hash,
+                    type: comment.type,
+                    target: comment.target
+                }
+            };
+
+            if (comment.ParentComment) {
+                notification.payload['parent'] = {
+                    id: comment.ParentComment.id,
+                    hash: comment.ParentComment.hash
+                };
+            }
+
+            this.notificationService.send(notification);
+        } catch (e) {
+            this.log.error('Error processing comment notifications: ', e);
+        }
     }
 
 }
