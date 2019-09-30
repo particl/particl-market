@@ -211,6 +211,11 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                                 this.log.error('ERROR: Received a message type thats missing a Listener.');
                                 throw new NotImplementedException();
                         }
+
+                        // TODO: push notifications about messages to socket.io / gui
+                        //       -> refactor this: https://github.com/particl/particl-market/pull/469/files
+                        // TODO: push bot related messages to zmq
+
                     } else {
                         // parsing failed, log some error data and update the smsgMessage
                         this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));

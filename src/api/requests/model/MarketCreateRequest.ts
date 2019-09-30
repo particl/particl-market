@@ -11,7 +11,7 @@ import { MarketType } from '../../enums/MarketType';
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public wallet_id: number;
+    public identity_id: number;
 
     @IsNotEmpty()
     public profile_id: number;

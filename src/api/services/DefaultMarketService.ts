@@ -61,20 +61,9 @@ export class DefaultMarketService {
         }
 
         // The initial default marketplace should use whatever wallet is set as the default wallet currently.
-        // @TODO (zaSmilingIdiot - 2019-07-26):
-        //      Is the wallet creation appropriate here? DefaultMarketService.seedDefaultMarket() is only called from
-        //          ServerStartedListener currently, and only after a check to determine whether the wallet exists and is initialized..
-        //          Makes sense then that this code wouldn't be executed if the wallet is supposed to already exist.
-        //          Unless its correct to start the service against another wallet, and then always create a particular wallet afterwards.
-        //
-        //      Either way, the default wallet on first load should have already been set by the time we get to this point..
-        //          services have already fallen over if its not set. So kindof pointless. Either way, whether this is set, this probably
-        //          needs to be set it to the requested default wallet, not a hard-coded value.
-        //
-        //      I'd imagine the call to walletService.create() would be included in ServerStartedListener.checkConnection() if the wallet is not initialized
 
         const currentWallet = this.coreRpcService.currentWallet;
-        const defaultMarketWallet: resources.Identity = await this.identityService.findOneByWalletName(currentWallet)
+        const defaultMarketIdentity: resources.Identity = await this.identityService.findOneByWalletName(currentWallet)
             .then(value => value.toJSON())
             .catch(async reason => {
                 return await this.identityService.create({
@@ -84,7 +73,7 @@ export class DefaultMarketService {
             });
 
         const defaultMarket = {
-            wallet_id: defaultMarketWallet.id,
+            identity_id: defaultMarketIdentity.id,
             profile_id: profile.id,
             name: marketNameSetting.value,
             type: MarketType.MARKETPLACE,
