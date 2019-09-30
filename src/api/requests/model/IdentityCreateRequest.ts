@@ -7,14 +7,19 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
-export class WalletCreateRequest extends RequestBody implements ModelRequestInterface {
+export class IdentityCreateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
     public profile_id: number;
 
     // the default wallet name is empty :/
     // @IsNotEmpty()
-    public name: string;
+    public wallet: string;
+
+    public identitySpaddress: string;
+    public escrowSpaddress: string;
+    public txfeeSpaddress: string;
+    public walletHdseedid: string;
 
 }
 // tslint:enable:variable-name

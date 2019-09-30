@@ -12,7 +12,7 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 
-export class WalletRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class IdentityRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
@@ -20,7 +20,7 @@ export class WalletRootCommand extends BaseCommand implements RpcCommandInterfac
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.WALLET_ROOT);
+        super(Commands.IDENTITY_ROOT);
         this.log = new Logger(__filename);
     }
 
@@ -42,7 +42,7 @@ export class WalletRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Commands for managing Wallets.';
+        return 'Commands for managing Identities.';
     }
 
     public example(): string {

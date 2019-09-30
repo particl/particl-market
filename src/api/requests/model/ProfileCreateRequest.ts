@@ -8,7 +8,7 @@ import { AddressCreateRequest } from './AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from './CryptocurrencyAddressCreateRequest';
 import { SettingCreateRequest } from './SettingCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
-import {WalletCreateRequest} from './WalletCreateRequest';
+import {IdentityCreateRequest} from './IdentityCreateRequest';
 
 // tslint:disable:variable-name
 export class ProfileCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -23,6 +23,6 @@ export class ProfileCreateRequest extends RequestBody implements ModelRequestInt
     public shippingAddresses: AddressCreateRequest[];    // shipping addresses
     public cryptocurrencyAddresses: CryptocurrencyAddressCreateRequest[];    // cryptocurrency addresses
     public settings: SettingCreateRequest[];    // settings
-    public wallet: WalletCreateRequest;
+    public identity: IdentityCreateRequest;
 }
 // tslint:enable:variable-name

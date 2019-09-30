@@ -6,7 +6,6 @@ import { MarketType } from '../../api/enums/MarketType';
 
 declare module 'resources' {
 
-
     interface Market {
         id: number;
         name: string;
@@ -15,9 +14,8 @@ declare module 'resources' {
         receiveAddress: string;
         publishKey: string;
         publishAddress: string;
-        // wallet: string;
 
-        Wallet: Wallet;
+        Identity: Identity;
 
         createdAt: Date;
         updatedAt: Date;

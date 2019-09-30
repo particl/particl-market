@@ -153,8 +153,8 @@ import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 
-import { WalletListCommand } from '../commands/wallet/WalletListCommand';
-import { WalletRootCommand } from '../commands/wallet/WalletRootCommand';
+import { IdentityListCommand } from '../commands/identity/IdentityListCommand';
+import { IdentityRootCommand } from '../commands/identity/IdentityRootCommand';
 
 import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
 import { SettingListCommand } from '../commands/setting/SettingListCommand';
@@ -330,8 +330,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgResendCommand) private smsgResendCommand: SmsgResendCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.wallet.WalletListCommand) private walletListCommand: WalletListCommand,
-        @inject(Types.Command) @named(Targets.Command.wallet.WalletRootCommand) private walletRootCommand: WalletRootCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityListCommand) private walletListCommand: IdentityListCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityRootCommand) private walletRootCommand: IdentityRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistListCommand) private blacklistListCommand: BlacklistListCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistRootCommand) private blacklistRootCommand: BlacklistRootCommand,

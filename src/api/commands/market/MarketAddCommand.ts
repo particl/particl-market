@@ -23,7 +23,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
 import { BlockchainInfo, CoreRpcService } from '../../services/CoreRpcService';
-import { WalletService } from '../../services/model/WalletService';
+import { IdentityService } from '../../services/model/IdentityService';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
@@ -33,7 +33,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
     ) {
@@ -58,7 +58,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
-        const wallet: resources.Wallet = data.params[7];
+        const wallet: resources.Identity = data.params[7];
 
         /*
         // if wallet with the name doesnt exists, then create one
@@ -188,10 +188,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             data.params[6] = receiveAddress;
         }
 
-        let wallet: resources.Wallet;
+        let wallet: resources.Identity;
         if (!_.isEmpty(data.params[7])) {
             // make sure Wallet with the id exists
-            wallet = await this.walletService.findOne(data.params[7])
+            wallet = await this.identityService.findOne(data.params[7])
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Wallet');
@@ -201,7 +201,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 throw new MessageException('Wallet does not belong to the Profile.');
             }
         } else {
-            wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            wallet = await this.identityService.getDefaultForProfile(profile.id).then(value => value.toJSON());
         }
 
         // make sure Market with the same receiveAddress doesnt exists

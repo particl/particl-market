@@ -7,10 +7,14 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
-export class WalletUpdateRequest extends RequestBody implements ModelRequestInterface {
+export class IdentityUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public name: string;
+    public wallet: string;
 
+    public identitySpaddress: string;
+    public escrowSpaddress: string;
+    public txfeeSpaddress: string;
+    public walletHdseedid: string;
 }
 // tslint:enable:variable-name

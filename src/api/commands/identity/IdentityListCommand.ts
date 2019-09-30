@@ -15,21 +15,21 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { Wallet } from '../../models/Wallet';
+import { Identity } from '../../models/Identity';
 import { ProfileService } from '../../services/model/ProfileService';
-import { WalletService } from '../../services/model/WalletService';
+import { IdentityService } from '../../services/model/IdentityService';
 import { Collection } from 'bookshelf';
 
-export class WalletListCommand extends BaseCommand implements RpcCommandInterface<Collection<Wallet>> {
+export class IdentityListCommand extends BaseCommand implements RpcCommandInterface<Collection<Identity>> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.WALLET_LIST);
+        super(Commands.IDENTITY_LIST);
         this.log = new Logger(__filename);
     }
 
@@ -41,13 +41,13 @@ export class WalletListCommand extends BaseCommand implements RpcCommandInterfac
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
-     * @returns {Promise<Wallet>}
+     * @returns {Promise<Identity>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Collection<Wallet>> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Collection<Identity>> {
 
         const profile: resources.Profile = data.params[0];
-        return await this.walletService.findAllByProfileId(profile.id);
+        return await this.identityService.findAllByProfileId(profile.id);
     }
 
     /**
@@ -89,11 +89,11 @@ export class WalletListCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public description(): string {
-        return 'Command for listing Profiles Wallets.';
+        return 'Command for listing Profiles Identities.';
     }
 
     public example(): string {
-        return 'wallet ' + this.getName() + ' 1';
+        return 'identity ' + this.getName() + ' 1';
     }
 
 }
