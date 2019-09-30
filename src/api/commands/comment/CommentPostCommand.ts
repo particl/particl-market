@@ -25,6 +25,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { CommentAddActionService } from '../../services/action/CommentAddActionService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -162,6 +163,14 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                 .catch(() => {
                     throw new ModelNotFoundException('ListingItem');
                 });
+        }
+
+        if (!message || message.trim() === '') {
+            throw new MessageException('The comment text cannot be empty.');
+        }
+
+        if (message.length > 1000) {
+            throw new MessageException('The maximum length for the comment text cannot exceed 1000 characters.');
         }
 
         return data;
