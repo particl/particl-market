@@ -131,6 +131,8 @@ export class BidCancelActionService extends BaseActionService {
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.BID_CANCELLED);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.CANCELED);
 
+                await this.bidService.unlockBidOutputs(bid);
+
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
     }

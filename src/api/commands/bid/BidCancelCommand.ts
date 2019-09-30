@@ -18,10 +18,11 @@ import { BidService } from '../../services/model/BidService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
 import { BidCancelActionService } from '../../services/action/BidCancelActionService';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -30,7 +31,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) private bidCancelActionService: BidCancelActionService
+        @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) private bidCancelActionService: BidCancelActionService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService
     ) {
         super(Commands.BID_CANCEL);
         this.log = new Logger(__filename);
@@ -46,9 +48,14 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const bid: resources.Bid = data.params[0];
+        const profile: resources.Profile = data.params[1];
 
-        const fromAddress = bid.OrderItem.Order.buyer;  // we are the buyer
-        const toAddress = bid.OrderItem.Order.seller;
+        const fromAddress = profile.address;
+
+        let toAddress = bid.bidder;
+        if (profile.address === bid.bidder) {
+            toAddress = bid.OrderItem.Order.seller;
+        }
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
@@ -63,6 +70,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bidId
+     *  [1]: profileId
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -72,10 +80,14 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('bidId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('profileId');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('bidId', 'number');
+        } else if (data.params[1] && typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
         }
 
         const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
@@ -86,13 +98,20 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         }
 
         const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
-            return child.type === MPAction.MPA_ACCEPT;
+            return child.type === MPActionExtended.MPA_COMPLETE;
         });
         if (childBid) {
-            throw new MessageException('Bid has already been accepted.');
+            throw new MessageException('Escrow has already been completed, unable to cancel.');
         }
 
-        // TODO: check that we are the buyer
+        // make sure profile with the id exists
+        const profile: resources.Profile = await this.profileService.findOne(data.params[1]).then(value => value.toJSON())
+            .catch(reason => {
+                this.log.error('Profile not found. ' + reason);
+                throw new ModelNotFoundException('Profile');
+            });
+
+        data.params[1] = profile;
 
         return data;
     }
