@@ -1,24 +1,131 @@
+/* ===================== IMPORTS ===================== */
+
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
+    font-weight: 400;
+    src: url("../fonts/Inter-UI-Regular.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Regular.woff") format("woff");
+}
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
+    font-weight: 500;
+    src: url("../fonts/Inter-UI-Medium.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Medium.woff") format("woff");
+}
+@font-face {
+    font-family: 'Inter_UI';
+    font-style:  normal;
+    font-weight: 700;
+    src: url("../fonts/Inter-UI-Bold.woff2") format("woff2"),
+         url("../fonts/Inter-UI-Bold.woff") format("woff");
+}
+
+/* ===================== VARIABLES ===================== */
+
+:root {
+    /* colors */
+    --primary: #45d492;
+    --secondary: #1597dd;
+    --tertiary: #5949a7;
+    --success: #98c807;
+    --alert: #ff542c;
+    --warning: #ffce00;
+    --text: #212727;
+    --text-muted: #616b6b;
+    --text-darker: #181d1d;
+    --bg: #fff;
+    --bg-muted: #f1f1f1;
+    --bg-darker: #e4e0e0;
+    --black: #212727;
+    --black-muted: #343838;
+
+    --menu-1st: #212727; /* 1st level menu */
+    --menu-2nd: #2a3131; /* 2nd */
+    --menu-3rd: #323a3a; /* 3rd */
+    /* typography */
+    --font: "Inter_UI", sans-serif;
+}
+
+/* ===================== GENERAL STYLES ===================== */
+
+html,
+body,
+.content,
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+    font-family: var(--font);
+    font-size: 15px;
+}
+
+.content p,
+.content li,
+.content dt,
+.content dd {
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+/* ------- Links ------- */
+
+.content a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 2px solid #d5dbd6;
+}
+.content a:hover,
+.content a:focus {
+    border-bottom-color: var(--primary);
+}
+
+/* ------- Lists ------- */
+
+.content li {
+    line-height: 1.7;
+}
+
+/* ===================== CONTENT ===================== */
+
+.page-wrapper { /* light content middle section */
+    background: var(--bg-muted);
+}
+
+.content h1 {
+    font-size: 26px;
+    font-weight: 700;
+    padding-top: 1.2em;
+    padding-bottom: 0.2em;
+    margin-bottom: 0.6em;
+    border-bottom: 0;
+    border-top: 1px solid var(--bg-darker);
+    background-image: linear-gradient(to bottom, var(--bg), var(--bg-muted));
+}
 .content h2 {
     font-size: 20px;
-    padding-top: 0.8em;
+    background: none;
+    border-top: 1px solid var(--bg-darker);
+    padding-top: 1.3em;
     padding-bottom: 0.8em;
 }
 
 .content h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 
 .content h2 + div + h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 .content aside + div + h3 {
     font-size: 17px;
     margin-top: 0.8em;
-    /*margin: 0px;*/
 }
 
 .content div + h3 {
@@ -38,4 +145,173 @@
     width: 100%;
     padding-left: 10px;
     padding-top: 0.8em;
+}
+
+/* ------- Code (in content) ------- */
+
+.content p code {
+    background: #1597dd23;
+    color: var(--secondary);
+    text-shadow: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 3px 5px;
+}
+
+/* ------- Info messages ------- */
+
+.content aside.notice {
+    background: #1597dd23;
+    margin-bottom: 20px;
+}
+.content aside.notice::before {
+    content: "";
+    font-size: 1.2em;
+    color: var(--secondary);
+}
+
+
+/* ------- Tables ------- */
+
+.content table {
+    display: table;
+    width: 50%; /* extend the table to 100% of "content" column */
+    margin: 1em 0;
+}
+.content table tr > *:first-child {
+    padding-left: 28px;
+}
+.content table tr > *:last-child {
+    padding-right: 28px;
+}
+.content table th {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid var(--bg-darker);
+}
+.content table tr:nth-child(2n+1) > td {
+    background-color: var(--bg);
+}
+.content table tr:nth-child(2n) > td {
+    background-color: #fbfbfb;
+}
+.content table tr,
+.content table tr:last-child {
+    border-bottom: 1px solid var(--bg-darker);
+}
+
+/* ===================== SIDEBAR ===================== */
+
+.tocify-wrapper { /* TOC column */
+    background: var(--black);
+}
+
+/* ------- Search ------- */
+
+.tocify-wrapper > .search input {
+    padding: 10px 15px 10px 35px;
+    margin: 20px 0 0;
+    width: 230px;
+    background: var(--black-muted);
+    border-color: #444848;
+    font-weight: 400;
+}
+.tocify-wrapper > .search input:focus {
+    border-color: var(--secondary);
+}
+.tocify-wrapper > .search::before {
+    top: 31px;
+    left: 14px;
+}
+.tocify-wrapper .search-results {
+    background: var(--black-muted);
+}
+.content .search-highlight {
+    border: none;
+    text-shadow: none;
+}
+
+/* ------- TOC ------- */
+
+#toc {
+    margin-top: 10px;
+}
+
+/* active item */
+.tocify-wrapper .tocify-focus,
+.tocify-wrapper .tocify-subheader .tocify-focus:last-child {
+    box-shadow: 3px 0 var(--primary) inset;
+    background: none; /* #45d49128; */
+}
+
+.tocify-item.tocify-focus {
+    position: relative;
+}
+.tocify-item.tocify-focus::after {
+    content: "";
+    display: block;
+    border-width: 8px;
+    border-color: transparent var(--bg-muted) transparent transparent;
+    border-style: solid;
+    width: 0;
+    height: 0;
+    position: absolute;
+    right: 0;
+    top: 8px;
+}
+
+.tocify-wrapper .tocify-item > a { /* TOC links */
+    padding: 2px 17px;
+}
+
+/* 2nd level links */
+.tocify-wrapper .tocify-subheader {
+    background: var(--menu-2nd);
+}
+
+/* 3rd level */
+.tocify-wrapper .tocify-subheader .tocify-subheader {
+    background: var(--menu-3rd);
+}
+.tocify-wrapper .tocify-subheader .tocify-subheader .tocify-item > a {
+    padding-left: 34px;
+}
+
+.tocify-wrapper .toc-footer li { /* "footer" info */
+    padding: 0 17px;
+    font-weight: 400;
+    font-size: 0.85em;
+}
+
+
+/* ===================== CODE EXAMPLES ===================== */
+
+.page-wrapper .dark-box { /* code examples column */
+    background: var(--black);
+}
+
+/* code examples */
+.content pre,
+.content blockquote {
+    background: var(--black-muted);
+    padding: 1em 28px;
+}
+
+/* code examples descriptions */
+.content blockquote > p {
+    background-color: #292d2d;
+    border-radius: 0;
+    padding: 10px 28px;
+    border-top: 1px solid #191e1e;
+    margin: -15px -28px 10px -28px;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+
+/* ===================== MISC ===================== */
+
+*::before { /* fix icons' webfont */
+    font-family: "Slate";
 }
