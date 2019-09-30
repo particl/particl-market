@@ -201,9 +201,9 @@ export class CommandEnumType extends Enum<Command> {
     public SMSG_ROOT: Command           = new Command('smsg', 'smsg', true,
         [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
-    public WALLET_LIST: Command         = new Command('walletlist', 'list', false);
-    public WALLET_ROOT: Command         = new Command('wallet', 'wallet', true,
-        [this.WALLET_LIST], EnvironmentType.ALL);
+    public IDENTITY_LIST: Command         = new Command('identitylist', 'list', false);
+    public IDENTITY_ROOT: Command         = new Command('identity', 'identity', true,
+        [this.IDENTITY_LIST], EnvironmentType.ALL);
 
     public BLACKLIST_LIST: Command      = new Command('blacklistlist', 'list', false);
     public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,

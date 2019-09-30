@@ -25,7 +25,7 @@ import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCrea
 import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
-import { WalletService } from './WalletService';
+import { IdentityService } from './IdentityService';
 
 export class ProfileService {
 
@@ -36,7 +36,7 @@ export class ProfileService {
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) public shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -106,8 +106,8 @@ export class ProfileService {
         delete body.cryptocurrencyAddresses;
         const settings = body.settings || [];
         delete body.settings;
-        const wallet = body.wallet;
-        delete body.wallet;
+        const identity = body.identity;
+        delete body.identity;
 
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
@@ -128,9 +128,9 @@ export class ProfileService {
             await this.settingService.create(setting);
         }
 
-        if (!_.isEmpty(wallet)) {
-            wallet.profile_id = profile.Id;
-            await this.walletService.create(wallet);
+        if (!_.isEmpty(identity)) {
+            identity.profile_id = profile.Id;
+            await this.identityService.create(identity);
         }
 
         // create default shoppingCart

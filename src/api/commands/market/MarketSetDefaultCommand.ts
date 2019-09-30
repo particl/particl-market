@@ -60,10 +60,10 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, market.receiveAddress, profile);
 
         // load the wallet unless already loaded
-        await this.coreRpcService.walletLoaded(market.Wallet.name).
+        await this.coreRpcService.walletLoaded(market.Identity.wallet).
         then(async isLoaded => {
             if (!isLoaded) {
-                await this.coreRpcService.loadWallet(market.Wallet.name)
+                await this.coreRpcService.loadWallet(market.Identity.wallet)
                     .catch(reason => {
                         this.log.debug('wallet: ' + market.name + ' already loaded.');
                     });
@@ -77,8 +77,8 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         }
 
         // set secure messaging to use the default wallet
-        await this.coreRpcService.smsgSetWallet(market.Wallet.name);
-        await this.coreRpcService.setActiveWallet(market.Wallet.name);
+        await this.coreRpcService.smsgSetWallet(market.Identity.wallet);
+        await this.coreRpcService.setActiveWallet(market.Identity.wallet);
 
         return await this.marketService.getDefaultForProfile(profile.id);
     }

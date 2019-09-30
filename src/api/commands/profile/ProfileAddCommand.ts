@@ -17,13 +17,13 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import { CoreRpcService, RpcWalletInfo } from '../../services/CoreRpcService';
+import { CoreRpcService } from '../../services/CoreRpcService';
 import { SettingValue } from '../../enums/SettingValue';
 import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from '../../services/model/SettingService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { WalletCreateRequest } from '../../requests/model/WalletCreateRequest';
-import { WalletService } from '../../services/model/WalletService';
+import { IdentityCreateRequest } from '../../requests/model/IdentityCreateRequest';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
 
@@ -33,7 +33,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) private settingService: SettingService
     ) {
         super(Commands.PROFILE_ADD);
@@ -73,16 +73,16 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
         } as ProfileCreateRequest).then(value => value.toJSON());
 
         // create Wallet for Profile
-        const wallet: resources.Wallet = await this.walletService.create({
+        const identity: resources.Identity = await this.identityService.create({
             profile_id: profile.id,
-            name: walletName
-        } as WalletCreateRequest).then(value => value.toJSON());
+            wallet: walletName
+        } as IdentityCreateRequest).then(value => value.toJSON());
 
         // create the default wallet Setting for Profile
         await this.settingService.create({
             profile_id: profile.id,
-            key: SettingValue.DEFAULT_WALLET.toString(),
-            value: '' + wallet.id
+            key: SettingValue.DEFAULT_IDENTITY.toString(),
+            value: '' + identity.id
         } as SettingCreateRequest);
 
         // switch back to the previous old wallet

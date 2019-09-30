@@ -104,7 +104,7 @@ export class CoreRpcService extends CtRpc {
     ) {
         super();
         this.log = new Logger(__filename);
-        this.activeWallet = process.env[SettingValue.DEFAULT_WALLET.toString()] ? process.env[SettingValue.DEFAULT_WALLET.toString()] : this.activeWallet;
+        this.activeWallet = process.env[SettingValue.DEFAULT_IDENTITY.toString()] ? process.env[SettingValue.DEFAULT_IDENTITY.toString()] : this.activeWallet;
     }
 
     public async isConnected(): Promise<boolean> {

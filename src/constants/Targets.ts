@@ -1,3 +1,5 @@
+import {IdentityRepository} from '../api/repositories/IdentityRepository';
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -21,6 +23,7 @@ export const Targets = {
         EscrowRatio: 'EscrowRatio',
         FavoriteItem: 'FavoriteItem',
         FlaggedItem: 'FlaggedItem',
+        Identity: 'Identity',
         ItemCategory: 'ItemCategory',
         ItemImage: 'ItemImage',
         ItemImageData: 'ItemImageData',
@@ -49,8 +52,7 @@ export const Targets = {
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
         SmsgMessage: 'SmsgMessage',
-        Vote: 'Vote',
-        Wallet: 'Wallet'
+        Vote: 'Vote'
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
@@ -64,6 +66,7 @@ export const Targets = {
         EscrowRepository: 'EscrowRepository',
         FavoriteItemRepository: 'FavoriteItemRepository',
         FlaggedItemRepository: 'FlaggedItemRepository',
+        IdentityRepository: 'IdentityRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         ItemImageDataRepository: 'ItemImageDataRepository',
         ItemImageRepository: 'ItemImageRepository',
@@ -92,8 +95,7 @@ export const Targets = {
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
         SmsgMessageRepository: 'SmsgMessageRepository',
-        VoteRepository: 'VoteRepository',
-        WalletRepository: 'WalletRepository'
+        VoteRepository: 'VoteRepository'
     },
     Service:     {
         action: {
@@ -132,6 +134,7 @@ export const Targets = {
             EscrowService: 'EscrowService',
             FavoriteItemService: 'FavoriteItemService',
             FlaggedItemService: 'FlaggedItemService',
+            IdentityService: 'IdentityService',
             ItemCategoryService: 'ItemCategoryService',
             ItemImageDataService: 'ItemImageDataService',
             ItemImageService: 'ItemImageService',
@@ -160,8 +163,7 @@ export const Targets = {
             ShoppingCartItemService: 'ShoppingCartItemService',
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
-            VoteService: 'VoteService',
-            WalletService: 'WalletService'
+            VoteService: 'VoteService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -229,6 +231,10 @@ export const Targets = {
             FavoriteRootCommand: 'FavoriteRootCommand'
         },
         HelpCommand: 'HelpCommand',
+        identity: {
+            IdentityListCommand: 'IdentityListCommand',
+            IdentityRootCommand: 'IdentityRootCommand'
+        },
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
@@ -360,10 +366,6 @@ export const Targets = {
             VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
-        },
-        wallet: {
-            WalletListCommand: 'WalletListCommand',
-            WalletRootCommand: 'WalletRootCommand'
         }
     },
     Factory:     {

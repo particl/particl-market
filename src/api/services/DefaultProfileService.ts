@@ -14,8 +14,8 @@ import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
-import { WalletCreateRequest } from '../requests/model/WalletCreateRequest';
-import { WalletService } from './model/WalletService';
+import { IdentityCreateRequest } from '../requests/model/IdentityCreateRequest';
+import { IdentityService } from './model/IdentityService';
 
 export class DefaultProfileService {
 
@@ -25,7 +25,7 @@ export class DefaultProfileService {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -59,17 +59,17 @@ export class DefaultProfileService {
                 // create Wallet for default Profile
                 const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo();
                 this.log.debug('walletInfo: ', JSON.stringify(walletInfo, null, 2));
-                const wallet: resources.Wallet = await this.walletService.create({
+                const identity: resources.Identity = await this.identityService.create({
                     profile_id: profile.id,
-                    name: walletInfo.walletname
-                } as WalletCreateRequest)
+                    wallet: walletInfo.walletname
+                } as IdentityCreateRequest)
                     .then(value => value.toJSON());
 
-                // create the default wallet Setting for Profile
+                // create the default identity Setting for Profile
                 await this.settingService.create({
                     profile_id: profile.id,
-                    key: SettingValue.DEFAULT_WALLET.toString(),
-                    value: '' + wallet.id
+                    key: SettingValue.DEFAULT_IDENTITY.toString(),
+                    value: '' + identity.id
                 } as SettingCreateRequest);
             }
 

@@ -11,16 +11,16 @@ import { Market } from '../models/Market';
 import { MarketService } from './model/MarketService';
 import { MarketCreateRequest } from '../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
-import {CoreRpcService, RpcExtKeyGenesisImport, RpcMnemonic} from './CoreRpcService';
+import { CoreRpcService, RpcExtKeyGenesisImport, RpcMnemonic } from './CoreRpcService';
 import { SmsgService } from './SmsgService';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
 import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
-import { WalletService } from './model/WalletService';
 import { MessageException } from '../exceptions/MessageException';
-import { WalletCreateRequest } from '../requests/model/WalletCreateRequest';
+import { IdentityCreateRequest } from '../requests/model/IdentityCreateRequest';
+import { IdentityService } from './model/IdentityService';
 
 export class DefaultMarketService {
 
@@ -30,7 +30,7 @@ export class DefaultMarketService {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -74,13 +74,13 @@ export class DefaultMarketService {
         //      I'd imagine the call to walletService.create() would be included in ServerStartedListener.checkConnection() if the wallet is not initialized
 
         const currentWallet = this.coreRpcService.currentWallet;
-        const defaultMarketWallet: resources.Wallet = await this.walletService.findOneByName(currentWallet)
+        const defaultMarketWallet: resources.Identity = await this.identityService.findOneByWalletName(currentWallet)
             .then(value => value.toJSON())
             .catch(async reason => {
-                return await this.walletService.create({
+                return await this.identityService.create({
                     profile_id: profile.id,
-                    name: currentWallet
-                } as WalletCreateRequest).then(value => value.toJSON());
+                    wallet: currentWallet
+                } as IdentityCreateRequest).then(value => value.toJSON());
             });
 
         const defaultMarket = {
@@ -113,11 +113,11 @@ export class DefaultMarketService {
             });
 
         // if wallet with the name doesnt exists, then create one
-        const exists = await this.coreRpcService.walletExists(newMarket.Wallet.name);
+        const exists = await this.coreRpcService.walletExists(newMarket.Identity.wallet);
         this.log.debug('wallet exists: ', exists);
 
         if (!exists) {
-            await this.coreRpcService.createAndLoadWallet(newMarket.Wallet.name)
+            await this.coreRpcService.createAndLoadWallet(newMarket.Identity.wallet)
                 .then(async result => {
                     this.log.debug('created wallet: ', result.name);
                     const mnemonic: RpcMnemonic = await this.coreRpcService.mnemonic(['new']);
@@ -131,17 +131,17 @@ export class DefaultMarketService {
                 });
         } else {
             // load the wallet unless already loaded
-            await this.coreRpcService.walletLoaded(newMarket.Wallet.name).
-                then(async isLoaded => {
+            await this.coreRpcService.walletLoaded(newMarket.Identity.wallet)
+                .then(async isLoaded => {
                     if (!isLoaded) {
-                        await this.coreRpcService.loadWallet(newMarket.Wallet.name)
+                        await this.coreRpcService.loadWallet(newMarket.Identity.wallet)
                             .catch(reason => {
                                 this.log.debug('wallet: ' + marketRequest.name + ' already loaded.');
                             });
                     }
                 });
         }
-        await this.coreRpcService.setActiveWallet(newMarket.Wallet.name);
+        await this.coreRpcService.setActiveWallet(newMarket.Identity.wallet);
 
         await this.importMarketPrivateKey(newMarket.receiveKey, newMarket.receiveAddress);
         if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
@@ -149,7 +149,7 @@ export class DefaultMarketService {
         }
 
         // set secure messaging to use the default wallet
-        await this.coreRpcService.smsgSetWallet(newMarket.Wallet.name);
+        await this.coreRpcService.smsgSetWallet(newMarket.Identity.wallet);
 
         return await this.marketService.findOne(newMarket.id);
     }

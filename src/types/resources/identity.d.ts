@@ -5,9 +5,13 @@
 
 declare module 'resources' {
 
-    interface Wallet {
+    interface Identity {
         id: number;
-        name: string;
+        wallet: string;
+        identitySpaddress: string;
+        escrowSpaddress: string;
+        txfeeSpaddress: string;
+        walletHdseedid: string;
 
         createdAt: Date;
         updatedAt: Date;

@@ -56,6 +56,7 @@ services:
       - RPCHOSTNAME=particld2
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
+      - STANDALONE=true
 
 #  gui1:
 #    image: market-gui
