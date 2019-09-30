@@ -5,7 +5,7 @@ exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.dropTableIfExists('wallets'),
 
-        db.schema.createTable('identities', (table: Knex.CreateTableBuilder) => {
+        db.schema.createTableIfNotExists('identities', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
             table.integer('profile_id').unsigned().notNullable();
