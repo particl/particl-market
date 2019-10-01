@@ -1,8 +1,11 @@
 import * as Knex from 'knex';
 
-
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
+
+        // TODO
+        // db.schema.dropTableIfExists('markets_old'),
+        // db.schema.dropTableIfExists('wallets'),
 
         // create new markets table, with the new fk
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {
