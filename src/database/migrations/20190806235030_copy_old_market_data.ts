@@ -7,9 +7,9 @@ exports.up = (db: Knex): Promise<any> => {
         // copy the old data
         db.schema.raw(
             'INSERT INTO markets (id, name, type, receive_key, receive_address, ' +
-            'publish_key, publish_address, updated_at, created_at, profile_id)' +
+            'publish_key, publish_address, updated_at, created_at, profile_id, identity_id)' +
             'SELECT id, name, type, receive_key, receive_address, ' +
-            'publish_key, publish_address, updated_at, created_at, profile_id ' +
+            'publish_key, publish_address, updated_at, created_at, profile_id, wallet_id ' +
             'FROM markets_old')
     ]);
 };

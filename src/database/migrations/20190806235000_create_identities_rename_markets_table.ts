@@ -3,7 +3,6 @@ import * as Knex from 'knex';
 
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.dropTableIfExists('wallets'),
 
         db.schema.createTableIfNotExists('identities', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
