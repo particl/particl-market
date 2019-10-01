@@ -45,6 +45,7 @@ export class DefaultItemCategoryService {
         await this.insertOrUpdateCategory({ key: 'cat_apparel_adult', name: 'Adult', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
         await this.insertOrUpdateCategory({ key: 'cat_apparel_children', name: 'Children', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
         await this.insertOrUpdateCategory({ key: 'cat_apparel_bags_luggage', name: 'Bags & Luggage', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
+        await this.insertOrUpdateCategory({ key: 'cat_merchandise', name: 'Merchandise', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
         await this.insertOrUpdateCategory({ key: 'cat_apparel_other', name: 'Other', description: '', parent_item_category_id: LEVEL1CHILD.Id, market } as ItemCategoryCreateRequest);
 
         LEVEL1CHILD = await this.insertOrUpdateCategory({ key: 'cat_app_software', name: 'Apps / Software', description: '', parent_item_category_id: ROOT.Id, market } as ItemCategoryCreateRequest);
