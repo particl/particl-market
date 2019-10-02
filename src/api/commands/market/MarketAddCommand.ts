@@ -50,7 +50,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: receiveAddress
      *  [5]: publishKey
      *  [6]: publishAddress
-     *  [7]: wallet: resources.Wallet;
+     *  [7]: identity: resources.Identity;
      *
      * @param data
      * @returns {Promise<Market>}
@@ -58,25 +58,25 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
-        const wallet: resources.Identity = data.params[7];
+        const identity: resources.Identity = data.params[7];
 
         /*
-        // if wallet with the name doesnt exists, then create one
+        // if identity with the name doesnt exists, then create one
         const exists = await this.coreRpcService.walletExists(data.params[7]);
         if (!exists) {
             await this.coreRpcService.createWallet(data.params[7])
-                .then(wallet => {
-                    this.log.debug('created wallet: ', wallet.name);
+                .then(identity => {
+                    this.log.debug('created identity: ', identity.name);
                 })
                 .catch(reason => {
-                    this.log.debug('wallet: ' + data.params[7] + ' already exists.');
+                    this.log.debug('identity: ' + data.params[7] + ' already exists.');
                 });
         }
         */
 
         return await this.marketService.create({
             profile_id: profile.id,
-            wallet_id: wallet.id,
+            identity_id: identity.id,
             name: data.params[1],
             type: data.params[2],
             receiveKey: data.params[3],
@@ -95,7 +95,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: receiveAddress, optional
      *  [5]: publishKey, optional
      *  [6]: publishAddress, optional
-     *  [7]: walletId, optional
+     *  [7]: identityId, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -135,7 +135,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
             throw new InvalidParamException('publishAddress', 'string');
         } else if (data.params[7] !== undefined && typeof data.params[7] !== 'number') {
-            throw new InvalidParamException('walletId', 'number');
+            throw new InvalidParamException('identityId', 'number');
         }
 
         // make sure Profile with the id exists
@@ -188,20 +188,20 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             data.params[6] = receiveAddress;
         }
 
-        let wallet: resources.Identity;
+        let identity: resources.Identity;
         if (!_.isEmpty(data.params[7])) {
             // make sure Wallet with the id exists
-            wallet = await this.identityService.findOne(data.params[7])
+            identity = await this.identityService.findOne(data.params[7])
                 .then(value => value.toJSON())
                 .catch(reason => {
-                    throw new ModelNotFoundException('Wallet');
+                    throw new ModelNotFoundException('Identity');
                 });
 
-            if (wallet.Profile.id !== profile.id) {
+            if (identity.Profile.id !== profile.id) {
                 throw new MessageException('Wallet does not belong to the Profile.');
             }
         } else {
-            wallet = await this.identityService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            identity = await this.identityService.getDefaultForProfile(profile.id).then(value => value.toJSON());
         }
 
         // make sure Market with the same receiveAddress doesnt exists
@@ -216,12 +216,12 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         data.params[0] = profile;
-        data.params[7] = wallet;
+        data.params[7] = identity;
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [wallet] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [identityId] ';
     }
 
     public help(): string {
@@ -233,7 +233,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
             + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
             + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
-            + '    <wallet>                 - String, optional - The wallet to be used with the Market. \n';
+            + '    <identityId>             - Number, optional - The identity to be used with the Market. \n';
     }
 
     public description(): string {
