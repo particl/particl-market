@@ -5,7 +5,7 @@ exports.up = (db: Knex): Promise<any> => {
 
         // TODO
         // db.schema.dropTableIfExists('markets_old'),
-        // db.schema.dropTableIfExists('wallets'),
+        // db.schema.dropTableIfExists('wallets_old'),
 
         // create new markets table, with the new fk
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {

@@ -114,8 +114,8 @@ export class MarketService {
         market.PublishKey = body.publishKey;
         market.PublishAddress = body.publishAddress;
 
-        if (body.wallet_id) {
-            market.set('walletId', body.wallet_id);
+        if (body.identity_id) {
+            market.set('identityId', body.identity_id);
         }
 
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
