@@ -115,7 +115,6 @@ export const Targets = {
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
-        CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
@@ -164,6 +163,10 @@ export const Targets = {
             ShoppingCartService: 'ShoppingCartService',
             SmsgMessageService: 'SmsgMessageService',
             VoteService: 'VoteService'
+        },
+        observer: {
+            CoreCookieService: 'CoreCookieService',
+            CoreConnectionStatusService: 'CoreConnectionStatusService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',

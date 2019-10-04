@@ -4,41 +4,44 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import * as interfaces from '../../types/interfaces';
-import {inject, named} from 'inversify';
-import {Core, Targets, Types} from '../../constants';
-import {Logger as LoggerType} from '../../core/Logger';
-import {DefaultItemCategoryService} from '../services/DefaultItemCategoryService';
-import {DefaultProfileService} from '../services/DefaultProfileService';
-import {DefaultMarketService} from '../services/DefaultMarketService';
-import {EventEmitter} from '../../core/api/events';
-import {WaitingMessageProcessor} from '../messageprocessors/WaitingMessageProcessor';
-import {CoreRpcService} from '../services/CoreRpcService';
-import {ExpiredListingItemProcessor} from '../messageprocessors/ExpiredListingItemProcessor';
-import {CoreMessageProcessor} from '../messageprocessors/CoreMessageProcessor';
-import {ProposalResultProcessor} from '../messageprocessors/ProposalResultProcessor';
-import {DefaultSettingService} from '../services/DefaultSettingService';
-import {SettingValue} from '../enums/SettingValue';
-import {SettingService} from '../services/model/SettingService';
-import {CoreCookieService, CoreCookieServiceStatus} from '../services/observer/CoreCookieService';
-import {Environment} from '../../core/helpers/Environment';
-import {SmsgService} from '../services/SmsgService';
-import {CoreConnectionStatusService, CoreConnectionStatusServiceStatus} from '../services/observer/CoreConnectionStatusService';
+import { inject, named } from 'inversify';
+import { Types, Core, Targets } from '../../../constants';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { DefaultItemCategoryService } from '../DefaultItemCategoryService';
+import { DefaultProfileService } from '../DefaultProfileService';
+import { DefaultMarketService } from '../DefaultMarketService';
+import { EventEmitter } from '../../../core/api/events';
+import { WaitingMessageProcessor } from '../../messageprocessors/WaitingMessageProcessor';
+import { CoreRpcService } from '../CoreRpcService';
+import { ExpiredListingItemProcessor } from '../../messageprocessors/ExpiredListingItemProcessor';
+import { CoreMessageProcessor } from '../../messageprocessors/CoreMessageProcessor';
+import { ProposalResultProcessor } from '../../messageprocessors/ProposalResultProcessor';
+import { DefaultSettingService } from '../DefaultSettingService';
+import { SettingValue } from '../../enums/SettingValue';
+import { SettingService } from '../model/SettingService';
+import {CoreCookieService, CoreCookieServiceStatus} from './CoreCookieService';
+import { Environment } from '../../../core/helpers/Environment';
+import { SmsgService } from '../SmsgService';
 import pForever from 'p-forever';
 import delay from 'delay';
 
-export class ServerStartedListener implements interfaces.Listener {
+export enum CoreConnectionStatusServiceStatus {
+    ERROR = 'ERROR',
+    COOKIESERVICE_BROKEN = 'COOKIESERVICE_BROKEN',
+    WALLET_NOT_INITIALIZED = 'WALLET_NOT_INITIALIZED',
+    CONNECTED = 'CONNECTED',
+    DISCONNECTED =  'DISCONNECTED'
+}
 
-    public static Event = Symbol('ServerStartedListenerEvent');
+export class CoreConnectionStatusService {
 
     public log: LoggerType;
 
-    public updated = 0;
     public isStarted = false;
+    public updated = 0;
+    public status: CoreConnectionStatusServiceStatus = CoreConnectionStatusServiceStatus.ERROR;
+
     private previousState = false;
-
-    private timeout: any;
-
     private INTERVAL = 1000;
     private STOP = false;
 
@@ -54,38 +57,19 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.observer.CoreCookieService) public coreCookieService: CoreCookieService,
-        @inject(Types.Service) @named(Targets.Service.observer.CoreConnectionStatusService) public coreConnectionStatusService: CoreConnectionStatusService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+        this.start();
     }
     // tslint:enable:max-line-length
 
-    /**
-     *
-     * @param payload
-     * @returns {Promise<void>}
-     */
-    public async act(payload: any): Promise<any> {
-        this.log.info('Received event ServerStartedListenerEvent', payload);
-        this.start();
-    }
-
     public async start(): Promise<void> {
-        this.log.debug('start(): ');
-
         await pForever(async () => {
-
-            this.log.debug('this.coreCookieService.status: ' + this.coreCookieService.status);
-            this.log.debug('this.coreConnectionStatusService.status: ' + this.coreConnectionStatusService.status);
-
-            if (this.coreConnectionStatusService.status === CoreConnectionStatusServiceStatus.CONNECTED) {
-                this.STOP = await this.bootstrap();
-            }
-
+            this.isStarted = await this.checkConnection();
             this.updated = Date.now();
             if (this.STOP) {
                 return pForever.end;
@@ -96,44 +80,24 @@ export class ServerStartedListener implements interfaces.Listener {
             await delay(this.INTERVAL);
             this.start();
         });
+
+        this.log.error('CoreConnectionStatusService stopped!');
     }
 
-    public pollForConnection(): void {
-        this.timeout = setTimeout(
-            async () => {
-                this.isStarted = await this.checkConnection();
-                this.pollForConnection();
-            },
-            this.INTERVAL
-        );
-    }
-
-    public stop(): void {
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-            this.timeout = undefined;
-        }
-    }
-
-    /**
-     *
-     */
-    private async bootstrap(): Promise<boolean> {
-        // all is now ready for bootstrapping the app
-        this.log.debug('bootstrap(): ');
-
-        // seed the default Profile
-        const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile().then(value => value.toJSON());
-
-
-
-
-        return true;
+    public async stop(): Promise<void> {
+        this.STOP = true;
     }
 
     private async checkConnection(): Promise<boolean> {
+        // coreCookieService needs to be started for the authentication configuration to be correct for coreRpcService
+        if (!this.coreCookieService.isStarted) {
+            this.log.debug('coreCookieService.isStarted: ' + this.coreCookieService.isStarted);
+            this.status = CoreConnectionStatusServiceStatus.COOKIESERVICE_BROKEN;
+            return false;
+        }
+
         let isConnected = await this.coreRpcService.isConnected();
-        let hasMarketConfiguration = false;
+        // let hasMarketConfiguration = false;
 
         if (isConnected) {
 
@@ -145,7 +109,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
-
+/*
                     // seed the default Profile
                     const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
                         .then(value => value.toJSON());
@@ -194,21 +158,27 @@ export class ServerStartedListener implements interfaces.Listener {
                         isConnected = false;
                         this.log.error('market not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
                     }
+*/
+                    this.status = CoreConnectionStatusServiceStatus.CONNECTED;
 
                 } else {
                     isConnected = false;
+                    this.status = CoreConnectionStatusServiceStatus.WALLET_NOT_INITIALIZED;
+
                     this.log.error('wallet not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
                 }
+                this.INTERVAL = 10000;
             }
 
             // this.log.info('connected to particld, checking again in ' + this.INTERVAL + 'ms.');
         } else {
 
-            if (this.previousState !== isConnected && hasMarketConfiguration) {
+            if (this.previousState !== isConnected /*&& hasMarketConfiguration*/) {
                 this.log.info('connection with particld disconnected.');
+                this.status = CoreConnectionStatusServiceStatus.DISCONNECTED;
 
                 // stop message polling
-                // await this.coreCookieService.stop();
+                // await this.waitingMessageProcessor.stop();
                 this.INTERVAL = 1000;
             }
 
@@ -221,7 +191,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
         return isConnected;
     }
-
+/*
     private async hasMarketConfiguration(profile: resources.Profile): Promise<boolean> {
 
         const allSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
@@ -239,4 +209,5 @@ export class ServerStartedListener implements interfaces.Listener {
         }
         return false;
     }
+*/
 }

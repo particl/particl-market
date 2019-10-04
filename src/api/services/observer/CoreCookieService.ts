@@ -6,9 +6,17 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { Environment } from '../../core/helpers/Environment';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { Environment } from '../../../core/helpers/Environment';
+import pForever from 'p-forever';
+import delay from 'delay';
+
+export enum CoreCookieServiceStatus {
+    ERROR = 'ERROR',
+    USING_DEFAULTS = 'USING_DEFAULTS',
+    USING_COOKIE = 'USING_COOKIE'
+}
 
 /**
  * Deals with Authentication.
@@ -18,15 +26,40 @@ export class CoreCookieService {
 
     public log: LoggerType;
 
+    public isStarted = false;
+    public updated = 0;
+    public status: CoreCookieServiceStatus = CoreCookieServiceStatus.ERROR;
+
     private DEFAULT_CORE_USER = 'test';
     private DEFAULT_CORE_PASSWORD = 'test';
     private CORE_COOKIE_FILE = process.env.RPCCOOKIEFILE ? process.env.RPCCOOKIEFILE : '.cookie';
-    private DEFAULT_INTERVAL = 1000;
+    private INTERVAL = 1000;
     private PATH_TO_COOKIE: string;
+    private STOP = false;
 
     constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
-        this.getCookieLoop();
+        this.start();
+    }
+
+    public async start(): Promise<void> {
+
+        await pForever(async () => {
+            await this.getCookieLoop();
+            this.updated = Date.now();
+            if (this.STOP) {
+                return pForever.end;
+            }
+            await delay(this.INTERVAL);
+        }).catch(async reason => {
+            this.log.error('ERROR: ', reason);
+            await delay(this.INTERVAL);
+            this.start();
+        });
+    }
+
+    public async stop(): Promise<void> {
+        this.STOP = true;
     }
 
     /**
@@ -44,72 +77,32 @@ export class CoreCookieService {
         return this.DEFAULT_CORE_PASSWORD;
     }
 
-    public async scheduleCookieLoop(pollingInterval: number = 1000): Promise<void> {
-        this.DEFAULT_INTERVAL = pollingInterval;
+    public async getCookieLoop(): Promise<void> {
         const cookie = this.getPathToCookie();
-        this.log.info('scheduleLoop(), cookie: ', cookie);
+        // this.log.info('getCookieLoop(), cookie path: ', cookie);
 
         if (cookie) {
             try {
                 const data = fs.readFileSync(cookie);
-                this.log.debug('cookie: ', data.toString());
+                if (!this.isStarted) {
+                    this.log.debug('getCookieLoop(), cookie: ', data.toString());
+                }
                 const usernameAndPassword = data.toString().split(':', 2);
 
                 // set username and password to cookie values
                 this.DEFAULT_CORE_USER = usernameAndPassword[0];
                 this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
-                this.log.debug('set DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
-                this.log.debug('set DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
+                // this.log.debug('getCookieLoop(), DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
+                // this.log.debug('getCookieLoop(), DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
+                this.status = CoreCookieServiceStatus.USING_COOKIE;
             } catch (e) {
-                this.log.error('ERROR: Could not find the cookie file.');
+                if (!this.isStarted) {
+                    this.log.error('ERROR: Could not find the cookie file.');
+                    this.status = CoreCookieServiceStatus.USING_DEFAULTS;
+                }
             }
         }
-
-        this.getCookieLoop();
-        this.log.debug('this.getCookieLoop() called ');
-
-    }
-
-    private getCookieLoop(): void {
-        try {
-            const cookie = this.getPathToCookie();
-
-            // we might not be running the particld locally so the cookie might not exists
-            if (cookie) {
-                fs.access(cookie, (error) => {
-                    if (!error) {
-                        // TODO: maybe add a silly level to the logger?
-                        // this.log.debug('cookie file exists!');
-                        fs.readFile(cookie, (err, data) => {
-                            if (err) {
-                                throw err;
-                            }
-                            // this.log.debug('cookie=', data.toString());
-                            const usernameAndPassword = data.toString().split(':', 2);
-
-                            // set username and password to cookie values
-                            this.DEFAULT_CORE_USER = usernameAndPassword[0];
-                            this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
-                        });
-                    } else {
-                        // this.log.debug('cookie not found!', err);
-                    }
-                    return;
-                });
-
-                // grab the cookie every second
-                // cookie updates everytime that the daemon restarts
-                // so we need to keep on checking this due to
-                // wallet encryption procedure (will reboot the daemon)
-                const self = this;
-                setTimeout(() => {
-                    self.getCookieLoop();
-                }, this.DEFAULT_INTERVAL);
-            }
-
-        } catch ( ex ) {
-            this.log.debug('cookie error: ', ex);
-        }
+        this.isStarted = true;
     }
 
     private getPathToCookie(): string | null {
@@ -162,7 +155,7 @@ export class CoreCookieService {
     private checkIfExists(dir: string): boolean {
         try {
             fs.accessSync(dir, fs.constants.R_OK);
-            this.log.info('Found particl-core path', dir);
+            this.log.debug('Found particl-core path', dir);
             return true;
         } catch (err) {
             this.log.error('Could not find particl-core path!', dir);
