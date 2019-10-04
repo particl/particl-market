@@ -44,7 +44,7 @@ test/reports/*
 
 data/wallet1.dat
 data/wallet2.dat
-data/database/*
+data/database*/*
 data/uploads/*
 data/tests/*
 data/particl1/*
