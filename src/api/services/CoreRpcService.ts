@@ -11,7 +11,7 @@ import { Environment } from '../../core/helpers/Environment';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import { CoreCookieService } from './CoreCookieService';
+import { CoreCookieService } from './observer/CoreCookieService';
 import { Rpc } from 'omp-lib';
 import { RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir } from 'omp-lib/dist/interfaces/rpc';
 import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
@@ -100,7 +100,7 @@ export class CoreRpcService extends CtRpc {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
+        @inject(Types.Service) @named(Targets.Service.observer.CoreCookieService) private coreCookieService: CoreCookieService
     ) {
         super();
         this.log = new Logger(__filename);

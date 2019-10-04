@@ -45,10 +45,10 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
-    public stop = false;
-    // private interval: any;
+    public isStarted = false;
     private pollCount = 0;
-    private DEFAULT_INTERVAL = 5 * 1000;
+    private INTERVAL = 5 * 1000;
+    private STOP = false;
 
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
     private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
@@ -72,12 +72,20 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
 
         await pForever(async () => {
             await this.poll();
-            if (this.stop) {
+            if (this.STOP) {
                 return pForever.end;
             }
-            await delay(this.DEFAULT_INTERVAL);
+            this.isStarted = true;
+            await delay(this.INTERVAL);
+        }).catch(async reason => {
+            this.log.error('ERROR: ', reason);
+            await delay(this.INTERVAL);
+            this.start();
         });
-        this.start();
+    }
+
+    public async stop(): Promise<void> {
+        this.STOP = true;
     }
 
     /**
@@ -200,30 +208,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
         }
     }
-/*
-    public stop(): void {
-        if (this.interval) {
-            clearInterval(this.interval);
-            this.interval = undefined;
-        }
-    }
 
-    public schedulePoll(pollingInterval: number = this.DEFAULT_INTERVAL): void {
-        this.interval = setInterval(() => {
-
-            clearInterval(this.interval);
-            this.poll()
-                .then(interval => {
-                    this.schedulePoll(interval); // re-run
-                })
-                .catch(reason => {
-                    this.log.error('POLLING FAILED!');
-                });
-
-        }, pollingInterval);
-
-    }
-*/
     /**
      * main poller
      *
@@ -234,13 +219,13 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
         const startTime = Date.now();
         const searchParams = [
             // poll only for the waiting messages
-            // {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
-            // {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
-            // {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      amount: 1,  nextInverval: this.DEFAULT_INTERVAL},
-            // {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
-            // {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
-            // {types: this.COMMENT_MESSAGES,      status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
-            {types: [],                         status: SmsgMessageStatus.WAITING,  amount: 10, nextInverval: this.DEFAULT_INTERVAL}
+            // {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.INTERVAL},
+            // {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.INTERVAL},
+            // {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      amount: 1,  nextInverval: this.INTERVAL},
+            // {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.INTERVAL},
+            // {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.INTERVAL},
+            // {types: this.COMMENT_MESSAGES,      status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.INTERVAL},
+            {types: [],                         status: SmsgMessageStatus.WAITING,  amount: 10, nextInverval: this.INTERVAL}
         ];
 
         let fetchNext = true;

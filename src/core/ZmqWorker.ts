@@ -16,6 +16,7 @@ export class ZmqWorker {
     private log = new Logger(__filename);
     private eventEmitter: EventEmitter;
     private coreMessageProcessor: CoreMessageProcessor;
+    private isConnected = false;
 
     constructor(ioc: IoC) {
         this.eventEmitter = ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
@@ -53,7 +54,7 @@ export class ZmqWorker {
 
         particld.on('smsg', async (msgid) => {
             this.log.debug('ZMQ: receive(smsg): ', msgid.toString('hex'));
-            msgid = msgid.toString('hex').slice(4);
+            msgid = msgid.toString('hex').slice(4); // 4 first ones are the msg version
             await this.coreMessageProcessor.process(msgid);
         });
 
@@ -74,15 +75,19 @@ export class ZmqWorker {
         });
 
         particld.on('connect:*', (uri, type) => {
+            this.isConnected = true;
             this.log.debug('ZMQ: connect:* ' + type + ', uri: ' + uri);
         });
 
         particld.on('close:*', (err, type) => {
-            this.log.debug('ZMQ: close:* ' + type + ', error: ' + err);
+            if (this.isConnected) {
+                this.log.debug('ZMQ: close:* ' + type + ', error: ' + err);
+            }
+            this.isConnected = false;
         });
 
         particld.on('retry:*', (type, attempt) => {
-            this.log.debug('ZMQ: retry:* ' + type + ', attempt: ' + attempt);
+            // this.log.debug('ZMQ: retry:* ' + type + ', attempt: ' + attempt);
         });
 
         particld.on('error:*', (err, type) => {
