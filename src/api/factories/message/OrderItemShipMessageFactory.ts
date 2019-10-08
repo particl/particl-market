@@ -10,10 +10,9 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
-import {OrderItemShipMessageCreateParams} from '../../requests/message/OrderItemShipMessageCreateParams';
-import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
+import { OrderItemShipMessageCreateParams } from '../../requests/message/OrderItemShipMessageCreateParams';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class OrderItemShipMessageFactory implements MessageFactoryInterface {
 
@@ -47,6 +46,7 @@ export class OrderItemShipMessageFactory implements MessageFactoryInterface {
             } as KVS);
         }
 
+        message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;
     }
 

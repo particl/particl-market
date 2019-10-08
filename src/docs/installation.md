@@ -6,7 +6,7 @@
 $ docker-compose up --build
 ```
 
-For development, the easiest way to run the marketplace is to run it using docker-compose. 
+For development, the easiest way to run the marketplace is to run it using `docker-compose`. 
 
 The default configuration will start up two marketplace instances and two particl-core's by default.
 

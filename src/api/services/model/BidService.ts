@@ -25,9 +25,9 @@ import { ProfileService } from './ProfileService';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MessageException } from '../../exceptions/MessageException';
-import {ListingItem} from '../../models/ListingItem';
-import {OrderItemStatus} from '../../enums/OrderItemStatus';
-import {OrderItem} from '../../models/OrderItem';
+import { CoreRpcService } from '../CoreRpcService';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { SmsgMessageService } from './SmsgMessageService';
 
 export class BidService {
 
@@ -39,6 +39,8 @@ export class BidService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -81,6 +83,21 @@ export class BidService {
             listingItemHash: hash
         } as BidSearchParams;
         return await this.search(params);
+    }
+
+    public async unlockBidOutputs(cancelBid: resources.Bid): Promise<void> {
+        const bidderInfo = await this.coreRpcService.getAddressInfo(cancelBid.ParentBid.bidder);
+        if (bidderInfo && bidderInfo.ismine) {
+            await this.unlockOutputsFor(cancelBid.ParentBid.msgid, 'buyer');
+        } else {
+            const parentBid = await this.findOne(cancelBid.ParentBid.id, true).then(b => b.toJSON());
+            const mpaAcceptBid: resources.Bid | undefined = _.find(parentBid.ChildBids, (child) => {
+                return child.type === MPAction.MPA_ACCEPT;
+            });
+            if (mpaAcceptBid) {
+                await this.unlockOutputsFor(mpaAcceptBid.msgid, 'seller');
+            }
+        }
     }
 
     /**
@@ -224,6 +241,12 @@ export class BidService {
 
     public async destroy(id: number): Promise<void> {
         await this.bidRepo.destroy(id);
+    }
+
+    private async unlockOutputsFor(msgid: string, type: string): Promise<void>  {
+        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msgid).then((b) => b.toJSON());
+        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
+        await this.coreRpcService.lockUnspent(true, bidMPM.action[type].payment.prevouts, true);
     }
 
 }
