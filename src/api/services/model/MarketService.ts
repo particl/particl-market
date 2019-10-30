@@ -18,6 +18,7 @@ import { ProfileService } from './ProfileService';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { MessageException } from '../../exceptions/MessageException';
+import { IdentityService } from './IdentityService';
 
 export class MarketService {
 
@@ -27,34 +28,30 @@ export class MarketService {
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
+    /**
+     * get the default Market for Profile, if it exists
+     * @param profileId
+     * @param withRelated
+     */
     public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
 
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId)
-            .then(value => value.toJSON());
-
-        const marketAddressSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
+        const marketIdSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.DEFAULT_MARKETPLACE_ID;
         });
-        // this.log.debug('getDefaultForProfile(), defaultProfileSetting: ', JSON.stringify(profileSettings, null, 2));
 
-        if (_.isEmpty(marketAddressSetting)) {
-            this.log.error(new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.').getMessage());
-            throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ADDRESS + ' not set.');
+        if (_.isEmpty(marketIdSetting)) {
+            this.log.error(new MessageException(SettingValue.DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
+            throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ID + ' not set.');
         }
-        this.log.debug('getDefaultForProfile(), marketAddressSetting: ', marketAddressSetting!.value);
-
-        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, marketAddressSetting!.value, withRelated);
-
-        if (market === undefined) {
-            this.log.error(`Default Market was not found!`);
-            throw new NotFoundException(marketAddressSetting!.value);
-        }
-        return market;
+        this.log.debug('getDefaultForProfile(), marketIdSetting: ', marketIdSetting!.value);
+        return await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
@@ -76,6 +73,15 @@ export class MarketService {
 
     public async findOneByProfileIdAndReceiveAddress(profileId: number, address: string, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, address, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
+        return market;
+    }
+
+    public async findOneByProfileIdAndReceiveAddressAndName(profileId: number, address: string, name: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddressAndName(profileId, address, name, withRelated);
         if (market === null) {
             this.log.warn(`Market with the address=${address} was not found!`);
             throw new NotFoundException(address);

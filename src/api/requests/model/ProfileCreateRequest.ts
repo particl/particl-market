@@ -17,7 +17,7 @@ export class ProfileCreateRequest extends RequestBody implements ModelRequestInt
     public name: string;
 
     // @IsNotEmpty()
-    public address: string;         // profile address
+    // public address: string;         // DEPRECATED, use Identity.address
 
     // related
     public shippingAddresses: AddressCreateRequest[];    // shipping addresses

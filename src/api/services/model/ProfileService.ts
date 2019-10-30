@@ -22,7 +22,6 @@ import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest'
 import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
-import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { IdentityService } from './IdentityService';
@@ -93,11 +92,7 @@ export class ProfileService {
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body: ProfileCreateRequest = JSON.parse(JSON.stringify(data));
-
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
-        if (_.isEmpty(body.address)) {
-            body.address = await this.getNewAddress();
-        }
 
         // extract and remove related models from request
         const shippingAddresses = body.shippingAddresses || [];
@@ -144,20 +139,6 @@ export class ProfileService {
         return newProfile;
     }
 
-    public async getNewAddress(): Promise<string> {
-        const newAddress = await this.coreRpcService.getNewAddress()
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                return res;
-            })
-            .catch(async (reason) => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                return 'ERROR_NO_ADDRESS';
-            });
-        this.log.debug('new address: ', newAddress );
-        return newAddress;
-    }
-
     @validate()
     public async update(id: number, @request(ProfileUpdateRequest) data: any): Promise<Profile> {
 
@@ -168,11 +149,6 @@ export class ProfileService {
 
         // set new values
         profile.Name = body.name;
-
-        // update address only if it is set
-        if (body.address) {
-            profile.Address = body.address;
-        }
 
         // update profile
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());

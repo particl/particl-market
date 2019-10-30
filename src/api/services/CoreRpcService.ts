@@ -13,76 +13,12 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './observer/CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressInfo, RpcUnspentOutput, RpcWallet, RpcWalletDir } from 'omp-lib/dist/interfaces/rpc';
-import { CtRpc, RpcBlindSendToOutput } from 'omp-lib/dist/abstract/rpc';
-import { BlockchainInfo } from './CoreRpcService';
+import { RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainInfo, RpcExtKeyGenesisImport, RpcMnemonic, RpcNetworkInfo, RpcRawTx,
+    RpcUnspentOutput, RpcWallet, RpcWalletDir, RpcWalletInfo, RpcExtKey, RpcExtKeyResult } from 'omp-lib/dist/interfaces/rpc';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
-import { SettingValue } from '../enums/SettingValue';
+import { CtRpc } from 'omp-lib/dist/abstract/rpc';
 
-declare function escape(s: string): string;
-declare function unescape(s: string): string;
-
-let RPC_REQUEST_ID = 1;
-
-// TODO: refactor the omp-lib rpc stuff, this code is painfull to look at!!!
-// TODO: create interfaces for results, and move them to separate files
-export interface BlockchainInfo {
-    chain: string;                      // current network name as defined in BIP70 (main, test, regtest)
-    blocks: number;                     // the current number of blocks processed in the server
-    headers: number;                    // the current number of headers we have validated
-    bestblockhash: string;              // the hash of the currently best block
-    moneysupply: number;                // the total amount of coin in the network
-    blockindexsize: number;             // the total number of block headers indexed
-    delayedblocks: number;              // the number of delayed blocks
-    difficulty: number;                 // the current difficulty
-    mediantime: number;                 // median time for the current best block
-    verificationprogress: number;       // estimate of verification progress [0..1]
-    initialblockdownload: boolean;      // estimate of whether this node is in Initial Block Download mode.
-    chainwork: string;                  // total amount of work in active chain, in hexadecimal
-    size_on_disk: number;               // the estimated size of the block and undo files on disk
-    pruned: boolean;                    // if the blocks are subject to pruning
-    // todo: add pruning and softfork related data when needed
-}
-
-export interface RpcWalletInfo {
-    walletname: string;                 // the wallet name
-    walletversion: number;              // the wallet version
-    total_balance: number;              // the total balance of the wallet in PART
-    balance: number;                    // the total confirmed balance of the wallet in PART
-    blind_balance: number;              // the total confirmed blinded balance of the wallet in PART
-    anon_balance: number;               // the total confirmed anon balance of the wallet in PART
-    staked_balance: number;             // the total staked balance of the wallet in PART (non-spendable until maturity)
-    unconfirmed_balance: number;        // the total unconfirmed balance of the wallet in PART
-    immature_balance: number;           // the total immature balance of the wallet in PART
-    immature_anon_balance: number;      // the total immature anon balance of the wallet in PART
-    reserve: number;                    // the reserve balance of the wallet in PART
-    txcount: number;                    // the total number of transactions in the wallet
-    keypoololdest: number;              // the timestamp (seconds since Unix epoch) of the oldest pre-generated key in the key pool
-    keypoolsize: number;                // how many new keys are pre-generated (only counts external keys)
-    keypoolsize_hd_internal: number;    // how many new keys are pre-generated for internal use (used for change outputs, only appears if the wallet is
-                                        // using this feature, otherwise external keys are used)
-    encryptionstatus: string;           // unencrypted/locked/unlocked
-    unlocked_until: number;             // the timestamp in seconds since epoch (midnight Jan 1 1970 GMT) that the wallet is unlocked for transfers,
-                                        // or 0 if the wallet is locked
-    paytxfee: number;                   // the transaction fee configuration, set in PART/kB
-    hdseedid?: string;                  // the Hash160 of the HD account pubkey (only present when HD is enabled)
-    private_keys_enabled: boolean;      // false if privatekeys are disabled for this wallet (enforced watch-only wallet)
-}
-
-export interface RpcMnemonic {
-    mnemonic: string;
-    master: string;
-}
-
-export interface RpcExtKeyGenesisImport {
-    result: string;
-    master_id: string;
-    master_label: string;
-    account_id: string;
-    account_label: string;
-    note: string;
-}
 
 decorate(injectable(), Rpc);
 // TODO: refactor omp-lib CtRpc/Rpc
@@ -90,13 +26,13 @@ export class CoreRpcService extends CtRpc {
 
     public log: LoggerType;
 
+    private RPC_REQUEST_ID = 1;
+
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
     private DEFAULT_REGTEST_PORT = 19792;
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
-
-    private activeWallet = 'market';
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -104,7 +40,6 @@ export class CoreRpcService extends CtRpc {
     ) {
         super();
         this.log = new Logger(__filename);
-        this.activeWallet = process.env[SettingValue.DEFAULT_IDENTITY.toString()] ? process.env[SettingValue.DEFAULT_IDENTITY.toString()] : this.activeWallet;
     }
 
     public async isConnected(): Promise<boolean> {
@@ -115,6 +50,7 @@ export class CoreRpcService extends CtRpc {
             });
     }
 
+/*
     public async hasWallet(): Promise<boolean> {
         return await this.getWalletInfo()
             .then(response => {
@@ -140,7 +76,7 @@ export class CoreRpcService extends CtRpc {
         await this.smsgSetWallet(wallet);
         this.log.debug('ACTIVE WALLET SET TO: ' + wallet);
     }
-
+*/
 
     /**
      * Returns a list of wallets in the wallet directory.
@@ -162,6 +98,7 @@ export class CoreRpcService extends CtRpc {
 
     /**
      *
+     * @param name
      * @returns {Promise<boolean>}
      */
     public async walletLoaded(name: string): Promise<boolean> {
@@ -175,17 +112,17 @@ export class CoreRpcService extends CtRpc {
 
     /**
      *
+     * @param name
      * @returns {Promise<boolean>}
      */
     public async walletExists(name: string): Promise<boolean> {
         return await this.listWalletDir()
             .then(result => {
                 const found = _.find(result.wallets, wallet => {
-                    // this.log.debug(wallet.name + ' === ' + name + ': ' + (wallet.name === name));
                     return wallet.name === name;
                 });
                 const exists = found ? true : false;
-                this.log.debug('walletExists: ', exists);
+                // this.log.debug('walletExists: ', exists);
                 return exists;
             });
     }
@@ -193,31 +130,39 @@ export class CoreRpcService extends CtRpc {
     /**
      * Creates and loads a new wallet.
      *
-     * @returns {Promise<RpcWallet>}
+     * @param name
+     * @param disablePrivateKeys
+     * @param blank
      */
     public async createWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
         return await this.call('createwallet', [name, disablePrivateKeys, blank]);
     }
 
+    /**
+     *
+     * @param name
+     * @param disablePrivateKeys
+     * @param blank
+     */
     public async createAndLoadWallet(name: string, disablePrivateKeys: boolean = false, blank: boolean = false): Promise<RpcWallet> {
         return await this.createWallet(name, disablePrivateKeys, blank);
-    }
-
-    public async mnemonic(params: any[] = []): Promise<RpcMnemonic> {
-        return await this.call('mnemonic', params);
-    }
-
-    public async extKeyGenesisImport(params: any[] = []): Promise<RpcExtKeyGenesisImport> {
-        return await this.call('extkeygenesisimport', params);
     }
 
     /**
      * Loads a wallet from a wallet file or directory.
      *
-     * @returns {Promise<RpcWallet>}
+     * @param walletName
      */
-    public async loadWallet(name: string): Promise<RpcWallet> {
-        return await this.call('loadwallet', [name]);
+    public async loadWallet(walletName: string): Promise<RpcWallet> {
+        return await this.call('loadwallet', [walletName]);
+    }
+
+    /**
+     * Returns an object containing various wallet state info.
+     * @param wallet
+     */
+    public async getWalletInfo(wallet: string): Promise<RpcWalletInfo> {
+        return await this.call('getwalletinfo', [], wallet);
     }
 
     /**
@@ -225,10 +170,154 @@ export class CoreRpcService extends CtRpc {
      * SMSG can only be enabled on one wallet.
      * Call with no parameters to unset the active wallet.
      *
-     * @returns {Promise<RpcWallet>}
+     * @param walletName
      */
-    public async smsgSetWallet(name?: string): Promise<RpcWallet> {
-        return await this.call('smsgsetwallet', [name]);
+    public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
+        return await this.call('smsgsetwallet', [walletName]);
+    }
+
+    /**
+     * mnemonic new|decode|addchecksum|dumpwords|listlanguages
+     *          new ( "password" language nBytesEntropy bip44 )
+     *              Generate a new extended key and mnemonic
+     *          decode "password" "mnemonic" ( bip44 )
+     *              Decode mnemonic
+     *          addchecksum "mnemonic"
+     *              Add checksum words to mnemonic
+     *          mnemonic dumpwords ( "language" )
+     *              Print list of words
+     *          mnemonic listlanguages
+     *              Print list of supported languages
+     * @param params
+     */
+    public async mnemonic(params: any[] = []): Promise<RpcMnemonic> {
+        return await this.call('mnemonic', params);
+    }
+
+    /**
+     * extkey list (show_secrets)
+     *
+     * List loose and account ext keys.
+     *
+     * Arguments:
+     * 1. show_secrets (boolean)
+     *
+     * @param wallet
+     * @param showSecrets
+     */
+    public async extKeyList(wallet: string, showSecrets: boolean = true): Promise<RpcExtKey[]> {
+        return await this.call('extkey', ['list', showSecrets], wallet);
+    }
+
+    /**
+     * extkey import "key" ( "label" bip44 save_bip44_key )
+     *
+     * Add loose key to wallet.
+     * If bip44 is set import will add the key derived from <key> on the bip44 path.
+     * If save_bip44_key is set import will save the bip44 key to the wallet.
+     *
+     * @param wallet
+     * @param key
+     * @param label
+     * @param saveBip44Key
+     */
+    public async extKeyImport(wallet: string, key: string, label: string, saveBip44Key: boolean = true): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['import', key, label, saveBip44Key], wallet);
+    }
+
+    /**
+     * extkey info "key" ( "path" )
+     * Return info for provided "key" or key at "path" from "key".
+     *
+     * @param wallet
+     * @param key
+     * @param path
+     */
+    public async extKeyInfo(wallet: string, key: string, path?: string): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['info', key], wallet);
+    }
+
+    /**
+     * extkey setMaster "key/id"
+     * Set a private ext key as current master key.
+     * key can be a extkeyid or full key, but must be in the wallet.
+     *
+     * @param wallet
+     * @param id
+     */
+    public async extKeySetMaster(wallet: string, id: string): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['setMaster', id], wallet);
+    }
+
+    /**
+     * extkey deriveAccount ( "label" "path" )
+     * Make a new account from the current master key, save to wallet.
+     *
+     * @param wallet
+     * @param label
+     */
+    public async extKeyDeriveAccount(wallet: string, label: string): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['deriveAccount', label], wallet);
+    }
+
+    /**
+     * extkey importAccount "key" ( time_scan_from "label" )
+     * Add account key to wallet.
+     * time_scan_from: N no check, Y-m-d date to start scanning the blockchain for owned txns.
+     *
+     * @param wallet
+     * @param key
+     */
+    public async extKeyImportAccount(wallet: string, key: string): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['importAccount', key], wallet);
+    }
+
+    /**
+     * extkey setDefaultAccount "id"
+     * Set an account as the default.
+     *
+     * @param wallet
+     * @param id
+     */
+    public async extKeySetDefaultAccount(wallet: string, id: string): Promise<RpcExtKeyResult> {
+        return await this.call('extkey', ['setDefaultAccount', id], wallet);
+    }
+
+    /**
+     * extkeyaltversion "ext_key"
+     *
+     * Returns the provided ext_key encoded with alternate version bytes.
+     * If the provided ext_key has a Bitcoin prefix the output will be encoded with a Particl prefix.
+     * If the provided ext_key has a Particl prefix the output will be encoded with a Bitcoin prefix.
+     *
+     * Arguments:
+     * 1. ext_key    (string, required)
+     *
+     * @param extKey
+     */
+    public async extKeyAltVersion(extKey: string): Promise<string> {
+        return await this.call('extkeyaltversion', [extKey]);
+    }
+
+    /**
+     * extkeygenesisimport "mnemonic/key" ( "passphrase" save_bip44_root "master_label" "account_label" scan_chain_from )
+     *
+     * Import master key from bip44 mnemonic root key and derive default account.
+     * Derives an extra chain from path 444444 to receive imported coin.
+     *
+     * Arguments:
+     * 1. mnemonic/key       (string, required) The mnemonic or root extended key.
+     * 2. passphrase         (string, optional, default=) Passphrase when importing mnemonic.
+     * 3. save_bip44_root    (boolean, optional, default=false) Save bip44 root key to wallet.
+     * 4. master_label       (string, optional, default=Master Key) Label for master key.
+     * 5. account_label      (string, optional, default=Default Account) Label for account.
+     * 6. scan_chain_from    (numeric, optional, default=0) Scan for transactions in blocks after timestamp, negative number to skip.
+     *
+     * @param wallet
+     * @param params
+     */
+    public async extKeyGenesisImport(wallet: string, params: any[] = []): Promise<RpcExtKeyGenesisImport> {
+        return await this.call('extkeygenesisimport', params, wallet);
     }
 
     /**
@@ -248,24 +337,17 @@ export class CoreRpcService extends CtRpc {
     /**
      *
      */
-    public async getNetworkInfo(): Promise<any> {
-        return await this.call('getnetworkinfo', [], false);
-    }
-
-    /**
-     *
-     */
-    public async getWalletInfo(): Promise<RpcWalletInfo> {
-        return await this.call('getwalletinfo');
+    public async getNetworkInfo(): Promise<RpcNetworkInfo> {
+        return await this.call('getnetworkinfo', []);
     }
 
     /**
      * Returns an object containing various state info regarding blockchain processing.
      *
-     * @returns {Promise<BlockchainInfo>}
+     * @returns {Promise<RpcBlockchainInfo>}
      */
-    public async getBlockchainInfo(): Promise<BlockchainInfo> {
-        return await this.call('getblockchaininfo', [], false);
+    public async getBlockchainInfo(): Promise<RpcBlockchainInfo> {
+        return await this.call('getblockchaininfo', []);
     }
 
     /**
@@ -284,13 +366,13 @@ export class CoreRpcService extends CtRpc {
      *   "balance"   (string) The current balance in satoshis
      *   "received"  (string) The total number of satoshis received (including change)
      * }
+     * @param wallet
      * @param addresses
-     * @param logCall
      */
-    public async getAddressBalance(addresses: string[], logCall: boolean = false): Promise<any> {
+    public async getAddressBalance(wallet: string, addresses: string[]): Promise<RpcAddressBalance> {
         return await this.call('getaddressbalance', [{
             addresses
-        }], logCall);
+        }], wallet);
     }
 
     /**
@@ -310,17 +392,18 @@ export class CoreRpcService extends CtRpc {
      *    ]
      *  }, ... ]
      *
+     * @param wallet
      * @param minconf
      * @param includeEmpty
      * @param includeWatchOnly
      * @param addressFilter
      */
-    public async listReceivedByAddress(minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
+    public async listReceivedByAddress(wallet: string, minconf: number = 3, includeEmpty: boolean = false, includeWatchOnly: boolean = false,
                                        addressFilter?: string): Promise<any> {
         if (addressFilter) {
-            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter]);
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly, addressFilter], wallet);
         } else {
-            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly]);
+            return await this.call('listreceivedbyaddress', [minconf, includeEmpty, includeWatchOnly], wallet);
         }
     }
 
@@ -341,16 +424,17 @@ export class CoreRpcService extends CtRpc {
      * Result:
      * "address"                (string) The new particl address
      *
+     * @param wallet
      * @param {any[]} params
      * @param {boolean} smsgAddress
      * @returns {Promise<string>}
      */
-    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<string> {
-        const address = await this.call('getnewaddress', params);
+    public async getNewAddress(wallet: string, params: any[] = [], smsgAddress: boolean = true): Promise<string> {
+        const address = await this.call('getnewaddress', params, wallet);
 
         if (smsgAddress) {
             // call﻿smsgaddlocaladdress, even though I'm not sure if its required
-            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address]);
+            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address], wallet);
             this.log.debug('addLocalAddressResponse: ', addLocalAddressResponse);
 
             // add address as receive address
@@ -383,11 +467,12 @@ export class CoreRpcService extends CtRpc {
      * Result:
      * "address"                (string) The new particl stealth address
      *
+     * @param wallet
      * @param {any[]} params
      * @returns {Promise<string>}
      */
-    public async getNewStealthAddress(params: any[] = []): Promise<CryptoAddress> {
-        const sx = await this.call('getnewstealthaddress', params);
+    public async getNewStealthAddress(wallet: string, params: any[] = []): Promise<CryptoAddress> {
+        const sx = await this.call('getnewstealthaddress', params, wallet);
         return {
             type: CryptoAddressType.STEALTH,
             address: sx
@@ -401,11 +486,11 @@ export class CoreRpcService extends CtRpc {
         return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
     }
 */
-    public async getPrevouts(typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
+    public async getPrevouts(wallet: string, typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
         // todo: create an enum for the outputtype
         this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeIn: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
         const prevOuts: BlindPrevout[] = [];
-        const newPrevOut = await this.createPrevoutFrom(typeIn, typeOut, satoshis, blind);
+        const newPrevOut = await this.createPrevoutFrom(wallet, typeIn, typeOut, satoshis, blind);
         prevOuts.push(newPrevOut);
         return prevOuts;
     }
@@ -414,12 +499,13 @@ export class CoreRpcService extends CtRpc {
      * Verify value commitment.
      * note that the amount is satoshis, which differs from the rpc api
      *
+     * @param wallet
      * @param commitment
      * @param blind
      * @param satoshis
      */
-    public async verifyCommitment(commitment: string, blind: string, satoshis: number): Promise<boolean> {
-        return (await this.call('verifycommitment', [commitment, blind, fromSatoshis(satoshis)])).result;
+    public async verifyCommitment(wallet: string, commitment: string, blind: string, satoshis: number): Promise<boolean> {
+        return (await this.call('verifycommitment', [commitment, blind, fromSatoshis(satoshis)], wallet)).result;
     }
 
     /**
@@ -440,11 +526,22 @@ export class CoreRpcService extends CtRpc {
      *   "account": "_escrow_pub_0b787bf9b0da334baf91b62213f0f0362858299d3babd96893fd010414b71c43"
      * }
      *
+     * @param wallet
      * @param {string} address
      * @returns {Promise<any>}
      */
-    public async getAddressInfo(address: string): Promise<RpcAddressInfo> {
-        return await this.call('getaddressinfo', [address]);
+    public async getAddressInfo(wallet: string, address: string): Promise<RpcAddressInfo> {
+        return await this.call('getaddressinfo', [address], wallet);
+    }
+
+    /**
+     *
+     * @param wallet
+     * @param address
+     */
+    public async isAddressMine(wallet: string, address: string): Promise<boolean> {
+        const checkAddress: RpcAddressInfo = await this.getAddressInfo(wallet, address);
+        return (checkAddress && checkAddress.ismine);
     }
 
     /**
@@ -470,12 +567,13 @@ export class CoreRpcService extends CtRpc {
      *   "redeemScript":"script"         (string) The string value of the hex-encoded redemption script.
      * }
      *
+     * @param wallet
      * @param {number} nrequired
      * @param {string[]} keys
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async addMultiSigAddress(nrequired: number, keys: string[], account?: string): Promise<any> {
+    public async addMultiSigAddress(wallet: string, nrequired: number, keys: string[], account?: string): Promise<any> {
         const params: any[] = [];
         params.push(nrequired);
         params.push(keys);
@@ -483,7 +581,7 @@ export class CoreRpcService extends CtRpc {
             params.push(account);
         }
         this.log.debug('params: ', params);
-        return await this.call('addmultisigaddress', params);
+        return await this.call('addmultisigaddress', params, wallet);
     }
 
     /**
@@ -493,77 +591,83 @@ export class CoreRpcService extends CtRpc {
      * Note that the transaction's inputs are not signed, and
      * it is not stored in the wallet or transmitted to the network.
      *
-     * @param {"resources".Output[]} inputs
+     * @param wallet
+     * @param inputs
      * @param outputs
      * @returns {Promise<any>}
      */
-    public async createRawTransaction(inputs: BlindPrevout[], outputs: any[]): Promise<any> {
-        return await this.call('createrawtransaction', [inputs, outputs]);
+    public async createRawTransaction(wallet: string, inputs: BlindPrevout[], outputs: any[]): Promise<any> {
+        return await this.call('createrawtransaction', [inputs, outputs], wallet);
     }
 
     /**
      * ﻿Sign inputs for raw transaction (serialized, hex-encoded)
      *
+     * @param wallet
      * @param {string} hexstring
      * @param {any[]} outputs
      * @returns {Promise<any>}
      */
-    public async signRawTransactionWithWallet(hexstring: string, outputs?: any[]): Promise<any> {
+    public async signRawTransactionWithWallet(wallet: string, hexstring: string, outputs?: any[]): Promise<any> {
         const params: any[] = [];
         params.push(hexstring);
         if (outputs) {
             params.push(outputs);
         }
-        return await this.call('signrawtransactionwithwallet', params);
+        return await this.call('signrawtransactionwithwallet', params, wallet);
     }
 
     /**
      * Create a signature for a raw transaction for a particular prevout & address (serialized, hex-encoded)
      *
+     * @param wallet
      * @param {string} hex
      * @param {RpcUnspentOutput} prevtx
      * @param {string} address
      * @returns {Promise<string>} hex encoded signature
      */
-    public async createSignatureWithWallet(hex: string, prevtx: RpcUnspentOutput, address: string): Promise<string> {
-        return await this.call('createsignaturewithwallet', [hex, prevtx, address]);
+    public async createSignatureWithWallet(wallet: string, hex: string, prevtx: RpcUnspentOutput, address: string): Promise<string> {
+        return await this.call('createsignaturewithwallet', [hex, prevtx, address], wallet);
     }
 
     /**
      * Imports an address into the wallets
      *
+     * @param wallet
      * @param {string} address the address to import
      * @param {string} label the label to assign the address
      * @param {boolean} rescan should the wallet rescan the blockchain for the transactions to this address
      * @param {boolean} p2sh should the address be a p2sh address
      * @returns {Promise<void>} returns nothing
      */
-    public async importAddress(address: string, label: string, rescan: boolean, p2sh: boolean): Promise<void> {
-        await this.call('importaddress', [address, label, rescan, p2sh]);
+    public async importAddress(wallet: string, address: string, label: string, rescan: boolean, p2sh: boolean): Promise<void> {
+        await this.call('importaddress', [address, label, rescan, p2sh], wallet);
     }
 
     /**
      * Send a certain amount to an address.
      *
+     * @param wallet
      * @param {string} address the address to send coins to
      * @param {number} amount the amount of coins to transfer (NOT in satoshis!)
      * @param {string} comment the comment to attach to the wallet transaction
      * @returns {Promise<string>} returns the transaction id
      */
-    public async sendToAddress(address: string, amount: number, comment: string): Promise<string> {
-        return await this.call('sendtoaddress', [address, amount, comment]);
+    public async sendToAddress(wallet: string, address: string, amount: number, comment: string): Promise<string> {
+        return await this.call('sendtoaddress', [address, amount, comment], wallet);
     }
 
 
     /**
      * Send part to multiple outputs.
      *
+     * @param wallet
      * @param typeIn        (OutputType, required) part/blind/anon
      * @param typeOut       (OutputType, required) part/blind/anon
      * @param outputs       (json array, required) A json array of json objects
      */
-    public async sendTypeTo(typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
-        const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs]);
+    public async sendTypeTo(wallet: string, typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
+        const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs], wallet);
         this.log.debug('txid: ', txid);
         return txid;
     }
@@ -657,7 +761,7 @@ export class CoreRpcService extends CtRpc {
      * @param verbose
      * @param blockhash
      */
-    public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<any> {
+    public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<RpcRawTx> {
         const params: any[] = [];
         params.push(txid);
         params.push(verbose);
@@ -669,27 +773,36 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Verify inputs for raw transaction (serialized, hex-encoded).
+     * @param params
+     */
+    public async verifyRawTransaction(params: any[] = []): Promise<any> {
+        return await this.call('verifyrawtransaction', params);
+    }
+
+    /**
      * ﻿Returns array of unspent transaction outputs
      * with between minconf and maxconf (inclusive) confirmations.
      * Optionally filter to only include txouts paid to specified addresses.
      *
+     * @param wallet
      * @param type
      * @param {number} minconf
      * @param {number} maxconf
      * @returns {Promise<any>}
      */
-    public async listUnspent(type: OutputType, minconf: number = 1, maxconf: number = 9999999
+    public async listUnspent(wallet: string, type: OutputType, minconf: number = 1, maxconf: number = 9999999
                              /*, addresses: string[] = [], includeUnsafe: boolean = true,
                              queryOptions: any = {}*/): Promise<RpcUnspentOutput[]> {
         const params: any[] = [minconf, maxconf]; // , addresses, includeUnsafe];
 
         switch (type) {
             case OutputType.ANON:
-                return await this.call('listunspentanon', params);
+                return await this.call('listunspentanon', params, wallet);
             case OutputType.BLIND:
-                return await this.call('listunspentblind', params);
+                return await this.call('listunspentblind', params, wallet);
             case OutputType.PART:
-                return await this.call('listunspent', params);
+                return await this.call('listunspent', params, wallet);
             default:
                 throw Error('Invalid Output type.');
         }
@@ -700,33 +813,22 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Permanently locks outputs until unlocked or spent.
      *
-     * @param {boolean} unlock
+     * @param wallet
+     * @param unlock
      * @param prevouts
      * @param permanent
-     * @returns {Promise<any>}
+     * @returns {Promise<boolean>}
      */
-    public async lockUnspent(unlock: boolean, prevouts: Prevout[]/*RpcOutput[]*/, permanent: boolean = true): Promise<boolean> {
-
-        const params: any[] = [unlock, prevouts, permanent];
-        return await this.call('lockunspent', params);
-    }
-
-    /**
-     * ﻿DEPRECATED. Returns the current Particl address for receiving payments to this account.
-     *
-     * @param {string} account
-     * @returns {Promise<any>}
-     */
-    public async getAccountAddress(account: string): Promise<any> {
-        const params: any[] = [account];
-        return await this.call('getaccountaddress', params);
+    public async lockUnspent(wallet: string, unlock: boolean, prevouts: Prevout[], permanent: boolean): Promise<boolean> {
+        return await this.call('lockunspent', [unlock, prevouts, permanent], wallet);
     }
 
     /**
      * ﻿Get the current block number
      *
-     * @returns {Promise<any>}
+     * @returns {Promise<number>}
      */
     public async getBlockCount(): Promise<number> {
         return await this.call('getblockcount', []);
@@ -735,24 +837,26 @@ export class CoreRpcService extends CtRpc {
     /**
      * ﻿Reveals the private key corresponding to 'address'.
      *
+     * @param wallet
      * @param {string} address
      * @returns {Promise<string>}
      */
-    public async dumpPrivKey(address: string): Promise<string> {
+    public async dumpPrivKey(wallet: string, address: string): Promise<string> {
         const params: any[] = [address];
-        return await this.call('dumpprivkey', params);
+        return await this.call('dumpprivkey', params, wallet);
     }
 
     /**
      * Sign an object.
      *
+     * @param wallet
      * @param {string} address
      * @param {any} message
      * @returns {Promise<string>}
      */
-    public async signMessage(address: string, message: any): Promise<string> {
+    public async signMessage(wallet: string, address: string, message: any): Promise<string> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
-        return await this.call('signmessage', [address, signableMessage]);
+        return await this.call('signmessage', [address, signableMessage], wallet);
     }
 
     /**
@@ -772,12 +876,13 @@ export class CoreRpcService extends CtRpc {
      *
      * @param method
      * @param params
+     * @param wallet
      * @param logCall
      * @returns {Promise<any>}
      */
-    public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
+    public async call(method: string, params: any[] = [], wallet?: string, logCall: boolean = true): Promise<any> {
 
-        const id = RPC_REQUEST_ID++;
+        const id = this.RPC_REQUEST_ID++;
         const postData = JSON.stringify({
             jsonrpc: '2.0',
             method,
@@ -785,15 +890,13 @@ export class CoreRpcService extends CtRpc {
             id
         });
 
-        const url = this.getUrl();
+        const url = this.getUrl(wallet);
         const options = this.getOptions();
 
         if (logCall) {
             // TODO: handle [object Object]
             this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
-        // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
@@ -826,12 +929,6 @@ export class CoreRpcService extends CtRpc {
 
     }
 
-    public async isAddressMine(address: string): Promise<boolean> {
-        const checkAddress = await this.getAddressInfo(address);
-
-        return (checkAddress && checkAddress.ismine);
-    }
-
     private getOptions(): any {
 
         const auth = {
@@ -850,11 +947,10 @@ export class CoreRpcService extends CtRpc {
             headers
         };
 
-        // this.log.debug('initializing rpc with opts:', rpcOpts);
         return rpcOpts;
     }
 
-    private getUrl(): string {
+    private getUrl(wallet: string | undefined): string {
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = process.env.RPC_PORT ?
             process.env.RPC_PORT :
@@ -866,10 +962,12 @@ export class CoreRpcService extends CtRpc {
                 )
             );
 
-        // const wallet = (process.env.WALLET ? `/wallet/${process.env.WALLET}` : '/wallet/');
-        const wallet = '/wallet/' + this.activeWallet;
-
-        return `http://${host}:${port}${wallet}`;
+        const url = 'http://' + host + ':' + port;
+        if (wallet === undefined) {
+            return url;
+        } else {
+            return url + '/wallet/' + wallet;
+        }
     }
 
 }

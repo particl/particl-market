@@ -8,10 +8,12 @@ declare module 'resources' {
     interface Identity {
         id: number;
         wallet: string;
-        identitySpaddress: string;
-        escrowSpaddress: string;
-        txfeeSpaddress: string;
-        walletHdseedid: string;
+        address: string;
+        hdseedid: string;
+        path: string;
+        mnemonic: string;
+        passphrase: string;
+        type: string;
 
         createdAt: Date;
         updatedAt: Date;

@@ -15,6 +15,7 @@ declare module 'resources' {
         publishKey: string;
         publishAddress: string;
 
+        Profile: Profile;
         Identity: Identity;
 
         createdAt: Date;

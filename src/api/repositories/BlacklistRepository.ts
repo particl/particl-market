@@ -5,7 +5,7 @@ import { Blacklist } from '../models/Blacklist';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import {BlacklistType} from '../enums/BlacklistType';
+import { BlacklistType } from '../enums/BlacklistType';
 
 export class BlacklistRepository {
 
@@ -24,8 +24,7 @@ export class BlacklistRepository {
     }
 
     public async findAllByType(type: BlacklistType): Promise<Bookshelf.Collection<Blacklist>> {
-        const list = await this.BlacklistModel.fetchAllByType(type);
-        return list as Bookshelf.Collection<Blacklist>;
+        return await this.BlacklistModel.fetchAllByType(type);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Blacklist> {

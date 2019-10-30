@@ -9,8 +9,8 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { Environment } from '../../../core/helpers/Environment';
-import pForever from 'p-forever';
-import delay from 'delay';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 
 export enum CoreCookieServiceStatus {
     ERROR = 'ERROR',
@@ -44,14 +44,19 @@ export class CoreCookieService {
 
     public async start(): Promise<void> {
 
-        await pForever(async () => {
+        await pForever(async (i) => {
+            i++;
+
             await this.getCookieLoop();
             this.updated = Date.now();
             if (this.STOP) {
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-        }).catch(async reason => {
+            this.log.error('CoreCookieService: ', i);
+
+            return i;
+        }, 0).catch(async reason => {
             this.log.error('ERROR: ', reason);
             await delay(this.INTERVAL);
             this.start();

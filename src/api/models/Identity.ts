@@ -59,17 +59,23 @@ export class Identity extends Bookshelf.Model<Identity> {
     public get Wallet(): string { return this.get('wallet'); }
     public set Wallet(value: string) { this.set('wallet', value); }
 
-    public get IdentitySpaddress(): string { return this.get('identity_spaddress'); }
-    public set IdentitySpaddress(value: string) { this.set('identity_spaddress', value); }
+    public get Address(): string { return this.get('address'); }
+    public set Address(value: string) { this.set('address', value); }
 
-    public get EscrowSpaddress(): string { return this.get('escrow_spaddress'); }
-    public set EscrowSpaddress(value: string) { this.set('escrow_spaddress', value); }
+    public get Hdseedid(): string { return this.get('hdseedid'); }
+    public set Hdseedid(value: string) { this.set('hdseedid', value); }
 
-    public get TxfeeSpaddress(): string { return this.get('txfee_spaddress'); }
-    public set TxfeeSpaddress(value: string) { this.set('txfee_spaddress', value); }
+    public get Path(): string { return this.get('path'); }
+    public set Path(value: string) { this.set('path', value); }
 
-    public get WalletHdseedid(): string { return this.get('wallet_hdseedid'); }
-    public set WalletHdseedid(value: string) { this.set('wallet_hdseedid', value); }
+    public get Mnemonic(): string { return this.get('mnemonic'); }
+    public set Mnemonic(value: string) { this.set('mnemonic', value); }
+
+    public get Passphrase(): string { return this.get('passphrase'); }
+    public set Passphrase(value: string) { this.set('passphrase', value); }
+
+    public get Type(): string { return this.get('type'); }
+    public set Type(value: string) { this.set('type', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

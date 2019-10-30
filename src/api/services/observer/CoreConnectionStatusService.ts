@@ -17,13 +17,11 @@ import { ExpiredListingItemProcessor } from '../../messageprocessors/ExpiredList
 import { CoreMessageProcessor } from '../../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../../messageprocessors/ProposalResultProcessor';
 import { DefaultSettingService } from '../DefaultSettingService';
-import { SettingValue } from '../../enums/SettingValue';
 import { SettingService } from '../model/SettingService';
 import {CoreCookieService, CoreCookieServiceStatus} from './CoreCookieService';
-import { Environment } from '../../../core/helpers/Environment';
 import { SmsgService } from '../SmsgService';
-import pForever from 'p-forever';
-import delay from 'delay';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 
 export enum CoreConnectionStatusServiceStatus {
     ERROR = 'ERROR',
@@ -68,14 +66,20 @@ export class CoreConnectionStatusService {
     // tslint:enable:max-line-length
 
     public async start(): Promise<void> {
-        await pForever(async () => {
+
+        await pForever(async (i) => {
+            i++;
+
             this.isStarted = await this.checkConnection();
             this.updated = Date.now();
             if (this.STOP) {
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-        }).catch(async reason => {
+            this.log.error('CoreConnectionStatusService: ', i);
+
+            return i;
+        }, 0).catch(async reason => {
             this.log.error('ERROR: ', reason);
             await delay(this.INTERVAL);
             this.start();
@@ -96,7 +100,7 @@ export class CoreConnectionStatusService {
             return false;
         }
 
-        let isConnected = await this.coreRpcService.isConnected();
+        const isConnected = await this.coreRpcService.isConnected();
         // let hasMarketConfiguration = false;
 
         if (isConnected) {
@@ -104,12 +108,12 @@ export class CoreConnectionStatusService {
             if (this.previousState !== isConnected) {
                 this.log.info('connection with particld established.');
 
+/*
                 const hasWallet = await this.coreRpcService.hasWallet();
                 this.log.debug('hasWallet: ' + hasWallet);
 
                 if (hasWallet) {
                     this.log.info('wallet is ready.');
-/*
                     // seed the default Profile
                     const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
                         .then(value => value.toJSON());
@@ -158,7 +162,6 @@ export class CoreConnectionStatusService {
                         isConnected = false;
                         this.log.error('market not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
                     }
-*/
                     this.status = CoreConnectionStatusServiceStatus.CONNECTED;
 
                 } else {
@@ -167,6 +170,10 @@ export class CoreConnectionStatusService {
 
                     this.log.error('wallet not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
                 }
+*/
+
+                this.status = CoreConnectionStatusServiceStatus.CONNECTED;
+
                 this.INTERVAL = 10000;
             }
 

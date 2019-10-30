@@ -5,6 +5,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import {IdentityType} from '../../enums/IdentityType';
 
 // tslint:disable:variable-name
 export class IdentityUpdateRequest extends RequestBody implements ModelRequestInterface {
@@ -12,9 +13,12 @@ export class IdentityUpdateRequest extends RequestBody implements ModelRequestIn
     @IsNotEmpty()
     public wallet: string;
 
-    public identitySpaddress: string;
-    public escrowSpaddress: string;
-    public txfeeSpaddress: string;
-    public walletHdseedid: string;
+    public address: string;
+    public hdseedid: string;
+    public path: string;
+    public mnemonic: string;
+    public passphrase: string;
+    public type: IdentityType;
+
 }
 // tslint:enable:variable-name

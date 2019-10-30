@@ -252,7 +252,7 @@ export class ProposalService {
             // get the address balance
             if (!test) { // todo: skipping balance update for test data generation
                 balance = await this.coreRpcService.getAddressBalance([vote.voter])
-                    .then(value => value.balance);
+                    .then(value => parseInt(value.balance, 10));
             }
 
             // update vote weight in case it's changed

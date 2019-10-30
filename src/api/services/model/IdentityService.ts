@@ -14,9 +14,10 @@ import { IdentityRepository } from '../../repositories/IdentityRepository';
 import { Identity } from '../../models/Identity';
 import { IdentityCreateRequest } from '../../requests/model/IdentityCreateRequest';
 import { IdentityUpdateRequest } from '../../requests/model/IdentityUpdateRequest';
-import { SettingValue } from '../../enums/SettingValue';
 import { SettingService } from './SettingService';
-import { MessageException } from '../../exceptions/MessageException';
+import { IdentityType } from '../../enums/IdentityType';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProfileService } from './ProfileService';
 
 export class IdentityService {
 
@@ -25,33 +26,10 @@ export class IdentityService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.IdentityRepository) public identityRepository: IdentityRepository,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-    }
-
-    public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Identity> {
-
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
-
-        const defaultIdentitySetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_IDENTITY;
-        });
-
-        if (_.isEmpty(defaultIdentitySetting)) {
-            this.log.error(new MessageException(SettingValue.DEFAULT_IDENTITY + ' not set.').getMessage());
-            throw new MessageException(SettingValue.DEFAULT_IDENTITY + ' not set.');
-        }
-
-        this.log.debug('getDefaultForProfile(), defaultIdentitySetting: ', JSON.stringify(defaultIdentitySetting, null, 2));
-
-        const identity: Identity = await this.identityRepository.findOne(+defaultIdentitySetting!.value, withRelated)
-            .catch(reason => {
-                this.log.error('Default Identity was not found!');
-                throw new NotFoundException(defaultIdentitySetting!.value);
-            });
-
-        return identity;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Identity>> {
@@ -80,9 +58,21 @@ export class IdentityService {
         return identity;
     }
 
+    public async findProfileIdentity(profileId: number, withRelated: boolean = true): Promise<Identity> {
+        const profile: resources.Profile = await this.findOne(profileId, true).then(value => value.toJSON());
+        const identity: resources.Identity | undefined = _.find(profile.Identities, p => {
+            return p.type === IdentityType.PROFILE;
+        });
+        if (!identity) {
+            this.log.warn(`Profile with the id=${profileId} has no Identity!`);
+            throw new ModelNotFoundException('Identity');
+        }
+        return await this.identityRepository.findOne(identity.id, withRelated);
+    }
+
     @validate()
     public async create( @request(IdentityCreateRequest) data: IdentityCreateRequest): Promise<Identity> {
-        this.log.debug('create(): ', JSON.stringify(data, null, 2));
+        // this.log.debug('create(): ', JSON.stringify(data, null, 2));
         const body = JSON.parse(JSON.stringify(data));
         return await this.identityRepository.create(body);
     }
@@ -92,10 +82,12 @@ export class IdentityService {
 
         const identity = await this.findOne(id, false);
         identity.Wallet = body.wallet;
-        identity.IdentitySpaddress = body.identitySpaddress;
-        identity.EscrowSpaddress = body.escrowSpaddress;
-        identity.TxfeeSpaddress = body.txfeeSpaddress;
-        identity.WalletHdseedid = body.walletHdseedid;
+        identity.Address = body.address;
+        identity.Hdseedid = body.hdseedid;
+        identity.Path = body.hdseedid;
+        identity.Mnemonic = body.mnemonic;
+        identity.Passphrase = body.passphrase;
+        identity.Type = body.type;
 
         const updatedIdentity = await this.identityRepository.update(id, identity.toJSON());
         return updatedIdentity;

@@ -2299,11 +2299,6 @@ del@^3.0.0:
     pify "^3.0.0"
     rimraf "^2.2.8"
 
-delay@^4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/delay/-/delay-4.3.0.tgz#efeebfb8f545579cb396b3a722443ec96d14c50e"
-  integrity sha512-Lwaf3zVFDMBop1yDuFZ19F9WyGcZcGacsbdlZtWjQmM50tOcMntm1njF/Nb/Vjij3KaSvCF+sEYGKrrjObu2NA==
-
 delayed-stream@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
@@ -2682,11 +2677,6 @@ eventemitter2@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/eventemitter2/-/eventemitter2-5.0.1.tgz#6197a095d5fb6b57e8942f6fd7eaad63a09c9452"
   integrity sha1-YZegldX7a1folC9v1+qtY6CclFI=
-
-eventemitter3@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.0.tgz#d65176163887ee59f386d64c82610b696a4a74eb"
-  integrity sha512-qerSRB0p+UDEssxTtm6EDKcE7W4OaoisfIMl4CngyEhjpYglocpNg6UEqCvemdGhosAsg4sO2dXJOdyBifPGCg==
 
 eventsource@^1.0.5:
   version "1.0.7"
@@ -5975,10 +5965,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-omp-lib@0.1.113:
-  version "0.1.113"
-  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.113.tgz#810af49f81336567f37ddbc570197b65ed72beca"
-  integrity sha512-SLy6s6tkIDmV/Zut+2UlRuH+rYuMRVDxoAIiIRezQxglePzhpwVs4MbOsm6bILdQY9gipEK1cx1GKH3IOlj5yg==
+omp-lib@^0.1.121:
+  version "0.1.121"
+  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.121.tgz#cf7a720c0e683dc3e89c8150d2486401a7425849"
+  integrity sha512-mWK1558bkBdPKtFLKnSdc9Y3KkvbNJKFRW/IGeE/JpMu0zELmSZmpxJD2gPnCUfV/qAX9styZofJ6c2N6K69gA==
   dependencies:
     inversify "^4.13.0"
     js-sha256 "^0.9.0"
@@ -6101,11 +6091,6 @@ p-finally@^1.0.0:
   resolved "https://registry.yarnpkg.com/p-finally/-/p-finally-1.0.0.tgz#3fbcfb15b899a44123b34b6dcc18b724336a2cae"
   integrity sha1-P7z7FbiZpEEjs0ttzBi3JDNqLK4=
 
-p-forever@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/p-forever/-/p-forever-2.1.0.tgz#3b8d1de4b572c9c1f8ecf0346cc79e61d024b9ec"
-  integrity sha512-kqZrNBsD8fUPCpZLYJoHTiONQVrdkA2nKwSsTfIr5h7P8jGpSy+Vzkxu6nVcZcz3c/rSx/Ys3AACd/BkMKvqbw==
-
 p-is-promise@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/p-is-promise/-/p-is-promise-1.1.0.tgz#9c9456989e9f6588017b0434d56097675c3da05e"
@@ -6127,14 +6112,6 @@ p-map@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/p-map/-/p-map-1.1.1.tgz#05f5e4ae97a068371bc2a5cc86bfbdbc19c4ae7a"
   integrity sha1-BfXkrpegaDcbwqXMhr+9vBnErno=
-
-p-queue@^6.1.1:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-6.1.1.tgz#eedbaf7335b4931ef857e2e58063fed461b97e80"
-  integrity sha512-R9gq36Th88xZ+rWAptN5IXLwqkwA1gagCQhT6ZXQ6RxEfmjb9ZW+UBzRVqv9sm5TQmbbI/TsKgGLbOaA61xR5w==
-  dependencies:
-    eventemitter3 "^4.0.0"
-    p-timeout "^3.1.0"
 
 p-timeout@^1.1.1:
   version "1.2.1"
@@ -6476,6 +6453,23 @@ pluralize@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-5.0.0.tgz#e8b9073af9a0cb02e4c2efa95b55bebbdbf01299"
   integrity sha1-6LkHOvmgywLkwu+pW1W+u9vwEpk=
+
+pm-delay@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/pm-delay/-/pm-delay-4.3.0.tgz#a5b6710120bc66bb152cd8a2547e7888a28fac07"
+  integrity sha512-FZYN0naUWn+oryvO/HsaUYU2W8VYt+x+z/RJxeCZyr5WNNZGjTCA5X7N8ZeFLMQLZ++6X7WiVDRIxSxT7rMqzw==
+
+pm-forever@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/pm-forever/-/pm-forever-2.1.2.tgz#42b346ed0bf48eab37f83a1a669ead49e367b55e"
+  integrity sha512-LADmUi8WU7PTykBvNjzy2kCoIwxuECzB1VBsiWJtMIBI2bJqhTvxOax4cvUeUnIqkuGmq66bTpaJnymU7hpGVA==
+
+pm-queue@^6.2.4:
+  version "6.2.4"
+  resolved "https://registry.yarnpkg.com/pm-queue/-/pm-queue-6.2.4.tgz#302706fd6e7f26e47e9b0e31684af0fd21a582c6"
+  integrity sha512-wvje1CXt+/4CCxgvuPPgXn/dPiTccpC6m2bxT4N2EOPOC2yjznbWO9WLDCogp+A/C+6CMuGDfgeqPiwi0jf6Ig==
+  dependencies:
+    p-timeout "^3.1.0"
 
 pn@^1.1.0:
   version "1.1.0"
@@ -8333,10 +8327,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.1.tgz#c3ccb16ddaa0b2314de031e7e6fee89e5ba346bc"
-  integrity sha1-w8yxbdqgsjFN4DHn5v7onlujRrw=
+typescript@2.4.2:
+  version "2.4.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.4.2.tgz#f8395f85d459276067c988aa41837a8f82870844"
+  integrity sha1-+DlfhdRZJ2BnyYiqQYN6j4KHCEQ=
 
 uglify-js@^2.6:
   version "2.8.27"

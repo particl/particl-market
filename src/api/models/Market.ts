@@ -50,6 +50,17 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
+    public static async fetchByProfileIdAndReceiveAddressAndName(profileId: number, receiveAddress: string, name: string, withRelated: boolean = true):
+        Promise<Market> {
+        if (withRelated) {
+            return await Market.where<Market>({ profile_id: profileId, receive_address: receiveAddress, name }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Market.where<Market>({ profile_id: profileId, receive_address: receiveAddress, name }).fetch();
+        }
+    }
+
     public static async fetchByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
             return await Market.where<Market>({ profile_id: profileId, name }).fetch({

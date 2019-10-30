@@ -12,6 +12,6 @@ export class ProfileUpdateRequest extends RequestBody implements ModelRequestInt
     @IsNotEmpty()
     public name: string;
 
-    public address: string;
+    // public address: string; // DEPRECATED use Identity.address
 }
 // tslint:enable:variable-name
