@@ -15,7 +15,8 @@ declare module 'resources' {
         CryptocurrencyAddresses: CryptocurrencyAddress[];
         FavoriteItems: FavoriteItem[];
         ShoppingCart: ShoppingCart[];
-        Wallets: Identity[];
+        Markets: Market[];
+        Identities: Identity[];
 
     }
 

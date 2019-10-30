@@ -85,6 +85,7 @@ export class Profile extends Bookshelf.Model<Profile> {
         return this.hasMany(FavoriteItem, 'profile_id', 'id');
     }
 
+    // TODO: rename to ShoppingCarts
     public ShoppingCart(): Collection<ShoppingCart> {
         return this.hasMany(ShoppingCart, 'profile_id', 'id');
     }

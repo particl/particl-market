@@ -22,6 +22,10 @@ export class DefaultItemCategoryService {
     }
 
     // tslint:disable:max-line-length
+    /**
+     *
+     * @param market receiveAddress
+     */
     public async seedDefaultCategories(market: string): Promise<void> {
 
         const ROOT = await this.insertOrUpdateCategory({ key: 'cat_ROOT', name: 'ROOT', description: 'root item category', market } as ItemCategoryCreateRequest);

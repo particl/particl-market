@@ -7,13 +7,14 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { CoreRpcService, RpcWalletInfo } from './CoreRpcService';
+import { CoreRpcService } from './CoreRpcService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MessageException } from '../exceptions/MessageException';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
+import { RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
 
 export interface SmsgInboxOptions {
     updatestatus?: boolean;     // Update read status if true. default=true.
@@ -94,35 +95,38 @@ export class SmsgService {
 
     /**
      *
+     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async canAffordToSendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<boolean> {
-        const estimate: SmsgSendResponse = await this.estimateFee(marketplaceMessage, sendParams);
-        const wallet: RpcWalletInfo = await this.coreRpcService.getWalletInfo();
-        return (wallet.balance > estimate.fee! || wallet.blind_balance > estimate.fee! || wallet.anon_balance > estimate.fee!);
+    public async canAffordToSendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<boolean> {
+        const estimate: SmsgSendResponse = await this.estimateFee(wallet, marketplaceMessage, sendParams);
+        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(wallet);
+        return (walletInfo.balance > estimate.fee! || walletInfo.blind_balance > estimate.fee! || walletInfo.anon_balance > estimate.fee!);
     }
 
     /**
      *
+     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+    public async estimateFee(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
         const estimateFee = sendParams.estimateFee;
         sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
-        const smsgSendResponse = await this.sendMessage(marketplaceMessage, sendParams);
+        const smsgSendResponse: SmsgSendResponse = await this.sendMessage(wallet, marketplaceMessage, sendParams);
         sendParams.estimateFee = estimateFee;
         return smsgSendResponse;
     }
 
     /**
      *
+     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        return await this.smsgSend(sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
+    public async sendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
             sendParams.daysRetention, sendParams.estimateFee);
     }
 
@@ -134,12 +138,13 @@ export class SmsgService {
      * 1. "privkey"          (string, required) The private key (see dumpprivkey)
      * 2. "label"            (string, optional, default="") An optional label
      *
+     * @param wallet
      * @param {string} privateKey
      * @param {string} label
      * @returns {Promise<boolean>}
      */
-    public async smsgImportPrivKey(privateKey: string, label: string = 'default market'): Promise<boolean> {
-        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label])
+    public async smsgImportPrivKey(wallet: string, privateKey: string, label: string = 'default market'): Promise<boolean> {
+        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label], wallet)
             .then(response => true)
             .catch(error => {
                 this.log.error('smsgImportPrivKey failed: ', error);
@@ -154,12 +159,13 @@ export class SmsgService {
      *
      * ﻿smsginbox [all|unread|clear] filter options
      *
+     * @param wallet
      * @param {string} mode
      * @param {string} filter
      * @param {object} options
      * @returns {Promise<any>}
      */
-    public async smsgInbox(mode: string = 'all',
+    public async smsgInbox(wallet: string, mode: string = 'all',
                            filter: string = '',
                            options?: SmsgInboxOptions): Promise<CoreSmsgMessageResult> {
         if (!options) {
@@ -168,7 +174,7 @@ export class SmsgService {
                 encoding: 'text'
             } as SmsgInboxOptions;
         }
-        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], false);
+        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], wallet, false);
         // this.log.debug('got response:', response);
         return response;
     }
@@ -187,6 +193,7 @@ export class SmsgService {
      * "error": "Message is too long, 5392 > 4096"
      * }
      *
+     * @param wallet
      * @param {string} fromAddress
      * @param {string} toAddress
      * @param {MarketplaceMessage} message
@@ -195,12 +202,11 @@ export class SmsgService {
      * @param {boolean} estimateFee
      * @returns {Promise<any>}
      */
-    public async smsgSend(fromAddress: string,
-                          toAddress: string,
-                          message: MarketplaceMessage,
-                          paidMessage: boolean = true,
+    public async smsgSend(wallet: string, fromAddress: string, toAddress: string, message: MarketplaceMessage, paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                           estimateFee: boolean = false): Promise<SmsgSendResponse> {
+
+        await this.coreRpcService.smsgSetWallet(wallet);
 
         this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);
         const params: any[] = [
@@ -211,7 +217,7 @@ export class SmsgService {
             daysRetention,
             estimateFee
         ];
-        const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
+        const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         if (response.error) {
             this.log.error('ERROR: ', JSON.stringify(response, null, 2));
@@ -244,7 +250,7 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgLocalKeys(): Promise<any> {
-        const response = await this.coreRpcService.call('smsglocalkeys');
+        const response = await this.coreRpcService.call('smsglocalkeys', []);
         // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
         return response;
     }

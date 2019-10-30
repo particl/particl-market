@@ -81,7 +81,6 @@
     "crypto-js": "^3.1.9-1",
     "deep-extend": "^0.5.1",
     "del": "^3.0.0",
-    "delay": "^4.3.0",
     "diff": "3.5.0",
     "dotenv": "^6.0.0",
     "express": "^4.16.2",
@@ -107,14 +106,15 @@
     "merge": "1.2.1",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "omp-lib": "0.1.113",
-    "p-forever": "^2.1.0",
-    "p-queue": "^6.1.1",
+    "omp-lib": "^0.1.121",
     "particl-bitcore-lib": "^0.16.0",
     "particl-zmq": "^1.0.4",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",
+    "pm-delay": "^4.3.0",
+    "pm-forever": "^2.1.2",
+    "pm-queue": "^6.2.4",
     "postal-codes-js": "^1.0.0",
     "prepend": "^1.0.2",
     "reflect-metadata": "^0.1.10",
@@ -128,11 +128,14 @@
     "sync-fs": "^1.0.1",
     "tar": "^2.2.2",
     "ts-enums": "0.0.6",
-    "tslib": "^1.7.1",
-    "typescript": "2.4.1",
+    "tslib": "^1.9.3",
+    "typescript": "2.4.2",
     "web-request": "^1.0.7",
     "winston": "^2.4.4",
     "zeromq": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=10.*.*"
   },
   "jest": {
     "transform": {

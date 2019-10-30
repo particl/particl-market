@@ -35,8 +35,7 @@ import { RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
-import { ListingItemUpdateRequest } from '../../requests/model/ListingItemUpdateRequest';
-import {OutputType} from 'omp-lib/dist/interfaces/crypto';
+import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -273,7 +272,7 @@ export class VoteActionService extends BaseActionService {
         // TODO: way too long method, needs to be refactored
 
         // get the address balance
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter], true).then(value => value.balance);
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => parseInt(value.balance, 10));
         this.log.debug('processVote(), voteMessage.voter: ', voteMessage.voter);
         this.log.debug('processVote(), balance: ', balance);
 

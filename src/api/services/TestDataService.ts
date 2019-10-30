@@ -183,7 +183,7 @@ export class TestDataService {
                     this.log.debug('failed seeding default profile: ' + reason);
                 });
 
-            await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
+            await this.defaultSettingService.saveDefaultSettings(defaultProfile);
 
             // seed the default market
             const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)

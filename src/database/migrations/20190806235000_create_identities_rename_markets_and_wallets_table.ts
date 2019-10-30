@@ -10,11 +10,14 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
 
+            table.string('type').notNullable();
+
             table.string('wallet').notNullable().unique();
-            table.string('identity_spaddress'); // .notNullable().unique();
-            table.string('escrow_spaddress'); // .notNullable().unique();
-            table.string('txfee_spaddress'); // .notNullable().unique();
-            table.string('wallet_hdseedid'); // .notNullable().unique();
+            table.string('address'); // .notNullable().unique();
+            table.string('hdseedid'); // .notNullable().unique();
+            table.string('path').notNullable();
+            table.string('mnemonic').nullable();
+            table.string('passphrase').nullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

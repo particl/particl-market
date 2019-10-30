@@ -38,8 +38,8 @@ import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipAc
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
 import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
-import pForever from 'p-forever';
-import delay from 'delay';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 
 export class WaitingMessageProcessor implements MessageProcessorInterface {
 
@@ -50,6 +50,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
     private INTERVAL = 5 * 1000;
     private STOP = false;
 
+    // TODO: not needed anymore, these are here because we used to poll for all the messages
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
     private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
     private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND, MPActionExtended.MPA_COMPLETE,
@@ -70,14 +71,19 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
 
     public async start(): Promise<void> {
 
-        await pForever(async () => {
+        await pForever(async (i) => {
+            i++;
+
             await this.poll();
             if (this.STOP) {
                 return pForever.end;
             }
             this.isStarted = true;
             await delay(this.INTERVAL);
-        }).catch(async reason => {
+            this.log.error('WaitingMessageProcessor: ', i);
+
+            return i;
+        }, 0).catch(async reason => {
             this.log.error('ERROR: ', reason);
             await delay(this.INTERVAL);
             this.start();
