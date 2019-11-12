@@ -318,6 +318,11 @@ export class ListingItemService {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
 
+        if (listingItem.Bids.length > 0) {
+            // Prevent listings with associated bids from being removed
+            return;
+        }
+
         // Comments dont have a hard link to ListinItems
         const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
