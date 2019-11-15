@@ -22,8 +22,9 @@ includes:
     - installation
     - rpc
     - commands
-    - commands/profile
     - commands/market
+    - commands/profile
+    - commands/template
     - models
     - models/profile
     - exceptions

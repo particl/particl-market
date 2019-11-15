@@ -33,9 +33,32 @@ export interface SmsgZmqPushOptions {
 }
 
 export interface SmsgZmqPushResult {
-    numsent: number;           // Number of notifications sent
+    numsent: number;            // Number of notifications sent
 }
 
+export interface SmsgSendOptions {
+    fromfile: boolean;          // (boolean, optional, default=false) Send file as message, path specified in "message".
+    decodehex: boolean;         // (boolean, optional, default=false) Decode "message" from hex before sending.
+    submitmsg: boolean;         // (boolean, optional, default=true) Submit smsg to network, if false POW is not set and hex encoded smsg returned.
+    savemsg: boolean;           // (boolean, optional, default=true) Save smsg to outbox.
+    ttl_is_seconds: boolean;    // (boolean, optional, default=false) If true days_retention parameter is interpreted as seconds to live.
+    fund_from_rct: boolean;     // (boolean, optional, default=false) Fund message from anon balance.
+    rct_ring_size: number;      // (numeric, optional, default=5) Ring size to use with fund_from_rct.
+}
+
+export interface SmsgSendCoinControl {
+    changeaddress: string;      // (string, optional, default=) The particl address to receive the change
+    inputs: any[];              // TODO: {                        (json object, optional, default=)
+                                //     "tx": "hex",           (string, required) txn id
+                                //     "n": n,                (numeric, required) txn vout
+                                // }
+    replaceable: boolean;       // (boolean, optional, default=) Marks this transaction as BIP125 replaceable.
+    conf_target: number;        // (numeric, optional, default=) Confirmation target (in blocks)
+    estimate_mode: string;      // (string, optional, default=UNSET) The fee estimate mode, must be one of: "UNSET", "ECONOMICAL", "CONSERVATIVE"
+    avoid_reuse: boolean;       // (boolean, optional, default=true) (only available if avoid_reuse wallet flag is set) Avoid spending from dirty addresses;
+                                // addresses are considered dirty if they have previously been used in a transaction.
+    feeRate: number;            // (numeric, optional) Set a specific fee rate in PART/kB
+}
 
 export class SmsgService {
 
@@ -200,11 +223,13 @@ export class SmsgService {
      * @param {boolean} paidMessage
      * @param {number} daysRetention
      * @param {boolean} estimateFee
+     * @param options
+     * @param coinControl
      * @returns {Promise<any>}
      */
     public async smsgSend(wallet: string, fromAddress: string, toAddress: string, message: MarketplaceMessage, paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
-                          estimateFee: boolean = false): Promise<SmsgSendResponse> {
+                          estimateFee: boolean = false, options?: SmsgSendOptions, coinControl?: SmsgSendCoinControl): Promise<SmsgSendResponse> {
 
         await this.coreRpcService.smsgSetWallet(wallet);
 
@@ -215,7 +240,9 @@ export class SmsgService {
             JSON.stringify(message),
             paidMessage,
             daysRetention,
-            estimateFee
+            estimateFee,
+            options,
+            coinControl
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));

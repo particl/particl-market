@@ -102,6 +102,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
+     *  [0]: profileId
+     *
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
@@ -129,9 +131,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         } else if (typeof data.params[2] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
-
+// TODO ....
+        sfg
         if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+            throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
         if (data.params[3] !== undefined) {
