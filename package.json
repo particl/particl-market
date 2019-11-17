@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
@@ -106,7 +106,7 @@
     "merge": "1.2.1",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "omp-lib": "0.1.113",
+    "omp-lib": "^0.1.123",
     "particl-bitcore-lib": "^0.16.0",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
