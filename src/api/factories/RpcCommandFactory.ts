@@ -151,6 +151,7 @@ import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
+import { SmsgStatsCommand } from '../commands/smsg/SmsgStatsCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 
 import { WalletListCommand } from '../commands/wallet/WalletListCommand';
@@ -325,6 +326,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRemoveCommand) private smsgRemoveCommand: SmsgRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgResendCommand) private smsgResendCommand: SmsgResendCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgStatsCommand) private smsgStatsCommand: SmsgStatsCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.wallet.WalletListCommand) private walletListCommand: WalletListCommand,
@@ -490,6 +492,7 @@ export class RpcCommandFactory {
         this.commands.push(smsgSearchCommand);
         this.commands.push(smsgRemoveCommand);
         this.commands.push(smsgResendCommand);
+        this.commands.push(smsgStatsCommand);
         this.commands.push(smsgRootCommand);
 
         this.commands.push(walletListCommand);

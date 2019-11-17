@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {SmsgResendCommand} from '../api/commands/smsg/SmsgResendCommand';
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -352,6 +350,7 @@ export const Targets = {
             SmsgRootCommand: 'SmsgRootCommand',
             SmsgRemoveCommand: 'SmsgRemoveCommand',
             SmsgResendCommand: 'SmsgResendCommand',
+            SmsgStatsCommand: 'SmsgStatsCommand',
             SmsgSearchCommand: 'SmsgSearchCommand'
         },
         wallet: {
