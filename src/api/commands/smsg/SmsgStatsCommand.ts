@@ -41,7 +41,6 @@ export class SmsgStatsCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      *  [0]: showDetails (instead of counts, show details), optional, default=false
-     *  [1]: market: resources.Market, optional
      *
      * @param data
      * @returns {Promise<void>}
@@ -50,7 +49,6 @@ export class SmsgStatsCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgStatsResponse> {
 
         const showDetails: boolean = data.params[0];
-        const market: resources.Market = data.params[1];
 
         const smsgMessages: resources.SmsgMessage[] = await this.smsgMessageService.findAll().then(value => value.toJSON());
 
@@ -64,6 +62,9 @@ export class SmsgStatsCommand extends BaseCommand implements RpcCommandInterface
             const isActive = smsgMessage.expiration > Date.now();
             const status = smsgMessage.status;
 
+            if (!_.isNumber(response.statuses[status])) {
+                response.statuses[status] = 0;
+            }
             response.statuses[status] = +response.statuses[status] + 1;
 
             if (showDetails) {
@@ -115,7 +116,6 @@ export class SmsgStatsCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      *  [0]: showDetails (instead of counts, show details), optional, default=false
-     *  [1]: marketId, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -127,29 +127,16 @@ export class SmsgStatsCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('marketId', 'number');
         }
 
-        if (data.params[1] !== undefined) {
-            if (typeof data.params[0] !== 'number') {
-                throw new InvalidParamException('marketId', 'number');
-            } else {
-                data.params[1] = await this.marketService.findOne(data.params[1])
-                    .then(value => value.toJSON())
-                    .catch(reason => {
-                        throw new ModelNotFoundException('Market');
-                    });
-            }
-        }
-
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [showDetails] [marketId] ';
+        return this.getName() + ' [showDetails] ';
     }
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <showDetails>           -  [optional] boolean, default=false, Show detailed stats. \n'
-            + '    <marketId>              -  [optional] number, Show Smsg stats for the given market. \n';
+            + '    <showDetails>           -  [optional] boolean, default=false, Show detailed stats. \n';
     }
 
     public description(): string {
