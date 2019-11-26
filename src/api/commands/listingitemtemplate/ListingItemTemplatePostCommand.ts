@@ -31,6 +31,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
 import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
+import { Identity } from 'resources';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -102,8 +103,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: profileId
-     *
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
      *  [2]: marketId
@@ -131,8 +130,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         } else if (typeof data.params[2] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
-// TODO ....
-        sfg
+
         if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
@@ -161,17 +159,17 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new ModelNotFoundException('ItemPrice');
         }
 
-        // update the paymentAddress in case it's not generated yet
-        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
-            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-            listingItemTemplate = await this.updatePaymentAddress(listingItemTemplate);
-        }
-
         const market: resources.Market = await this.marketService.findOne(data.params[2])
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
             });
+
+        // update the paymentAddress in case it's not generated yet
+        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
+            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
+            listingItemTemplate = await this.updatePaymentAddress(market.Identity, listingItemTemplate);
+        }
 
         // check size limit
         const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
@@ -205,20 +203,20 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         return 'template ' + this.getName() + ' 1 1 false';
     }
 
-    private async generateCryptoAddressForEscrowType(type: EscrowType): Promise<CryptoAddress> {
+    private async generateCryptoAddressForEscrowType(identity: resources.Identity, type: EscrowType): Promise<CryptoAddress> {
 
         // generate paymentAddress for the item
         let cryptoAddress: CryptoAddress;
         switch (type) {
             case EscrowType.MULTISIG:
-                const address = await this.coreRpcService.getNewAddress();
+                const address = await this.coreRpcService.getNewAddress(identity.wallet);
                 cryptoAddress = {
                     address,
                     type: CryptoAddressType.NORMAL
                 };
                 break;
             case EscrowType.MAD_CT:
-                cryptoAddress = await this.coreRpcService.getNewStealthAddress();
+                cryptoAddress = await this.coreRpcService.getNewStealthAddress(identity.wallet);
                 break;
             case EscrowType.MAD:
             case EscrowType.FE:
@@ -229,8 +227,13 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         return cryptoAddress;
     }
 
-    private async updatePaymentAddress(listingItemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
-        return await this.generateCryptoAddressForEscrowType(listingItemTemplate.PaymentInformation.Escrow.type)
+    /**
+     * update the paymentaddress for the template to one from the given identity
+     */
+    private async updatePaymentAddress(identity: resources.Identity, listingItemTemplate: resources.ListingItemTemplate):
+        Promise<resources.ListingItemTemplate> {
+
+        return await this.generateCryptoAddressForEscrowType(identity, listingItemTemplate.PaymentInformation.Escrow.type)
             .then( async paymentAddress => {
                 // create new CryptocurrencyAddress related to the ListingItemTemplate
                 return await this.cryptocurrencyAddressService.create({
