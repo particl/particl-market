@@ -71,14 +71,13 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         });
 
         // import the pk's
-        await this.defaultMarketService.importMarketPrivateKey(market.receiveKey, market.receiveAddress);
+        await this.defaultMarketService.importMarketPrivateKey(market.Identity.wallet, market.receiveKey, market.receiveAddress);
         if (market.publishKey && market.publishAddress && (market.receiveKey !== market.publishKey)) {
-            await this.defaultMarketService.importMarketPrivateKey(market.publishKey, market.publishAddress);
+            await this.defaultMarketService.importMarketPrivateKey(market.Identity.wallet, market.publishKey, market.publishAddress);
         }
 
         // set secure messaging to use the default wallet
         await this.coreRpcService.smsgSetWallet(market.Identity.wallet);
-        await this.coreRpcService.setActiveWallet(market.Identity.wallet);
 
         return await this.marketService.getDefaultForProfile(profile.id);
     }
