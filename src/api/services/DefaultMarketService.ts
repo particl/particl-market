@@ -17,13 +17,9 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketType } from '../enums/MarketType';
 import { ProfileService } from './model/ProfileService';
 import { SettingService } from './model/SettingService';
-import { IdentityCreateRequest } from '../requests/model/IdentityCreateRequest';
 import { IdentityService } from './model/IdentityService';
-import { RpcWallet, RpcWalletInfo, RpcExtKey, RpcExtKeyResult } from 'omp-lib/dist/interfaces/rpc';
-import { IdentityType } from '../enums/IdentityType';
 import { MessageException } from '../exceptions/MessageException';
 import { SettingValue } from '../enums/SettingValue';
-import { Identity } from '../models/Identity';
 import { DefaultSettingService } from './DefaultSettingService';
 
 export class DefaultMarketService {
@@ -70,7 +66,7 @@ export class DefaultMarketService {
     /**
      * create the default Market for the default Profile
      *
-     * - get default Market for defaul Profile (SettingValue.DEFAULT_MARKETPLACE_ID)
+     * - get default Market for default Profile (SettingValue.DEFAULT_MARKETPLACE_ID)
      * - if one doesnt exist
      *      - create market wallet
      *      - create market Identity
@@ -92,7 +88,7 @@ export class DefaultMarketService {
             .catch(async reason => {
                 // if theres no default Market yet, create it and set it as default
                 // first create the Market Identity
-                const marketIdentity: resources.Identity = await this.createNewMarketIdentity(profile).then(value => value.toJSON());
+                const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile).then(value => value.toJSON());
                 defaultMarket = await this.createMarket(profile, marketIdentity).then(value => value.toJSON());
                 await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, defaultMarket.id);
                 return defaultMarket;
@@ -174,53 +170,6 @@ export class DefaultMarketService {
         // set smsg to use the default wallet
         await this.coreRpcService.smsgSetWallet(newMarket.Identity.wallet);
         return await this.marketService.findOne(newMarket.id);
-    }
-
-    /**
-     * create a Market and an Identity for it:
-     * todo: move to marketservice
-     *
-     * @param profile
-     */
-    private async createNewMarketIdentity(profile: resources.Profile): Promise<Identity> {
-
-        // first get the Profile Identity
-        const profileIdentity: resources.Identity = await this.identityService.findProfileIdentity(profile.id).then(value => value.toJSON());
-
-        const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(profileIdentity.wallet, true);
-        const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
-            return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
-        });
-
-        if (!masterKey) {
-            throw new MessageException('Could not find Profile wallets Master key.');
-        }
-
-        const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
-
-        // create and load a new blank wallet
-        const walletName = 'profiles/' + profile.name + '/particl-market';
-        const marketWallet: RpcWallet = await this.coreRpcService.createAndLoadWallet(walletName, false, true);
-
-        // import the key and set up the market wallet
-        const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);
-        const extKeyImported: RpcExtKeyResult = await this.coreRpcService.extKeyImport(marketWallet.name, masterKey.evkey, 'master key', true);
-        await this.coreRpcService.extKeySetMaster(marketWallet.name, extKeyImported.id);
-        const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(marketWallet.name, 'market account');
-        await this.coreRpcService.extKeySetDefaultAccount(marketWallet.name, marketAccount.account);
-
-        const address = await this.coreRpcService.getNewAddress(marketWallet.name);
-        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(marketWallet.name);
-
-        // create Identity for Market, using the created wallet
-        return await this.identityService.create({
-            profile_id: profile.id,
-            wallet: marketWallet.name,
-            address,
-            hdseedid: walletInfo.hdseedid,
-            path: keyInfo.key_info.path,
-            type: IdentityType.MARKET
-        } as IdentityCreateRequest);
     }
 
     private async getPublicKeyForAddress(address: string): Promise<string|null> {

@@ -22,9 +22,11 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
-import { BlockchainInfo, CoreRpcService } from '../../services/CoreRpcService';
+import { CoreRpcService } from '../../services/CoreRpcService';
 import { IdentityService } from '../../services/model/IdentityService';
-import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
+import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -46,11 +48,11 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [0]: profile: resources.Profile
      *  [1]: name
      *  [2]: type: MarketType
-     *  [3]: receiveKey
+     *  [3]: receiveKey: private key in wif format
      *  [4]: receiveAddress
-     *  [5]: publishKey
+     *  [5]: publishKey: private key in wif format or public key as DER hex encoded string
      *  [6]: publishAddress
-     *  [7]: identity: resources.Identity;
+     *  [7]: identity: resources.Identity
      *
      * @param data
      * @returns {Promise<Market>}
@@ -58,21 +60,11 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
-        const identity: resources.Identity = data.params[7];
+        let identity: resources.Identity = data.params[7];
 
-        /*
-        // if identity with the name doesnt exists, then create one
-        const exists = await this.coreRpcService.walletExists(data.params[7]);
-        if (!exists) {
-            await this.coreRpcService.createWallet(data.params[7])
-                .then(identity => {
-                    this.log.debug('created identity: ', identity.name);
-                })
-                .catch(reason => {
-                    this.log.debug('identity: ' + data.params[7] + ' already exists.');
-                });
+        if (_.isEmpty(identity)) {
+            identity = await this.identityService.createMarketIdentityForProfile(profile).then(value => value.toJSON());
         }
-        */
 
         return await this.marketService.create({
             profile_id: profile.id,
@@ -90,12 +82,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      * data.params[]:
      *  [0]: profileId
      *  [1]: name
-     *  [2]: type: MarketType, optional
-     *  [3]: receiveKey, optional
-     *  [4]: receiveAddress, optional
-     *  [5]: publishKey, optional
-     *  [6]: publishAddress, optional
-     *  [7]: identityId, optional
+     *  [2]: type: MarketType, optional, default=MARKETPLACE
+     *  [3]: receiveKey, optional, private key in wif format
+     *  [4]: publishKey, optional, if type === STOREFRONT -> public key as DER hex encoded string, else private key in wif format
+     *  [5]: identityId, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -118,110 +108,157 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new MissingParamException('publishAddress');
         }
 */
+        const profileId = data.params[0];
+        const name = data.params[1];
+        let type = data.params[2];
+        let receiveKey = data.params[3];
+        let receiveAddress;
+        let publishKey = data.params[4];
+        let publishAddress;
+        const identityId = data.params[5];
 
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
+        if (typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
+        } else if (typeof name !== 'string') {
             throw new InvalidParamException('name', 'string');
-        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
+        } else if (type !== undefined && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'string') {
+        } else if (receiveKey !== undefined && typeof receiveKey !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('receiveAddress', 'string');
-        } else if (data.params[5] !== undefined && typeof data.params[5] !== 'string') {
+        // } else if (receiveAddress !== undefined && typeof receiveAddress !== 'string') {
+        //     throw new InvalidParamException('receiveAddress', 'string');
+        } else if (publishKey !== undefined && typeof publishKey !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
-        } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('publishAddress', 'string');
-        } else if (data.params[7] !== undefined && typeof data.params[7] !== 'number') {
+        // } else if (publishAddress !== undefined && typeof publishAddress !== 'string') {
+        //     throw new InvalidParamException('publishAddress', 'string');
+        } else if (identityId !== undefined && typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
         }
 
         // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
 
-        // make sure Market with the same name doesnt exists
-        let market: resources.Market = await this.marketService.findOneByProfileIdAndName(profile.id, data.params[1])
-            .then(value => value.toJSON())
+        // make sure Market with the same name doesnt exists for the Profile
+        await this.marketService.findOneByProfileIdAndName(profile.id, name)
+            .then(value => {
+                throw new MessageException('Market with the name: ' + name + ' already exists.');
+            })
             .catch(reason => {
                 //
             });
 
-        if (!_.isEmpty(market)) {
-            throw new MessageException('Market with the name: ' + data.params[1] + ' already exists.');
-        }
-
-        if (_.isEmpty(data.params[2])) {
+        if (_.isEmpty(type)) {
             // default market type to MARKETPLACE if not set
-            data.params[2] = MarketType.MARKETPLACE;
-        } else if (!EnumHelper.containsName(MarketType, data.params[2])) {
+            type = MarketType.MARKETPLACE;
+        } else if (!EnumHelper.containsName(MarketType, type)) {
             // invalid MarketType
             throw new InvalidParamException('type', 'MarketType');
         }
 
-        // create the keys if not given
-        if (_.isEmpty(data.params[3])) {
-            const blockchainInfo: BlockchainInfo = await this.coreRpcService.getBlockchainInfo();
-            const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
+        // type === MARKETPLACE -> receive + publish keys are the same
+        // type === STOREFRONT -> receive key is private key, publish key is public key
+        //                        when adding a storefront, both keys should be given
+        // type === STOREFRONT_ADMIN -> receive + publish keys are different
+        // the keys which are undefined should be generated
 
-            const receiveKey = PrivateKey.fromRandom(network);
-            const receiveKeyWif = receiveKey.toWIF();
-            const receivePublicKey = receiveKey.toPublicKey();
-            const receiveAddress = receivePublicKey.toAddress(network).toString();
+        // for STOREFRONT, both keys should have been given
+        if (type === MarketType.STOREFRONT && (_.isEmpty(receiveKey) || _.isEmpty(publishKey))) {
+            throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
+        }
 
-            /*
-            const publishKey = PrivateKey.fromRandom(network);
-            const publishKeyWif = publishKey.toWIF();
-            const publishPublicKey = publishKey.toPublicKey();
-            const publishAddress = publishPublicKey.toAddress(network);
-            */
+        const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
 
-            data.params[3] = receiveKeyWif;
-            data.params[4] = receiveAddress;
-            // receiveKey and publishKey are the same for now...
-            data.params[5] = receiveKeyWif;
-            data.params[6] = receiveAddress;
+        // generate new key if receiveKey wasnt given and get the address
+        // else just get the address for the given pk
+        if (_.isEmpty(receiveKey)) {
+            const privateKey: PrivateKey = PrivateKey.fromRandom(network);
+            receiveKey = privateKey.toWIF();
+            receiveAddress = privateKey.toPublicKey().toAddress(network).toString();
+        } else {
+            // receiveKey was given, get the receiveAddress
+            receiveAddress = PrivateKey.fromWIF(receiveKey).toPublicKey().toAddress(network).toString();
+        }
+
+        // we have receiveKey and receiveAddress, next get the publishKey and publishAddress
+        switch (type) {
+            case MarketType.MARKETPLACE:
+                // receive + publish keys are the same
+                publishKey = receiveKey;
+                publishAddress = receiveAddress;
+                break;
+
+            case MarketType.STOREFRONT:
+                // both keys should have been given
+                // publish key is public key (DER hex encoded string)
+                publishAddress = PublicKey.fromString(publishKey).toAddress(network).toString();
+                break;
+
+            case MarketType.STOREFRONT_ADMIN:
+                // receive + publish keys are different, both private keys
+                if (receiveKey === publishKey) {
+                    throw new MessageException('Adding a STOREFRONT_ADMIN requires different receive and publish keys.');
+                }
+
+                // generate new publish key if publishKey wasnt given and get the address
+                // else just get the address for the given pk
+                if (_.isEmpty(publishKey)) {
+                    const privateKey: PrivateKey = PrivateKey.fromRandom(network);
+                    publishKey = privateKey.toWIF();
+                    publishAddress = privateKey.toPublicKey().toAddress(network).toString();
+                } else {
+                    // publishKey was given, get the publishAddress
+                    publishAddress = PrivateKey.fromWIF(publishKey).toPublicKey().toAddress(network).toString();
+                }
+                break;
+
+            default:
+                throw new NotImplementedException();
         }
 
         let identity: resources.Identity;
-        if (!_.isEmpty(data.params[7])) {
-            // make sure Wallet with the id exists
-            identity = await this.identityService.findOne(data.params[7])
+        if (!_.isEmpty(identityId)) {
+            // make sure Identity with the id exists
+            identity = await this.identityService.findOne(identityId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Identity');
                 });
 
+            // make sure Identity belongs to the given Profile
             if (identity.Profile.id !== profile.id) {
-                throw new MessageException('Wallet does not belong to the Profile.');
+                throw new MessageException('Identity does not belong to the Profile.');
             }
-        } else {
-            identity = await this.identityService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            data.params[7] = identity;
+
         }
 
         // make sure Market with the same receiveAddress doesnt exists
-        market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, data.params[4])
-            .then(value => value.toJSON())
+        await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, receiveAddress)
+            .then(value => {
+                throw new MessageException('Market with the receiveAddress: ' + receiveAddress + ' already exists.');
+            })
             .catch(reason => {
                 //
             });
 
-        if (!_.isEmpty(market)) {
-            throw new MessageException('Market with the receiveAddress: ' + data.params[4] + ' already exists.');
-        }
-
         data.params[0] = profile;
-        data.params[7] = identity;
+        data.params[2] = type;
+        data.params[3] = receiveKey;
+        data.params[4] = receiveAddress;
+        data.params[5] = publishKey;
+        data.params[6] = publishAddress;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [identityId] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] ';
     }
 
     public help(): string {
@@ -230,9 +267,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             + '    <name>                   - String - The unique name of the Market being created. \n'
             + '    <type>                   - MarketType, optional - MARKETPLACE \n'
             + '    <receiveKey>             - String, optional - The receive private key of the Market. \n'
-            + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
+            // + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
             + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
-            + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
+            // + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
             + '    <identityId>             - Number, optional - The identity to be used with the Market. \n';
     }
 
@@ -242,7 +279,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     public example(): string {
         return 'market ' + this.getName() + ' market add 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
-            '\'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' \'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' ' +
-            '\'wallet.dat\' ';
+            '\'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ';
     }
 }
