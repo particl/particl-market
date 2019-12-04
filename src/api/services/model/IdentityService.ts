@@ -18,6 +18,9 @@ import { SettingService } from './SettingService';
 import { IdentityType } from '../../enums/IdentityType';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from './ProfileService';
+import {RpcExtKey, RpcExtKeyResult, RpcWallet, RpcWalletInfo} from 'omp-lib/dist/interfaces/rpc';
+import {MessageException} from '../../exceptions/MessageException';
+import {CoreRpcService} from '../CoreRpcService';
 
 export class IdentityService {
 
@@ -27,6 +30,7 @@ export class IdentityService {
         @inject(Types.Repository) @named(Targets.Repository.IdentityRepository) public identityRepository: IdentityRepository,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -75,6 +79,52 @@ export class IdentityService {
         // this.log.debug('create(): ', JSON.stringify(data, null, 2));
         const body = JSON.parse(JSON.stringify(data));
         return await this.identityRepository.create(body);
+    }
+
+    /**
+     * create a new Identity for Market:
+     *
+     * @param profile
+     */
+    public async createMarketIdentityForProfile(profile: resources.Profile): Promise<Identity> {
+
+        // first get the Profile Identity
+        const profileIdentity: resources.Identity = await this.findProfileIdentity(profile.id).then(value => value.toJSON());
+
+        const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(profileIdentity.wallet, true);
+        const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
+            return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
+        });
+
+        if (!masterKey) {
+            throw new MessageException('Could not find Profile wallets Master key.');
+        }
+
+        const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
+
+        // create and load a new blank wallet
+        const walletName = 'profiles/' + profile.name + '/particl-market';
+        const marketWallet: RpcWallet = await this.coreRpcService.createAndLoadWallet(walletName, false, true);
+
+        // import the key and set up the market wallet
+        const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);
+        const extKeyImported: RpcExtKeyResult = await this.coreRpcService.extKeyImport(marketWallet.name, masterKey.evkey, 'master key', true);
+        await this.coreRpcService.extKeySetMaster(marketWallet.name, extKeyImported.id);
+        const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(marketWallet.name, 'market account');
+        await this.coreRpcService.extKeySetDefaultAccount(marketWallet.name, marketAccount.account);
+
+        const address = await this.coreRpcService.getNewAddress(marketWallet.name);
+        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(marketWallet.name);
+
+        // create Identity for Market, using the created wallet
+        return await this.create({
+            profile_id: profile.id,
+            wallet: marketWallet.name,
+            address,
+            hdseedid: walletInfo.hdseedid,
+            path: keyInfo.key_info.path,
+            type: IdentityType.MARKET
+        } as IdentityCreateRequest);
     }
 
     @validate()

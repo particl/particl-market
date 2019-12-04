@@ -9,7 +9,8 @@
 
 export enum MarketType {
 
-    MARKETPLACE = 'MARKETPLACE'
-    // STOREFRONT = 'STOREFRONT'
+    MARKETPLACE = 'MARKETPLACE',            // receive + publish keys are the same
+    STOREFRONT = 'STOREFRONT',              // just receive key (cannot publish)
+    STOREFRONT_ADMIN = 'STOREFRONT_ADMIN'   // receive + publish keys are different
 
 }
