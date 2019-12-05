@@ -42,8 +42,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: profile name
-     *  [1]: profile address, optional
+     *  [0]: name
      *
      * @param data
      * @returns {Promise<Profile>}
@@ -58,37 +57,15 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
         // - create Wallet
         // - set the Wallet as default for the Profile
 
-        const oldWallet = await this.coreRpcService.getWalletInfo().then(value => value.walletname);
-
-        const walletName = data.params[0] + '.dat';
-
-        await this.coreRpcService.createAndLoadWallet(walletName);
-        await this.coreRpcService.setActiveWallet(walletName);
-        const profileAddress = await this.coreRpcService.getNewAddress();
-
-        // create the Profile
-        const profile = await this.profileService.create({
-            name: data.params[0],
-            address: profileAddress
+        // create default Profile
+        const profile: resources.Profile = await this.profileService.create({
+            name: data.params[0]
         } as ProfileCreateRequest).then(value => value.toJSON());
 
-        // create Wallet for Profile
-        const identity: resources.Identity = await this.identityService.create({
-            profile_id: profile.id,
-            wallet: walletName
-        } as IdentityCreateRequest).then(value => value.toJSON());
+        // create Identity for default Profile
+        await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
 
-        // create the default wallet Setting for Profile
-        await this.settingService.create({
-            profile_id: profile.id,
-            key: SettingValue.DEFAULT_IDENTITY.toString(),
-            value: '' + identity.id
-        } as SettingCreateRequest);
-
-        // switch back to the previous old wallet
-        await this.coreRpcService.setActiveWallet(oldWallet);
-
-        return profile;
+        return await this.profileService.findOne(profile.id).then(value => value.toJSON());
     }
 
     /**
@@ -108,7 +85,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
             throw new InvalidParamException('name', 'string');
         }
 
-        // check if profile already exist for the given name
+        // check if profile already exists for the given name
         let exists = await this.profileService.findOneByName(data.params[0])
             .then(async value => {
                 return true;
@@ -121,17 +98,19 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
             throw new MessageException('Profile with the same name already exists.');
         }
 
-        // check if wallet file already exist for the given name
-        exists = await this.coreRpcService.walletExists(data.params[0] + '.dat');
+        // check if wallet file already exists for the given name
+        const walletName = 'profiles/' + data.params[0];
+        exists = await this.coreRpcService.walletExists(walletName);
         if (exists || data.params[0] === 'wallet') {
             throw new MessageException('Wallet with the same name already exists.');
         }
 
+        data.params[1] = walletName;
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileName> ';
+        return this.getName() + ' <name> ';
     }
 
     public help(): string {
