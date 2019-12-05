@@ -18,9 +18,9 @@ import { SettingService } from './SettingService';
 import { IdentityType } from '../../enums/IdentityType';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from './ProfileService';
-import {RpcExtKey, RpcExtKeyResult, RpcWallet, RpcWalletInfo} from 'omp-lib/dist/interfaces/rpc';
-import {MessageException} from '../../exceptions/MessageException';
-import {CoreRpcService} from '../CoreRpcService';
+import {RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo} from 'omp-lib/dist/interfaces/rpc';
+import { MessageException } from '../../exceptions/MessageException';
+import { CoreRpcService } from '../CoreRpcService';
 
 export class IdentityService {
 
@@ -82,7 +82,7 @@ export class IdentityService {
     }
 
     /**
-     * create a new Identity for Market:
+     * create a new Identity for Market
      *
      * @param profile
      */
@@ -127,6 +127,53 @@ export class IdentityService {
         } as IdentityCreateRequest);
     }
 
+    /**
+     * create an Identity for Profile:
+     * - create and load a new blank wallet
+     * - create a new mnemonic
+     * - import master key from bip44 mnemonic root key and derive default account
+     *
+     * @param profile
+     */
+    public async createProfileIdentity(profile: resources.Profile): Promise<Identity> {
+
+        // create and load a new blank wallet
+        const walletName = 'profiles/' + profile.name;
+        const wallet: RpcWallet = await this.coreRpcService.createAndLoadWallet(walletName, false, true);
+
+        // create a new mnemonic
+        const passphrase = this.createRandom();
+        const mnemonic: RpcMnemonic = await this.coreRpcService.mnemonic(['new', passphrase, 'english', 32, true]);
+
+        // import master key from bip44 mnemonic root key and derive default account
+        await this.coreRpcService.extKeyGenesisImport(wallet.name, [mnemonic.mnemonic, passphrase]);
+
+        const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(wallet.name, true);
+        const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
+            return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
+        });
+        if (!masterKey) {
+            throw new MessageException('Could not find Profile wallets Master key.');
+        }
+        // const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(wallet.name, masterKey.evkey, "4444446'/0'");
+
+        const address = await this.coreRpcService.getNewAddress(wallet.name);
+        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
+
+        // create Identity for Profile, using the created wallet
+        return await this.create({
+            profile_id: profile.id,
+            wallet: wallet.name,
+            address,
+            hdseedid: walletInfo.hdseedid,
+            path: masterKey.path,
+            mnemonic: mnemonic.mnemonic,
+            passphrase,
+            type: IdentityType.PROFILE
+        } as IdentityCreateRequest);
+    }
+
+
     @validate()
     public async update(id: number, @request(IdentityUpdateRequest) body: IdentityUpdateRequest): Promise<Identity> {
 
@@ -145,6 +192,21 @@ export class IdentityService {
 
     public async destroy(id: number): Promise<void> {
         await this.identityRepository.destroy(id);
+    }
+
+    /**
+     * todo: move to some util
+     */
+    private createRandom(length: number = 24, caps: boolean = true, lower: boolean = true, numbers: boolean = true, unique: boolean = true): string {
+        const capsChars = caps ? [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'] : [];
+        const lowerChars = lower ? [...'abcdefghijklmnopqrstuvwxyz'] : [];
+        const numChars = numbers ? [...'0123456789'] : [];
+        const uniqueChars = unique ? [...'~!@#$%^&*()_+-=[]{};:,.<>?'] : [];
+        const selectedChars = [...capsChars, ...lowerChars, ...numChars, ...uniqueChars];
+
+        return [...Array(length)]
+            .map(i => selectedChars[Math.random() * selectedChars.length | 0])
+            .join('');
     }
 
 }

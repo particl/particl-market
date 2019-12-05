@@ -67,8 +67,8 @@ export class DefaultProfileService {
                     name: 'DEFAULT'
                 } as ProfileCreateRequest).then(value => value.toJSON());
 
-                // create Identity for default Profile, using the default wallet
-                const identity: resources.Identity = await this.createNewIdentityForProfile(profile).then(value => value.toJSON());
+                // create Identity for default Profile
+                const identity: resources.Identity = await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
             }
 
             // create or update the default profile Setting
@@ -89,73 +89,14 @@ export class DefaultProfileService {
      */
     public async upgradeDefaultProfile(): Promise<Profile> {
         const profile: resources.Profile = await this.getDefault().then(value => value.toJSON());
-        await this.createNewIdentityForProfile(profile);
+        await this.identityService.createProfileIdentity(profile);
         return await this.getDefault();
     }
 
-    /**
-     * create an Identity for Profile:
-     * - create and load a new blank wallet
-     * - create a new mnemonic
-     * - import master key from bip44 mnemonic root key and derive default account
-     *
-     * @param profile
-     */
-    // TODO: move to WalletService?
-    public async createNewIdentityForProfile(profile: resources.Profile): Promise<Identity> {
-
-        // create and load a new blank wallet
-        const walletName = 'profiles/' + profile.name;  // ./profiles/DEFAULT, the updated wont be under it ... :(
-        const wallet: RpcWallet = await this.coreRpcService.createAndLoadWallet(walletName, false, true);
-
-        // create a new mnemonic
-        const passphrase = this.createRandom();
-        const mnemonic: RpcMnemonic = await this.coreRpcService.mnemonic(['new', passphrase, 'english', 32, true]);
-
-        // import master key from bip44 mnemonic root key and derive default account
-        await this.coreRpcService.extKeyGenesisImport(wallet.name, [mnemonic.mnemonic, passphrase]);
-
-        const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(wallet.name, true);
-        const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
-            return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
-        });
-        if (!masterKey) {
-            throw new MessageException('Could not find Profile wallets Master key.');
-        }
-        // const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(wallet.name, masterKey.evkey, "4444446'/0'");
-
-        const address = await this.coreRpcService.getNewAddress(wallet.name);
-        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
-
-        // create Identity for Profile, using the created wallet
-        return await this.identityService.create({
-            profile_id: profile.id,
-            wallet: wallet.name,
-            address,
-            hdseedid: walletInfo.hdseedid,
-            path: masterKey.path,
-            mnemonic: mnemonic.mnemonic,
-            passphrase,
-            type: IdentityType.PROFILE
-        } as IdentityCreateRequest);
-    }
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
         return await this.profileService.getDefault(withRelated);
     }
 
-    /**
-     * todo: move to some util
-     */
-    private createRandom(length: number = 24, caps: boolean = true, lower: boolean = true, numbers: boolean = true, unique: boolean = true): string {
-        const capsChars = caps ? [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'] : [];
-        const lowerChars = lower ? [...'abcdefghijklmnopqrstuvwxyz'] : [];
-        const numChars = numbers ? [...'0123456789'] : [];
-        const uniqueChars = unique ? [...'~!@#$%^&*()_+-=[]{};:,.<>?'] : [];
-        const selectedChars = [...capsChars, ...lowerChars, ...numChars, ...uniqueChars];
 
-        return [...Array(length)]
-            .map(i => selectedChars[Math.random() * selectedChars.length | 0])
-            .join('');
-    }
 }
