@@ -9,7 +9,6 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -25,6 +24,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidService } from '../../services/model/BidService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -34,6 +34,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowReleaseActionService) private escrowReleaseActionService: EscrowReleaseActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_RELEASE);
@@ -42,8 +43,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
     /**
      * data.params[]:
-     * [0]: orderItem, resources.OrderItem
-     * [1]: memo
+     *   [0]: orderItem, resources.OrderItem
+     *   [1]: memo
+     *   [2]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
@@ -52,6 +54,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
+        const identity: resources.Identity = data.params[2];
+
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
@@ -63,17 +68,17 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         }
         bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
-        const fromAddress = orderItem.Order.buyer;  // we are the buyer
+        // const fromAddress = orderItem.Order.buyer;  // we are the buyer
         const toAddress = orderItem.Order.seller;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
-            memo: data.params[1]
+            memo
         } as EscrowReleaseRequest;
 
         return this.escrowReleaseActionService.post(postRequest);
@@ -104,7 +109,6 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             .catch(reason => {
                 throw new ModelNotFoundException('OrderItem');
             });
-        data.params[0] = orderItem;
 
         // TODO: check these
         const validOrderItemStatuses = [
@@ -144,6 +148,14 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
 
         // TODO: check there's no MPA_CANCEL, MPA_REJECT?
         // TODO: check that we are the buyer
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.buyer)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = orderItem;
+        data.params[2] = identity;
 
         return data;
     }
@@ -159,7 +171,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Release an escrow.';
+        return 'Release Escrow.';
     }
 
     public example(): string {

@@ -97,6 +97,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
      * data.params[]:
      * [0]: orderItemId
      * [1]: memo
+     *
      * @param data
      * @returns {Promise<any>}
      */
@@ -157,7 +158,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
     }
 
     public description(): string {
-        return 'Complete an escrow.';
+        return 'Complete Escrow.';
     }
 
     public example(): string {
