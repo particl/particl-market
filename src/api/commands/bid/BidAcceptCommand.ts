@@ -21,6 +21,9 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { IdentityService } from '../../services/model/IdentityService';
+import {ProfileService} from '../../services/model/ProfileService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -30,6 +33,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) private bidAcceptActionService: BidAcceptActionService
     ) {
         super(Commands.BID_ACCEPT);
@@ -39,6 +44,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bid, resources.Bid
+     * [1]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -47,11 +53,9 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const bid: resources.Bid = data.params[0];
+        const identity: resources.Identity = data.params[1];
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
-        const profile: resources.Profile = listingItem.ListingItemTemplate.Profile;
-
-        const fromAddress = profile.address;    // we are the seller, send from the profiles address which posted the item being bidded for
+        const fromAddress = identity.address;   // send from the identitys address, should be the identity assigned for the market
         const toAddress = bid.bidder;           // send to the address that sent the bid
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
@@ -68,6 +72,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bidId
+     * [1]: identityId
      *
      * TODO: instead of bidId, use bid.hash?
      *
@@ -78,14 +83,17 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
         if (data.params.length < 1) {
             throw new MissingParamException('bidId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('identityId');
         }
 
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('bidId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('identityId', 'number');
         }
 
         const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[0] = bid;
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
@@ -99,7 +107,17 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new ModelNotFoundException('ListingItemTemplate');
         }
 
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1]).then(value => value.toJSON());
+
+        if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
+            throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');
+        }
+
         // TODO: check that we are the seller
+
+        data.params[0] = bid;
+        data.params[1] = identity;
 
         return data;
     }

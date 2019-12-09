@@ -120,7 +120,6 @@ import { BlacklistService } from './model/BlacklistService';
 import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
-import {MissingParamException} from '../exceptions/MissingParamException';
 
 
 export class TestDataService {
