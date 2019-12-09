@@ -24,6 +24,7 @@ import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest
 import { BidService } from '../../services/model/BidService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class OrderItemShipCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -32,6 +33,7 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.action.OrderItemShipActionService) private orderItemShipActionService: OrderItemShipActionService
     ) {
@@ -41,8 +43,9 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
 
     /**
      * data.params[]:
-     * [0]: orderItem: resources.OrderItem
-     * [1]: memo
+     *   [0]: orderItem: resources.OrderItem
+     *   [1]: memo
+     *   [2]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
@@ -52,9 +55,10 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
 
         const orderItem: resources.OrderItem = data.params[0];
         const memo: string = data.params[1];
+        const identity: resources.Identity = data.params[2];
+
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
-        // todo: to validate()?
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
         const bidAccept: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
             return child.type === MPActionExtended.MPA_COMPLETE;
@@ -63,14 +67,14 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
             throw new MessageException('No accepted Bid found.');
         }
 
-        const fromAddress = orderItem.Order.seller;
+        // const fromAddress = orderItem.Order.seller;
         const toAddress = orderItem.Order.buyer;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
             bid,
             memo
         } as OrderItemShipRequest;
@@ -105,7 +109,6 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
             .catch(reason => {
                 throw new ModelNotFoundException('OrderItem');
             });
-        data.params[0] = orderItem;
 
         const validOrderItemStatuses = [
             OrderItemStatus.ESCROW_COMPLETED
@@ -120,16 +123,25 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
         // TODO: check that we are the seller
         // TODO: check there's no MPA_CANCEL, MPA_REJECT?
 
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.seller)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = orderItem;
+        data.params[2] = identity;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash|*> [<buyer|*> [<seller|*>]]]';
+        return this.getName() + ' <orderItemId> [memo]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem which we want mark as sent.\n'
+            + '    <orderItemId>            - String - The id of the OrderItem which we want mark as shipped.\n'
             + '    <memo>                   - String - The message to the buyer';
     }
 
