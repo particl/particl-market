@@ -71,10 +71,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: bidId
-     * [1]: identityId
-     *
-     * TODO: instead of bidId, use bid.hash?
+     * [0]: bidId, number
+     * [1]: identityId, number
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -108,8 +106,17 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new ModelNotFoundException('ListingItemTemplate');
         }
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
-        const identity: resources.Identity = await this.identityService.findOne(data.params[1]).then(value => value.toJSON());
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
 
         if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
             throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');

@@ -9,7 +9,6 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { SmsgService } from '../SmsgService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
@@ -82,12 +81,12 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // return smsg fee estimate, if thats what was requested
         if (params.sendParams.estimateFee) {
-            return await this.smsgService.estimateFee(marketplaceMessage, params.sendParams);
+            return await this.smsgService.estimateFee(params.sendParams.from.wallet, marketplaceMessage, params.sendParams);
         }
 
         // if message is paid, make sure we have enough balance to pay for it
         if (params.sendParams.paidMessage) {
-            const canAfford = await this.smsgService.canAffordToSendMessage(marketplaceMessage, params.sendParams);
+            const canAfford = await this.smsgService.canAffordToSendMessage(params.sendParams.from.wallet, marketplaceMessage, params.sendParams);
             if (!canAfford) {
                 throw new MessageException('Not enough balance to send the message.');
             }
@@ -98,7 +97,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         marketplaceMessage = strip(marketplaceMessage);
 
         // finally send the message
-        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, params.sendParams);
+        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(params.sendParams.from.wallet, marketplaceMessage, params.sendParams);
 
         // save the outgoing message to database as SmsgMessage
         const smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
