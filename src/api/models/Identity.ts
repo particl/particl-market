@@ -50,6 +50,16 @@ export class Identity extends Bookshelf.Model<Identity> {
         }
     }
 
+    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Identity> {
+        if (withRelated) {
+            return await Identity.where<Identity>({ address: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Identity.where<Identity>({ address: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'identities'; }
     public get hasTimestamps(): boolean { return true; }
 

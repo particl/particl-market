@@ -38,6 +38,10 @@ export class IdentityRepository {
         return await this.IdentityModel.fetchAllByProfileId(profileId, withRelated);
     }
 
+    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Identity> {
+        return await this.IdentityModel.fetchByAddress(name, withRelated);
+    }
+
     public async create(data: any): Promise<Identity> {
         const identity = this.IdentityModel.forge<Identity>(data);
         try {

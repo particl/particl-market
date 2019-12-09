@@ -23,6 +23,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class SmsgResendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
     public log: LoggerType;
@@ -31,6 +32,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService
     ) {
         super(Commands.SMSG_RESEND);
@@ -40,6 +42,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: smsgMessage: resources.SmsgMessage
+     *  [1]: identity: resources.Identity
      *
      * @param data
      * @returns {Promise<void>}
@@ -47,6 +50,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const smsgMessage: resources.SmsgMessage = data.params[0];
+        const identity: resources.Identity = data.params[1];
 
         const fromAddress = smsgMessage.from;
         const toAddress = smsgMessage.to;
@@ -63,7 +67,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         } as KVS);
 
         this.log.debug('RESENDING: ', JSON.stringify(marketplaceMessage, null, 2));
-        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, sendParams);
+        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(identity.wallet, marketplaceMessage, sendParams);
         await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
 
         return smsgSendResponse;
@@ -96,7 +100,18 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
             .catch(reason => {
                 throw new ModelNotFoundException('SmsgMessage');
             });
+
+        // then find the identity which was used to send the message
+        const identity: resources.Identity = await this.identityService.findOneByAddress(smsgMessage.from)
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
         data.params[0] = smsgMessage;
+        data.params[1] = identity;
 
         return data;
     }

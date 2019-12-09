@@ -18,11 +18,8 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import { SettingValue } from '../../enums/SettingValue';
-import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from '../../services/model/SettingService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { IdentityCreateRequest } from '../../requests/model/IdentityCreateRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
@@ -49,13 +46,6 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Profile> {
-
-        // - create and load the wallet file
-        // - set the wallet as the active one
-        // - get address from the wallet
-        // - create Profile with the address
-        // - create Wallet
-        // - set the Wallet as default for the Profile
 
         // create default Profile
         const profile: resources.Profile = await this.profileService.create({

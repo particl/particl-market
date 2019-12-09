@@ -14,7 +14,8 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
 
     public generateListingItemTemplate = true;
     public generateListingItem = true;
-    public listingItemHash: string;
+    public listingItemId: number;
+
     public type: string;
     public bidder: string;
     public listingItemSeller: string;
@@ -25,7 +26,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
      * generateParams[]:
      * [0]: generateListingItemTemplate, generate a ListingItemTemplate
      * [1]: generateListingItem, generate a ListingItem
-     * [2]: listingItemhash, attach bid to existing ListingItem
+     * [2]: listingItemId, attach bid to existing ListingItem
      * [3]: type, bid type, see MPAction
      * [4]: bidder, bidders address
      * [5]: seller, ListingItem sellers address
@@ -39,10 +40,10 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
         if (!_.isEmpty(generateParams) ) {
             this.generateListingItemTemplate = generateParams[0] ? true : false;
             this.generateListingItem = generateParams[1] ? true : false;
-            this.listingItemHash = generateParams[2] ? generateParams[2] : null;
+            this.listingItemId = generateParams[2] ? generateParams[2] : null;
 
             // if item hash was given, set generateListingItem to false
-            this.generateListingItem = !this.listingItemHash;
+            this.generateListingItem = !this.listingItemId;
 
             this.type = generateParams[3] ? generateParams[3] : null;
             this.bidder = generateParams[4] ? generateParams[4] : null;
@@ -58,7 +59,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
         return [
             this.generateListingItemTemplate,
             this.generateListingItem,
-            this.listingItemHash,
+            this.listingItemId,
             this.type,
             this.bidder,
             this.listingItemSeller,

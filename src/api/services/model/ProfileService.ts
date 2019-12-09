@@ -80,15 +80,6 @@ export class ProfileService {
         return profile;
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.findOneByAddress(address, withRelated);
-        if (profile === null) {
-            this.log.warn(`Profile with the address=${address} was not found!`);
-            throw new NotFoundException(address);
-        }
-        return profile;
-    }
-
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body: ProfileCreateRequest = JSON.parse(JSON.stringify(data));
@@ -96,12 +87,12 @@ export class ProfileService {
 
         // extract and remove related models from request
         const shippingAddresses = body.shippingAddresses || [];
-        delete body.shippingAddresses;
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
-        delete body.cryptocurrencyAddresses;
         const settings = body.settings || [];
-        delete body.settings;
         const identity = body.identity;
+        delete body.shippingAddresses;
+        delete body.cryptocurrencyAddresses;
+        delete body.settings;
         delete body.identity;
 
         // If the request body was valid we will create the profile
