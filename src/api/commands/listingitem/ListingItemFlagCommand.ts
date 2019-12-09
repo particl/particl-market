@@ -25,6 +25,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import {IdentityService} from '../../services/model/IdentityService';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -34,6 +35,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService
     ) {
@@ -44,7 +46,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     /**
      * data.params[]:
      *  [0]: listingItem: resources.ListingItem
-     *  [1]: profile: resources.Profile
+     *  [1]: identity: resources.Identity
      *  [2]: reason
      *  [3]: expiryTime (set in validate)
      *
@@ -55,25 +57,23 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const listingItem: resources.ListingItem = data.params[0];
-        const profile: resources.Profile = data.params[1];
+        const identity: resources.Identity = data.params[1];
         const title = listingItem.hash;
         const description = data.params[2];
         const daysRetention = data.params[3];
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // get the ListingItem market
-        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, listingItem.market)
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, listingItem.market)
             .then(value => value.toJSON()); // throws if not found
-
-        // send from the template profiles address
-        const fromAddress = profile.address;
+        const fromIdentity = identity;
 
         // send to given market address
         const toAddress = market.receiveAddress;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, false),
-            sender: profile,
+            sendParams: new SmsgSendParams(fromIdentity, toAddress, true, daysRetention, false),
+            sender: fromIdentity,
             market,
             category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
             title,
@@ -87,9 +87,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: listingItemId
-     *  [1]: profileId
-     *  [2]: reason, optional
+     *  [0]: listingItemId, number
+     *  [1]: identityId, number
+     *  [2]: reason, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -99,13 +99,13 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('identityId');
         }
 
         if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
         } else if (data.params[1] && typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
+            throw new InvalidParamException('identityId', 'number');
         }
 
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0])
@@ -120,17 +120,26 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('ListingItem is already flagged.');
         }
 
-        // make sure profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[1]).then(value => value.toJSON())
+        // make sure identity with the id exists
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+            .then(value => value.toJSON())
             .catch(reason => {
-                this.log.error('Profile not found. ' + reason);
-                throw new ModelNotFoundException('Profile');
+                throw new ModelNotFoundException('Identity');
             });
+
+        // check whether the identity is used on the ListingItems Market
+        const foundMarket = _.find(identity.Markets, market => {
+            return market.receiveAddress === listingItem.market;
+        });
+
+        if (!foundMarket) {
+            throw new MessageException('Given Identity is not used on the Market which the ListingItem was posted to.');
+        }
 
         const daysRetention = Math.ceil((listingItem.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
 
         data.params[0] = listingItem;
-        data.params[1] = profile;
+        data.params[1] = identity;
         data.params[2] = data.params[2] ? data.params[2] : 'This ListingItem should be removed.';
         data.params[3] = daysRetention;
 
@@ -138,13 +147,13 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemId> <profileId> [reason]';
+        return this.getName() + ' <listingItemId> <identityId> [reason]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>    - Numeric - The ID of the ListingItem we want to report. \n'
-            + '    <profileId>        - Numeric - The ID of the Profile used to report the item. \n'
+            + '    <listingItemId>    - Numeric - The id of the ListingItem we want to report. \n'
+            + '    <identityId>       - Numeric - The id of the Identity used to report the item. \n'
             + '    <reason>           - String - Optional reason for the flagging';
     }
 
@@ -153,6 +162,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     }
 
     public example(): string {
-        return '';
+        return 'item 1 1';
     }
 }
