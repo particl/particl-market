@@ -43,9 +43,9 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     * [0]: orderItem: resources.OrderItem
-     * [1]: memo
-     * [2]: identity, resources.Identity
+     *   [0]: orderItem: resources.OrderItem
+     *   [1]: memo
+     *   [2]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}

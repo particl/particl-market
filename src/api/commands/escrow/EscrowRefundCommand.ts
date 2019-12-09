@@ -24,6 +24,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidService } from '../../services/model/BidService';
 import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
 import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -32,6 +33,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) private escrowRefundActionService: EscrowRefundActionService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
@@ -41,8 +43,9 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     * [0]: orderItemId
-     * [1]: memo
+     *   [0]: orderItem: resources.OrderItem
+     *   [1]: memo
+     *   [2]: identity, resources.Identity
      * @param data
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -50,6 +53,9 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
+        const identity: resources.Identity = data.params[2];
+
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
@@ -69,18 +75,18 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         }
         escrowLock = await this.bidService.findOne(escrowLock.id).then(value => value.toJSON());
 
-        const fromAddress = orderItem.Order.buyer;  // we are the seller
+        // const fromAddress = orderItem.Order.buyer;
         const toAddress = orderItem.Order.seller;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
             escrowLock,
-            memo: data.params[1]
+            memo
         } as EscrowRefundRequest;
 
         return this.escrowRefundActionService.post(postRequest);
@@ -125,8 +131,17 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('OrderItem has invalid status');
         }
 
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.buyer)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
         // TODO: check that we are the seller
         // TODO: check there's no MPA_CANCEL, MPA_REJECT?
+
+        data.params[0] = orderItem;
+        data.params[2] = identity;
 
         return data;
     }
