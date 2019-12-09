@@ -23,6 +23,8 @@ import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
 import { BidCancelActionService } from '../../services/action/BidCancelActionService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ProfileService } from '../../services/model/ProfileService';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -31,6 +33,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) private bidCancelActionService: BidCancelActionService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService
     ) {
@@ -41,6 +45,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bid, resources.Bid
+     * [1]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -48,12 +53,12 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const bid: resources.Bid = data.params[0];
-        const profile: resources.Profile = data.params[1];
+        const identity: resources.Identity = data.params[1];
 
-        const fromAddress = profile.address;
+        const fromAddress = identity.address;
 
         let toAddress = bid.bidder;
-        if (profile.address === bid.bidder) {
+        if (identity.address === bid.bidder) { // todo: ???
             toAddress = bid.OrderItem.Order.seller;
         }
 
@@ -70,7 +75,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bidId
-     *  [1]: profileId
+     * [1]: identityId
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -81,22 +86,24 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         if (data.params.length < 1) {
             throw new MissingParamException('bidId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('identityId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('bidId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('identityId', 'number');
         }
 
         const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[0] = bid;
 
+        // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
+            this.log.error('ListingItem not found.');
             throw new ModelNotFoundException('ListingItem');
         }
 
+        // make sure the Escrow hasnt been completed yet
         const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
             return child.type === MPActionExtended.MPA_COMPLETE;
         });
@@ -104,30 +111,31 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Escrow has already been completed, unable to cancel.');
         }
 
-        // make sure profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[1]).then(value => value.toJSON())
-            .catch(reason => {
-                this.log.error('Profile not found. ' + reason);
-                throw new ModelNotFoundException('Profile');
-            });
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1]).then(value => value.toJSON());
 
-        data.params[1] = profile;
+        if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
+            throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');
+        }
+
+        data.params[0] = bid;
+        data.params[1] = identity;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <bidId>';
+        return this.getName() + ' <bidId> <identityId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item whose bid we want to cancel. '
-            + '    <bidId>                  - Numeric - The ID of the bid we want to cancel. ';
+            + '    <bidId>                  - number - The id of the Bid we want to cancel. '
+            + '    <identityId>             - number - The id of the Identity used to cancel to Bid. ';
     }
 
     public description(): string {
-        return 'Cancel bid.';
+        return 'Cancel Bid.';
     }
 
     public example(): string {

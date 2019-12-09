@@ -22,8 +22,8 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { IdentityService } from '../../services/model/IdentityService';
-import {ProfileService} from '../../services/model/ProfileService';
-import {MessageException} from '../../exceptions/MessageException';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -32,8 +32,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) private bidAcceptActionService: BidAcceptActionService
     ) {
@@ -81,6 +81,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('bidId');
         } else if (data.params.length < 2) {
@@ -123,16 +124,17 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <bidId>';
+        return this.getName() + ' <bidId> <identityId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <bidId>                  - number - The id of the bid we want to accept. ';
+            + '    <bidId>                  - number - The id of the Bid we want to accept. '
+            + '    <identityId>             - number - The id of the Identity used to accept to Bid. ';
     }
 
     public description(): string {
-        return 'Accept bid.';
+        return 'Accept Bid.';
     }
 
     public example(): string {
