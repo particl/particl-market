@@ -103,6 +103,7 @@ export class EscrowRefundActionService extends BaseActionService {
 
                                         // finally use omp to generate refundtx
                                         const refundtx = await this.ompService.refund(
+                                            params.sendParams.from,
                                             listingItemAddMPM.action as ListingItemAddMessage,
                                             bidMPM.action as BidMessage,
                                             bidAcceptMPM.action as BidAcceptMessage,

@@ -145,9 +145,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             data.params[1] = options;
         }
 
-        // TODO: check that we are the buyer
-
-        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.seller)
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.buyer)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Identity');
