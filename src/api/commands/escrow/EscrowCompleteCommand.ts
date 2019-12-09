@@ -24,6 +24,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidService } from '../../services/model/BidService';
 import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -33,6 +34,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowCompleteActionService) private escrowCompleteActionService: EscrowCompleteActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ESCROW_COMPLETE);
@@ -43,6 +45,8 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
      * data.params[]:
      * [0]: orderItem: resources.OrderItem
      * [1]: memo
+     * [2]: identity, resources.Identity
+     *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -50,6 +54,9 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
+        const identity: resources.Identity = data.params[2];
+
         // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
@@ -76,11 +83,11 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
             escrowLock,
-            memo: data.params[1]
+            memo
         } as EscrowCompleteRequest;
 
         return this.escrowCompleteActionService.post(postRequest);
@@ -106,11 +113,11 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
         }
 
         // make sure required data exists and fetch it
-        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0]).then(value => value.toJSON())
+        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('OrderItem');
             });
-        data.params[0] = orderItem;
 
         // TODO: check these
         const validOrderItemStatuses = [
@@ -123,6 +130,15 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
             this.log.error('OrderItem has invalid status');
             throw new MessageException('OrderItem has invalid status: ' + orderItem.status + ', should be: ' + OrderItemStatus.ESCROW_LOCKED);
         }
+
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.seller)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = orderItem;
+        data.params[2] = identity;
 
         // TODO: check that we are the seller
         // TODO: check there's no MPA_CANCEL, MPA_REJECT?
