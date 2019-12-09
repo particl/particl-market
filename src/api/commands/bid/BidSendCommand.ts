@@ -27,6 +27,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
+import {IdentityService} from '../../services/model/IdentityService';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -56,6 +57,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.AddressService) private addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
@@ -71,7 +73,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      *
      * data.params[]:
      * [0]: listingItem, resources.ListingItem
-     * [1]: profile, resources.Profile
+     * [1]: identity, resources.Identity
      * [2]: address, resources.Address
      * [...]: bidDataId, string, optional       TODO: currently ignored
      * [...]: bidDataValue, string, optional    TODO: currently ignored
@@ -83,7 +85,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const listingItem: resources.ListingItem = data.params.shift();
-        const profile: resources.Profile = data.params.shift();
+        const identity: resources.Identity = data.params.shift();
         const address: AddressCreateRequest = data.params.shift();
 
         // TODO: support for passing custom BidDatas seems to have been removed
@@ -91,14 +93,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        const fromAddress = profile.address;    // send from the given profiles address
+        const fromIdentity = identity;          // send from the given identity
         const toAddress = listingItem.seller;   // send to listingItem sellers address
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(fromIdentity, toAddress, false, daysRetention, estimateFee),
             listingItem,
             address
         } as BidRequest;
@@ -111,8 +113,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * data.params[]:
-     * [0]: listingItemHash, string
-     * [1]: profileId, number
+     * [0]: listingItemId, number
+     * [1]: identityId, number
      * [2]: addressId (from profile shipping addresses), number|false
      *                if false, the address must be passed as bidData id/value pairs
      *                         in following format:
@@ -134,20 +136,20 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('hash');
+            throw new MissingParamException('listingItemId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('identityId');
         } else if (data.params.length < 3) {
             throw new MissingParamException('address or addressId');
         }
 
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('hash');
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('listingItemId');
         }
 
         if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('profileId');
+            throw new InvalidParamException('identityId');
         }
 
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
@@ -162,20 +164,25 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         }
 
         // make sure required data exists and fetch it
-        const listingItemHash = data.params.shift();
-        const profileId = data.params.shift();
+        const listingItemId = data.params.shift();
+        const identityId = data.params.shift();
         const addressId = data.params.shift();
 
         // now the rest of data.params are either address values or biddatas
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
             });
 
-        // profile that is doing the bidding
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
+        const identity: resources.Identity = await this.identityService.findOne(identityId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        const profile: resources.Profile = await this.profileService.findOne(identity.Profile.id)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
@@ -184,7 +191,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const address: AddressCreateRequest = this.getAddress(profile, addressId, data);
 
         // unshift the needed data back to the params array
-        data.params.unshift(listingItem, profile, address);
+        data.params.unshift(listingItem, identity, address);
 
         // make some other validations
         if (new Date().getTime() > listingItem.expiredAt) {
@@ -198,25 +205,24 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <profileId> <addressId | false> [(<bidDataKey>, <bidDataValue>), ...] ';
+        return this.getName() + ' <itemhash> <identityId> <addressId | false> [(<bidDataKey>, <bidDataValue>), ...] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <listingItemHash>        - String - The hash of the item we want to send bids for. \n'
-            + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
-            + '    <addressId>              - Numeric - The id of the address we want to associated with the bid. \n'
-            + '    <bidDataKey>             - [optional] String - The key for additional data for the bid we want to send. \n'
-            + '    <bidDataValue>           - [optional] String - The value for additional data for the bid we want to send. ';
+            + '    <listingItemId>          - Numeric - The id of the ListingItem we want to send bids for. \n'
+            + '    <identityId>             - Numeric - The id of the Identity we want to associate with the Bid. \n'
+            + '    <addressId>              - Numeric - The id of the Address we want to associated with the Bid. \n'
+            + '    <bidDataKey>             - [optional] String - The key for additional data for the Bid we want to send. \n'
+            + '    <bidDataValue>           - [optional] String - The value for additional data for the Bid we want to send. ';
     }
 
     public description(): string {
-        return 'Send bid.';
+        return 'Send Bid.';
     }
 
     public example(): string {
-        return 'bid ' + this.getName() + ' 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
-        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 ';
+        return 'bid ' + this.getName() + ' 1 1 1 ';
     }
 
     /**

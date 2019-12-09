@@ -111,8 +111,17 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Escrow has already been completed, unable to cancel.');
         }
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
-        const identity: resources.Identity = await this.identityService.findOne(data.params[1]).then(value => value.toJSON());
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
 
         if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
             throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');
@@ -139,6 +148,6 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public example(): string {
-        return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb ';
+        return 'bid ' + this.getName() + ' 1 1';
     }
 }
