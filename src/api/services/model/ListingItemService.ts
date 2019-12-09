@@ -76,7 +76,7 @@ export class ListingItemService {
     }
 
     /**
-     * TODO: DEPRECATED, shouldnt be used
+     * TODO: DEPRECATED, shouldnt be used since a ListingItem with the same hash can exist in multiple markets
      *
      * @param {string} hash
      * @param {boolean} withRelated

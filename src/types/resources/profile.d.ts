@@ -7,7 +7,7 @@ declare module 'resources' {
     interface Profile {
         id: number;
         name: string;
-        address: string;
+        // address: string; // use identity.address
         createdAt: Date;
         updatedAt: Date;
 

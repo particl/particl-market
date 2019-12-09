@@ -119,6 +119,8 @@ import { GenerateBlacklistParams } from '../requests/testdata/GenerateBlacklistP
 import { BlacklistService } from './model/BlacklistService';
 import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../enums/BlacklistType';
+import { IdentityService } from './model/IdentityService';
+import {MissingParamException} from '../exceptions/MissingParamException';
 
 
 export class TestDataService {
@@ -133,6 +135,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) private defaultSettingService: DefaultSettingService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -362,6 +365,7 @@ export class TestDataService {
             'addresses',
             'favorite_items',
             'cryptocurrency_addresses',
+            'identities',
             'profiles',
             'shopping_cart_item',
             'shopping_cart',
@@ -424,7 +428,8 @@ export class TestDataService {
                     : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
 
                 const listingItemCreateRequest = {
-                    seller: listingItemTemplate.Profile.address,
+                    // seller: listingItemTemplate.Profile.address,
+                    seller: market.Identity.address,
                     market: market.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
@@ -614,7 +619,7 @@ export class TestDataService {
             this.log.debug('listingItem.hash:', listingItem.hash);
 
             // set the hash for bid generation
-            generateParams.listingItemHash = listingItem.hash;
+            generateParams.listingItemId = listingItem.id;
         }
 
         this.log.debug('generateParams:', generateParams);
@@ -633,7 +638,12 @@ export class TestDataService {
 
     private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
 
-        const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress();
+        // TODO: defaultProfile might not be the correct one
+        const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(generateParams.listingItemId).then(value => value.toJSON());
+        const identity: resources.Identity = await this.identityService.findOneByAddress(listingItem.seller).then(value => value.toJSON());
+
+        const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress(identity.wallet);
         const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
 
         // TODO: generate biddatas
@@ -656,14 +666,14 @@ export class TestDataService {
             // this.log.debug('Generated addresses = ' + JSON.stringify(addresses, null, 2));
             const address = addresses[0];
 
-            // TODO: defaultProfile might not be the correct one
-            const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
             address.profile_id = defaultProfile.id;
             bidCreateRequest.address = address;
         }
 
+        // TODO: this hash is incorrect and should be fixed.
+        // TODO: add market to the hash?
         bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
-            value: generateParams.listingItemHash,
+            value: listingItem.hash,
             to: HashableBidField.ITEM_HASH
         }, {
             value: EscrowType.MULTISIG,
@@ -674,12 +684,8 @@ export class TestDataService {
         }]));
 
         // if we have a hash, fetch the listingItem and set the relation
-        if (generateParams.listingItemHash) {
-            const listingItemModel = await this.listingItemService.findOneByHash(generateParams.listingItemHash);
-            const listingItem = listingItemModel ? listingItemModel.toJSON() : null;
-            if (listingItem) {
-                bidCreateRequest.listing_item_id = listingItem.id;
-            }
+        if (generateParams.listingItemId && listingItem) {
+            bidCreateRequest.listing_item_id = listingItem.id;
         }
 
         this.log.debug('bidCreateRequest: ' + JSON.stringify(bidCreateRequest, null, 2));
@@ -1079,22 +1085,21 @@ export class TestDataService {
 
     private async generateProfileData(generateParams: GenerateProfileParams): Promise<ProfileCreateRequest> {
         const name = 'TEST-' + Faker.name.firstName();
-        const address = await this.coreRpcService.getNewAddress();
         const shippingAddresses = generateParams.generateShippingAddresses
             ? await this.generateAddressesData(_.random(1, 5))
             : [];
-        const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses
-            ? await this.generateCryptocurrencyAddressesData(_.random(1, 5))
-            : [];
+        // todo: these are not really used
+        // const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses
+        //     ? await this.generateCryptocurrencyAddressesData(_.random(1, 5))
+        //     : [];
         const settings = generateParams.generateSettings
             ? await this.generateSettings(_.random(1, 5))
             : [];
 
         return {
             name,
-            address,
             shippingAddresses,
-            cryptocurrencyAddresses,
+            // cryptocurrencyAddresses,
             settings
         } as ProfileCreateRequest;
     }
@@ -1117,7 +1122,7 @@ export class TestDataService {
         }
         return addresses;
     }
-
+/*
     private async generateCryptocurrencyAddressesData(amount: number): Promise<CryptocurrencyAddressCreateRequest[]> {
         const cryptoAddresses: CryptocurrencyAddressCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
@@ -1128,7 +1133,7 @@ export class TestDataService {
         }
         return cryptoAddresses;
     }
-
+*/
     private async generateSettings(amount: number): Promise<SettingCreateRequest[]> {
         const settings: SettingCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
@@ -1161,15 +1166,18 @@ export class TestDataService {
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
         // get default profile
-        const defaultProfile: resources.Profile = await this.profileService.getDefault()
-            .then(value => value.toJSON());
+        const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
-        // get default market
-        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id)
-            .then(value => value.toJSON());
+        let market: resources.Market;
+        if (generateParams.marketId) {
+            market = await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
+        } else {
+            market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        }
+        generateParams.marketId = market.id;
 
         // set seller to given address or get a new one
-        const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress();
+        const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress(market.Identity.wallet);
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1182,7 +1190,7 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market: defaultMarket.receiveAddress,
+            market: market.receiveAddress,
             msgid: '' + new Date().getTime(),
             expiryTime: 4,
             postedAt: new Date().getTime(),
@@ -1295,6 +1303,11 @@ export class TestDataService {
         generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
     Promise<PaymentInformationCreateRequest> {
 
+        const wallet = await this.marketService.findOne(generateParams.marketId).then(value => {
+            const market: resources.Market = value.toJSON();
+            return market.Identity.wallet;
+        });
+
         const escrow = generateParams.generateEscrow
             ? {
                 type: EscrowType.MAD_CT, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
@@ -1316,7 +1329,7 @@ export class TestDataService {
                 } as ShippingPriceCreateRequest,
                 cryptocurrencyAddress: {
                     type: CryptoAddressType.STEALTH,
-                    address: (await this.coreRpcService.getNewStealthAddress()).address
+                    address: (await this.coreRpcService.getNewStealthAddress(wallet)).address
                 } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;
@@ -1363,15 +1376,26 @@ export class TestDataService {
     }
 
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
+
+        let profile: resources.Profile;
+        if (generateParams.profileId) {
+            profile = await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
+        } else {
+            profile = await this.profileService.getDefault().then(value => value.toJSON());
+        }
+
+        let market: resources.Market;
+        if (generateParams.marketId) {
+            market = await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
+        } else {
+            market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        }
+        generateParams.marketId = market.id;
+
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
-
-        // todo: use undefined
-        const profile: resources.Profile = generateParams.profileId === null || generateParams.profileId === undefined
-            ? await this.profileService.getDefault().then(value => value.toJSON())
-            : await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
 
         const listingItemTemplateCreateRequest = {
             generatedAt: +new Date().getTime(),

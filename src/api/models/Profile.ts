@@ -44,16 +44,6 @@ export class Profile extends Bookshelf.Model<Profile> {
         }
     }
 
-    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Profile> {
-        if (withRelated) {
-            return await Profile.where<Profile>({ address: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Profile.where<Profile>({ address: value }).fetch();
-        }
-    }
-
     public get tableName(): string { return 'profiles'; }
     public get hasTimestamps(): boolean { return true; }
 
@@ -63,8 +53,9 @@ export class Profile extends Bookshelf.Model<Profile> {
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
 
-    public get Address(): string { return this.get('address'); }
-    public set Address(value: string) { this.set('address', value); }
+    // Deprecated, use the Profiles Identity.address
+    // public get Address(): string { return this.get('address'); }
+    // public set Address(value: string) { this.set('address', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
@@ -76,7 +67,6 @@ export class Profile extends Bookshelf.Model<Profile> {
         return this.hasMany(Address, 'profile_id', 'id');
     }
 
-    // TODO: the use of Address should be replaced with this
     public CryptocurrencyAddresses(): Collection<CryptocurrencyAddress> {
         return this.hasMany(CryptocurrencyAddress, 'profile_id', 'id');
     }

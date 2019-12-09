@@ -34,10 +34,6 @@ export class ProfileRepository {
         return await this.ProfileModel.fetchByName(name, withRelated);
     }
 
-    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
-        return await this.ProfileModel.fetchByAddress(name, withRelated);
-    }
-
     public async create(data: any): Promise<Profile> {
         const profile = this.ProfileModel.forge<Profile>(data);
         try {

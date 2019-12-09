@@ -21,6 +21,7 @@ import { ProfileService } from './ProfileService';
 import {RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo} from 'omp-lib/dist/interfaces/rpc';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../CoreRpcService';
+import {Profile} from '../../models/Profile';
 
 export class IdentityService {
 
@@ -62,8 +63,17 @@ export class IdentityService {
         return identity;
     }
 
+    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Identity> {
+        const identity = await this.identityRepository.findOneByAddress(address, withRelated);
+        if (identity === null) {
+            this.log.warn(`Identity with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
+        return identity;
+    }
+
     public async findProfileIdentity(profileId: number, withRelated: boolean = true): Promise<Identity> {
-        const profile: resources.Profile = await this.findOne(profileId, true).then(value => value.toJSON());
+        const profile: resources.Profile = await this.profileService.findOne(profileId, true).then(value => value.toJSON());
         const identity: resources.Identity | undefined = _.find(profile.Identities, p => {
             return p.type === IdentityType.PROFILE;
         });
