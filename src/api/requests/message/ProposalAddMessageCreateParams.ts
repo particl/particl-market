@@ -10,7 +10,7 @@ export interface ProposalAddMessageCreateParams extends MessageCreateParamsInter
     title: string;
     description: string;
     options: string[];
-    sender: resources.Profile;
+    sender: resources.Identity;
     category: ProposalCategory;
     itemHash?: string;
 }

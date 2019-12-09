@@ -15,7 +15,7 @@ export class ProposalAddRequest extends RequestBody implements ActionRequestInte
     public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public sender: resources.Profile;
+    public sender: resources.Identity;
 
     @IsNotEmpty()
     public market: resources.Market;
