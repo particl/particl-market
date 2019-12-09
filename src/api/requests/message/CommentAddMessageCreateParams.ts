@@ -7,7 +7,7 @@ import { MessageCreateParamsInterface } from './MessageCreateParamsInterface';
 import { CommentType } from '../../enums/CommentType';
 
 export interface CommentAddMessageCreateParams extends MessageCreateParamsInterface {
-    sender: resources.Profile;
+    sender: resources.Identity;
     receiver: string;
     type: CommentType;
     target: string;

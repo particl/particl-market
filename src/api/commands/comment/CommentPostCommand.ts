@@ -26,6 +26,7 @@ import { CommentAddActionService } from '../../services/action/CommentAddActionS
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MessageException } from '../../exceptions/MessageException';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -34,6 +35,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public commentActionService: CommentAddActionService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
@@ -45,9 +47,9 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
 
     /**
      * data.params[]:
-     *  [0]: profile, resources.Profile
+     *  [0]: identity, resources.Identity
      *  [1]: receiver
-     *  [0]: type, CommentType
+     *  [2]: type, CommentType
      *  [3]: target
      *  [4]: message
      *  [5]: parentComment, resources.Comment, optional
@@ -59,7 +61,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-        const profile: resources.Profile = data.params[0];
+        const identity: resources.Identity = data.params[0];
         let receiver = data.params[1];
         const type  = CommentType[data.params[2]];
         const target = data.params[3];
@@ -70,14 +72,15 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         const estimateFee = false;
 
         if (!receiver) {
-            // TODO: if theres no receiver, we're posting to the default market, perhaps we should rather throw if receiver === undefined
-            const market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            // TODO: if theres no receiver, post to the identitys Profiles default Market
+            // TODO: perhaps we should rather just throw if receiver === undefined
+            const market = await this.marketService.getDefaultForProfile(identity.Profile.id).then(value => value.toJSON());
             receiver = market.receiveAddress;
         }
 
         const commentRequest = {
-            sendParams: new SmsgSendParams(profile.address, receiver, false, daysRetention, estimateFee),
-            sender: profile,
+            sendParams: new SmsgSendParams(identity, receiver, false, daysRetention, estimateFee),
+            sender: identity,
             receiver,
             type,
             target,
@@ -90,12 +93,12 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
 
     /**
      * data.params[]:
-     *  [0]: profileId
-     *  [1]: receiver
+     *  [0]: identityId, number
+     *  [1]: receiver, string
      *  [0]: type, CommentType
-     *  [3]: target
-     *  [4]: message
-     *  [5]: parentCommentHash, optional
+     *  [3]: target, string
+     *  [4]: message, string
+     *  [5]: parentCommentHash, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -103,7 +106,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('identityId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('receiver');
         } else if (data.params.length < 3) {
@@ -114,14 +117,14 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new MissingParamException('message');
         }
 
-        const profileId = data.params[0];
+        const identityId = data.params[0];
         const receiver = data.params[1];
         const type = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
 
-        if (typeof profileId !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
+        if (typeof identityId !== 'number') {
+            throw new InvalidParamException('identityId', 'number');
         } else if (typeof receiver !== 'string') {
             throw new InvalidParamException('receiver', 'string');
         } else if (!EnumHelper.containsName(CommentType, type)) {
@@ -140,13 +143,13 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             }
         }
 
-        // make sure Profile with the id exists
-        data.params[0] = await this.profileService.findOne(profileId)
+        // make sure Identity with the id exists
+        const identity: resources.Identity = await this.identityService.findOne(identityId)
             .then(value => value.toJSON())
             .catch(reason => {
-                this.log.error('Profile not found: ' + reason);
-                throw new ModelNotFoundException('Profile');
+                throw new ModelNotFoundException('Identity');
             });
+        data.params[0] = identity;
 
         // make sure Comment with the hash exists
         if (parentHash) {
@@ -177,12 +180,12 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <receiver> <type> <target> <message> [parentHash]';
+        return this.getName() + ' <identityId> <receiver> <type> <target> <message> [parentHash]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - Numeric - The ID of the Profile. \n'
+            + '    <identityId>             - Numeric - The id of the Identity. \n'
             + '    <receiver>               - String - The receiver address. \n'
             + '    <type>                   - ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of Comment.\n'
             + '    <target>                 - String - The Comments targets hash. \n'
