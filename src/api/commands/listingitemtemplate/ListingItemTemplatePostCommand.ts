@@ -72,11 +72,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         this.log.debug('estimateFee:', estimateFee);
 
-        // send from the template profiles address
-        const fromAddress = listingItemTemplate.Profile.address;
-
-        // send to given market address
-        const toAddress = market.receiveAddress;
+        asdf
+        const fromAddress = listingItemTemplate.Profile.address;    // send from the template profiles address
+        const toAddress = market.receiveAddress;                    // send to given market address
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {

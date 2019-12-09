@@ -5965,10 +5965,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-omp-lib@^0.1.121:
-  version "0.1.121"
-  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.121.tgz#cf7a720c0e683dc3e89c8150d2486401a7425849"
-  integrity sha512-mWK1558bkBdPKtFLKnSdc9Y3KkvbNJKFRW/IGeE/JpMu0zELmSZmpxJD2gPnCUfV/qAX9styZofJ6c2N6K69gA==
+omp-lib@^0.1.125:
+  version "0.1.125"
+  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.125.tgz#809abe2274aab7d739ee5b1797bd0d88557724d3"
+  integrity sha512-cQuvJ5GKmSWbjr6y7zw/d9TJHGu44F88YOtL4ldqwNnFB+diXux0Lsdlp39mCG/w2FMOcQA8eYS7Si8W2KHJ9A==
   dependencies:
     inversify "^4.13.0"
     js-sha256 "^0.9.0"
@@ -6253,9 +6253,9 @@ particl-bitcore-lib@^0.16.0:
     inherits "=2.0.1"
     lodash "=4.17.11"
 
-"particl-bitcore-lib@https://github.com/kewde/particl-bitcore-lib.git":
+"particl-bitcore-lib@git+https://github.com/kewde/particl-bitcore-lib.git":
   version "0.14.1"
-  resolved "https://github.com/kewde/particl-bitcore-lib.git#612c7b7b77385051168ef3831c4c2451eb807ffd"
+  resolved "git+https://github.com/kewde/particl-bitcore-lib.git#612c7b7b77385051168ef3831c4c2451eb807ffd"
   dependencies:
     bn.js "=2.0.4"
     bs58 "=2.0.0"

@@ -123,10 +123,6 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
                 throw new ModelNotFoundException('Identity');
             });
 
-        if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
-            throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');
-        }
-
         data.params[0] = bid;
         data.params[1] = identity;
 
