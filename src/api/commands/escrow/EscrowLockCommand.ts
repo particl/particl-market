@@ -27,6 +27,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { BidDataValue } from '../../enums/BidDataValue';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -41,6 +42,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.EscrowLockActionService) private escrowLockActionService: EscrowLockActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
 
     ) {
@@ -52,6 +54,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
      * data.params[]:
      * [0]: orderItem, resources.OrderItem
      * [1]: options, KVS[], should contain the phone number for delivery, if given
+     * [2]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<SmsgSendResponse>}
@@ -60,7 +63,9 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     public async execute(@request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const orderItem: resources.OrderItem = data.params[0];
-        // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
+        const options: KVS[] = data.params[1];
+        const identity: resources.Identity = data.params[2];
+
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
         const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
@@ -71,17 +76,17 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
         const bidAccept = await this.bidService.findOne(childBid.id).then(value => value.toJSON());
 
-        const fromAddress = orderItem.Order.buyer;  // we are the buyer
+        // const fromAddress = orderItem.Order.buyer;
         const toAddress = orderItem.Order.seller;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
-            objects: data.params[1]
+            objects: options
         } as EscrowLockRequest;
 
         return this.escrowLockActionService.post(postRequest);
@@ -113,8 +118,6 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             .catch(reason => {
                 throw new ModelNotFoundException('OrderItem');
             });
-        data.params[0] = orderItem;
-
 
         if (orderItem.status !== OrderItemStatus.AWAITING_ESCROW) {
             throw new MessageException('Order is in invalid state');
@@ -143,6 +146,15 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         // TODO: check that we are the buyer
+
+        const identity: resources.Identity = await this.identityService.findOneByAddress(orderItem.Order.seller)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = orderItem;
+        data.params[2] = identity;
 
         return data;
     }
