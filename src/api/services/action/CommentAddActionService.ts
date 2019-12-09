@@ -28,6 +28,7 @@ import { CommentAddValidator } from '../../messages/validator/CommentValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { NotificationType } from '../../enums/NotificationType';
 import { NotificationService } from '../NotificationService';
+import { IdentityService } from '../model/IdentityService';
 
 export interface CommentTicket {
     address: string;
@@ -41,16 +42,14 @@ export class CommentAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-
         @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
-        @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
-
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
-
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(smsgService, smsgMessageService, smsgMessageFactory);
@@ -96,7 +95,7 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * called before post is executed and message is sent
      *
-     * @param params
+     * @param commentRequest
      * @param marketplaceMessage
      */
     public async beforePost(commentRequest: CommentAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
@@ -107,7 +106,7 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * called after post is executed and message is sent
      *
-     * @param params
+     * @param commentRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
@@ -218,7 +217,7 @@ export class CommentAddActionService extends BaseActionService {
             message: data.message
         } as CommentTicket;
 
-        return await this.coreRpcService.signMessage(data.sender.address, commentTicket);
+        return await this.coreRpcService.signMessage(data.sender.wallet, data.sender.address, commentTicket);
     }
 
     /**
@@ -240,7 +239,12 @@ export class CommentAddActionService extends BaseActionService {
 
     private async processNotifications(comment: resources.Comment): Promise<void> {
         try {
-            const isMyComment = await this.coreRpcService.isAddressMine(comment.sender);
+            // const isMyComment = await this.coreRpcService.isAddressMine(comment.sender);
+            const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
+                return true;
+            }).catch(reason => {
+                return false;
+            });
 
             // Dont need notifications about my own comments
             if (isMyComment) {
