@@ -23,6 +23,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidRejectReason } from '../../enums/BidRejectReason';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -31,6 +32,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.action.BidRejectActionService) private bidRejectActionService: BidRejectActionService
     ) {
         super(Commands.BID_REJECT);
@@ -40,7 +42,8 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bid, resources.Bid
-     * [1]: reason: BidRejectReason, optional
+     * [1]: identity, resources.Identity
+     * [2]: reason: BidRejectReason, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<SmsgSendResponse>}
@@ -48,16 +51,18 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const bid: resources.Bid = data.params[0];
-        const reason: BidRejectReason = data.params[1];
+        const identity: resources.Identity = data.params[1];
+        const reason: BidRejectReason = data.params[2];
 
-        const fromAddress = bid.OrderItem.Order.seller;  // we are the seller
+        const fromIdentity = identity;          // send from the given identity
+        // const fromAddress = bid.OrderItem.Order.seller;  // we are the seller
         const toAddress = bid.OrderItem.Order.buyer;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(fromIdentity, toAddress, false, daysRetention, estimateFee),
             bid,
             reason
         } as BidRejectRequest;
@@ -68,7 +73,9 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: bidId
-     * [1]: reason: BidRejectReason, optional
+     * [1]: identityId
+     * [2]: reason: BidRejectReason, optional
+     *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
@@ -77,26 +84,29 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('bidId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('identityId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('bidId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('identityId', 'number');
         }
 
-        if (data.params.length >= 2) {
-            const reason = data.params[1];
+        if (data.params.length >= 3) {
+            const reason = data.params[2];
             if (typeof reason !== 'string') {
                 throw new InvalidParamException('reasonEnum', 'BidRejectReason');
             } else if (!BidRejectReason[reason]) {
                 throw new InvalidParamException('reasonEnum', 'BidRejectReason');
             }
-            data.params[1] = BidRejectReason[reason];
+            data.params[2] = BidRejectReason[reason];
         }
 
         // make sure Bid exists
         const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[0] = bid;
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
@@ -109,6 +119,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             throw new ModelNotFoundException('ListingItemTemplate');
         }
 
+        // make sure the Bid has not been accepted yet
         const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
             return child.type === MPAction.MPA_ACCEPT;
         });
@@ -116,16 +127,26 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Bid has already been accepted.');
         }
 
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = bid;
+        data.params[1] = identity;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <bidId> [reason] ';
+        return this.getName() + ' <bidId> <identityId> [reason] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
         + '    <bidId>                  - Numeric - The ID of the Bid we want to reject. '
+        + '    <identityId>             - number - The id of the Identity used to cancel to Bid. '
         + '    <reason>                 - [optional] BidRejectReason - The predefined reason you want to specify for cancelling the Bid. ';
     }
 
