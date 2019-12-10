@@ -14,7 +14,6 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
-import { ProfileService } from '../../services/model/ProfileService';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -24,6 +23,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { MessageException } from '../../exceptions/MessageException';
+import { IdentityService } from '../../services/model/IdentityService';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -32,7 +32,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService
     ) {
         super(Commands.PROPOSAL_POST);
@@ -42,12 +42,11 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     /**
      * command description
      * [0] market: resources.Market
-     * [1] profile: resources.Profile
-     * [2] proposalTitle
-     * [3] proposalDescription
-     * [4] daysRetention
-     * [5] estimateFee
-     * [6] option1Description
+     * [1] proposalTitle
+     * [2] proposalDescription
+     * [3] daysRetention
+     * [4] estimateFee
+     * [5] option1Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -58,7 +57,6 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const market: resources.Market = data.params.shift();
-        const profile: resources.Profile = data.params.shift();
         const title = data.params.shift();
         const description = data.params.shift();
         const daysRetention = data.params.shift();
@@ -67,15 +65,12 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // rest of the data.params are option descriptions, and there are minimum of 2 of those
         const options: string[] = data.params;
 
-        // send from the template profiles address
-        const fromAddress = profile.address;
-
-        // send to given market address
-        const toAddress = market.receiveAddress;
+        // const fromAddress = profile.address;     // send from the template profiles address
+        const toAddress = market.receiveAddress;    // send to given market address
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
-            sender: profile,
+            sendParams: new SmsgSendParams(market.Identity, toAddress, true, daysRetention, estimateFee),
+            sender: market.Identity,                // todo: we could use sendParams.from
             market,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
             title,
@@ -88,9 +83,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
-     * TODO: add marketId
      *
-     * [0] profileId
+     * [0] marketId
      * [1] proposalTitle
      * [2] proposalDescription
      * [3] daysRetention
@@ -107,7 +101,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // to whatever is the max expiration for free smsg messages
 
         if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('marketId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('proposalTitle');
         } else if (data.params.length < 3) {
@@ -123,7 +117,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         }
 
         if (data.params[0] !== undefined && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
+            throw new InvalidParamException('marketId', 'number');
         } else if (data.params[1] !== undefined && typeof data.params[1] !== 'string') {
             throw new InvalidParamException('proposalTitle', 'string');
         } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
@@ -134,32 +128,37 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('estimateFee', 'boolean');
         }
 
-        // make sure profile with the id exists
-        data.params[0] = await this.profileService.findOne(data.params[0]).then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
         if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
-        // get the default market.
-        // TODO: Might want to let users specify this later.
-        const market: resources.Market = await this.marketService.getDefaultForProfile(data.params[0].id).then(value => value.toJSON());
+        // make sure the Market exists
+        const market: resources.Market = await this.marketService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
 
-        data.params.unshift(market);
+        // make sure Identity with the id exists
+        await this.identityService.findOne(market.Identity.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        data.params[0] = market;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <daysRetention> <estimateFee> '
+        return this.getName() + ' <marketId> <proposalTitle> <proposalDescription> <daysRetention> <estimateFee> '
             + '<option1Description> ... <optionNDescription> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - number, ID of the Profile. \n'
+            + '    <marketId>               - number, id of the Market. \n'
             + '    <proposalTitle>          - string, Title for the Proposal. \n'
             + '    <proposalDescription>    - string, Description for the Proposal. \n'
             + '    <daysRetentions>         - number, Days retention. \n'
