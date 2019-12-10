@@ -16,7 +16,7 @@ import {
     Location,
     MessagingInfo, MessagingOption,
     MPA,
-    PaymentInfo, PaymentInfoEscrow, PaymentOption,
+    PaymentInfo, PaymentInfoEscrow, PaymentOption, SellerInfo,
     ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
 import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
@@ -58,6 +58,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         if (!params.listingItem) {
             throw new MissingParamException('listingItem');
         }
+
         const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
@@ -65,6 +66,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
         const item = {
             information,
+            seller: {
+                address: params.seller.address
+            } as SellerInfo,
             payment,
             messaging,
             objects

@@ -32,6 +32,7 @@ import { CryptocurrencyAddressService } from '../../services/model/Cryptocurrenc
 import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
 import { Identity } from 'resources';
+import {MarketType} from '../../enums/MarketType';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -65,32 +66,35 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        let listingItemTemplate: resources.ListingItem = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const market: resources.Market = data.params[2];
         const estimateFee: boolean = data.params[3];
 
         this.log.debug('estimateFee:', estimateFee);
 
-        asdf
-        const fromAddress = listingItemTemplate.Profile.address;    // send from the template profiles address
-        const toAddress = market.receiveAddress;                    // send to given market address
+        // type === MARKETPLACE -> receive + publish keys are the same / private key in wif format
+        // type === STOREFRONT -> receive key is private key, publish key is public key / DER hex encoded string
+        // type === STOREFRONT_ADMIN -> receive + publish keys are different / private key in wif format
+
+        // ListingItems always posted from market publishAddress to receiveAddress
+        const fromAddress = market.publishAddress;
+        const toAddress = market.receiveAddress;
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {
-
             // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
             // since ListingItemTemplates with hash should not (CANT) be modified anymore.
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
-                .then(value => value.toJSON());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
 
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, true, daysRetention, estimateFee),
-            listingItem: listingItemTemplate
+            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
+            listingItem: listingItemTemplate,
+            seller: market.Identity
         } as ListingItemAddRequest;
 
         this.log.debug('postRequest.sendParams:', JSON.stringify(postRequest.sendParams, null, 2));
