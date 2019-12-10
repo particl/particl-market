@@ -18,6 +18,8 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { VoteActionService } from '../../services/action/VoteActionService';
+import { IdentityService } from '../../services/model/IdentityService';
+import { MarketService } from '../../services/model/MarketService';
 
 export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
 
@@ -27,6 +29,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.VOTE_GET);
@@ -35,8 +39,9 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
 
     /**
      * command description
-     *  [0]: profile: resources.Profile
-     *  [1]: proposal: resources.Proposal
+     *   [0]: market: resources.Market
+     *   [1]: identity, resources.Identity
+     *   [2]: proposal: resources.Proposal
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -45,15 +50,16 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
 
-        const profile: resources.Profile = data.params[0];
-        const proposal: resources.Proposal = data.params[1];
+        const market: resources.Market = data.params[0];
+        const identity: resources.Identity = data.params[1];
+        const proposal: resources.Proposal = data.params[2];
 
-        return await this.voteActionService.getCombinedVote(profile, proposal);
+        return await this.voteActionService.getCombinedVote(identity, proposal);
     }
 
     /**
      * data.params[]:
-     *  [0]: profileId
+     *  [0]: marketId
      *  [1]: proposalHash
      *
      * @param {RpcRequest} data
@@ -61,26 +67,32 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
+            throw new MissingParamException('marketId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('proposalHash');
         }
 
         if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
+            throw new InvalidParamException('marketId', 'number');
         } else if (data.params[1] && typeof data.params[1] !== 'string') {
             throw new InvalidParamException('proposalHash', 'string');
         }
 
-        // make sure profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+        // make sure the Market exists
+        const market: resources.Market = await this.marketService.findOne(data.params[0])
             .then(value => value.toJSON())
             .catch(reason => {
-                this.log.error('Profile not found. ' + reason);
-                throw new ModelNotFoundException('Profile');
+                throw new ModelNotFoundException('Market');
             });
 
-        // make sure proposal with the hash exists
+        // make sure Identity with the id exists
+        const identity: resources.Identity = await this.identityService.findOne(market.Identity.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
+
+        // make sure Proposal with the hash exists
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
             .then(value => value.toJSON())
             .catch(reason => {
@@ -88,24 +100,25 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
                 throw new ModelNotFoundException('Proposal');
             });
 
-        data.params[0] = profile;
-        data.params[1] = proposal;
+        data.params[0] = market;
+        data.params[1] = identity;
+        data.params[2] = proposal;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <proposalHash>';
+        return this.getName() + ' <marketId> <proposalHash>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>                 - The id of the Profile. ' + ' \n'
+            + '    <marketId>                  - The id of the Market. ' + ' \n'
             + '    <proposalHash>              - The hash of the Proposal. ';
     }
 
     public description(): string {
-        return 'Get SummaryVote on a given Proposal for Profile. ';
+        return 'Get SummaryVote for a Proposal. ';
     }
 
     public example(): string {

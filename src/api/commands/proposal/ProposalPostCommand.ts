@@ -70,7 +70,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
         const postRequest = {
             sendParams: new SmsgSendParams(market.Identity, toAddress, true, daysRetention, estimateFee),
-            sender: market.Identity,                // todo: we could use sendParams.from
+            sender: market.Identity,                // todo: we could use sendParams.from?
             market,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
             title,

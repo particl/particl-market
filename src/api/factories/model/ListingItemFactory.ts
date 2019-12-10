@@ -72,18 +72,23 @@ export class ListingItemFactory implements ModelFactoryInterface {
                      listingItemAddMessage: ListingItemAddMessage,
                      smsgMessage: resources.SmsgMessage): Promise<ListingItemCreateRequest> {
 
-        const itemInformation = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
-        const paymentInformation = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
-        const messagingInformation = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
+        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
+        const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
+        const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
 
         let listingItemObjects;
         if (listingItemAddMessage.item.objects) {
             listingItemObjects = await this.getModelListingItemObjects(listingItemAddMessage.item.objects);
         }
 
+        // use smsgMessage.from if listingItemAddMessage.item.seller.address is not set
+        const seller = _.isEmpty(listingItemAddMessage.item.seller) || _.isEmpty(listingItemAddMessage.item.seller.address)
+            ? smsgMessage.from
+            : listingItemAddMessage.item.seller.address;
+
         const createRequest = {
             msgid: params.msgid,
-            seller: smsgMessage.from,
+            seller,  // was: smsgMessage.from,
             market: params.market,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,

@@ -36,7 +36,6 @@ export class ListingItemAddActionService extends BaseActionService {
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
-     * TODO: should we save also ListingItems locally before sending, like Proposals, Votes and Bids?
      *
      * @param params
      */
@@ -45,7 +44,8 @@ export class ListingItemAddActionService extends BaseActionService {
         // this.log.debug('createMessage(), params.listingItem: ', JSON.stringify(params.listingItem, null, 2));
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
-            listingItem: params.listingItem
+            listingItem: params.listingItem,
+            seller: params.seller
             // cryptoAddress, we could override the payment address here
         } as ListingItemAddMessageCreateParams);
 

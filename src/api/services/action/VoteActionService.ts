@@ -141,14 +141,15 @@ export class VoteActionService extends BaseActionService {
     }
 
     /**
+     * Get SummaryVote for a Proposal
      *
-     * @param profile
+     * @param identity
      * @param proposal
      */
-    public async getCombinedVote(profile: resources.Profile, proposal: resources.Proposal): Promise<resources.Vote> {
+    public async getCombinedVote(identity: resources.Identity, proposal: resources.Proposal): Promise<resources.Vote> {
 
         // TODO: move this and getPublicWalletAddressInfos elsewhere, maybe VoteService
-        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos();
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(identity.wallet);
         this.log.debug('getCombinedVote(), addressInfos:', JSON.stringify(addressInfos, null, 2));
 
         const addresses = addressInfos.map(addressInfo => {
@@ -167,7 +168,7 @@ export class VoteActionService extends BaseActionService {
 
         const combinedVote = {
             id: 0,
-            voter: profile.address,
+            voter: identity.address,
             weight: 0,
             postedAt: Date.now(),
             receivedAt: Date.now(),
@@ -193,13 +194,11 @@ export class VoteActionService extends BaseActionService {
      *   - for (voteAddress: addresses):
      *     - this.send( voteAddress )
      *
-     * TODO: add support to Vote using selected wallet/profile
-     *
      * @param voteRequest
      */
     public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
 
-        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(0);
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(voteRequest.sender.wallet, 0);
 
         this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
         if (_.isEmpty(addressInfos)) {
@@ -216,7 +215,7 @@ export class VoteActionService extends BaseActionService {
 
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
-                voteRequest.sendParams.fromAddress = addressInfo.address;
+                voteRequest.sendParams.from.address = addressInfo.address;
                 voteRequest.sendParams.paidMessage = false; // vote messages should be free
                 voteRequest.addressInfo = addressInfo;
                 await this.post(voteRequest)
@@ -384,16 +383,15 @@ export class VoteActionService extends BaseActionService {
 
 
     /**
-     * get the Profiles wallets addresses
+     * get the Identity wallets addresses
      * minimum 1 confirmations, ones without balance not included
      *
-     * the profile param is not used for anything yet, but included already while we wait and build multiwallet support
-     *
+     * @param wallet
      * @param minconf
      */
-    private async getPublicWalletAddressInfos(minconf: number = 0): Promise<AddressInfo[]> {
+    private async getPublicWalletAddressInfos(wallet: string, minconf: number = 0): Promise<AddressInfo[]> {
         const addressList: AddressInfo[] = [];
-        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(OutputType.PART, minconf); // , 9999999, addresses);
+        const outputs: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(wallet, OutputType.PART, minconf); // , 9999999, addresses);
 
         this.log.debug('getPublicWalletAddressInfos(), outputs.length: ', outputs.length);
 

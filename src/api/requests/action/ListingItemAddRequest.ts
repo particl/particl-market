@@ -17,4 +17,8 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     // we cannot use the listingItemTemplateId to fetch the data to create the message since only the seller
     // has the template
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
+
+    @IsNotEmpty()
+    public seller: resources.Identity;
+
 }

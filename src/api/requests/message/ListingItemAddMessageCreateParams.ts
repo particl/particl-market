@@ -4,10 +4,11 @@
 
 import * as resources from 'resources';
 import { MessageCreateParamsInterface } from './MessageCreateParamsInterface';
-import {CryptoAddress} from 'omp-lib/dist/interfaces/crypto';
+import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 
 export interface ListingItemAddMessageCreateParams extends MessageCreateParamsInterface {
     listingItem: resources.ListingItem | resources.ListingItemTemplate;
+    seller: resources.Identity;
     cryptoAddress: CryptoAddress;
 }
 
