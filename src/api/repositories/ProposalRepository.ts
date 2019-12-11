@@ -44,6 +44,17 @@ export class ProposalRepository {
         return await this.search(searchParams, withRelated);
     }
 
+    public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        const searchParams = {
+            market,
+            timeStart: '*',
+            timeEnd: '*',
+            order: SearchOrder.ASC,
+            category: ProposalCategory.PUBLIC_VOTE
+        } as ProposalSearchParams;
+        return await this.search(searchParams, withRelated);
+    }
+
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {
         return this.ProposalModel.fetchByHash(hash, withRelated);
     }

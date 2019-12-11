@@ -8,7 +8,8 @@ export enum HashableProposalAddField {
     PROPOSAL_TITLE = 'proposalTitle',
     PROPOSAL_DESCRIPTION = 'proposalDescription',
     PROPOSAL_ITEM = 'proposalItem',
-    PROPOSAL_OPTIONS = 'proposalOptions'
+    PROPOSAL_OPTIONS = 'proposalOptions',
+    PROPOSAL_MARKET = 'proposalMarket'
 }
 
 export enum HashableProposalOptionField {

@@ -15,6 +15,7 @@ declare module 'resources' {
         category: ProposalCategory;
         title: string;
         description: string;
+        market: string;
 
         timeStart: number;
         receivedAt: number;

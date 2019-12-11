@@ -30,6 +30,16 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
+    // different Profiles could have added the same Market
+    public static async fetchAllByReceiveAddress(receiveAddress: string, withRelated: boolean = true): Promise<Collection<Market>> {
+        const MarketCollection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('receive_address', '=', receiveAddress);
+            })
+            .orderBy('id', 'ASC');
+        return await MarketCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         if (withRelated) {
             return await Market.where<Market>({ id: value }).fetch({

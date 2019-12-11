@@ -208,6 +208,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('listing_items.removed', '=', false);
                 }
 
+                if (options.market) {
+                    qb.where('listing_items.market', '=', options.market);
+                }
 
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');

@@ -17,6 +17,8 @@ export class ProposalSearchParams extends RequestBody {
     @IsEnum(ProposalCategory)
     public category: ProposalCategory;
 
+    public market: string;
+
     public timeStart: number | string;
     public timeEnd: number | string;
 }

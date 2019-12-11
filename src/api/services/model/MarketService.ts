@@ -62,6 +62,10 @@ export class MarketService {
         return await this.marketRepo.findAllByProfileId(profileId, withRelated);
     }
 
+    public async findAllByReceiveAddress(receiveAddress: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.findAllByReceiveAddress(receiveAddress, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
@@ -80,6 +84,7 @@ export class MarketService {
         return market;
     }
 
+    // TODO: time to add a search function
     public async findOneByProfileIdAndReceiveAddressAndName(profileId: number, address: string, name: string, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOneByProfileIdAndReceiveAddressAndName(profileId, address, name, withRelated);
         if (market === null) {

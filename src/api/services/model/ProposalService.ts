@@ -23,17 +23,20 @@ import { ProposalOptionResultCreateRequest } from '../../requests/model/Proposal
 import { ProposalResultCreateRequest } from '../../requests/model/ProposalResultCreateRequest';
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
+import { MarketService } from './MarketService';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ProposalService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.model.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -47,7 +50,11 @@ export class ProposalService {
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        return this.proposalRepo.findAll(withRelated);
+        return await this.proposalRepo.findAll(withRelated);
+    }
+
+    public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        return await this.proposalRepo.findAllByMarket(market, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {
@@ -131,6 +138,7 @@ export class ProposalService {
         proposal.Category = body.category;
         proposal.Title = body.title;
         proposal.Description = body.description;
+        proposal.Market = body.market;
 
         proposal.TimeStart = body.timeStart;
         proposal.PostedAt = body.postedAt;
@@ -197,8 +205,7 @@ export class ProposalService {
             // this.log.debug('createEmptyProposalResult(), proposalOptionResult:', JSON.stringify(proposalOptionResult, null, 2));
         }
 
-        proposalResult = await this.proposalResultService.findOne(proposalResult.id)
-            .then(value => value.toJSON());
+        proposalResult = await this.proposalResultService.findOne(proposalResult.id).then(value => value.toJSON());
         // this.log.debug('createEmptyProposalResult(), proposalResult:', JSON.stringify(proposalResult, null, 2));
 
         return proposalResult;
@@ -251,8 +258,7 @@ export class ProposalService {
             let balance = 0;
             // get the address balance
             if (!test) { // todo: skipping balance update for test data generation
-                balance = await this.coreRpcService.getAddressBalance([vote.voter])
-                    .then(value => parseInt(value.balance, 10));
+                balance = await this.coreRpcService.getAddressBalance([vote.voter]).then(value => parseInt(value.balance, 10));
             }
 
             // update vote weight in case it's changed

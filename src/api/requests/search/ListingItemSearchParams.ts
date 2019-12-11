@@ -35,6 +35,8 @@ export class ListingItemSearchParams extends RequestBody {
     public withBids: boolean;
     // public showMyFlagged: boolean;
 
+    public market: string;
+
     /*
      *  [0]: page, number
      *  [1]: pageLimit, number
@@ -51,6 +53,7 @@ export class ListingItemSearchParams extends RequestBody {
      *  [12]: withRelated, boolean
      *  [13]: showMyFlagged, boolean
      */
+    // TODO: this constructor isnt even used, remove..
     constructor(generateParams: any[] = []) {
         super(generateParams);
         // set params only if there are some -> by default all are true

@@ -26,6 +26,8 @@ export class ProposalCreateRequest extends RequestBody implements ModelRequestIn
     public title: string;
     public description: string;
 
+    public market: string;
+
     @IsNotEmpty()
     public timeStart: number;
     // @IsNotEmpty()

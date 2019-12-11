@@ -65,11 +65,11 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // rest of the data.params are option descriptions, and there are minimum of 2 of those
         const options: string[] = data.params;
 
-        // const fromAddress = profile.address;     // send from the template profiles address
+        const fromAddress = market.Identity.address;     // send from the template profiles address
         const toAddress = market.receiveAddress;    // send to given market address
 
         const postRequest = {
-            sendParams: new SmsgSendParams(market.Identity, toAddress, true, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
             sender: market.Identity,                // todo: we could use sendParams.from?
             market,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
