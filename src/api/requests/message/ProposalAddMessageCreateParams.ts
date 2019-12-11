@@ -12,5 +12,6 @@ export interface ProposalAddMessageCreateParams extends MessageCreateParamsInter
     options: string[];
     sender: resources.Identity;
     category: ProposalCategory;
+    market?: string;
     itemHash?: string;
 }

@@ -369,10 +369,10 @@ export class CoreRpcService extends CtRpc {
      * @param wallet
      * @param addresses
      */
-    public async getAddressBalance(wallet: string, addresses: string[]): Promise<RpcAddressBalance> {
+    public async getAddressBalance(addresses: string[]): Promise<RpcAddressBalance> {
         return await this.call('getaddressbalance', [{
             addresses
-        }], wallet);
+        }]);
     }
 
     /**

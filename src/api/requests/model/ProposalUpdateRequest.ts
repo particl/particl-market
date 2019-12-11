@@ -33,6 +33,8 @@ export class ProposalUpdateRequest extends RequestBody implements ModelRequestIn
     @IsNotEmpty()
     public title: string;
     public description: string;
+    public market: string;
+
     public options: ProposalOptionCreateRequest[];
 
 }

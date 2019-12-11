@@ -35,8 +35,11 @@ export class Proposal extends Bookshelf.Model<Proposal> {
             .query(qb => {
 
                 if (options.category) {
-                    // searchBy all
                     qb.where('proposals.category', '=', options.category.toString());
+                }
+
+                if (options.market) {
+                    qb.where('proposals.market', '=', options.market);
                 }
 
                 if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
@@ -132,6 +135,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
+
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get TimeStart(): Date { return this.get('timeStart'); }
     public set TimeStart(value: Date) { this.set('timeStart', value); }
