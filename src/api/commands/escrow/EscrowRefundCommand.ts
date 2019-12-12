@@ -76,13 +76,14 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         escrowLock = await this.bidService.findOne(escrowLock.id).then(value => value.toJSON());
 
         // const fromAddress = orderItem.Order.buyer;
+        const fromAddress = identity.address;
         const toAddress = orderItem.Order.seller;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
             escrowLock,

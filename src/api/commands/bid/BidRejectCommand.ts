@@ -54,15 +54,15 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         const identity: resources.Identity = data.params[1];
         const reason: BidRejectReason = data.params[2];
 
-        const fromIdentity = identity;          // send from the given identity
-        // const fromAddress = bid.OrderItem.Order.seller;  // we are the seller
+        const fromAddress = identity.address;              // send from the given identity
+        // const fromAddress = bid.OrderItem.Order.seller;     // we are the seller
         const toAddress = bid.OrderItem.Order.buyer;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromIdentity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
             reason
         } as BidRejectRequest;
@@ -132,6 +132,12 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
             .catch(reason => {
                 throw new ModelNotFoundException('Identity');
             });
+
+        if (identity.address !== bid.OrderItem.Order.seller) {
+            // TODO: add this validation to other escrow/bid commands
+            // TODO: passing the identityId might not even be necessary
+            throw new MessageException('Given Identity does not belong to the seller.');
+        }
 
         data.params[0] = bid;
         data.params[1] = identity;

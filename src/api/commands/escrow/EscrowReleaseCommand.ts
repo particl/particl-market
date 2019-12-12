@@ -69,13 +69,14 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
         // const fromAddress = orderItem.Order.buyer;  // we are the buyer
+        const fromAddress = identity.address;
         const toAddress = orderItem.Order.seller;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
             bidAccept,
             memo

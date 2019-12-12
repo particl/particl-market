@@ -82,6 +82,7 @@ export class BidAcceptActionService extends BaseActionService {
 
                         // finally use omp to generate BidAcceptMessage
                         return await this.ompService.accept(
+                            params.sendParams.wallet,
                             listingItemAddMPM.action as ListingItemAddMessage,
                             bidMPM.action as BidMessage
                         );

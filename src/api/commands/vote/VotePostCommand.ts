@@ -59,6 +59,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         const proposalOption: resources.ProposalOption = data.params[3];
 
         // const fromAddress = profile.address;     // send from the template profiles address
+        const fromAddress = identity.address;
         const toAddress = market.receiveAddress;    // send to given market address
 
         // TODO: validate that the !daysRetention > process.env.FREE_MESSAGE_RETENTION_DAYS
@@ -67,7 +68,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             sender: identity,                       // todo: we could use sendParams.from?
             market,
             proposal,
@@ -85,7 +86,6 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      *  [1]: proposalHash
      *  [2]: proposalOptionId
      *
-     * TODO: add Proposal.market
      * TODO: maybe get rid of the proposalOptionId, replace it with hash
      *
      * @param {RpcRequest} data

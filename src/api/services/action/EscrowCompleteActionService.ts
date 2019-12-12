@@ -103,6 +103,7 @@ export class EscrowCompleteActionService extends BaseActionService {
 
                                         // finally use omp to generate completetx
                                         const completetx = await this.ompService.complete(
+                                            params.sendParams.wallet,
                                             listingItemAddMPM.action as ListingItemAddMessage,
                                             bidMPM.action as BidMessage,
                                             bidAcceptMPM.action as BidAcceptMessage,

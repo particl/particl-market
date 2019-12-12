@@ -93,14 +93,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        const fromIdentity = identity;          // send from the given identity
+        const fromAddress = identity.address;   // send from the given identity
         const toAddress = listingItem.seller;   // send to listingItem sellers address
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromIdentity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             listingItem,
             address
         } as BidRequest;

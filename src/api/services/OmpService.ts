@@ -40,16 +40,16 @@ export class OmpService {
     /**
      * Bid for a ListingItem
      *
-     * @param identity
+     * @param wallet
      * @param config
      * @param listingItemAddMessage
      */
-    public async bid(identity: resources.Identity, config: BidConfiguration, listingItemAddMessage: ListingItemAddMessage): Promise<MarketplaceMessage> {
+    public async bid(wallet: string, config: BidConfiguration, listingItemAddMessage: ListingItemAddMessage): Promise<MarketplaceMessage> {
         // rather than passing MPM's we're only accepting the action messages as params
         // MPM's contain the version, but we'd be generating the MPM's out of the data from the db, so we don't need to
         // be concerned the versions to be older and different for example
         return await this.omp.bid(
-            identity.wallet,
+            wallet,
             config,
             OmpService.getMPM(listingItemAddMessage)
         ) as MarketplaceMessage;
@@ -58,11 +58,11 @@ export class OmpService {
     /**
      * Accept a Bid
      *
-     * @param identity
+     * @param wallet
      * @param listingItemAddMessage
      * @param bidMessage
      */
-    public async accept(identity: resources.Identity, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage): Promise<MarketplaceMessage> {
+    public async accept(wallet: string, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage): Promise<MarketplaceMessage> {
         const listingMPM: MPM = OmpService.getMPM(listingItemAddMessage);
         const bidMPM: MPM = OmpService.getMPM(bidMessage);
 
@@ -70,7 +70,7 @@ export class OmpService {
         this.log.debug('accept(), bidMPM: ', JSON.stringify(bidMPM, null, 2));
 
         return await this.omp.accept(
-            identity.wallet,
+            wallet,
             listingMPM,
             bidMPM
         ) as MarketplaceMessage;
@@ -79,15 +79,15 @@ export class OmpService {
     /**
      * Lock the Bid in escrow
      *
-     * @param identity
+     * @param wallet
      * @param listingItemAddMessage
      * @param bidMessage
      * @param bidAcceptMessage
      */
-    public async lock(identity: resources.Identity, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
+    public async lock(wallet: string, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
                       bidAcceptMessage: BidAcceptMessage): Promise<MarketplaceMessage> {
         return await this.omp.lock(
-            identity.wallet,
+            wallet,
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
             OmpService.getMPM(bidAcceptMessage)
@@ -96,16 +96,16 @@ export class OmpService {
 
     /**
      *
-     * @param identity
+     * @param wallet
      * @param listingItemAddMessage
      * @param bidMessage
      * @param bidAcceptMessage
      * @param escrowLockMessage
      */
-    public async complete(identity: resources.Identity, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
+    public async complete(wallet: string, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
                           bidAcceptMessage: BidAcceptMessage, escrowLockMessage: EscrowLockMessage): Promise<string> {
         return await this.omp.complete(
-            identity.wallet,
+            wallet,
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
             OmpService.getMPM(bidAcceptMessage),
@@ -115,15 +115,15 @@ export class OmpService {
 
     /**
      *
-     * @param identity
+     * @param wallet
      * @param listingItemAddMessage
      * @param bidMessage
      * @param bidAcceptMessage
      */
-    public async release(identity: resources.Identity, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
+    public async release(wallet: string, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
                          bidAcceptMessage: BidAcceptMessage): Promise<string> {
         return await this.omp.release(
-            identity.wallet,
+            wallet,
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
             OmpService.getMPM(bidAcceptMessage)
@@ -132,16 +132,16 @@ export class OmpService {
 
     /**
      *
-     * @param identity
+     * @param wallet
      * @param listingItemAddMessage
      * @param bidMessage
      * @param bidAcceptMessage
      * @param escrowLockMessage
      */
-    public async refund(identity: resources.Identity, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
+    public async refund(wallet: string, listingItemAddMessage: ListingItemAddMessage, bidMessage: BidMessage,
                         bidAcceptMessage: BidAcceptMessage, escrowLockMessage: EscrowLockMessage): Promise<string> {
         return await this.omp.complete(
-            identity.wallet,
+            wallet,
             OmpService.getMPM(listingItemAddMessage),
             OmpService.getMPM(bidMessage),
             OmpService.getMPM(bidAcceptMessage),

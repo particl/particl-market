@@ -97,6 +97,7 @@ export class EscrowLockActionService extends BaseActionService {
 
                                 // finally use omp to generate EscrowLockMessage
                                 return await this.ompService.lock(
+                                    params.sendParams.wallet,
                                     listingItemAddMPM.action as ListingItemAddMessage,
                                     bidMPM.action as BidMessage,
                                     bidAcceptMPM.action as BidAcceptMessage

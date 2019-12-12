@@ -62,26 +62,28 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const identity: resources.Identity = data.params[0];
-        let receiver = data.params[1];
+        let toAddress = data.params[1];
         const type  = CommentType[data.params[2]];
         const target = data.params[3];
         const message = data.params[4];
         const parentComment = data.params.length > 5 ? data.params[5] : undefined;
 
+        const fromAddress = identity.address;   // send from the given identity
+
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
-        if (!receiver) {
-            // TODO: if theres no receiver, post to the identitys Profiles default Market
+        if (!toAddress) {
+            // TODO: if theres no receiver, post to the identity Profiles default Market
             // TODO: perhaps we should rather just throw if receiver === undefined
             const market = await this.marketService.getDefaultForProfile(identity.Profile.id).then(value => value.toJSON());
-            receiver = market.receiveAddress;
+            toAddress = market.receiveAddress;
         }
 
         const commentRequest = {
-            sendParams: new SmsgSendParams(identity, receiver, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             sender: identity,
-            receiver,
+            receiver: toAddress,
             type,
             target,
             message,

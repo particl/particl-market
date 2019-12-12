@@ -36,6 +36,7 @@ import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
 import { OutputType } from 'omp-lib/dist/interfaces/crypto';
+import { MarketService } from '../model/MarketService';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -51,19 +52,19 @@ export interface AddressInfo {
 export class VoteActionService extends BaseActionService {
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
-        @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Service) @named(Targets.Service.model.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(smsgService, smsgMessageService, smsgMessageFactory);
@@ -78,7 +79,7 @@ export class VoteActionService extends BaseActionService {
     public async createMessage(params: VoteRequest): Promise<MarketplaceMessage> {
 
         // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
-        const signature = await this.signVote(params.proposal, params.proposalOption, params.addressInfo.address);
+        const signature = await this.signVote(params.sendParams.wallet, params.proposal, params.proposalOption, params.addressInfo.address);
         // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: VoteMessage = await this.voteMessageFactory.get({
@@ -215,9 +216,10 @@ export class VoteActionService extends BaseActionService {
 
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
-                voteRequest.sendParams.from.address = addressInfo.address;
+                voteRequest.sendParams.fromAddress = addressInfo.address;
                 voteRequest.sendParams.paidMessage = false; // vote messages should be free
                 voteRequest.addressInfo = addressInfo;
+
                 await this.post(voteRequest)
                     .then(smsgSendResponse => {
                         if (smsgSendResponse.msgid) {
@@ -340,7 +342,6 @@ export class VoteActionService extends BaseActionService {
             // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
         }
 
-        // if (vote) {
         // after creating/updating the Vote, recalculate the ProposalResult
         proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
         const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -365,20 +366,19 @@ export class VoteActionService extends BaseActionService {
                 });
 
             // if this vote is mine lets set/unset the removed flag
-            const addressInfo = await this.coreRpcService.getAddressInfo(voteMessage.voter);
-            if (addressInfo && addressInfo.ismine) {
-                this.log.debug('isMine: ', addressInfo.ismine);
-                await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+            // todo: this is problematic with multiple profiles, what if we have multiple profiles and the other profile didnt vote to remove the item?
+            const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(proposal.market).then(value => value.toJSON());
+            // todo: fix this hack, doesnt work with multiple profiles...
+            for (const market of markets) {
+                const addressInfo = await this.coreRpcService.getAddressInfo(market.Identity.wallet, voteMessage.voter);
+                if (addressInfo && addressInfo.ismine) {
+                    this.log.debug('isMine: ', addressInfo.ismine);
+                    await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                }
             }
 
         }
         return vote;
-        // }
-
-        // }
-        // returning undefined vote in case there's no balance
-        // we could also throw in this situation
-        // return;
     }
 
 
@@ -425,18 +425,19 @@ export class VoteActionService extends BaseActionService {
     /**
      * signs the VoteTicket, returns signature
      *
+     * @param wallet
      * @param proposal
      * @param proposalOption
      * @param address
      */
-    private async signVote(proposal: resources.Proposal, proposalOption: resources.ProposalOption, address: string): Promise<string> {
+    private async signVote(wallet: string, proposal: resources.Proposal, proposalOption: resources.ProposalOption, address: string): Promise<string> {
         const voteTicket = {
             proposalHash: proposal.hash,
             proposalOptionHash: proposalOption.hash,
             address
         } as VoteTicket;
 
-        return await this.coreRpcService.signMessage(address, voteTicket);
+        return await this.coreRpcService.signMessage(wallet, address, voteTicket);
     }
 
     /**

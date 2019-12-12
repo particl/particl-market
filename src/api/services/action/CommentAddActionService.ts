@@ -131,7 +131,7 @@ export class CommentAddActionService extends BaseActionService {
     }
 
     /**
-     * send a coment
+     * send a Comment
      *
      * @param commentRequest
      */

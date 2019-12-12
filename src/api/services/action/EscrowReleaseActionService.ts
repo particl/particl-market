@@ -97,7 +97,7 @@ export class EscrowReleaseActionService extends BaseActionService {
 
                                 // finally use omp to generate releasetx
                                 const releasetx = await this.ompService.release(
-                                    params.sendParams.from,
+                                    params.sendParams.wallet,
                                     listingItemAddMPM.action as ListingItemAddMessage,
                                     bidMPM.action as BidMessage,
                                     bidAcceptMPM.action as BidAcceptMessage
