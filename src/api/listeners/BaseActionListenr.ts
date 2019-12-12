@@ -121,6 +121,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
             const isValid = await this.isValidSequence(event.marketplaceMessage);
 
             if (!isValid) {
+                // todo: we should propably add processingCount or something for the SmsgMessage
                 // if the sequence is not valid, then wait to process again later if not expired
                 if (event.smsgMessage.expiration >= new Date().getTime()) {
                     this.log.error('Marketplace message has an invalid sequence. Waiting to process later. msgid: ', event.smsgMessage.msgid);
