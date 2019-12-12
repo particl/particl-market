@@ -28,6 +28,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../CoreRpcService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgMessageService } from './SmsgMessageService';
+import { IdentityService } from './IdentityService';
 
 export class BidService {
 
@@ -39,6 +40,7 @@ export class BidService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -86,16 +88,23 @@ export class BidService {
     }
 
     public async unlockBidOutputs(cancelBid: resources.Bid): Promise<void> {
-        const bidderInfo = await this.coreRpcService.getAddressInfo(cancelBid.ParentBid.bidder);
-        if (bidderInfo && bidderInfo.ismine) {
-            await this.unlockOutputsFor(cancelBid.ParentBid.msgid, 'buyer');
+
+        // if identity is found for cancelBid.ParentBid.bidder, then we're the bidder
+        let identity: resources.Identity = await this.identityService.findOneByAddress(cancelBid.ParentBid.bidder)
+            .then(value => value.toJSON())
+            .catch(reason => undefined);
+
+        if (identity) {
+            await this.unlockOutputsFor(identity.wallet, cancelBid.ParentBid.msgid, 'buyer');
         } else {
             const parentBid = await this.findOne(cancelBid.ParentBid.id, true).then(b => b.toJSON());
             const mpaAcceptBid: resources.Bid | undefined = _.find(parentBid.ChildBids, (child) => {
                 return child.type === MPAction.MPA_ACCEPT;
             });
             if (mpaAcceptBid) {
-                await this.unlockOutputsFor(mpaAcceptBid.msgid, 'seller');
+                // we're the seller
+                identity = await this.identityService.findOneByAddress(cancelBid.ListingItem.seller).then(value => value.toJSON());
+                await this.unlockOutputsFor(identity.wallet, mpaAcceptBid.msgid, 'seller');
             }
         }
     }
@@ -151,24 +160,25 @@ export class BidService {
                 // no profile_id set -> figure it out
                 if (!addressCreateRequest.profile_id) {
 
-                    // if local profile is the bidder...
-                    addressCreateRequest.profile_id = await this.profileService.findOneByAddress(body.bidder)
-                        .then(value => {
-                            const bidderProfile: resources.Profile = value.toJSON();
-                            return bidderProfile.id;
-                        })
-                        .catch(async reason => {
-                            // local profile wasn't the bidder, so we must be the seller, fetch the Profile through the ListingItem
-                            return await this.listingItemService.findOne(body.listing_item_id)
-                                .then(value => {
-                                    const listingItem: resources.ListingItem = value.toJSON();
-                                    return listingItem.ListingItemTemplate.Profile.id;
-                                })
-                                .catch(reason1 => {
-                                    this.log.error('Bid doesnt belong to any local Profile');
-                                    throw new MessageException('Bid doesnt belong to any local Profile');
-                                });
-                        });
+                    // if identity is found for body.bidder, then we're the bidder
+                    const identity: resources.Identity = await this.identityService.findOneByAddress(body.bidder)
+                        .then(value => value.toJSON())
+                        .catch(reason => undefined);
+
+                    if (identity) {
+                        addressCreateRequest.profile_id = identity.Profile.id;
+                    } else {
+                        // local identity wasn't the bidder, so we must be the seller, fetch the Profile through the ListingItem
+                        addressCreateRequest.profile_id = await this.listingItemService.findOne(body.listing_item_id)
+                            .then(value => {
+                                const listingItem: resources.ListingItem = value.toJSON();
+                                return listingItem.ListingItemTemplate.Profile.id;
+                            })
+                            .catch(reason1 => {
+                                this.log.error('Bid doesnt belong to any local Profile');
+                                throw new MessageException('Bid doesnt belong to any local Profile');
+                            });
+                    }
                 }
 
                 // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
@@ -243,10 +253,10 @@ export class BidService {
         await this.bidRepo.destroy(id);
     }
 
-    private async unlockOutputsFor(msgid: string, type: string): Promise<void>  {
+    private async unlockOutputsFor(wallet: string, msgid: string, type: string): Promise<void>  {
         const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msgid).then((b) => b.toJSON());
         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-        await this.coreRpcService.lockUnspent(true, bidMPM.action[type].payment.prevouts, true);
+        await this.coreRpcService.lockUnspent(wallet, true, bidMPM.action[type].payment.prevouts, true);
     }
 
 }

@@ -54,9 +54,10 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
         const bid: resources.Bid = data.params[0];
         const identity: resources.Identity = data.params[1];
-        let toAddress = bid.bidder;
 
-        if (identity.address === bid.bidder) {
+        const fromAddress = identity.address;
+        let toAddress = bid.bidder;
+        if (identity.address === bid.bidder) {      // if we are the bidder, then send to seller
             toAddress = bid.OrderItem.Order.seller;
         }
 
@@ -64,7 +65,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid
         } as BidCancelRequest;
         return this.bidCancelActionService.post(postRequest);

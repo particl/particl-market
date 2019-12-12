@@ -68,13 +68,14 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
         }
 
         // const fromAddress = orderItem.Order.seller;
+        const fromAddress = identity.address;
         const toAddress = orderItem.Order.buyer;
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid,
             memo
         } as OrderItemShipRequest;

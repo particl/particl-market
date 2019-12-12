@@ -90,7 +90,7 @@ export class BidActionService extends BaseActionService {
         };
 
         // use omp to generate BidMessage
-        return await this.ompService.bid(config, listingItemAddMPM.action as ListingItemAddMessage);
+        return await this.ompService.bid(params.sendParams.wallet, config, listingItemAddMPM.action as ListingItemAddMessage);
     }
 
     /**

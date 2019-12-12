@@ -66,14 +66,13 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         // get the ListingItem market
         const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, listingItem.market)
             .then(value => value.toJSON()); // throws if not found
-        const fromIdentity = identity;
 
-        // send to given market address
+        const fromAddress = identity.address;
         const toAddress = market.receiveAddress;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromIdentity, toAddress, true, daysRetention, false),
-            sender: fromIdentity,
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, true, daysRetention, false),
+            sender: identity,
             market,
             category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
             title,

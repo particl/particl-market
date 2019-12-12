@@ -57,7 +57,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         const daysRetention: number = smsgMessage.daysretention;
         const estimateFee = false;
 
-        const sendParams = new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee);
+        const sendParams = new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee);
 
         const marketplaceMessage: MarketplaceMessage = JSON.parse(smsgMessage.text);
         marketplaceMessage.action.objects = marketplaceMessage.action.objects !== undefined ? marketplaceMessage.action.objects : [] as KVS[];
