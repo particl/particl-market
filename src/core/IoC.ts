@@ -152,6 +152,7 @@ export class IoC {
                 .inSingletonScope()
                 .whenTargetNamed(name);
 
+            this.log.info('name: ', name);
             const listener: interfaces.Listener = this.container.getNamed<any>(Types.Listener, name);
             events.on(value.Event, (...args) => listener.act(...args));
         });

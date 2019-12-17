@@ -19,7 +19,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('wallet').notNullable().unique();
             table.string('address'); // .notNullable().unique();
             table.string('hdseedid'); // .notNullable().unique();
-            table.string('path').notNullable();
+            table.string('path').nullable();
             table.string('mnemonic').nullable();
             table.string('passphrase').nullable();
 

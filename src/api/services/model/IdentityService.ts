@@ -17,7 +17,6 @@ import { IdentityUpdateRequest } from '../../requests/model/IdentityUpdateReques
 import { SettingService } from './SettingService';
 import { IdentityType } from '../../enums/IdentityType';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { ProfileService } from './ProfileService';
 import { RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../CoreRpcService';
@@ -29,7 +28,6 @@ export class IdentityService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.IdentityRepository) public identityRepository: IdentityRepository,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -72,8 +70,8 @@ export class IdentityService {
     }
 
     public async findProfileIdentity(profileId: number, withRelated: boolean = true): Promise<Identity> {
-        const profile: resources.Profile = await this.profileService.findOne(profileId, true).then(value => value.toJSON());
-        const identity: resources.Identity | undefined = _.find(profile.Identities, p => {
+        const identities: resources.Identity[] = await this.identityRepository.findAllByProfileId(profileId, withRelated).then(value => value.toJSON());
+        const identity: resources.Identity | undefined = _.find(identities, p => {
             return p.type === IdentityType.PROFILE;
         });
         if (!identity) {
