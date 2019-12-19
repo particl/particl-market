@@ -79,9 +79,9 @@ export class CoreRpcService extends CtRpc {
 */
 
     /**
-     * Returns a list of wallets in the wallet directory.
+     * Returns a list of loaded wallets.
      *
-     * @returns {Promise<RpcWalletDir>}
+     * @returns {Promise<string>}
      */
     public async listLoadedWallets(): Promise<string[]> {
         return await this.call('listwallets');
@@ -158,6 +158,23 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Loads wallets from a wallet file or directory unless they have already been loaded.
+     *
+     * @param walletNames
+     */
+    public async loadWallets(walletNames: string[]): Promise<string[]> {
+        const loaded: string[] = [];
+        for (const walletName of walletNames) {
+            const isLoaded = await this.walletLoaded(walletName);
+            if (!isLoaded) {
+                const loadedWallet: RpcWallet = await this.loadWallet( walletName);
+                loaded.push(loadedWallet.name);
+            }
+        }
+        return loaded;
+    }
+
+    /**
      * Returns an object containing various wallet state info.
      * @param wallet
      */
@@ -173,7 +190,9 @@ export class CoreRpcService extends CtRpc {
      * @param walletName
      */
     public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
-        return await this.call('smsgsetwallet', [walletName]);
+        const result: RpcWallet = await this.call('smsgsetwallet', [walletName]);
+        this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
+        return result;
     }
 
     /**
@@ -234,7 +253,7 @@ export class CoreRpcService extends CtRpc {
      * @param path
      */
     public async extKeyInfo(wallet: string, key: string, path?: string): Promise<RpcExtKeyResult> {
-        return await this.call('extkey', ['info', key], wallet);
+        return await this.call('extkey', ['info', key, path], wallet);
     }
 
     /**

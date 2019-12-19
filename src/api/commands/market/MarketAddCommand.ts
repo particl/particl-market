@@ -60,16 +60,17 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
+        const name: string = data.params[1];
         let identity: resources.Identity = data.params[7];
 
         if (_.isEmpty(identity)) {
-            identity = await this.identityService.createMarketIdentityForProfile(profile).then(value => value.toJSON());
+            identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
         }
 
         return await this.marketService.create({
             profile_id: profile.id,
             identity_id: identity.id,
-            name: data.params[1],
+            name,
             type: data.params[2],
             receiveKey: data.params[3],
             receiveAddress: data.params[4],

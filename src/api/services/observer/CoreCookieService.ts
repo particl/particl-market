@@ -53,7 +53,7 @@ export class CoreCookieService {
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-            this.log.error('CoreCookieService: ', i);
+            // this.log.info('CoreCookieService: ' + i);
 
             return i;
         }, 0).catch(async reason => {

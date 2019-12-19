@@ -7,7 +7,6 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { Market } from '../models/Market';
 import { MarketService } from './model/MarketService';
 import { MarketCreateRequest } from '../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../requests/model/MarketUpdateRequest';
@@ -43,24 +42,22 @@ export class DefaultMarketService {
      * "upgrade" the old Market by renaming it
      *
      */
-    public async upgradeDefaultMarket(): Promise<Market> {
+    public async upgradeDefaultMarket(): Promise<resources.Market> {
         const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         // cant use this.defaultMarketService.getDefaultForProfile() because its using SettingValue.DEFAULT_MARKETPLACE_ID, which is not yet in use
         const oldDefaultMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(
-            profile.id, process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
+            profile.id, process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS])
             .then(value => value.toJSON());
 
-        await this.marketService.update(oldDefaultMarket.id, {
+        return await this.marketService.update(oldDefaultMarket.id, {
             name: oldDefaultMarket.name + ' (OLD)',
             type: oldDefaultMarket.type,
             receiveKey: oldDefaultMarket.receiveKey,
             receiveAddress: oldDefaultMarket.receiveAddress,
             publishKey: oldDefaultMarket.publishKey,
             publishAddress: oldDefaultMarket.publishAddress
-        } as MarketUpdateRequest);
-
-        return await this.marketService.getDefaultForProfile(profile.id, true);
+        } as MarketUpdateRequest).then(value => value.toJSON());
     }
 
     /**
@@ -73,45 +70,63 @@ export class DefaultMarketService {
      *      - create Market
      *      - import keys
      *      - update SettingValue.DEFAULT_MARKETPLACE_ID
+     *      - return Market
      * - else
-     *      - ...
+     *      - return Market
      *
      * @param profile
      */
-    public async seedDefaultMarket(profile: resources.Profile): Promise<Market> {
-        // todo: profile param not needed, we should just get the default profile and make sure the default market for that profile exists
+    public async seedDefaultMarket(profile: resources.Profile): Promise<resources.Market> {
+        // todo: profile param not needed, we should just get the default Profile and make sure the default Market
+        // for that profile exists
 
         // check whether the default Market for the Profile exists, throws if not found
         // if we're upgrading, the old market is not set as default, so it wont be found
-        let defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(profile.id)
+        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(profile.id)
             .then(value => value.toJSON())
             .catch(async reason => {
                 // if theres no default Market yet, create it and set it as default
                 // first create the Market Identity
-                const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile).then(value => value.toJSON());
-                defaultMarket = await this.createMarket(profile, marketIdentity).then(value => value.toJSON());
-                await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, defaultMarket.id);
-                return defaultMarket;
+                const marketName = 'particl-market';
+                const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile, marketName)
+                    .then(value => value.toJSON());
+                this.log.debug('seedDefaultMarket(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
+
+                // then create the Market
+                const newMarket = await this.createMarket(profile, marketIdentity);
+                this.log.debug('seedDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
+
+                // then set the Market as default for the Profile
+                await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, newMarket.id);
+                return newMarket;
             });
 
-        this.log.debug('seedDefaultMarket(), market: ', JSON.stringify(defaultMarket, null, 2));
-        return await this.marketService.findOne(defaultMarket.id, true);
+        return await this.marketService.findOne(defaultMarket.id, true).then(value => value.toJSON());
     }
 
     public async importMarketPrivateKey(wallet: string, privateKey: string, address: string): Promise<void> {
         if (await this.smsgService.smsgImportPrivKey(wallet, privateKey)) {
             // get market public key
             const publicKey = await this.getPublicKeyForAddress(address);
-            this.log.debug('default Market publicKey: ', publicKey);
             // add market address
             if (publicKey) {
-                await this.smsgService.smsgAddAddress(address, publicKey);
+                await this.importMarketPublicKey(wallet, publicKey, address);
             } else {
                 throw new InternalServerException('Error while adding public key to db.');
             }
         } else {
             this.log.error('Error while importing market private key to db.');
             // todo: throw exception, and do not allow market to run before its properly set up
+        }
+
+        this.log.debug('importMarketPrivateKey(), private key imported: ', privateKey);
+    }
+
+    public async importMarketPublicKey(wallet: string, publicKey: string, address: string): Promise<void> {
+        if (publicKey) {
+            await this.smsgService.smsgAddAddress(address, publicKey);
+        } else {
+            throw new InternalServerException('Error while adding public key to db.');
         }
     }
 
@@ -121,7 +136,7 @@ export class DefaultMarketService {
      * @param profile
      * @param marketIdentity
      */
-    private async createMarket(profile: resources.Profile, marketIdentity: resources.Identity): Promise<Market> {
+    private async createMarket(profile: resources.Profile, marketIdentity: resources.Identity): Promise<resources.Market> {
 
         // get the default Market settings
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
@@ -150,6 +165,8 @@ export class DefaultMarketService {
             publishAddress: marketAddressSetting.value
         } as MarketCreateRequest).then(value => value.toJSON());
 
+        this.log.debug('createMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
+
         // load the wallet unless already loaded
         await this.coreRpcService.walletLoaded(newMarket.Identity.wallet)
             .then(async isLoaded => {
@@ -161,15 +178,28 @@ export class DefaultMarketService {
                 }
             });
 
-        // load the market keys
+        // type === MARKETPLACE -> receive + publish keys are the same
+        // type === STOREFRONT -> receive key is private key, publish key is public key
+        //                        when adding a storefront, both keys should be given
+        // type === STOREFRONT_ADMIN -> receive + publish keys are different
+
+        // load the market keys, first import the receive key
         await this.importMarketPrivateKey(newMarket.Identity.wallet, newMarket.receiveKey, newMarket.receiveAddress);
+
+        // if publish key exists and is different from receive key (STOREFRONT)
         if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
-            await this.importMarketPrivateKey(newMarket.Identity.wallet, newMarket.publishKey, newMarket.publishAddress);
+            if (MarketType.STOREFRONT === newMarket.type) {
+                await this.importMarketPublicKey(newMarket.Identity.wallet, newMarket.publishKey, newMarket.publishAddress);
+            } else {
+                await this.importMarketPrivateKey(newMarket.Identity.wallet, newMarket.publishKey, newMarket.publishAddress);
+            }
         }
 
-        // set smsg to use the default wallet
+        // set smsg to use the default wallet. this is pretty unnecessary, should be set for each smsgsend call
         await this.coreRpcService.smsgSetWallet(newMarket.Identity.wallet);
-        return await this.marketService.findOne(newMarket.id);
+        this.log.info('createMarket(), CREATE MARKET DONE... ');
+
+        return await this.marketService.findOne(newMarket.id).then(value => value.toJSON());
     }
 
     private async getPublicKeyForAddress(address: string): Promise<string|null> {

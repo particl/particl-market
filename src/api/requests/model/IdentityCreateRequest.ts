@@ -20,8 +20,6 @@ export class IdentityCreateRequest extends RequestBody implements ModelRequestIn
     @IsNotEmpty()
     public address: string;
     public hdseedid: string;
-
-    @IsNotEmpty()
     public path: string;
     public mnemonic: string;
     public passphrase: string;

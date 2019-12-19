@@ -48,7 +48,6 @@ export class ProfileService {
         const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileSetting = defaultProfileSettings[0];
-        this.log.debug('getDefault(), defaultProfileSetting: ', defaultProfileSetting.value);
 
         const profile = await this.findOne(+defaultProfileSetting.value, withRelated);
         if (profile === null) {

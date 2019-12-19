@@ -180,18 +180,18 @@ export class TestDataService {
             this.log.debug('seeding default data after cleaning');
             // seed the default Profile
             const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
-                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default profile: ' + reason);
+                    throw reason;
                 });
 
             await this.defaultSettingService.saveDefaultSettings(defaultProfile);
 
             // seed the default market
             const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
-                .then(value => value.toJSON())
                 .catch( reason => {
                     this.log.debug('failed seeding default market: ' + reason);
+                    throw reason;
                 });
 
             // seed the default categories

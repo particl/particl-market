@@ -17,7 +17,7 @@ exports.up = (db: Knex): Promise<any> => {
         // a new separate
         db.schema.raw(
             'INSERT INTO identities (id, wallet, updated_at, created_at, profile_id, address, type)' +
-            'SELECT w.id, w.name, w.updated_at, w.created_at, w.profile_id, p.address, "market"' +
+            'SELECT w.id, w.name, w.updated_at, w.created_at, w.profile_id, p.address, "MARKET"' +
             'FROM wallets_old w ' +
             'INNER JOIN profiles p ON w.profile_id = p.id')
     ]);

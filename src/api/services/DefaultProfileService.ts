@@ -7,19 +7,13 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
-import { Profile } from '../models/Profile';
 import { ProfileService } from './model/ProfileService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
 import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
-import { IdentityCreateRequest } from '../requests/model/IdentityCreateRequest';
 import { IdentityService } from './model/IdentityService';
-import { RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
-import { IdentityType } from '../enums/IdentityType';
-import { Identity } from '../models/Identity';
 import { DefaultSettingService } from './DefaultSettingService';
-import { MessageException } from '../exceptions/MessageException';
 
 export class DefaultProfileService {
 
@@ -37,20 +31,19 @@ export class DefaultProfileService {
     }
 
     /**
-     * if updating from previous installation (a market wallet already exists),
-     *      -> create new Identity (+wallet) for the existing Profile
-     *
-     * on a new installation:
+     * if no default Profile exists:
      *      -> create Profile with new Identity (+wallet)
+     *
+     * else return default Profile
      */
-    public async seedDefaultProfile(): Promise<Profile> {
+    public async seedDefaultProfile(): Promise<resources.Profile> {
 
         // retrieve the default Profile id, if it exists
         const defaultProfileIdSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileIdSetting = defaultProfileIdSettings[0];
 
-        // should be undefined if default profile is not set yet
+        // should be undefined, if default profile is not set yet
         if (_.isEmpty(defaultProfileIdSetting)) {
 
             // if a Profile for some reason already exists, use that one as the default
@@ -74,28 +67,25 @@ export class DefaultProfileService {
             // create or update the default profile Setting
             await this.defaultSettingService.insertOrUpdateDefaultProfileSetting(profile.id);
 
-            return await this.profileService.findOne(profile.id, true);
+            return await this.profileService.findOne(profile.id, true).then(value => value.toJSON());
         } else {
-            return await this.profileService.findOne(+defaultProfileIdSetting.value, true);
+            return await this.profileService.findOne(+defaultProfileIdSetting.value, true).then(value => value.toJSON());
         }
     }
 
     /**
      * update old Profile by adding an Identity to it
      *
-     * - create new wallet
-     * - create new Identity using that wallet, linked to the Profile, IndentityType.PROFILE
-     *
      */
-    public async upgradeDefaultProfile(): Promise<Profile> {
-        const profile: resources.Profile = await this.getDefault().then(value => value.toJSON());
+    public async upgradeDefaultProfile(): Promise<resources.Profile> {
+        const profile: resources.Profile = await this.getDefault();
         await this.identityService.createProfileIdentity(profile);
         return await this.getDefault();
     }
 
 
-    public async getDefault(withRelated: boolean = true): Promise<Profile> {
-        return await this.profileService.getDefault(withRelated);
+    public async getDefault(withRelated: boolean = true): Promise<resources.Profile> {
+        return await this.profileService.getDefault(withRelated).then(value => value.toJSON());
     }
 
 

@@ -29,6 +29,7 @@ import { IdentityType } from '../enums/IdentityType';
 import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
 import { ProfileService } from '../services/model/ProfileService';
+import {IdentityService} from '../services/model/IdentityService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -44,7 +45,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
     private INTERVAL = 1000;
     private STOP = false;
-    private BOOTSTRAPPING = false;
+    private BOOTSTRAPPING = true;
 
     // tslint:disable:max-line-length
     constructor(
@@ -56,6 +57,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
@@ -91,24 +93,25 @@ export class ServerStartedListener implements interfaces.Listener {
             this.log.debug('this.BOOTSTRAPPING: ' + this.BOOTSTRAPPING);
 
             // keep checking whether we are connected to the core and when we are, call this.bootstrap()
-            // then STOP the polling if bootstrap was successful
+            // then STOP the polling, if bootstrap was successful
             if (this.coreConnectionStatusService.status === CoreConnectionStatusServiceStatus.CONNECTED
                 && this.BOOTSTRAPPING) {
-                this.BOOTSTRAPPING = true;
                 this.STOP = await this.bootstrap()
                     .catch(reason => {
                         this.log.error('ERROR: marketplace bootstrap failed: ', reason);
-                        return false;
+                        // stop if there's an error
+                        return true;
                     });
                 this.BOOTSTRAPPING = false;
             }
 
             this.updated = Date.now();
             if (this.STOP) {
+                this.log.debug('ServerStartedListener.start() finished.');
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-            this.log.error('ServerStartedListener: ', i);
+            this.log.debug('ServerStartedListener.start(), i: ', i);
 
             return i;
         }, 0).catch(async reason => {
@@ -151,38 +154,47 @@ export class ServerStartedListener implements interfaces.Listener {
     private async bootstrap(): Promise<boolean> {
         // all is now ready for bootstrapping the app
 
-        // todo: first load all profile and market wallets
-
         // are we updating from previous installation (a market wallet already exists+no profile identity)
         const isUpgradingFromSingleMarketWallet = await this.isUpdatingFromSingleMarketWallet();
+        this.log.debug('bootstrap(), isUpgradingFromSingleMarketWallet: ', isUpgradingFromSingleMarketWallet);
 
         let defaultProfile: resources.Profile;
-
         if (isUpgradingFromSingleMarketWallet) {
 
             // create new Identity (+wallet) for the default Profile
-            defaultProfile = await this.defaultProfileService.upgradeDefaultProfile().then(value => value.toJSON());
-            this.log.debug('bootstrap(), updated old default Profile: ', defaultProfile !== undefined);
+            defaultProfile = await this.defaultProfileService.upgradeDefaultProfile();
+            this.log.debug('bootstrap(), updated old default Profile: ', JSON.stringify(defaultProfile, null, 2));
 
             // renames the existing default Market to oldname + " (OLD)"
-            await this.defaultMarketService.upgradeDefaultMarket();
+            const oldMarket: resources.Market = await this.defaultMarketService.upgradeDefaultMarket();
+            this.log.debug('bootstrap(), updated old default Market: ', JSON.stringify(oldMarket, null, 2));
 
         } else { // not upgrading...
-            // create Profile with new Identity (+wallet)
-            defaultProfile = await this.defaultProfileService.seedDefaultProfile().then(value => value.toJSON());
+            // create new Profile with new Identity (+wallet)
+            defaultProfile = await this.defaultProfileService.seedDefaultProfile();
         }
 
         // save/update the default env vars as Settings
         await this.defaultSettingService.saveDefaultSettings(defaultProfile);
 
+        const loadedWallets = await this.loadWalletsForProfile(defaultProfile);
+        this.log.debug('bootstrap(), loadedWallets: ', JSON.stringify(loadedWallets, null, 2));
+
         // check whether we have the required default marketplace configuration to continue
         const hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
+        this.log.debug('bootstrap(), hasMarketConfiguration: ', hasMarketConfiguration);
 
         if (hasMarketConfiguration) {
-            // marketplace will create the wallets it needs (each Market will have its own Identity linked to it)
+            // marketplace will create the wallet it needs (each Market will have its own Identity linked to it)
 
-            // seed the default market
-            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile).then(value => value.toJSON());
+            // seed the default Market for default Profile
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+                .catch(reason => {
+                    this.log.error('ERROR: seedDefaultMarket, ' + reason);
+                    throw reason;
+                });
+
+            this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
             // seed the default categories to default market
             await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
@@ -204,6 +216,8 @@ export class ServerStartedListener implements interfaces.Listener {
         } else {
             throw new MessageException('Missing default Market configuration.');
         }
+
+        this.log.debug('bootstrap(), DONE');
 
         return true;
     }
@@ -229,18 +243,22 @@ export class ServerStartedListener implements interfaces.Listener {
     /**
      * are we updating from single market wallet?
      * ->   a wallet called market exists
-     *      && Identity with type PROFILE belonging to default Profile doesnt exist
+     *      && Identity with type PROFILE belonging to default Profile DOES NOT exist
      */
     private async isUpdatingFromSingleMarketWallet(): Promise<boolean> {
 
         const hasMarketWallet = await this.coreRpcService.walletExists('market');
-        const defaultProfile: resources.Profile = await this.defaultProfileService.getDefault(true).then(value => value.toJSON());
 
+        this.log.debug('isUpdatingFromSingleMarketWallet(), hasMarketWallet: ', hasMarketWallet);
+
+        const defaultProfile: resources.Profile = await this.defaultProfileService.getDefault(true);
         const profileIdentity: resources.Identity | undefined = _.find(defaultProfile.Identities, identity => {
             return identity.type === IdentityType.PROFILE;
         });
 
-        // there is old market wallet but no profile Identity -> need to update
+        this.log.debug('isUpdatingFromSingleMarketWallet(), profileIdentity: ', profileIdentity);
+
+        // there is old market wallet, but no profile Identity -> need to update
         if (hasMarketWallet && _.isEmpty(profileIdentity)) {
             return true;
         }
@@ -248,6 +266,17 @@ export class ServerStartedListener implements interfaces.Listener {
         return false;
     }
 
+    /**
+     * loads wallets for given Profile, returns the names of wallets loaded
+     * @param profile
+     */
+    private async loadWalletsForProfile(profile: resources.Profile): Promise<string[]> {
+        const identitiesToLoad: resources.Identity[] = await this.identityService.findAllByProfileId(profile.id).then(value => value.toJSON());
+        const walletsToLoad: string[] = identitiesToLoad.map( value => {
+            return value.wallet;
+        });
+        return await this.coreRpcService.loadWallets(walletsToLoad);
+    }
 
 
 
