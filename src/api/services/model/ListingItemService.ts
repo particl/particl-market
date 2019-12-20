@@ -29,6 +29,7 @@ import { ListingItemObjectService } from './ListingItemObjectService';
 import { CommentService } from './CommentService';
 import { CommentType } from '../../enums/CommentType';
 import { ItemImageService } from './ItemImageService';
+import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 export class ListingItemService {
 
@@ -41,6 +42,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) public shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -320,6 +322,13 @@ export class ListingItemService {
 
         if (listingItem.Bids.length > 0) {
             // Prevent listings with associated bids from being removed
+            return;
+        }
+
+        // Temporarily prevent deletion of an item still stuck in the cart
+        const shoppingCartItems = await this.shoppingCartItemService.findAllByListingItem(listingItem.id);
+        if (shoppingCartItems.length > 0) {
+            this.log.debug('destroy(), skipping listing item (item still in cart): ', listingItem.id);
             return;
         }
 
