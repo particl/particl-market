@@ -38,6 +38,10 @@ export class ShoppingCartItemRepository {
         return this.ShoppingCartItemModel.fetchAllByCartId(cartId);
     }
 
+    public async findAllByListingItem(listingItemId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return this.ShoppingCartItemModel.fetchAllByListingItem(listingItemId);
+    }
+
     public async create(data: any): Promise<ShoppingCartItem> {
         const shoppingCartItem = this.ShoppingCartItemModel.forge<ShoppingCartItem>(data);
         try {
