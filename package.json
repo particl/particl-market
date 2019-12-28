@@ -89,7 +89,7 @@
     "figlet": "^1.2.0",
     "fstream": "^1.0.12",
     "glob": "^7.1.2",
-    "handlebars": "4.1.2",
+    "handlebars": "4.3.0",
     "helmet": "^3.6.1",
     "hoek": "^4.2.1",
     "inquirer": "^3.2.0",
