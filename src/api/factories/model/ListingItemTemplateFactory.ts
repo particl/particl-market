@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,51 +7,18 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
-import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
-import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
-import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
-import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
-import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import {
-    EscrowConfig,
-    EscrowRatio,
-    ItemInfo,
-    ItemObject,
-    Location,
-    LocationMarker, MessagingInfo,
-    PaymentInfoEscrow,
-    PaymentOption, ShippingPrice
-} from 'omp-lib/dist/interfaces/omp';
-import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import {ListingItemCreateParams, ListingItemTemplateCreateParams} from './ModelCreateParams';
-import {CryptoAddress, CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import { MessageException } from '../../exceptions/MessageException';
-import { KVS } from 'omp-lib/dist/interfaces/common';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import {ListingItemTemplateCreateRequest} from '../../requests/model/ListingItemTemplateCreateRequest';
-import {ItemCategoryCreateRequest} from '../../requests/model/ItemCategoryCreateRequest';
-import {IsEnum, IsNotEmpty} from 'class-validator';
-import {ItemCategoryUpdateRequest} from '../../requests/model/ItemCategoryUpdateRequest';
+import { ListingItemTemplateCreateParams } from './ModelCreateParams';
+import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 
 export class ListingItemTemplateFactory implements ModelFactoryInterface {
 

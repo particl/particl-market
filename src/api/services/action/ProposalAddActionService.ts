@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -32,22 +32,23 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { ProposalAddValidator } from '../../messages/validator/ProposalAddValidator';
 import { VoteRequest } from '../../requests/action/VoteRequest';
+import { MarketService } from '../model/MarketService';
 
 export class ProposalAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(smsgService, smsgMessageService, smsgMessageFactory);
@@ -166,21 +167,50 @@ export class ProposalAddActionService extends BaseActionService {
      * @param proposal
      */
     public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
 
-        // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
-        // create if FlaggedItem doesnt already exist
-        if (_.isEmpty(listingItem.FlaggedItem)) {
-            const flaggedItemCreateRequest = {
-                listing_item_id: listingItem.id,
-                proposal_id: proposal.id,
-                reason: proposal.description
-            } as FlaggedItemCreateRequest;
+        let listingItem: resources.ListingItem;
+        let markets: resources.Market[];
 
-            return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+        const flaggedItemCreateRequest = {
+            proposal_id: proposal.id,
+            reason: proposal.description
+        } as FlaggedItemCreateRequest;
+
+        if (ProposalCategory.ITEM_VOTE === proposal.category) {
+            // todo: make sure market.receiveAddress is used to generate listingItem.hash
+            listingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
+
+            // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
+            if (_.isEmpty(listingItem.FlaggedItem)) {
+                // only create if FlaggedItem doesnt already exist
+                flaggedItemCreateRequest.listing_item_id = listingItem.id;
+                return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+            } else {
+                // else just return the existing
+                return await this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
+            }
+        } else if (ProposalCategory.MARKET_VOTE === proposal.category) {
+
+            const createdFlaggedItems: resources.FlaggedItem[] = [];
+            markets = await this.marketService.findAllByReceiveAddress(proposal.title).then(value => value.toJSON()[0]);
+
+            // create FlaggedItem for all the Markets
+            for (const market of markets) {
+                let flaggedItem: resources.FlaggedItem;
+                if (_.isEmpty(market.FlaggedItem)) {
+                    flaggedItemCreateRequest.market_id = market.id;
+                    flaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+                } else {
+                    flaggedItem = await this.flaggedItemService.findOne(market.FlaggedItem.id).then(value => value.toJSON());
+                }
+                createdFlaggedItems.push(flaggedItem);
+            }
+
+            // the result is not used for anything so just return the [0]
+            return createdFlaggedItems[0];
+
         } else {
-            // else just return the existing
-            return this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
+            throw new MessageException('Unsupported ProposalCategory.');
         }
     }
 
@@ -220,12 +250,12 @@ export class ProposalAddActionService extends BaseActionService {
                 // proposal doesnt exist yet, so we need to create it.
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
 
-                if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
+                if (ProposalCategory.ITEM_VOTE === createdProposal.category
+                    || ProposalCategory.MARKET_VOTE === createdProposal.category) {
                     // this.log.debug('processProposal(), creating FlaggedItem for Proposal:', JSON.stringify(createdProposal, null, 2));
 
-                    // in case of ITEM_VOTE, we also need to create the FlaggedItem
-                    const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                    // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+                    // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
+                    await this.createFlaggedItemForProposal(createdProposal);
                     this.log.debug('processProposal(), created FlaggedItem');
                 }
 

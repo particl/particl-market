@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -32,6 +32,6 @@ export class ProposalAddRequest extends RequestBody implements ActionRequestInte
     @IsNotEmpty()
     public options: string[];
 
-    public itemHash?: string;
+    public itemHash?: string;   // todo: rename to target?
 
 }

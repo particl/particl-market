@@ -1,16 +1,18 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
 import { Proposal } from './Proposal';
+import { Market } from './Market';
 
 export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
     public static RELATIONS = [
         'ListingItem',
-        'Proposal'
+        'Proposal',
+        'Market'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FlaggedItem> {
@@ -44,6 +46,10 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
     public Proposal(): Proposal {
         return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
+    public Market(): Market {
+        return this.belongsTo(Market, 'market_id', 'id');
     }
 
 }

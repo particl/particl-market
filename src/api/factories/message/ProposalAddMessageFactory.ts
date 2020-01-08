@@ -1,13 +1,13 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ProposalCategory } from '../../enums/ProposalCategory';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
@@ -17,6 +17,7 @@ import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/H
 import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -40,11 +41,16 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
         const optionsList: resources.ProposalOption[] = this.createOptionsList(params.options);
 
-        const category = params.category
-            ? params.category
-            : params.itemHash
-                ? ProposalCategory.ITEM_VOTE
-                : ProposalCategory.PUBLIC_VOTE;
+        // make sure category is set
+        if (_.isEmpty(params.category)) {
+            throw new MissingParamException('category');
+        }
+
+        // const category = params.category
+        //    ? params.category
+        //    : params.itemHash   // todo: having itemHash is not a quarantee that the category is ITEM_VOTE, it could also be MARKET_VOTE
+        //        ? ProposalCategory.ITEM_VOTE
+        //        : ProposalCategory.PUBLIC_VOTE;
 
         const message: ProposalAddMessage = {
             type: GovernanceAction.MPA_PROPOSAL_ADD,
@@ -52,7 +58,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             title: params.title,
             description: params.description,
             options: optionsList,
-            category,
+            category: params.category,
             item: params.itemHash
         } as ProposalAddMessage;
 
