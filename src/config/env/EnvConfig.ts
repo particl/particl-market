@@ -80,6 +80,7 @@ export class EnvConfig {
         // loads the .env file into the 'process.env' variable.
         dotenv.config({ path: this.envFile });
 
+/*
         // set default values if not set by dotenv
         _.forOwn(this.defaultEnv, (value: any, key: string) => {
             if (typeof process.env[key] === 'undefined') {
@@ -91,10 +92,11 @@ export class EnvConfig {
         if (!Environment.isTest()) {
             console.log('current env:');
             _.forOwn(process.env, (value: any, key: string) => {
-                console.log('process.env.' + key + ':', process.env[key]);
+                console.log('key:', key);
+                //    console.log('process.env.' + key + ':', process.env[key]);
             });
         }
-
+*/
         if (dataDirLocation) {
             // console.log('EnvConfig: setting DataDir:', dataDirLocation);
             // DataDir.set(dataDirLocation);

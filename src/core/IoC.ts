@@ -64,6 +64,7 @@ export class IoC {
         await this.bindMessageProcessors();
         this.log.info('binding listeners');
         await this.bindListeners();
+        this.log.info('binding listeners DONE');
 
         if (!Environment.isTest()) {
             this.log.info('binding middlewares');
@@ -145,6 +146,7 @@ export class IoC {
 
     private bindListeners(): Promise<void> {
         return this.bindFiles('/listeners/**/*Listener.ts', Targets.Listener, (name: any, value: any) => {
+
             decorate(injectable(), value);
             this.container
                 .bind<any>(Types.Listener)
@@ -170,7 +172,8 @@ export class IoC {
     private bindFiles(filePath: string, target: any, callback: (name: any, value: any) => void): Promise<void> {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
-                // this.log.info('bindFiles, filePath:', filePath);
+                this.log.info('bindFiles, filePath:', filePath);
+                this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;

@@ -14,7 +14,6 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ProfileService } from '../../services/model/ProfileService';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ItemVote } from '../../enums/ItemVote';
@@ -32,12 +31,11 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService
     ) {
-        super(Commands.ITEM_FLAG);
+        super(Commands.MARKET_FLAG);
         this.log = new Logger(__filename);
     }
 
@@ -126,21 +124,21 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemId> <identityId> [reason]';
+        return this.getName() + ' <marketId> [reason]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>    - Numeric - The id of the ListingItem we want to report. \n'
-            + '    <identityId>       - Numeric - The id of the Identity used to report the item. \n'
+            + '    <marketId>         - Numeric - The id of the Market we want to report. \n'
             + '    <reason>           - String - Optional reason for the flagging';
     }
 
     public description(): string {
-        return 'Report a ListingItem.';
+        return 'Report a Market.';
     }
 
     public example(): string {
-        return 'item 1 1';
+        return 'market ' + this.getName() + ' 1 \'reason\'';
     }
+
 }
