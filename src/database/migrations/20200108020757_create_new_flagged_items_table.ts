@@ -7,9 +7,6 @@ import * as Knex from 'knex';
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
 
-        // rename flagged_items to flagged_items_old
-        db.schema.raw('ALTER TABLE flagged_items RENAME TO flagged_items_old'),
-
         db.schema.createTable('flagged_items', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
@@ -37,7 +34,6 @@ exports.up = (db: Knex): Promise<any> => {
 
 exports.down = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.dropTable('flagged_items'),
-        db.schema.raw('ALTER TABLE flagged_items_old RENAME TO flagged_items')
+        db.schema.dropTable('flagged_items')
     ]);
 };
