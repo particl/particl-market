@@ -84,7 +84,7 @@ export class CoreRpcService extends CtRpc {
      * @returns {Promise<string>}
      */
     public async listLoadedWallets(): Promise<string[]> {
-        return await this.call('listwallets');
+        return await this.call('listwallets', undefined, undefined, false);
     }
 
     /**
@@ -104,9 +104,7 @@ export class CoreRpcService extends CtRpc {
     public async walletLoaded(name: string): Promise<boolean> {
         return await this.listLoadedWallets()
             .then(wallets => {
-                const loaded = _.includes(wallets, name);
-                this.log.debug('walletLoaded(): ', loaded);
-                return loaded;
+                return _.includes(wallets, name);
             });
     }
 
@@ -357,7 +355,7 @@ export class CoreRpcService extends CtRpc {
      *
      */
     public async getNetworkInfo(): Promise<RpcNetworkInfo> {
-        return await this.call('getnetworkinfo', []);
+        return await this.call('getnetworkinfo', [], undefined, false);
     }
 
     /**
