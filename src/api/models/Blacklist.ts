@@ -42,6 +42,8 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    // TODO: add Market
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

@@ -90,6 +90,16 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
+    public static async fetchByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        if (withRelated) {
+            return await ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch();
+        }
+    }
+
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Model<ListingItem>>()

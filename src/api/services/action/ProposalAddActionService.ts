@@ -177,8 +177,7 @@ export class ProposalAddActionService extends BaseActionService {
         } as FlaggedItemCreateRequest;
 
         if (ProposalCategory.ITEM_VOTE === proposal.category) {
-            // todo: make sure market.receiveAddress is used to generate listingItem.hash
-            listingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
+            listingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(proposal.title, proposal.market).then(value => value.toJSON());
 
             // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
             if (_.isEmpty(listingItem.FlaggedItem)) {

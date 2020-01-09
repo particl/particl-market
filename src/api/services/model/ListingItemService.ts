@@ -78,21 +78,19 @@ export class ListingItemService {
     }
 
     /**
-     * TODO: DEPRECATED, shouldnt be used since a ListingItem with the same hash can exist in multiple markets
      *
      * @param {string} hash
+     * @param marketReceiveAddress
      * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        // this.log.debug('findOneByHash(), hash: ', hash);
-        const listingItems = await this.findAllByHash(hash, withRelated);
-        // this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
-        if (listingItems.size() === 0) {
-            this.log.warn(`ListingItem with the hash=${hash} was not found!`);
+    public async findOneByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHashAndMarketReceiveAddress(hash, marketReceiveAddress, withRelated);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the hash=${hash} and market=${marketReceiveAddress} was not found!`);
             throw new NotFoundException(hash);
         }
-        return listingItems.at(0);
+        return listingItem;
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
@@ -387,8 +385,9 @@ export class ListingItemService {
      *
      * @returns {Promise<void>}
      */
-    public async setRemovedFlag(itemHash: string, removed: boolean): Promise<void> {
-        const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
+    public async setRemovedFlag(itemHash: string, marketReceiveAddress: string, removed: boolean): Promise<void> {
+        const listingItem: resources.ListingItem = await this.findOneByHashAndMarketReceiveAddress(itemHash, marketReceiveAddress)
+            .then(value => value.toJSON());
         await this.listingItemRepo.update(listingItem.id, { removed });
      }
 

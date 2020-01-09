@@ -231,8 +231,10 @@ export class VoteActionService extends BaseActionService {
 
         // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(voteRequest.proposal.item).then(value => value.toJSON());
-            await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
+                voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
+            await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.market.receiveAddress,
+                voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
             this.log.debug('vote(), removed flag set');
         }
 
@@ -348,20 +350,23 @@ export class VoteActionService extends BaseActionService {
 
         // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
         // we can now check whether the ListingItem should be removed or not
+        // TODO: add support for MARKET_VOTE
         if (proposal.category === ProposalCategory.ITEM_VOTE) {
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposalResult.Proposal.item)
-                .then(value => value.toJSON());
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
+                proposalResult.Proposal.item, proposalResult.Proposal.market).then(value => value.toJSON());
+
             await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
                 .then(async remove => {
 
-                    // TODO: if user has voted for removal, then the item should stay removed
+                    // TODO: if user has voted for removal, then the item should stay removed, blacklist
                     // update the removed flag if its value is different from what it should be
                     if (remove) {
                         this.log.debug('updating the ListingItem removed flag to: ' + remove);
                         // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
                         // await this.listingItemService.destroy(listingItem.id);
-                        await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                        await this.listingItemService.setRemovedFlag(proposal.item, proposal.market,
+                            votedProposalOption.description === ItemVote.REMOVE.toString());
                     }
                 });
 
@@ -373,7 +378,8 @@ export class VoteActionService extends BaseActionService {
                 const addressInfo = await this.coreRpcService.getAddressInfo(market.Identity.wallet, voteMessage.voter);
                 if (addressInfo && addressInfo.ismine) {
                     this.log.debug('isMine: ', addressInfo.ismine);
-                    await this.listingItemService.setRemovedFlag(proposal.item, votedProposalOption.description === ItemVote.REMOVE.toString());
+                    await this.listingItemService.setRemovedFlag(proposal.item, proposal.market,
+                        votedProposalOption.description === ItemVote.REMOVE.toString());
                 }
             }
 

@@ -54,6 +54,10 @@ export class ListingItemRepository {
         return this.ListingItemModel.fetchByMsgId(msgId, withRelated);
     }
 
+    public async findOneByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByHashAndMarketReceiveAddress(hash, marketReceiveAddress, withRelated);
+    }
+
     /**
      *
      * @param {ListingItemSearchParams} options
