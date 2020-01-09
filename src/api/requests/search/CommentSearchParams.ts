@@ -9,7 +9,10 @@ import { CommentSearchOrderField} from '../../enums/SearchOrderField';
 export class CommentSearchParams extends BaseSearchParams {
 
     public orderField = CommentSearchOrderField.POSTED_AT;
+
     public type: CommentType;
+    public sender: string;
+    public receiver: string;
     public target: string;
     public parentCommentId: number;
 }

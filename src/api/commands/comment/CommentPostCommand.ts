@@ -4,9 +4,9 @@
 
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
+import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
@@ -27,6 +27,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
+import { IdentityType } from '../../enums/IdentityType';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -90,8 +91,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      *  [0]: identityId, number
-     *  [1]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the user address
-     *  [0]: type, CommentType
+     *  [1]: type, CommentType (LISTINGITEM_QUESTION_AND_ANSWERS)
+     *  [2]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the receiving profile address
      *  [3]: target, string, when type === LISTINGITEM_QUESTION_AND_ANSWERS, ListingItem.hash
      *  [4]: message, string
      *  [5]: parentCommentHash, string, optional
@@ -101,12 +102,14 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        // TODO: theres no support for other than CommentType.LISTINGITEM_QUESTION_AND_ANSWERS yet
+
         if (data.params.length < 1) {
             throw new MissingParamException('identityId');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('receiver');
-        } else if (data.params.length < 3) {
             throw new MissingParamException('type');
+        } else if (data.params.length < 3) {
+            throw new MissingParamException('receiver');
         } else if (data.params.length < 4) {
             throw new MissingParamException('target');
         } else if (data.params.length < 5) {
@@ -114,17 +117,17 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         const identityId = data.params[0];
-        const receiver = data.params[1];
-        const type = data.params[2];
+        const type = data.params[1];
+        const receiver = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
 
         if (typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
-        } else if (typeof receiver !== 'string') {
-            throw new InvalidParamException('receiver', 'string');
         } else if (!EnumHelper.containsName(CommentType, type)) {
             throw new InvalidParamException('type', 'CommentType');
+        } else if (typeof receiver !== 'string') {
+            throw new InvalidParamException('receiver', 'string');
         } else if (typeof target !== 'string') {
             throw new InvalidParamException('target', 'string');
         } else if (typeof message !== 'string') {
@@ -140,25 +143,18 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         // make sure Identity with the id exists, and that the Identity is linked to a Market
-        // TODO: for other Commands: when identityId is passed as a parameter to some command, we should check that the Identity is linked to Market
         const identity: resources.Identity = await this.identityService.findOne(identityId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Identity');
             });
 
-        data.params[0] = identity;
-
-        // make sure Comment with the hash exists
-        if (parentHash) {
-            data.params[5] = await this.commentService.findOneByHash(parentHash)
-                .then(value => value.toJSON())
-                .catch(() => {
-                    throw new ModelNotFoundException('Comment');
-                });
+        // make sure the Identity is of type IdentityType.MARKET
+        if (identity.type !== IdentityType.MARKET) {
+            throw new InvalidParamException('Identity', 'IdentityType.MARKET');
         }
 
-        // get the Market the identity is related to and make sure the ListingItem with the hash exists
+        // get the Market which the Identity is related to, and make sure the ListingItem with the hash exists
         if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
 
              const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, receiver)
@@ -172,6 +168,17 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                 .catch(() => {
                     throw new ModelNotFoundException('ListingItem');
                 });
+        } else {
+            throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
+        }
+
+        // make sure Comment with the hash exists
+        if (parentHash) {
+            data.params[5] = await this.commentService.findOneByHash(parentHash)
+                .then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Comment');
+                });
         }
 
         if (!message || message.trim() === '') {
@@ -182,11 +189,13 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new MessageException('The maximum length for the Comment text cannot exceed 1000 characters.');
         }
 
+        data.params[0] = identity;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <identityId> <receiver> <type> <target> <message> [parentHash]';
+        return this.getName() + ' <identityId> <type> <receiver> <target> <message> [parentHash]';
     }
 
     public help(): string {

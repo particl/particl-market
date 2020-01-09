@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -21,6 +22,11 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { CommentSearchOrderField } from '../../enums/SearchOrderField';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { MarketService} from '../../services/model/MarketService';
+import { IdentityService } from '../../services/model/IdentityService';
+import { MessageException } from '../../exceptions/MessageException';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
 
@@ -29,6 +35,8 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.COMMENT_SEARCH);
@@ -45,10 +53,10 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: type, CommentType
-     *  [5]: target, string
-     *  [6]: parentComment, resources.Comment
-     *  [7]: withRelated, boolean
+     *  [4]: type, CommentType (only LISTINGITEM_QUESTION_AND_ANSWERS supported for now)
+     *  [5]: receiver, string (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> Market.receiveAddress)
+     *  [6]: target, string, optional (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash)
+     *  [7]: parentComment, resources.Comment, optional
      *
      * @param data
      * @returns {Promise<Comment>}
@@ -56,8 +64,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
 
-        const parentComment: resources.Comment = data.params[6];
-        const withRelated = data.params[7];
+        const parentComment: resources.Comment = data.params[7];
 
         const searchParams = {
             page: data.params[0],
@@ -65,11 +72,13 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             order: data.params[2],
             orderField: data.params[3],
             type: data.params[4],
-            target: data.params[5],
+            receiver: data.params[5],
+            target: data.params[6],
             parentCommentId: parentComment.id
+
         } as CommentSearchParams;
 
-        return await this.commentService.search(searchParams, withRelated);
+        return await this.commentService.search(searchParams);
     }
 
     /**
@@ -78,10 +87,10 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: type, CommentType
-     *  [5]: target, string
-     *  [6]: parentCommentHash, string
-     *  [7]: withRelated, boolean
+     *  [4]: type, CommentType (LISTINGITEM_QUESTION_AND_ANSWERS)
+     *  [5]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the receiving profile address
+     *  [6]: target, string, optional, when type === LISTINGITEM_QUESTION_AND_ANSWERS, ListingItem.hash
+     *  [7]: parentCommentHash, string, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -89,38 +98,65 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // type, CommentType
-        if (data.params.length >= 5
-            && (typeof data.params[4] !== 'string' || !EnumHelper.containsName(CommentType, data.params[4]))) {
+        // type && receiver is not optional
+        if (data.params.length < 5) {
+            throw new MissingParamException('type');
+        } else if (data.params.length < 6) {
+            throw new MissingParamException('receiver');
+        }
+
+        const type = data.params[4];
+        const receiver = data.params[5];
+        const target = data.params[6];              // optional
+        const parentCommentHash = data.params[7];   // optional
+
+        if (!EnumHelper.containsName(CommentType, type)) {
             throw new InvalidParamException('type', 'CommentType');
+        } else if (typeof receiver !== 'string') {
+            throw new InvalidParamException('receiver', 'string');
         }
 
         // target, string
-        if (data.params.length >= 6) {
-            if (typeof data.params[5] !== 'string') {
-                throw new InvalidParamException('target', 'string');
-            }
+        if (data.params.length >= 7 && typeof target !== 'string') {
+            throw new InvalidParamException('target', 'string');
+        }
 
-            // make sure the target ListingItem exists
-            if (data.params[4] === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
-                && data.params[5]) {
-                await this.listingItemService.findOneByHash(data.params[5])
+        if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
+
+            // make sure given the receiver (Market), exists
+            await this.marketService.findAllByReceiveAddress(receiver)
+                .then(value => {
+                    const markets: resources.Market[] = value.toJSON();
+                    if (_.isEmpty(markets)) {
+                        throw new NotFoundException(receiver);
+                    }
+                })
+                .catch(() => {
+                    throw new ModelNotFoundException('Market');
+                });
+
+            // ...and if target is given, make sure the ListingItem with the hash exists
+            if (target) {
+                await this.listingItemService.findOneByHashAndMarketReceiveAddress(target, receiver)
                     .then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('ListingItem');
                     });
             }
+
+        } else {
+            throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
         }
 
         // parentCommentHash, string
-        if (data.params.length >= 7) {
-            if (data.params[6] && typeof data.params[6] !== 'string') {
+        if (data.params.length >= 8) {
+            if (parentCommentHash && typeof parentCommentHash !== 'string') {
                 throw new InvalidParamException('parentCommentHash', 'string');
             }
 
-            if (data.params[6] && data.params[6].length > 0) {
+            if (parentCommentHash && parentCommentHash.length > 0) {
                 // make sure the parent Comment exists
-                data.params[6] = await this.commentService.findOneByHash(data.params[6])
+                data.params[7] = await this.commentService.findOneByHash(parentCommentHash)
                     .then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('Comment');
@@ -128,26 +164,23 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             }
         }
 
-        if (data.params.length >= 8 && typeof data.params[7] !== 'boolean') {
-            throw new InvalidParamException('withRelated', 'boolean');
-        }
-
         return data;
     }
 
     public usage(): string {
-        return this.getName() + '  <page> <pageLimit> <order> <orderField> [<type> [<target> [<parentCommentHash>]]]';
+        return this.getName() + '  <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [parentCommentHash]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <page>                   - Numeric - The number of result page we want to return. \n'
-            + '    <pageLimit>              - Numeric - The number of results per page. \n'
+            + '    <page>                   - number - The number of result page we want to return. \n'
+            + '    <pageLimit>              - number - The number of results per page. \n'
             + '    <order>                  - SearchOrder - The order of the returned results. \n'
             + '    <orderField>             - CommentSearchOrderField - The field to order the results by. \n'
-            + '    <type>                   - [optional] CommentType - The type of Comment.\n'
-            + '    <target>                 - [optional] String - The target of the Comment.\n'
-            + '    <parentCommentHash>      - [optional] String - The hash of the parent Comment.\n';
+            + '    <type>                   - CommentType - The type of Comment.\n'
+            + '    <receiver>               - string - The receiver of the Comment (Market receiveAddress for example).\n'
+            + '    <target>                 - [optional] string - The target of the Comment (ListingItem hash for example).\n'
+            + '    <parentCommentHash>      - [optional] string - The hash of the parent Comment.\n';
     }
 
     public description(): string {
@@ -155,7 +188,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public example(): string {
-        return 'comment ' + this.getName() + ' 0 10 \'ASC\' \'STATE\'';
+        return 'comment ' + this.getName() + ' 0 10 \'ASC\' \'FIELD\' \'LISTINGITEM_QUESTION_AND_ANSWERS\' \'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW\'';
     }
 
 }

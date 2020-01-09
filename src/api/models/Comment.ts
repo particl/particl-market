@@ -92,6 +92,14 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('comments.type', '=', options.type);
                 }
 
+                if (options.sender) {
+                    qb.where('comments.sender', '=', options.sender);
+                }
+
+                if (options.receiver) {
+                    qb.where('comments.receiver', '=', options.receiver);
+                }
+
                 if (options.target) {
                     qb.where('comments.target', '=', options.target);
                 }
@@ -103,6 +111,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                 if (options.parentCommentId) {
                     qb.where('comments.parent_comment_id', '=', options.parentCommentId);
                 }
+
             })
             .orderBy('comments.' + options.orderField, options.order)
             .query({
