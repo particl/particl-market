@@ -32,7 +32,7 @@ export class EscrowCompleteMessageFactory implements MessageFactoryInterface {
     public async get(params: EscrowCompleteMessageCreateParams): Promise<EscrowCompleteMessage> {
         const message = {
             type: MPActionExtended.MPA_COMPLETE,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]

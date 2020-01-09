@@ -823,7 +823,7 @@ export class ImageProcessing {
     }
 
     public static async resizeImageToFraction(imageRaw: string, fraction: number): Promise<string> {
-        const startTime = new Date().getTime();
+        const startTime = Date.now();
         const dataBuffer = Buffer.from(imageRaw, 'base64');
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
@@ -841,7 +841,7 @@ export class ImageProcessing {
             return resizedImage;
           }
         }
-        this.log.debug('ImageProcessing.resizeImageToFraction: ' + (new Date().getTime() - startTime) + 'ms');
+        this.log.debug('ImageProcessing.resizeImageToFraction: ' + (Date.now() - startTime) + 'ms');
         return imageRaw;
     }
 

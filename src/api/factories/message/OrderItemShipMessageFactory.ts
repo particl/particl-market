@@ -33,7 +33,7 @@ export class OrderItemShipMessageFactory implements MessageFactoryInterface {
     public async get(params: OrderItemShipMessageCreateParams): Promise<OrderItemShipMessage> {
         const message = {
             type: MPActionExtended.MPA_SHIP,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash                 // hash of MPA_BID
         } as OrderItemShipMessage;

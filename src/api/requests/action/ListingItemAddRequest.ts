@@ -19,6 +19,9 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 
     @IsNotEmpty()
+    public market: resources.Market;    // we need to pass the market that we're making the bid on to the seller
+
+    @IsNotEmpty()
     public seller: resources.Identity;
 
 }

@@ -24,6 +24,8 @@ import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
+import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
+import {KVS} from 'omp-lib/dist/interfaces/common';
 
 export class BidActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -54,12 +56,20 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
 
-        // - first get the ListingItem the Bid is for, fail if it doesn't exist
+        // - first get the Market receiveAddress on which ListingItem were bidding for is located, fail if it doesn't exist
+        // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
 
-        // this.log.debug('onEvent(), actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        const marketKVS = _.find(actionMessage.objects, value => {
+            return value.key === ActionMessageObjects.BID_ON_MARKET;
+        });
 
-        return await this.listingItemService.findOneByHash(actionMessage.item)
+        if (!marketKVS) {
+            this.log.error('BidMessage is missing ActionMessageObjects.BID_ON_MARKET.');
+            return SmsgMessageStatus.PROCESSING_FAILED;
+        }
+
+        return await this.listingItemService.findOneByHashAndMarketReceiveAddress(actionMessage.item, marketKVS.value as string)
             .then(async listingItemModel => {
                 const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
@@ -67,17 +77,7 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
                 if (_.isEmpty(listingItem.ListingItemTemplate)) {
                     const exception = new MessageException('Received a Bid for a ListingItemTemplate that doesnt exists.');
                     this.log.error('ERROR, reason: ', exception.getMessage());
-                    // throw exception;
-
-                    // TODO: error handling should be improved, just return PROCESSING_FAILED for now
                     return SmsgMessageStatus.PROCESSING_FAILED;
-                }
-
-                // make sure the ListingItem belongs to a local Profile
-                if (_.isEmpty(listingItem.ListingItemTemplate.Profile)) {
-                    const exception = new MessageException('Received a Bid for a ListingItem not belonging to a local Profile.');
-                    // this.log.error('ERROR, reason: ', exception.getMessage());
-                    throw exception;
                 }
 
                 // need to add profile_id and type to the ShippingAddress to make it an AddressCreateRequest

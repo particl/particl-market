@@ -33,7 +33,7 @@ export class BidRejectMessageFactory implements MessageFactoryInterface {
     public async get(params: BidRejectMessageCreateParams): Promise<BidRejectMessage> {
         const message = {
             type: MPAction.MPA_REJECT,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash                 // hash of MPA_BID
         } as BidRejectMessage;

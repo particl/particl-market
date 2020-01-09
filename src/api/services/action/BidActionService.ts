@@ -80,13 +80,21 @@ export class BidActionService extends BaseActionService {
 
         this.log.debug('createMessage(), listingItemAddMPM: ', JSON.stringify(listingItemAddMPM, null, 2));
 
+        // todo: add product variations etc bid related params
+        // Add the Market which the ListingItem is being bidded on
+        const objects: KVS[] = [];
+        objects.push({
+            key: ActionMessageObjects.BID_ON_MARKET,
+            value: params.market.receiveAddress
+        } as KVS);
+
         // todo: cryptocurrency hardcoded to PART for now
         // todo: ...and propably hardcoded already on the Command level, so could be passed with the BidRequest params
         const config: BidConfiguration = {
             cryptocurrency: Cryptocurrency.PART,
             escrow: params.listingItem.PaymentInformation.Escrow.type,
-            shippingAddress: params.address as ShippingAddress
-            // objects: KVS[]       // todo: product variations etc bid related params
+            shippingAddress: params.address as ShippingAddress,
+            objects
         };
 
         // use omp to generate BidMessage
@@ -116,10 +124,11 @@ export class BidActionService extends BaseActionService {
         const orderHash = ConfigurableHasher.hash({
             buyer: params.sendParams.fromAddress,
             seller: params.listingItem.seller,
-            generatedAt: +new Date().getTime()
+            generatedAt: +Date.now()
         } as OrderCreateRequest, new HashableOrderCreateRequestConfig());
 
         // add the created orderHash to the marketplaceMessage.action.objects to be sent to the seller
+        // todo: move to createMessage as were modifying the message here
         marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
         marketplaceMessage.action.objects.push({
             key: ActionMessageObjects.ORDER_HASH,
@@ -127,7 +136,6 @@ export class BidActionService extends BaseActionService {
         } as KVS);
 
         return marketplaceMessage;
-
     }
 
     /**

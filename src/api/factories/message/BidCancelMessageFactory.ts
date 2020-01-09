@@ -32,7 +32,7 @@ export class BidCancelMessageFactory implements MessageFactoryInterface {
     public async get(params: BidCancelMessageCreateParams): Promise<BidCancelMessage> {
         const message = {
             type: MPAction.MPA_CANCEL,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]

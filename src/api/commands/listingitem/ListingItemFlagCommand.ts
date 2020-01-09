@@ -135,7 +135,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('Given Identity is not used on the Market which the ListingItem was posted to.');
         }
 
-        const daysRetention = Math.ceil((listingItem.expiredAt  - new Date().getTime()) / 1000 / 60 / 60 / 24);
+        const daysRetention = Math.ceil((listingItem.expiredAt  - Date.now()) / 1000 / 60 / 60 / 24);
 
         data.params[0] = listingItem;
         data.params[1] = identity;

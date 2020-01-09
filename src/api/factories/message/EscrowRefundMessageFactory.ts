@@ -32,7 +32,7 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
     public async get(params: EscrowRefundMessageCreateParams): Promise<EscrowRefundMessage> {
         const message = {
             type: MPActionExtended.MPA_REFUND,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]

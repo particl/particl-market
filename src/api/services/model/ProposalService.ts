@@ -181,7 +181,7 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async createEmptyProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const calculatedAt: number = new Date().getTime();
+        const calculatedAt: number = Date.now();
 
         const proposalResultCreateRequest = {
             calculatedAt,

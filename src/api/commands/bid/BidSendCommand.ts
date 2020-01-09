@@ -73,8 +73,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      *
      * data.params[]:
      * [0]: listingItem, resources.ListingItem
-     * [1]: identity, resources.Identity
-     * [2]: address, resources.Address
+     * [1]: market, resources.Market
+     * [2]: identity, resources.Identity
+     * [3]: address, resources.Address
      * [...]: bidDataId, string, optional       TODO: currently ignored
      * [...]: bidDataValue, string, optional    TODO: currently ignored
      *
@@ -85,6 +86,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const listingItem: resources.ListingItem = data.params.shift();
+        const market: resources.Market = data.params.shift();
         const identity: resources.Identity = data.params.shift();
         const address: AddressCreateRequest = data.params.shift();
 
@@ -102,6 +104,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const postRequest = {
             sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             listingItem,
+            market,
             address
         } as BidRequest;
 
@@ -176,6 +179,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 throw new ModelNotFoundException('ListingItem');
             });
 
+        // the seller could be selling the ListingItem that were bidding for in multiple markets (having the same hash),
+        // so we need to also send the market info to the seller
+        const market: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
         const identity: resources.Identity = await this.identityService.findOne(identityId)
             .then(value => value.toJSON())
             .catch(reason => {
@@ -191,15 +202,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const address: AddressCreateRequest = this.getAddress(profile, addressId, data);
 
         // unshift the needed data back to the params array
-        data.params.unshift(listingItem, identity, address);
+        data.params.unshift(listingItem, market, identity, address);
 
         // make some other validations
-        if (new Date().getTime() > listingItem.expiredAt) {
+        if (Date.now() > listingItem.expiredAt) {
             this.log.warn(`ListingItem has expired!`);
             throw new MessageException('The ListingItem being bidded for has expired!');
         }
 
-        // TODO: check that we are NOT the seller
+        if (listingItem.seller === identity.address) {
+            throw new MessageException('You cannot Bid for your own ListingItem');
+        }
 
         return data;
     }

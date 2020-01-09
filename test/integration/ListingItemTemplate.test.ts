@@ -447,7 +447,7 @@ describe('ListingItemTemplate', async () => {
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
         createdListingItemTemplate1 = await listingItemTemplateService.create(testDataToSave)
@@ -482,7 +482,7 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
 
         createdListingItemTemplate2 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -499,7 +499,7 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -509,7 +509,7 @@ describe('ListingItemTemplate', async () => {
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
         // testDataToSave.profile_id = defaultProfile.id;
-        // testDataToSave.generatedAt = +new Date().getTime();
+        // testDataToSave.generatedAt = +Date.now();
 
         updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave)
             .then(value => value.toJSON());
@@ -532,7 +532,7 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -553,7 +553,7 @@ describe('ListingItemTemplate', async () => {
         delete testDataToSave.listingItemObjects;
 
         testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
 
         createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
@@ -565,7 +565,7 @@ describe('ListingItemTemplate', async () => {
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
 
         testDataToUpdate.profile_id = defaultProfile.id;
-        testDataToUpdate.generatedAt = +new Date().getTime();
+        testDataToUpdate.generatedAt = +Date.now();
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
@@ -611,7 +611,7 @@ describe('ListingItemTemplate', async () => {
             paymentInformation: testDataToSave.paymentInformation,
             messagingInformation: testDataToSave.messagingInformation,
             listingItemObjects: testDataToSave.listingItemObjects,
-            generatedAt: +new Date().getTime()
+            generatedAt: +Date.now()
         } as ListingItemTemplateCreateRequest;
 
         // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
@@ -623,10 +623,10 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.market = defaultMarket.receiveAddress;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = new Date().getTime();
-        testDataToSave.expiredAt = new Date().getTime();
-        testDataToSave.receivedAt = new Date().getTime();
-        testDataToSave.generatedAt = new Date().getTime();
+        testDataToSave.postedAt = Date.now();
+        testDataToSave.expiredAt = Date.now();
+        testDataToSave.receivedAt = Date.now();
+        testDataToSave.generatedAt = Date.now();
         testDataToSave.msgid = Faker.random.uuid();
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
@@ -757,13 +757,13 @@ describe('ListingItemTemplate', async () => {
         let testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.itemInformation.title = titleToSearchFor + ' 1';
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
         await listingItemTemplateService.create(testDataToSave);
 
         testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
         testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.itemInformation.title = titleToSearchFor + ' 2';
-        testDataToSave.generatedAt = +new Date().getTime();
+        testDataToSave.generatedAt = +Date.now();
         await listingItemTemplateService.create(testDataToSave);
 
         let searchParams = {

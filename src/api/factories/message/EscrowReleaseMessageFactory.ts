@@ -32,7 +32,7 @@ export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
     public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowReleaseMessage> {
         const message = {
             type: MPActionExtended.MPA_RELEASE,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
             bid: params.bidHash,                // hash of MPA_BID
             objects: [] as KVS[]

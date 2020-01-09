@@ -435,11 +435,11 @@ export class TestDataService {
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
                     listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects,
-                    msgid: '' + new Date().getTime(),
+                    msgid: '' + Date.now(),
                     expiryTime: 10,
-                    postedAt: new Date().getTime(),
-                    expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
-                    receivedAt: new Date().getTime(),
+                    postedAt: Date.now(),
+                    expiredAt: Date.now() + 60 * 1000 * 60 * 24 * 10,
+                    receivedAt: Date.now(),
                     generatedAt: listingItemTemplateCreateRequest.generatedAt
                 } as ListingItemCreateRequest;
 
@@ -656,7 +656,7 @@ export class TestDataService {
             type,
             bidder,
             bidDatas,
-            generatedAt: +new Date().getTime(),
+            generatedAt: +Date.now(),
             msgid: Faker.random.uuid()
         } as BidCreateRequest;
 
@@ -754,7 +754,7 @@ export class TestDataService {
             status: OrderStatus.PROCESSING,
             buyer: bid.bidder,
             seller: bid.ListingItem.seller,
-            generatedAt: +new Date().getTime()
+            generatedAt: +Date.now()
         } as OrderCreateParams;
 
         const orderCreateRequest = await this.orderFactory.get(orderCreateParams);
@@ -858,9 +858,9 @@ export class TestDataService {
                 signature: 'signature' + Faker.finance.bitcoinAddress(),
                 voter,
                 weight: 1,
-                postedAt: new Date().getTime(),
-                receivedAt: new Date().getTime(),
-                expiredAt: new Date().getTime() + 100000000
+                postedAt: Date.now(),
+                receivedAt: Date.now(),
+                expiredAt: Date.now() + 100000000
             } as VoteCreateRequest;
 
             const voteModel = await this.voteService.create(voteCreateRequest);
@@ -888,7 +888,7 @@ export class TestDataService {
         const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
         const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
 
-        const currentTime = new Date().getTime();
+        const currentTime = Date.now();
 
         const timeStart = generateParams.generatePastProposal
             ? _.random(1, (currentTime / 2), false)
@@ -1018,7 +1018,7 @@ export class TestDataService {
 
         const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
 
-        const currentTime = new Date().getTime();
+        const currentTime = Date.now();
 
         // Generate comment in the past
         const timeStart = generateParams.generatePastComment
@@ -1190,12 +1190,12 @@ export class TestDataService {
             messagingInformation,
             listingItemObjects,
             market: market.receiveAddress,
-            msgid: '' + new Date().getTime(),
+            msgid: '' + Date.now(),
             expiryTime: 4,
-            postedAt: new Date().getTime(),
-            expiredAt: new Date().getTime() + 100000000,
-            receivedAt: new Date().getTime(),
-            generatedAt: new Date().getTime()
+            postedAt: Date.now(),
+            expiredAt: Date.now() + 100000000,
+            receivedAt: Date.now(),
+            generatedAt: Date.now()
         } as ListingItemCreateRequest;
 
         listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
@@ -1397,7 +1397,7 @@ export class TestDataService {
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
         const listingItemTemplateCreateRequest = {
-            generatedAt: +new Date().getTime(),
+            generatedAt: +Date.now(),
             itemInformation,
             paymentInformation,
             messagingInformation,
