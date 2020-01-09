@@ -188,7 +188,7 @@ export class TestDataService {
             await this.defaultSettingService.saveDefaultSettings(defaultProfile);
 
             // seed the default market
-            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarketForProfile(defaultProfile)
                 .catch( reason => {
                     this.log.debug('failed seeding default market: ' + reason);
                     throw reason;

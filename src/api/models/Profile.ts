@@ -54,8 +54,9 @@ export class Profile extends Bookshelf.Model<Profile> {
     public set Name(value: string) { this.set('name', value); }
 
     // Deprecated, use the Profiles Identity.address
-    // public get Address(): string { return this.get('address'); }
-    // public set Address(value: string) { this.set('address', value); }
+    // TODO: profile.address still exists in the db, just in case we need it to continue existing buy flows
+    public get Address(): string { return this.get('address'); }
+    public set Address(value: string) { this.set('address', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }

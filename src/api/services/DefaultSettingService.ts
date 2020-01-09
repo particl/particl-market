@@ -69,6 +69,14 @@ export class DefaultSettingService {
         return settings;
     }
 
+    public async upgradeDefaultSettings(): Promise<void> {
+        // remove all "DEFAULT_WALLETS"
+        const foundSettings: resources.Setting[] = await this.settingService.findAllByKey('DEFAULT_WALLET').then(value => value.toJSON());
+        for (const setting of foundSettings) {
+            await this.settingService.destroy(setting.id);
+        }
+    }
+
     /**
      * updates the default profile id Setting
      *

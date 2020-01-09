@@ -172,8 +172,8 @@ export class IoC {
     private bindFiles(filePath: string, target: any, callback: (name: any, value: any) => void): Promise<void> {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
-                this.log.info('bindFiles, filePath:', filePath);
-                this.log.info('bindFiles, files:', files);
+                // this.log.info('bindFiles, filePath:', filePath);
+                // this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;
