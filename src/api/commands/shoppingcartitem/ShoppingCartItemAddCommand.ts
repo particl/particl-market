@@ -14,13 +14,17 @@ import { ShoppingCartItemCreateRequest } from '../../requests/model/ShoppingCart
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
 import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 
 export class ShoppingCartItemAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCartItem> {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -31,31 +35,55 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
 
     /**
      * data.params[]:
-     *  [0]: cartId
-     *  [1]: itemId | hash
+     *  [0]: cartId, number
+     *  [1]: listingItemId, number
      *
      * @param data
      * @returns {Promise<ShoppingCartItem>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCartItem> {
-        if (data.params[0] && data.params[1]) {
-            // check if listingItem hash then get Id and pass as parameter
-            let listingItemId = data.params[1];
-            if (typeof data.params[1] !== 'number') {
-                const listingItem = await this.listingItemService.findOneByHash(listingItemId);
-                listingItemId = listingItem.id;
-            }
-            return this.shoppingCartItemService.create({
-                shopping_cart_id: data.params[0],
-                listing_item_id: listingItemId
-            } as ShoppingCartItemCreateRequest);
-        } else {
-            throw new MessageException('cartId and listingItemId can\'t be blank');
-        }
+        return this.shoppingCartItemService.create({
+            shopping_cart_id: data.params[0],
+            listing_item_id: data.params[1]
+        } as ShoppingCartItemCreateRequest);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: cartId, number
+     *  [1]: listingItemId, number
+     *
+     * @param data
+     * @returns {Promise<ShoppingCartItem>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('cartId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('listingItemId');
+        }
+
+        if (data.params[0] && typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('cartId', 'number');
+        } else if (data.params[1] && typeof data.params[1] === 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
+        }
+
+        // make sure ShoppingCart exists
+        await this.shoppingCartService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ShoppingCart');
+            });
+
+        // make sure ListingItem exists
+        await this.listingItemService.findOne(data.params[1])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
         return data;
     }
 
@@ -74,6 +102,6 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
     }
 
     public example(): string {
-        return 'cartitem ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+        return 'cartitem ' + this.getName() + ' 1 1';
     }
 }
