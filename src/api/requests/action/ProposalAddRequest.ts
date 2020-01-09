@@ -32,6 +32,6 @@ export class ProposalAddRequest extends RequestBody implements ActionRequestInte
     @IsNotEmpty()
     public options: string[];
 
-    public itemHash?: string;
+    public itemHash?: string;   // todo: rename to target?
 
 }

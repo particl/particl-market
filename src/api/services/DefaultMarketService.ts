@@ -76,9 +76,7 @@ export class DefaultMarketService {
      *
      * @param profile
      */
-    public async seedDefaultMarket(profile: resources.Profile): Promise<resources.Market> {
-        // todo: profile param not needed, we should just get the default Profile and make sure the default Market
-        // for that profile exists
+    public async seedDefaultMarketForProfile(profile: resources.Profile): Promise<resources.Market> {
 
         // check whether the default Market for the Profile exists, throws if not found
         // if we're upgrading, the old market is not set as default, so it wont be found
@@ -93,8 +91,7 @@ export class DefaultMarketService {
                 this.log.debug('seedDefaultMarket(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
 
                 // then create the Market
-                const newMarket = await this.createMarket(profile, marketIdentity);
-                this.log.debug('seedDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
+                const newMarket = await this.createDefaultMarket(profile, marketIdentity);
 
                 // then set the Market as default for the Profile
                 await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, newMarket.id);
@@ -136,7 +133,7 @@ export class DefaultMarketService {
      * @param profile
      * @param marketIdentity
      */
-    private async createMarket(profile: resources.Profile, marketIdentity: resources.Identity): Promise<resources.Market> {
+    private async createDefaultMarket(profile: resources.Profile, marketIdentity: resources.Identity): Promise<resources.Market> {
 
         // get the default Market settings
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());

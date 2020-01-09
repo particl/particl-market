@@ -5,12 +5,14 @@
 import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
 import { Proposal } from './Proposal';
+import { Market } from './Market';
 
 export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
     public static RELATIONS = [
         'ListingItem',
-        'Proposal'
+        'Proposal',
+        'Market'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FlaggedItem> {
@@ -44,6 +46,10 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
     public Proposal(): Proposal {
         return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
+    public Market(): Market {
+        return this.belongsTo(Market, 'market_id', 'id');
     }
 
 }

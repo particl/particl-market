@@ -25,6 +25,7 @@ import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCrea
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { IdentityService } from './IdentityService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ProfileService {
 
@@ -49,7 +50,11 @@ export class ProfileService {
             .then(value => value.toJSON());
         const defaultProfileSetting = defaultProfileSettings[0];
 
-        const profile = await this.findOne(+defaultProfileSetting.value, withRelated);
+        const profile = await this.findOne(+defaultProfileSetting.value, withRelated)
+            .catch(reason => {
+                this.log.error('reason: ', JSON.stringify(reason, null, 2));
+                throw new MessageException(reason);
+            });
         if (profile === null) {
             this.log.warn(`Default Profile was not found!`);
             throw new NotFoundException(defaultProfileSetting.value);

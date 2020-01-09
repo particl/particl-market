@@ -80,7 +80,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
             this.isStarted = true;
             await delay(this.INTERVAL);
-            this.log.error('WaitingMessageProcessor: ', i);
+            this.log.info('WaitingMessageProcessor: ', i);
 
             return i;
         }, 0).catch(async reason => {

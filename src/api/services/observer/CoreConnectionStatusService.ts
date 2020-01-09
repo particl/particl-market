@@ -76,7 +76,7 @@ export class CoreConnectionStatusService {
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-            this.log.error('CoreConnectionStatusService: ', i);
+            this.log.info('CoreConnectionStatusService: ', i);
 
             return i;
         }, 0).catch(async reason => {

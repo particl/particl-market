@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {IdentityRepository} from '../api/repositories/IdentityRepository';
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -292,6 +290,7 @@ export const Targets = {
         },
         market: {
             MarketAddCommand: 'MarketAddCommand',
+            MarketFlagCommand: 'MarketFlagCommand',
             MarketListCommand: 'MarketListCommand',
             MarketRemoveCommand: 'MarketRemoveCommand',
             MarketRootCommand: 'MarketRootCommand',

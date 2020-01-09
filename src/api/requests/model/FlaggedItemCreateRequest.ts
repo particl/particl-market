@@ -9,8 +9,8 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class FlaggedItemCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
     public listing_item_id: number;
+    public market_id: number;
 
     @IsNotEmpty()
     public proposal_id: number;

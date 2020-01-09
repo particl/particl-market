@@ -62,8 +62,9 @@ export class ProposalFactory implements ModelFactoryInterface {
             ...smsgData
         } as ProposalCreateRequest;
 
-        // if ProposalCategory.ITEM_VOTE, the item hash is in the title
-        if (proposalMessage.category === ProposalCategory.ITEM_VOTE) {
+        // if ProposalCategory.ITEM_VOTE or MARKET_VOTE, the itemHash/marketReceiveAddress is in the title
+        if (proposalMessage.category === ProposalCategory.ITEM_VOTE
+            || proposalMessage.category === ProposalCategory.MARKET_VOTE) {
             createRequest.item = proposalMessage.title;
         }
 

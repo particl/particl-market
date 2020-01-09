@@ -6,12 +6,14 @@ import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
 import { Identity } from './Identity';
+import { FlaggedItem } from './FlaggedItem';
 
 export class Market extends Bookshelf.Model<Market> {
 
     public static RELATIONS = [
         'Profile',
-        'Identity'
+        'Identity',
+        'FlaggedItem'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Market>> {
@@ -117,6 +119,10 @@ export class Market extends Bookshelf.Model<Market> {
 
     public Identity(): Identity {
         return this.belongsTo(Identity, 'identity_id', 'id');
+    }
+
+    public FlaggedItem(): FlaggedItem {
+        return this.hasOne(FlaggedItem);
     }
 
 }
