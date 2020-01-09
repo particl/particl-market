@@ -39,9 +39,10 @@ import { EscrowCompleteMessage } from '../messages/action/EscrowCompleteMessage'
 import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import { VoteMessage } from '../messages/action/VoteMessage';
 import { ProposalService } from '../services/model/ProposalService';
-import {OrderItemStatus} from '../enums/OrderItemStatus';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddValidator } from '../messages/validator/CommentValidator';
+import { KVS } from 'omp-lib/dist/interfaces/common';
 
 // TODO: rename, refactor
 @injectable()
@@ -277,5 +278,12 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public getKVSValueByKey(values: resources.BidData[] | KVS[], keyToFind: string): string | number | undefined {
+        const kvsValue = _.find(values, value => {
+            return value.key === keyToFind;
+        });
+        return kvsValue ? kvsValue.value : undefined;
     }
 }

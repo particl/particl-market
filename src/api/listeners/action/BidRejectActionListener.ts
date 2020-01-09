@@ -12,17 +12,16 @@ import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent'
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
-import { BaseActionListenr } from '../BaseActionListenr';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidRejectActionService } from '../../services/action/BidRejectActionService';
 import { ProposalService } from '../../services/model/ProposalService';
+import { BaseBidActionListenr } from '../BaseBidActionListenr';
 
-export class BidRejectActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class BidRejectActionListener extends BaseBidActionListenr implements interfaces.Listener, ActionListenerInterface {
 
     public static Event = Symbol(MPAction.MPA_REJECT);
 
@@ -35,7 +34,7 @@ export class BidRejectActionListener extends BaseActionListenr implements interf
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_REJECT, smsgMessageService, bidService, proposalService, Logger);
+        super(MPAction.MPA_REJECT, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
     }
 
     /**
@@ -53,38 +52,19 @@ export class BidRejectActionListener extends BaseActionListenr implements interf
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_REJECT)
-        // - then, update the OrderItem.status and Order.status
+        // - then, save the new Bid (MPA_REJECT) and update the OrderItem.status and Order.status
 
-        return await this.bidService.findOneByHash(actionMessage.bid)
-            .then(async bidModel => {
-                const parentBid: resources.Bid = bidModel.toJSON();
-                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
-                    .then(async listingItemModel => {
-                        const listingItem = listingItemModel.toJSON();
-
-                        const bidCreateParams = {
-                            msgid: smsgMessage.msgid,
-                            listingItem,
-                            bidder: smsgMessage.to,
-                            parentBid
-                        } as BidCreateParams;
-
-                        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
-                            .then(async bidCreateRequest => {
-                                return await this.bidRejectActionService.createBid(actionMessage, bidCreateRequest)
-                                    .then(value => {
-                                        return SmsgMessageStatus.PROCESSED;
-                                    })
-                                    .catch(reason => {
-                                        return SmsgMessageStatus.PROCESSING_FAILED;
-                                    });
-                            });
-
+        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
+            .then(async bidCreateRequest => {
+                return await this.bidRejectActionService.createBid(actionMessage, bidCreateRequest)
+                    .then(value => {
+                        return SmsgMessageStatus.PROCESSED;
+                    })
+                    .catch(reason => {
+                        return SmsgMessageStatus.PROCESSING_FAILED;
                     });
             })
             .catch(reason => {
-                // could not find previous bid
                 this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });

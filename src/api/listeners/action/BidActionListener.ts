@@ -24,8 +24,7 @@ import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
-import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
-import {KVS} from 'omp-lib/dist/interfaces/common';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class BidActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 
@@ -60,22 +59,19 @@ export class BidActionListener extends BaseActionListenr implements interfaces.L
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
 
-        const marketKVS = _.find(actionMessage.objects, value => {
-            return value.key === ActionMessageObjects.BID_ON_MARKET;
-        });
-
-        if (!marketKVS) {
+        const marketAddress = this.getKVSValueByKey(actionMessage.objects || [], ActionMessageObjects.BID_ON_MARKET);
+        if (!marketAddress) {
             this.log.error('BidMessage is missing ActionMessageObjects.BID_ON_MARKET.');
             return SmsgMessageStatus.PROCESSING_FAILED;
         }
 
-        return await this.listingItemService.findOneByHashAndMarketReceiveAddress(actionMessage.item, marketKVS.value as string)
+        return await this.listingItemService.findOneByHashAndMarketReceiveAddress(actionMessage.item, marketAddress as string)
             .then(async listingItemModel => {
                 const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
                 // make sure the ListingItemTemplate exists
                 if (_.isEmpty(listingItem.ListingItemTemplate)) {
-                    const exception = new MessageException('Received a Bid for a ListingItemTemplate that doesnt exists.');
+                    const exception = new MessageException('Received a Bid for a ListingItem which ListingItemTemplate doesnt exists.');
                     this.log.error('ERROR, reason: ', exception.getMessage());
                     return SmsgMessageStatus.PROCESSING_FAILED;
                 }
