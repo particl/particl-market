@@ -59,7 +59,8 @@ export class BidAcceptActionListener extends BaseActionListenr implements interf
         return await this.bidService.findOneByHash(actionMessage.bid)
             .then(async bidModel => {
                 const parentBid: resources.Bid = bidModel.toJSON();
-                return await this.listingItemService.findOneByHash(parentBid.ListingItem.hash)
+
+                return await this.listingItemService.findOneByHashAndMarketReceiveAddress(parentBid.ListingItem.hash, parentBid.ListingItem.market)
                     .then(async listingItemModel => {
                         const listingItem = listingItemModel.toJSON();
 
