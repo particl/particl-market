@@ -2,8 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
-import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -16,7 +14,6 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -32,17 +29,14 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     *  [0]: listingItem: resources.ListingItem
-     *
-     * when data.params[0] is number then findById, else findOneByHash
+     *  [0]: listingItemId
      *
      * @param data
      * @returns {Promise<ListingItem>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        const listingItem: resources.ListingItem = data.params[0];
-        return await this.listingItemService.findOne(listingItem.id);
+        return await this.listingItemService.findOne(data.params[0]);
 
     }
 
@@ -61,29 +55,9 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
             throw new MissingParamException('listingItemId');
         }
 
-        // if (data.params[0] && typeof data.params[0] !== 'number') {
-        //    throw new InvalidParamException('listingItemId', 'number');
-        // }
-
-        let listingItem: resources.ListingItem;
-
-        if (typeof data.params[0] === 'number') {
-            listingItem = await this.listingItemService.findOne(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        } else if (typeof data.params[0] === 'string') {
-            listingItem = await this.listingItemService.findOneByHash(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        } else {
+        if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
         }
-
-        data.params[0] = listingItem;
 
         return data;
     }
@@ -94,12 +68,11 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>          - Numeric - The ID of the listing item we want to retrieve. \n'
-            + '    <hash>                   - [optional] String - The hash of the listing item we want to retrieve. ';
+            + '    <listingItemId>          - number - The Id of the ListingItem we want to retrieve. \n';
     }
 
     public description(): string {
-        return 'Get a listing item via listingItemId.';
+        return 'Get a ListingItem using id.';
     }
 
     public example(): string {
