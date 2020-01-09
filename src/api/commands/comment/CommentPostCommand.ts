@@ -53,6 +53,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      *  [3]: target
      *  [4]: message
      *  [5]: parentComment, resources.Comment, optional
+     *  [6]: market, resources.Market
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -62,7 +63,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const identity: resources.Identity = data.params[0];
-        let toAddress = data.params[1];
+        const toAddress = data.params[1];
         const type  = CommentType[data.params[2]];
         const target = data.params[3];
         const message = data.params[4];
@@ -72,13 +73,6 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
-
-        if (!toAddress) {
-            // TODO: if theres no receiver, post to the identity Profiles default Market
-            // TODO: perhaps we should rather just throw if receiver === undefined
-            const market = await this.marketService.getDefaultForProfile(identity.Profile.id).then(value => value.toJSON());
-            toAddress = market.receiveAddress;
-        }
 
         const commentRequest = {
             sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
@@ -96,9 +90,9 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      *  [0]: identityId, number
-     *  [1]: receiver, string
+     *  [1]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the user address
      *  [0]: type, CommentType
-     *  [3]: target, string
+     *  [3]: target, string, when type === LISTINGITEM_QUESTION_AND_ANSWERS, ListingItem.hash
      *  [4]: message, string
      *  [5]: parentCommentHash, string, optional
      *
@@ -145,12 +139,14 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             }
         }
 
-        // make sure Identity with the id exists
+        // make sure Identity with the id exists, and that the Identity is linked to a Market
+        // TODO: for other Commands: when identityId is passed as a parameter to some command, we should check that the Identity is linked to Market
         const identity: resources.Identity = await this.identityService.findOne(identityId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Identity');
             });
+
         data.params[0] = identity;
 
         // make sure Comment with the hash exists
@@ -162,20 +158,28 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                 });
         }
 
-        // make sure ListingItem with the hash exists
-        if (type === CommentType.LISTINGITEM_QUESTION_AND_ANSWERS) {
-            await this.listingItemService.findOneByHash(target).then(value => value.toJSON())
+        // get the Market the identity is related to and make sure the ListingItem with the hash exists
+        if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
+
+             const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, receiver)
+                 .then(value => value.toJSON())
+                 .catch(() => {
+                    throw new ModelNotFoundException('Market');
+                 });
+             data.params[6] = market;
+
+             await this.listingItemService.findOneByHashAndMarketReceiveAddress(target, market.receiveAddress).then(value => value.toJSON())
                 .catch(() => {
                     throw new ModelNotFoundException('ListingItem');
                 });
         }
 
         if (!message || message.trim() === '') {
-            throw new MessageException('The comment text cannot be empty.');
+            throw new MessageException('The Comment text cannot be empty.');
         }
 
         if (message.length > 1000) {
-            throw new MessageException('The maximum length for the comment text cannot exceed 1000 characters.');
+            throw new MessageException('The maximum length for the Comment text cannot exceed 1000 characters.');
         }
 
         return data;
@@ -196,12 +200,12 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'Commands for posting comments.';
+        return 'Commands for posting Comments.';
     }
 
     public example(): string {
         return this.getName() + ' comment post 1 \'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW\' \'LISTINGITEM_QUESTION_AND_ANSWERS\'' +
-            ' \'e1ccdf1201676a0f56aa1c5f5c4c1a9c0cef205c9cf6b51a40a443da5d47aae4\' \'testMessage\'';
+            ' \'e1ccdf1201676a0f56aa1c5f5c4c1a9c0cef205c9cf6b51a40a443da5d47aae4\' \'message\'';
     }
 
 }
