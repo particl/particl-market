@@ -8,8 +8,6 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { FavoriteItemService } from '../../services/model/FavoriteItemService';
-import { ListingItemService } from '../../services/model/ListingItemService';
-import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
@@ -27,9 +25,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.FavoriteItemService) private favoriteItemService: FavoriteItemService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.model.FavoriteItemService) private favoriteItemService: FavoriteItemService
     ) {
         super(Commands.FAVORITE_REMOVE);
         this.log = new Logger(__filename);
@@ -38,13 +34,12 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
     /**
      *
      * data.params[]:
-     *  [0]: favoriteItem: resources.FavoriteItem
+     *  [0]: favoriteItemId
      *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const favoriteItem: resources.FavoriteItem = data.params[0];
-        return this.favoriteItemService.destroy(favoriteItem.id);
+        return this.favoriteItemService.destroy(data.params[0]);
     }
 
     /**
@@ -66,13 +61,11 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
         }
 
         // make sure FavoriteItem exists
-        const favoriteItem: resources.FavoriteItem = await this.favoriteItemService.findOne(data.params[0])
+        await this.favoriteItemService.findOne(data.params[0])
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('FavoriteItem');
             });
-
-        data.params[0] = favoriteItem;
 
         return data;
     }
