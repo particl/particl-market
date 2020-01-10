@@ -15,6 +15,7 @@ export class OrderSearchParams extends BaseSearchParams {
     public status: OrderItemStatus;
     public buyerAddress: string;
     public sellerAddress: string;
+    public market: string;
 
 }
 // tslint:enable:variable-name

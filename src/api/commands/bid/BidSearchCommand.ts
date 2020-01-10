@@ -136,7 +136,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
 
     public usage(): string {
         return this.getName()
-            + ' <page> <pageLimit> <order> <orderField> [listingItemId] [type] [searchString] [bidderAddress...] ';
+            + ' <page> <pageLimit> <order> <orderField> [listingItemId] [type] [searchString] [market] [bidderAddress...] ';
     }
 
     public help(): string {
@@ -151,6 +151,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             + '                                The status of the Bids we want to search for. \n'
             + '    <searchString>           - [optional] string - A string that is used to \n'
             + '                                find Bids related to ListingItems by their titles and descriptions. \n'
+            + '    <market>                 - [optional] string - Market receiveAddress.\n'
             + '    <bidderAddress>          - [optional] string(s) - The addresses of the bidders we want to search Bids for. ';
 
     }

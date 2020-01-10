@@ -47,9 +47,16 @@ export class Order extends Bookshelf.Model<Order> {
             .query( qb => {
                 qb.join('order_items', 'orders.id', 'order_items.order_id');
 
-                if (options.listingItemId) {
+                if (options.market || options.listingItemId) {
                     qb.join('bids', 'order_items.bid_id', 'bids.id');
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                    qb.join('listing_items', 'bid.listing_item_id', 'listing_items.id');
+
+                    if (options.market) {
+                        qb.where('listing_items.market', '=', options.market);
+                    }
+                    if (options.listingItemId) {
+                        qb.where('bids.listing_item_id', '=', options.listingItemId);
+                    }
                 }
 
                 if (options.status && typeof options.status === 'string') {

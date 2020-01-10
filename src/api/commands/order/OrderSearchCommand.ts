@@ -46,6 +46,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
      *  [5]: status, OrderItemStatus, optional
      *  [6]: buyerAddress, string, optional
      *  [7]: sellerAddress, string, optional
+     *  [8]: market, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
@@ -61,13 +62,15 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
         const status = data.params[5];
         const buyerAddress = data.params[6];
         const sellerAddress = data.params[7];
+        const market = data.params[8];
 
         const orderSearchParams = {
             page, pageLimit, order, orderField,
             listingItemId,
             status,
             buyerAddress,
-            sellerAddress
+            sellerAddress,
+            market
         } as OrderSearchParams;
 
         return await this.orderService.search(orderSearchParams);
@@ -80,9 +83,10 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: listingItemId, number, optional
-     *  [5]: status, OrderItemStatus, optional
+     *  [5]: status, OrderItemStatus, optional // TODO: use OrderStatus
      *  [6]: buyerAddress, string, optional
      *  [7]: sellerAddress, string, optional
+     *  [8]: market, string, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -94,6 +98,19 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
         const status = data.params[5];              // optional
         const buyerAddress = data.params[6];        // optional
         const sellerAddress = data.params[7];       // optional
+        const market = data.params[8];              // optional
+
+        if (listingItemId && typeof listingItemId !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
+        } else if (status && typeof status !== 'string') {
+            throw new InvalidParamException('status', 'string');
+        } else if (buyerAddress && typeof buyerAddress !== 'string') {
+            throw new InvalidParamException('buyerAddress', 'string');
+        } else if (sellerAddress && typeof sellerAddress !== 'string') {
+            throw new InvalidParamException('sellerAddress', 'string');
+        } else if (market && typeof market !== 'string') {
+            throw new InvalidParamException('market', 'string');
+        }
 
         // * -> undefined
         data.params[4] = listingItemId !== '*' ? listingItemId : undefined;
@@ -105,6 +122,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
         }
         data.params[6] = buyerAddress !== '*' ? buyerAddress : undefined;
         data.params[7] = sellerAddress !== '*' ? sellerAddress : undefined;
+        data.params[8] = market !== '*' ? market : undefined;
 
         return data;
     }
