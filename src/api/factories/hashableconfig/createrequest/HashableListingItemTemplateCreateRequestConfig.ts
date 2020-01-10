@@ -10,6 +10,9 @@ export class HashableListingItemTemplateCreateRequestConfig extends BaseHashable
         from: 'generatedAt',
         to: HashableCommonField.GENERATED
     }, {
+        from: 'seller',
+        to: HashableItemField.SELLER
+    }, {
         from: 'itemInformation.title',
         to: HashableItemField.TITLE
     }, {
