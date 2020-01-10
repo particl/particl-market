@@ -14,6 +14,12 @@ export enum SearchOrderField {
     DATE = 'DATE'
 }
 
+export enum BidSearchOrderField {
+    POSTED_AT = 'posted_at',
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
 export enum CommentSearchOrderField {
     HASH = 'hash',
     SENDER = 'sender',
@@ -21,7 +27,7 @@ export enum CommentSearchOrderField {
     TARGET = 'target',
     MESSAGE = 'message',
     TYPE = 'type',
-    POSTED_AT = 'posted_at' ,
+    POSTED_AT = 'posted_at',
     EXPIRED_AT = 'expired_at',
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at',

@@ -80,13 +80,6 @@ export class BidService {
         return smsgMessage;
     }
 
-    public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        const params = {
-            listingItemHash: hash
-        } as BidSearchParams;
-        return await this.search(params);
-    }
-
     public async unlockBidOutputs(cancelBid: resources.Bid): Promise<void> {
 
         // if identity is found for cancelBid.ParentBid.bidder, then we're the bidder
@@ -110,7 +103,7 @@ export class BidService {
     }
 
     /**
-     * searchBy Bid using given BidSearchParams
+     * search Bids using given BidSearchParams
      *
      * @param options
      * @param withRelated
@@ -118,14 +111,7 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-
-        // if item hash was given, set the item id
-        if (options.listingItemHash) {
-            this.log.debug('findOneByHash: ', options.listingItemHash);
-            const foundListing: resources.ListingItem = await this.listingItemService.findOneByHash(options.listingItemHash, false)
-                .then(value => value.toJSON());
-            options.listingItemId = foundListing.id;
-        }
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.bidRepo.search(options, withRelated);
     }
 
@@ -135,7 +121,7 @@ export class BidService {
         return await this.search({
             listingItemId,
             bidders: [ bidder ],
-            ordering: SearchOrder.DESC
+            order: SearchOrder.DESC
         } as BidSearchParams, true)[0];
     }
 

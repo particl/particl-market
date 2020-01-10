@@ -43,10 +43,11 @@ export class BidRepository {
     /**
      *
      * @param options, BidSearchParams
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async search(options: BidSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Bid>> {
-        return this.BidModel.search(options, withRelated);
+        return this.BidModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Bid> {

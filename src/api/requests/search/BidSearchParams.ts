@@ -2,29 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { RequestBody } from '../../../core/api/RequestBody';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { BaseSearchParams } from './BaseSearchParams';
+import { BidSearchOrderField } from '../../enums/SearchOrderField';
 
 // tslint:disable:variable-name
-export class BidSearchParams extends RequestBody {
+export class BidSearchParams extends BaseSearchParams {
 
-    // @IsNotEmpty()
+    public orderField = BidSearchOrderField.UPDATED_AT;
+
     public listingItemId: number;
-    public listingItemHash: string; // if hash is given, the service will fetch the id
-    public ordering: SearchOrder;
-
-    // order type filtering
     public type: MPAction | OrderItemStatus;
-
-    // searchBy by string
     public searchString: string;
-
-    // pagination
-    public page: number;
-    public pageLimit: number;
-
     public bidders: string[];
 
 }

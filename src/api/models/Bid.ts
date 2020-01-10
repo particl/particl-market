@@ -2,17 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/search/BidSearchParams';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
-import { OrderItemStatus } from '../enums/OrderItemStatus';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { BidSearchOrderField } from '../enums/SearchOrderField';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -86,29 +85,24 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
-    public static async search(searchParams: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
+    public static async searchBy(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
-        // TODO: redo the type search
-
-        searchParams.ordering = searchParams.ordering ? searchParams.ordering : SearchOrder.ASC;
-        searchParams.page = searchParams.page ? searchParams.page : 0;
-        searchParams.pageLimit = searchParams.pageLimit ? searchParams.pageLimit : 10;
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || BidSearchOrderField.UPDATED_AT;
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
 
-                if (searchParams.listingItemId) {
-                    qb.where('bids.listing_item_id', '=', searchParams.listingItemId);
+                if (options.listingItemId) {
+                    qb.where('bids.listing_item_id', '=', options.listingItemId);
                 }
 
-                if (searchParams.type
-                    && (searchParams.type === MPAction.MPA_ACCEPT
-                        || searchParams.type === MPAction.MPA_BID
-                        || searchParams.type === MPAction.MPA_CANCEL
-                        || searchParams.type === MPAction.MPA_REJECT)) {
-                    qb.where('bids.type', '=', searchParams.type);
+                if (options.type) {
+                    qb.where('bids.type', '=', options.type);
                 }
-
+                /* all these should be Bids now...
                 if (searchParams.type
                     && (searchParams.type === OrderItemStatus.AWAITING_ESCROW
                         || searchParams.type === OrderItemStatus.COMPLETE
@@ -118,23 +112,24 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
                     qb.where('order_items.status', '=', searchParams.type);
                 }
+                */
 
-                if (searchParams.searchString) {
+                if (options.searchString) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    qb.where('item_informations.title', 'LIKE', '%' + searchParams.searchString + '%')
-                        .orWhere('item_informations.short_description', 'LIKE', '%' + searchParams.searchString + '%')
-                        .orWhere('item_informations.long_description', 'LIKE', '%' + searchParams.searchString + '%');
+                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%')
+                        .orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%')
+                        .orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
                 }
 
-                if (!_.isEmpty(searchParams.bidders)) {
-                    qb.whereIn('bids.bidder', searchParams.bidders);
+                if (!_.isEmpty(options.bidders)) {
+                    qb.whereIn('bids.bidder', options.bidders);
                 }
 
             })
-            .orderBy('bids.updated_at', searchParams.ordering)
+            .orderBy('bids.' + options.orderField, options.order)
             .query({
-                limit: searchParams.pageLimit,
-                offset: searchParams.page * searchParams.pageLimit
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {
@@ -182,8 +177,6 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public OrderItem(): OrderItem {
-        // return this.hasMany(OrderItem);
-        // model.hasOne(Target, [foreignKey], [foreignKeyTarget])
         return this.hasOne(OrderItem, 'bid_id', 'id');
     }
 
@@ -191,7 +184,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
 
-    // ListingItemTemplate can haz a parent ListingItemTemplate
     public ParentBid(): Bid {
         return this.belongsTo(Bid, 'parent_bid_id', 'id');
     }

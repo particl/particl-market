@@ -118,6 +118,7 @@ export class Comment extends Bookshelf.Model<Comment> {
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
             });
+
         if (withRelated) {
             return await commentCollection.fetchAll({
                 withRelated: this.RELATIONS

@@ -59,16 +59,15 @@ export class CommentService {
     }
 
     /**
-     * searchBy Comments using given CommentSearchParams
+     * search Comments using given CommentSearchParams
      *
      * @param {CommentSearchParams} options
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<Comment>>}
      */
     @validate()
-    public async search(@request(CommentSearchParams) options: CommentSearchParams,
-                        withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
-        this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
+    public async search(@request(CommentSearchParams) options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.commentRepo.search(options, withRelated);
     }
 

@@ -59,7 +59,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      *  [7]: parentComment, resources.Comment, optional
      *
      * @param data
-     * @returns {Promise<Comment>}
+     * @returns {Promise<Bookshelf.Collection<Comment>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
@@ -168,7 +168,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public usage(): string {
-        return this.getName() + '  <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [parentCommentHash]';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [parentCommentHash]';
     }
 
     public help(): string {
