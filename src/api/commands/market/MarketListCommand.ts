@@ -78,12 +78,12 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId>';
+        return this.getName() + ' [profileId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    [profileId]              - Number - The ID of the Profile. \n';
+            + '    <profileId>              - number - The ID of the Profile. \n';
     }
 
     public description(): string {

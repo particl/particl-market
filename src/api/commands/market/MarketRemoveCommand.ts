@@ -44,7 +44,7 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
 
-        // TODO: add removal of all other market related data
+        // TODO: make sure all other market related data is removed
         return this.marketService.destroy(market.id);
     }
 
