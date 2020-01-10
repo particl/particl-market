@@ -53,7 +53,7 @@ export class OrderService {
      *
      * @param options
      * @param withRelated
-     * @returns {Promise<Bookshelf.Collection<Bid>>}
+     * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     @validate()
     public async search(@request(OrderSearchParams) options: OrderSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Order>> {

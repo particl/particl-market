@@ -176,8 +176,9 @@ export class CommandEnumType extends Enum<Command> {
     public ORDERITEM_HISTORY: Command   = new Command('orderitemhistory', 'history', false);
     public ORDERITEM_STATUS: Command    = new Command('orderitemstatus', 'status', false);
     public ORDERITEM_SHIP: Command      = new Command('orderitemship', 'ship', false);
+    public ORDERITEM_SEARCH: Command    = new Command('orderitemsearch', 'search', false);
     public ORDERITEM_ROOT: Command      = new Command('orderitem', 'orderitem', true,
-        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
+        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP, this.ORDERITEM_SEARCH], EnvironmentType.ALL);
 
     public PRICETICKER_ROOT: Command    = new Command('priceticker', 'priceticker', true);
 

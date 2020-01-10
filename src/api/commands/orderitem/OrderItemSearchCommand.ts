@@ -7,33 +7,34 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { OrderService } from '../../services/model/OrderService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { Order } from '../../models/Order';
-import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { OrderSearchOrderField } from '../../enums/SearchOrderField';
+import { OrderItemSearchOrderField } from '../../enums/SearchOrderField';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { CommentType } from '../../enums/CommentType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { OrderItem } from '../../models/OrderItem';
+import { OrderItemService } from '../../services/model/OrderItemService';
+import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchParams';
 
-export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
+export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService
+        @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
-        super(Commands.ORDER_SEARCH);
+        super(Commands.ORDERITEM_SEARCH);
         this.log = new Logger(__filename);
     }
 
     public getAllowedSearchOrderFields(): string[] {
-        return EnumHelper.getValues(OrderSearchOrderField) as string[];
+        return EnumHelper.getValues(OrderItemSearchOrderField) as string[];
     }
 
     /**
@@ -52,7 +53,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Order>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<OrderItem>> {
 
         const page = data.params[0];
         const pageLimit = data.params[1];
@@ -71,9 +72,9 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
             buyerAddress,
             sellerAddress,
             market
-        } as OrderSearchParams;
+        } as OrderItemSearchParams;
 
-        return await this.orderService.search(orderSearchParams);
+        return await this.orderItemService.search(orderSearchParams);
     }
 
     /**
@@ -144,7 +145,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
     }
 
     public description(): string {
-        return 'Search for Orders by listingItemId, orderItemStatus, or addresses. ';
+        return 'Search for OrderItems by listingItemId, orderItemStatus, or addresses. ';
     }
 
     public example(): string {

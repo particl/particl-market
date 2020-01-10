@@ -9,6 +9,7 @@ import { OrderItem } from '../models/OrderItem';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { OrderItemSearchParams } from '../requests/search/OrderItemSearchParams';
 
 export class OrderItemRepository {
 
@@ -28,6 +29,16 @@ export class OrderItemRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<OrderItem> {
         return this.OrderItemModel.fetchById(id, withRelated);
+    }
+
+    /**
+     *
+     * @param options, OrderItemSearchParams
+     * @param withRelated
+     * @returns {Promise<Bookshelf.Collection<OrderItem>>}
+     */
+    public async search(options: OrderItemSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<OrderItem>> {
+        return this.OrderItemModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<OrderItem> {

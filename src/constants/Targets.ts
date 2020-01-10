@@ -308,7 +308,8 @@ export const Targets = {
             OrderItemHistoryCommand: 'OrderItemHistoryCommand',
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemShipCommand: 'OrderItemShipCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemSearchCommand: 'OrderItemSearchCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',

@@ -14,6 +14,7 @@ import { OrderItem } from '../../models/OrderItem';
 import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../requests/model/OrderItemUpdateRequest';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchParams';
 
 export class OrderItemService {
 
@@ -37,6 +38,19 @@ export class OrderItemService {
             throw new NotFoundException(id);
         }
         return orderItem;
+    }
+
+    /**
+     * searchBy OrderItems using given OrderItemSearchParams
+     *
+     * @param options
+     * @param withRelated
+     * @returns {Promise<Bookshelf.Collection<OrderItem>>}
+     */
+    @validate()
+    public async search(@request(OrderItemSearchParams) options: OrderItemSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<OrderItem>> {
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        return await this.orderItemRepo.search(options, withRelated);
     }
 
     @validate()

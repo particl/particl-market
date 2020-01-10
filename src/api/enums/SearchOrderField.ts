@@ -24,6 +24,11 @@ export enum OrderSearchOrderField {
     CREATED_AT = 'created_at'
 }
 
+export enum OrderItemSearchOrderField {
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
 export enum CommentSearchOrderField {
     HASH = 'hash',
     SENDER = 'sender',
