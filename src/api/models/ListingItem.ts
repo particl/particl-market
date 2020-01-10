@@ -314,10 +314,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
 
-    public Proposal(): Proposal {
-        return this.belongsTo(Proposal, 'proposal_id', 'id');
-    }
-
     public Bids(): Collection<Bid> {
         return this.hasMany(Bid, 'listing_item_id', 'id');
     }

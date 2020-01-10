@@ -15,7 +15,6 @@ import { ProposalResult } from '../../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../../requests/model/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../../requests/model/ProposalResultUpdateRequest';
 import { ProposalCategory } from '../../enums/ProposalCategory';
-import { MessageException } from '../../exceptions/MessageException';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
 
@@ -97,22 +96,30 @@ export class ProposalResultService {
     }
 
     /**
-     * check whether ListingItem should be removed or not based on ProposalResult
+     * check whether FlaggedItem should be removed or not based on ProposalResult
      *
      * @param {"resources".ProposalResult} proposalResult
-     * @param listingItem
+     * @param flaggedItem
      * @returns {Promise<boolean>}
      */
-    public async shouldRemoveListingItem(proposalResult: resources.ProposalResult, listingItem: resources.ListingItem): Promise<boolean> {
+    public async shouldRemoveFlaggedItem(proposalResult: resources.ProposalResult, flaggedItem: resources.FlaggedItem): Promise<boolean> {
 
-        // make sure the Proposal is for removing an item
-        if (proposalResult.Proposal.category !== ProposalCategory.ITEM_VOTE) {
-            throw new MessageException('Invalid Proposal category.');
-        }
+        let removalPercentage = 0.1;
 
-        // we dont want to remove ListingItems that have related Bids
-        if (!_.isEmpty(listingItem.Bids)) {
-            return false;
+        switch (proposalResult.Proposal.category) {
+            case ProposalCategory.ITEM_VOTE:
+                // we dont want to remove ListingItems that have related Bids
+                if (!_.isEmpty(flaggedItem.ListingItem!.Bids)) {
+                    return false;
+                }
+                removalPercentage = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE);
+                break;
+            case ProposalCategory.MARKET_VOTE:
+                removalPercentage = 1;  // TODO: create LISTING_MARKET_REMOVE_PERCENTAGE
+                break;
+            case ProposalCategory.PUBLIC_VOTE:
+            default:
+                return false;
         }
 
         const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
@@ -130,18 +137,16 @@ export class ProposalResultService {
 
         const blockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const networkSupply = blockchainInfo.moneysupply * 100000000; // vote weights are in satoshis
-
-        const removalPercentage: number = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE) || 0.1;
         const voteCountNeededForRemoval = (networkSupply / 100) * removalPercentage;
 
         if ((removeOptionResult.weight - keepOptionResult.weight) > voteCountNeededForRemoval) {
-            this.log.debug('Votes for ListingItem removal exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
+            this.log.debug('Votes for FlaggedItem removal exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
             this.log.debug('removeOptionResult.weight: ', removeOptionResult.weight);
             this.log.debug('keepOptionResult.weight: ', keepOptionResult.weight);
             this.log.debug('count: ' + (removeOptionResult.weight - keepOptionResult.weight) + ' / ' + voteCountNeededForRemoval);
             return true;
         } else {
-            this.log.debug('Votes for ListingItem removal do not exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
+            this.log.debug('Votes for FlaggedItem removal do not exceed ' + removalPercentage + '% (' + voteCountNeededForRemoval + ')');
             this.log.debug('removeOptionResult.weight: ', removeOptionResult.weight);
             this.log.debug('keepOptionResult.weight: ', keepOptionResult.weight);
             this.log.debug('count: ' + (removeOptionResult.weight - keepOptionResult.weight) + ' / ' + voteCountNeededForRemoval);

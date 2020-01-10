@@ -18,7 +18,7 @@ import { CoreMessageProcessor } from '../../messageprocessors/CoreMessageProcess
 import { ProposalResultProcessor } from '../../messageprocessors/ProposalResultProcessor';
 import { DefaultSettingService } from '../DefaultSettingService';
 import { SettingService } from '../model/SettingService';
-import {CoreCookieService, CoreCookieServiceStatus} from './CoreCookieService';
+import { CoreCookieService } from './CoreCookieService';
 import { SmsgService } from '../SmsgService';
 import pForever from 'pm-forever';
 import delay from 'pm-delay';

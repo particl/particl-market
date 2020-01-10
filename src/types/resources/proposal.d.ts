@@ -24,9 +24,11 @@ declare module 'resources' {
 
         createdAt: Date;
         updatedAt: Date;
+
         ProposalOptions: ProposalOption[];
         ProposalResults: ProposalResult[];
-        ListingItem: ListingItem;
+        FlaggedItem: FlaggedItem;
+
     }
 
 }

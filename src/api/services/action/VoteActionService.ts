@@ -37,6 +37,7 @@ import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
 import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 import { MarketService } from '../model/MarketService';
+import { FlaggedItemService } from '../model/FlaggedItemService';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -61,6 +62,7 @@ export class VoteActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
@@ -233,9 +235,10 @@ export class VoteActionService extends BaseActionService {
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
                 voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
-            await this.listingItemService.setRemovedFlag(listingItem.hash, voteRequest.market.receiveAddress,
-                voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+            await this.listingItemService.setRemovedFlag(listingItem.id, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
             this.log.debug('vote(), removed flag set');
+        } else if (voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
+            // TODO: await this.marketService.setRemovedFlag()
         }
 
         if (msgids.length === 0) {
@@ -348,42 +351,9 @@ export class VoteActionService extends BaseActionService {
         proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
         const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
-        // after recalculating the ProposalResult, if proposal is of category ITEM_VOTE,
-        // we can now check whether the ListingItem should be removed or not
-        // TODO: add support for MARKET_VOTE
-        if (proposal.category === ProposalCategory.ITEM_VOTE) {
+        // after recalculating the ProposalResult, we can now flag the ListingItem/Market as removed, if needed
+        await this.flaggedItemService.flagAsRemovedIfNeeded(proposal.FlaggedItem.id, proposalResult, vote!);
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
-                proposalResult.Proposal.item, proposalResult.Proposal.market).then(value => value.toJSON());
-
-            await this.proposalResultService.shouldRemoveListingItem(proposalResult, listingItem)
-                .then(async remove => {
-
-                    // TODO: if user has voted for removal, then the item should stay removed, blacklist
-                    // update the removed flag if its value is different from what it should be
-                    if (remove) {
-                        this.log.debug('updating the ListingItem removed flag to: ' + remove);
-                        // just set the remove flag, dont destroy yet, the ListingItem should get removed by the ProposalResultProcessor
-                        // await this.listingItemService.destroy(listingItem.id);
-                        await this.listingItemService.setRemovedFlag(proposal.item, proposal.market,
-                            votedProposalOption.description === ItemVote.REMOVE.toString());
-                    }
-                });
-
-            // if this vote is mine lets set/unset the removed flag
-            // todo: this is problematic with multiple profiles, what if we have multiple profiles and the other profile didnt vote to remove the item?
-            const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(proposal.market).then(value => value.toJSON());
-            // todo: fix this hack, doesnt work with multiple profiles...
-            for (const market of markets) {
-                const addressInfo = await this.coreRpcService.getAddressInfo(market.Identity.wallet, voteMessage.voter);
-                if (addressInfo && addressInfo.ismine) {
-                    this.log.debug('isMine: ', addressInfo.ismine);
-                    await this.listingItemService.setRemovedFlag(proposal.item, proposal.market,
-                        votedProposalOption.description === ItemVote.REMOVE.toString());
-                }
-            }
-
-        }
         return vote;
     }
 

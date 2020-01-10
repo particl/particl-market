@@ -17,7 +17,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ProposalResults',
         'ProposalResults.ProposalOptionResults',
         'ProposalResults.ProposalOptionResults.ProposalOption',
-        'FlaggedItem'
+        'FlaggedItem',
+        'FlaggedItem.ListingItem',
+        'FlaggedItem.Market'
     ];
 
     /**
@@ -139,8 +141,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Market(): string { return this.get('market'); }
     public set Market(value: string) { this.set('market', value); }
 
-    public get TimeStart(): Date { return this.get('timeStart'); }
-    public set TimeStart(value: Date) { this.set('timeStart', value); }
+    public get TimeStart(): number { return this.get('timeStart'); }
+    public set TimeStart(value: number) { this.set('timeStart', value); }
 
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }

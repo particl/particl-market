@@ -128,11 +128,11 @@ describe('ProposalResult', () => {
 
         log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
         proposalResult.ProposalOptionResults[1].weight = 1000 * 100000000; // vote weights are in satoshis
-        let shouldRemove: boolean = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
+        let shouldRemove: boolean = await proposalResultService.shouldRemoveFlaggedItem(proposalResult, listingItem);
         expect(shouldRemove).toBeFalsy();
 
         proposalResult.ProposalOptionResults[1].weight = 10000 * 100000000; // vote weights are in satoshis
-        shouldRemove = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
+        shouldRemove = await proposalResultService.shouldRemoveFlaggedItem(proposalResult, listingItem);
         expect(shouldRemove).toBeTruthy();
     });
 

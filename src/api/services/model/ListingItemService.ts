@@ -381,13 +381,13 @@ export class ListingItemService {
     }
 
     /**
-     * Flag listing as removed
+     * Flag ListingItem as removed
      *
      * @returns {Promise<void>}
      */
-    public async setRemovedFlag(itemHash: string, marketReceiveAddress: string, removed: boolean): Promise<void> {
-        const listingItem: resources.ListingItem = await this.findOneByHashAndMarketReceiveAddress(itemHash, marketReceiveAddress)
-            .then(value => value.toJSON());
+    // public async setRemovedFlag(itemHash: string, marketReceiveAddress: string, removed: boolean): Promise<void> {
+    public async setRemovedFlag(id: number, removed: boolean): Promise<void> {
+        const listingItem: resources.ListingItem = await this.findOne(id).then(value => value.toJSON());
         await this.listingItemRepo.update(listingItem.id, { removed });
      }
 
