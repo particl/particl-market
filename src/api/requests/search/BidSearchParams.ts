@@ -15,6 +15,7 @@ export class BidSearchParams extends BaseSearchParams {
     public listingItemId: number;
     public type: MPAction | OrderItemStatus;
     public searchString: string;
+    public market: string;
     public bidders: string[];
 
 }

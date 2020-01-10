@@ -21,6 +21,8 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BidSearchOrderField } from '../../enums/SearchOrderField';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MPActionExtended} from '../../enums/MPActionExtended';
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -49,7 +51,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
      *  [4]: listingItemId, number, optional
      *  [5]: type, ActionMessageTypes, optional
      *  [6]: searchString, string, optional
-     *  [7...]: bidder: particl address, optional
+     *  [7]: market, string, optional
+     *  [8...]: bidder: particl address, optional
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -64,17 +67,13 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         const listingItemId = data.params[4];
         const type = data.params[5];
         const searchString = data.params[6];
+        const market = data.params[7];
 
         // TODO: maybe we should also add support for bid expiry at some point
 
-        if (data.params[6]) {
-            // shift so that data.params contains only the bidders
-            data.params.shift();
-            data.params.shift();
-            data.params.shift();
-            data.params.shift();
-            data.params.shift();
-            data.params.shift();
+        if (data.params.length > 8) {
+            // remove items so that data.params contains only the bidders
+            data.params.splice(0, 8);
         } else {
             // no bidders
             data.params = [];
@@ -101,7 +100,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
      *  [4]: listingItemId, number, optional
      *  [5]: type, ActionMessageTypes, optional
      *  [6]: searchString, string, optional
-     *  [7...]: bidder: particl address, optional
+     *  [7]: market, string, optional
+     *  [8...]: bidder: particl address, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -112,11 +112,24 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         const listingItemId = data.params[4];       // optional
         const type = data.params[5];                // optional
         const searchString = data.params[6];        // optional
+        const market = data.params[6];              // optional
+
+        if (listingItemId && typeof listingItemId !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
+        } else if (type && typeof type !== 'string') {
+            throw new InvalidParamException('type', 'string');
+        } else if (searchString && typeof searchString !== 'string') {
+            throw new InvalidParamException('searchString', 'string');
+        } else if (market && typeof market !== 'string') {
+            throw new InvalidParamException('market', 'string');
+        }
+
 
         // * -> undefined
         data.params[4] = listingItemId !== '*' ? listingItemId : undefined;
         data.params[5] = type ? this.validateStatus(type) : undefined;
         data.params[6] = searchString !== '*' ? searchString : undefined;
+        data.params[7] = market !== '*' ? market : undefined;
 
         return data;
     }
@@ -151,7 +164,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             + ' MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
 
-    private validateStatus(status: string): MPAction | OrderItemStatus | undefined {
+    private validateStatus(status: string): MPAction | MPActionExtended | OrderItemStatus | undefined {
         switch (status) {
             case 'MPA_BID':
                 return MPAction.MPA_BID;
@@ -161,6 +174,15 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 return MPAction.MPA_REJECT;
             case 'MPA_CANCEL':
                 return MPAction.MPA_CANCEL;
+            case 'MPA_COMPLETE':
+                return MPActionExtended.MPA_COMPLETE;
+            case 'MPA_REFUND':
+                return MPActionExtended.MPA_REFUND;
+            case 'MPA_RELEASE':
+                return MPActionExtended.MPA_RELEASE;
+            case 'MPA_SHIP':
+                return MPActionExtended.MPA_SHIP;
+/*
             case 'AWAITING_ESCROW':
                 return OrderItemStatus.AWAITING_ESCROW;
             case 'ESCROW_LOCKED':
@@ -171,6 +193,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 return OrderItemStatus.SHIPPING;
             case 'COMPLETE':
                 return OrderItemStatus.COMPLETE;
+*/
             case '*':
                 return undefined;
             default:
