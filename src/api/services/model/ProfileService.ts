@@ -46,7 +46,7 @@ export class ProfileService {
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
 
-        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.APP_DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileSetting = defaultProfileSettings[0];
 

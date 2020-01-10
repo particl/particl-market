@@ -21,10 +21,8 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { SettingService } from '../../services/model/SettingService';
-import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 
 export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -54,64 +52,9 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
-
-        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_NAME, market.name, profile);
-        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY, market.receiveKey, profile);
-        await this.createOrUpdateSetting(SettingValue.DEFAULT_MARKETPLACE_ADDRESS, market.receiveAddress, profile);
-
-        // load the wallet unless already loaded
-        await this.coreRpcService.walletLoaded(market.Identity.wallet).
-        then(async isLoaded => {
-            if (!isLoaded) {
-                await this.coreRpcService.loadWallet(market.Identity.wallet)
-                    .catch(reason => {
-                        this.log.debug('wallet: ' + market.name + ' already loaded.');
-                    });
-            }
-        });
-
-        // import the pk's
-        await this.defaultMarketService.importMarketPrivateKey(market.Identity.wallet, market.receiveKey, market.receiveAddress);
-        if (market.publishKey && market.publishAddress && (market.receiveKey !== market.publishKey)) {
-            await this.defaultMarketService.importMarketPrivateKey(market.Identity.wallet, market.publishKey, market.publishAddress);
-        }
-
-        // set secure messaging to use the default wallet
-        await this.coreRpcService.smsgSetWallet(market.Identity.wallet);
-
+        await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
         return await this.marketService.getDefaultForProfile(profile.id);
     }
-
-
-    public async createOrUpdateSetting(key: string, newValue: string, profile: resources.Profile): Promise<resources.Setting | undefined> {
-
-
-        // if set already, update, if not set, create,
-        const foundSettings: resources.Setting[] = await this.settingService.findAllByKeyAndProfileId(key, profile.id)
-            .then(value => value.toJSON());
-
-        this.log.debug('foundSettings: ', JSON.stringify(foundSettings, null, 2));
-
-        if (!_.isEmpty(foundSettings)) {
-            const foundSettingWithTheKey = foundSettings[0];
-            const settingRequest = {
-                key,
-                value: newValue
-            } as SettingUpdateRequest;
-
-            return await this.settingService.update(foundSettingWithTheKey.id, settingRequest).then(value => value.toJSON());
-        } else {
-            const settingRequest = {
-                profile_id: profile.id,
-                key,
-                value: newValue
-            } as SettingCreateRequest;
-
-            return await this.settingService.create(settingRequest).then(value => value.toJSON());
-        }
-
-    }
-
 
     /**
      * data.params[]:

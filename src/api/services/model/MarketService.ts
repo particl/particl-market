@@ -43,12 +43,12 @@ export class MarketService {
 
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
         const marketIdSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_ID;
+            return value.key === SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID;
         });
 
         if (_.isEmpty(marketIdSetting)) {
-            this.log.error(new MessageException(SettingValue.DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
-            throw new MessageException(SettingValue.DEFAULT_MARKETPLACE_ID + ' not set.');
+            this.log.error(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
+            throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.');
         }
         this.log.debug('getDefaultForProfile(), marketIdSetting: ', marketIdSetting!.value);
         return await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);

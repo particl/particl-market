@@ -227,14 +227,14 @@ export class ServerStartedListener implements interfaces.Listener {
 
         const allSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
         const foundSettings: resources.Setting[] = _.filter(allSettings, (value) => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME
-                || value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY
-                || value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_NAME
+                || value.key === SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY
+                || value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
 
-        if ((!_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
-            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY])
-            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]))
+        if ((!_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME])
+            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY])
+            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS]))
             || foundSettings.length === 3) {
             return true;
         }

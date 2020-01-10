@@ -47,7 +47,7 @@ export class DefaultMarketService {
 
         // cant use this.defaultMarketService.getDefaultForProfile() because its using SettingValue.DEFAULT_MARKETPLACE_ID, which is not yet in use
         const oldDefaultMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(
-            profile.id, process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS])
+            profile.id, process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS])
             .then(value => value.toJSON());
 
         return await this.marketService.update(oldDefaultMarket.id, {
@@ -138,13 +138,13 @@ export class DefaultMarketService {
         // get the default Market settings
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
         const marketNameSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME;
+            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_NAME;
         });
         const marketPKSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY;
+            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY;
         });
         const marketAddressSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
         if (marketNameSetting === undefined || marketPKSetting === undefined || marketAddressSetting === undefined) {
             throw new MessageException('Default Market settings not found!');

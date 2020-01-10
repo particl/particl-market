@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -73,6 +75,34 @@ export class SettingService {
         // finally find and return the created setting
         const newSetting = await this.findOne(setting.id);
         return newSetting;
+    }
+
+    // TODO: createOrUpdateProfileMarketSetting
+    // TODO: createOrUpdateMarketSetting
+
+    public async createOrUpdateProfileSetting(key: string, newValue: string, profileId: number): Promise<Setting> {
+        return await this.findAllByKeyAndProfileId(key, profileId)
+            .then(async values => {
+                const foundSettings: resources.Setting[] = values.toJSON();
+                const foundSetting = _.find(foundSettings, setting => {
+                    return setting.key === key && setting.Profile.id === profileId && _.isEmpty(setting.Market);
+                });
+
+                if (foundSetting) {
+                    const settingRequest = {
+                        key,
+                        value: newValue
+                    } as SettingUpdateRequest;
+                    return await this.update(foundSetting.id, settingRequest);
+                } else {
+                    const settingRequest = {
+                        profile_id: profileId,
+                        key,
+                        value: newValue
+                    } as SettingCreateRequest;
+                    return await this.create(settingRequest);
+                }
+            });
     }
 
     @validate()

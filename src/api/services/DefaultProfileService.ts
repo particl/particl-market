@@ -39,7 +39,7 @@ export class DefaultProfileService {
     public async seedDefaultProfile(): Promise<resources.Profile> {
 
         // retrieve the default Profile id, if it exists
-        const defaultProfileIdSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+        const defaultProfileIdSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.APP_DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileIdSetting = defaultProfileIdSettings[0];
 

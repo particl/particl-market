@@ -1141,16 +1141,16 @@ export class TestDataService {
                 value: Faker.random.word()
             } as SettingCreateRequest);
             settings.push({
-                key: SettingValue.DEFAULT_MARKETPLACE_NAME.toString(),
-                value: process.env[SettingValue.DEFAULT_MARKETPLACE_NAME]
+                key: SettingValue.APP_DEFAULT_MARKETPLACE_NAME.toString(),
+                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME]
             } as SettingCreateRequest);
             settings.push({
-                key: SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
-                value: process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY]
+                key: SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
+                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY]
             } as SettingCreateRequest);
             settings.push({
-                key: SettingValue.DEFAULT_MARKETPLACE_ADDRESS.toString(),
-                value: process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]
+                key: SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS.toString(),
+                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS]
             } as SettingCreateRequest);
         }
         return settings;
