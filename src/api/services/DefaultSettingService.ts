@@ -41,7 +41,7 @@ export class DefaultSettingService {
             await this.insertOrUpdateSettingFromEnv(SettingValue.APP_DEFAULT_MARKETPLACE_NAME)
                 .then(value => {
                     const settingValue = value ? value.value : 'undefined';
-                    this.log.debug('DEFAULT_MARKETPLACE_NAME: ', settingValue);
+                    this.log.debug('APP_DEFAULT_MARKETPLACE_NAME: ', settingValue);
                     if (value) {
                         settings.push(value);
                     }
@@ -50,7 +50,7 @@ export class DefaultSettingService {
             await this.insertOrUpdateSettingFromEnv(SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY)
                 .then(value => {
                     const settingValue = value ? value.value : 'undefined';
-                    this.log.debug('DEFAULT_MARKETPLACE_PRIVATE_KEY: ', settingValue);
+                    this.log.debug('APP_DEFAULT_MARKETPLACE_PRIVATE_KEY: ', settingValue);
                     if (value) {
                         settings.push(value);
                     }
@@ -59,7 +59,7 @@ export class DefaultSettingService {
             await this.insertOrUpdateSettingFromEnv(SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS)
                 .then(value => {
                     const settingValue = value ? value.value : 'undefined';
-                    this.log.debug('DEFAULT_MARKETPLACE_ADDRESS: ', settingValue);
+                    this.log.debug('APP_DEFAULT_MARKETPLACE_ADDRESS: ', settingValue);
                     if (value) {
                         settings.push(value);
                     }
