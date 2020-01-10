@@ -131,14 +131,14 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             + '    <page>                   - number - The number of result page we want to return. \n'
             + '    <pageLimit>              - number - The number of results per page. \n'
             + '    <order>                  - SearchOrder - The order of the returned results. \n'
-            + '    <orderField>             - CommentSearchOrderField - The field to order the results by. \n'
-            + '    <listingItemId>          - string - The Id of the ListingItemId we want to searchBy bids for. \n'
+            + '    <orderField>             - SearchOrderField - The field to order the results by. \n'
+            + '    <listingItemId>          - string - The Id of the ListingItemId we want to search Bids for. \n'
             + '    <type>                   - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                             - or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE} - \n'
-            + '                                The status of the Bids we want to searchBy for. \n'
+            + '                                The status of the Bids we want to search for. \n'
             + '    <searchString>           - [optional] string - A string that is used to \n'
             + '                                find Bids related to ListingItems by their titles and descriptions. \n'
-            + '    <bidderAddress>          - [optional] string(s) - The addresses of the bidders we want to searchBy bids for. ';
+            + '    <bidderAddress>          - [optional] string(s) - The addresses of the bidders we want to search Bids for. ';
 
     }
 

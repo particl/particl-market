@@ -8,6 +8,7 @@ import { OrderItem } from './OrderItem';
 import { Address } from './Address';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderSearchParams } from '../requests/search/OrderSearchParams';
+import { OrderSearchOrderField } from '../enums/SearchOrderField';
 
 export class Order extends Bookshelf.Model<Order> {
 
@@ -33,6 +34,48 @@ export class Order extends Bookshelf.Model<Order> {
             });
         } else {
             return await Order.where<Order>({ id: value }).fetch();
+        }
+    }
+
+    public static async searchBy(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || OrderSearchOrderField.UPDATED_AT;
+
+        const orderCollection = Order.forge<Model<Order>>()
+            .query( qb => {
+                qb.join('order_items', 'orders.id', 'order_items.order_id');
+
+                if (options.listingItemId) {
+                    qb.join('bids', 'order_items.bid_id', 'bids.id');
+                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                }
+
+                if (options.status && typeof options.status === 'string') {
+                    qb.where('order_items.status', '=', options.status);
+                }
+
+                if (options.buyerAddress) {
+                    qb.where('orders.buyer', '=', options.buyerAddress);
+                }
+
+                if (options.sellerAddress) {
+                    qb.where('orders.seller', '=', options.sellerAddress);
+                }
+            })
+            .orderBy('orders.' + options.orderField, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
+            });
+
+        if (withRelated) {
+            return await orderCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await orderCollection.fetchAll();
         }
     }
 
@@ -62,43 +105,6 @@ export class Order extends Bookshelf.Model<Order> {
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
-
-
-    public static async search(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {
-        if (!options.ordering) {
-            options.ordering = SearchOrder.ASC;
-        }
-
-        const orderCollection = Order.forge<Model<Order>>()
-            .query( qb => {
-                qb.join('order_items', 'orders.id', 'order_items.order_id');
-
-                if (options.listingItemId) {
-                    qb.join('bids', 'order_items.bid_id', 'bids.id');
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
-                }
-
-                if (options.status && typeof options.status === 'string') {
-                    qb.where('order_items.status', '=', options.status);
-                }
-
-                if (options.buyerAddress && typeof options.buyerAddress === 'string') {
-                    qb.where('orders.buyer', '=', options.buyerAddress);
-                }
-
-                if (options.sellerAddress && typeof options.sellerAddress === 'string') {
-                    qb.where('orders.seller', '=', options.sellerAddress);
-                }
-            }).orderBy('orders.created_at', options.ordering);
-
-        if (withRelated) {
-            return await orderCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await orderCollection.fetchAll();
-        }
-    }
 
     public OrderItems(): Collection<OrderItem> {
         return this.hasMany(OrderItem, 'order_id', 'id');

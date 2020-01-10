@@ -34,10 +34,11 @@ export class OrderRepository {
     /**
      *
      * @param options, OrderSearchParams
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     public async search(options: OrderSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Order>> {
-        return this.OrderModel.search(options, withRelated);
+        return this.OrderModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Order> {

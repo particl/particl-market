@@ -11,12 +11,16 @@ import { OrderService } from '../../services/model/OrderService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
 import { Order } from '../../models/Order';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
+import { BaseSearchCommand } from '../BaseSearchCommand';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { OrderSearchOrderField } from '../../enums/SearchOrderField';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
+import { CommentType } from '../../enums/CommentType';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
 
-export class OrderSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
+export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
     public log: LoggerType;
 
@@ -28,69 +32,106 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
         this.log = new Logger(__filename);
     }
 
+    public getAllowedSearchOrderFields(): string[] {
+        return EnumHelper.getValues(OrderSearchOrderField) as string[];
+    }
+
     /**
      * data.params[]:
-     * [0]: itemhash, optional
-     * [1]: OrderItemStatus, optional
-     * [2]: buyerAddress, optional
-     * [3]: sellerAddress, optional
-     * [4]: ordering, optional
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: listingItemId, number, optional
+     *  [5]: status, OrderItemStatus, optional
+     *  [6]: buyerAddress, string, optional
+     *  [7]: sellerAddress, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Order>> {
-        const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
-        const status = data.params[1] !== '*' ? data.params[1] : undefined;
-        const buyerAddress = data.params[2] !== '*' ? data.params[2] : undefined;
-        const sellerAddress = data.params[3] !== '*' ? data.params[3] : undefined;
-        let ordering = data.params[4];
 
-        if (!ordering) {
-            ordering = SearchOrder.ASC;
-        }
+        const page = data.params[0];
+        const pageLimit = data.params[1];
+        const order = data.params[2];
+        const orderField = data.params[3];
+        const listingItemId = data.params[4];
+        const status = data.params[5];
+        const buyerAddress = data.params[6];
+        const sellerAddress = data.params[7];
 
-        const searchArgs = {
-            listingItemHash,
+        const orderSearchParams = {
+            page, pageLimit, order, orderField,
+            listingItemId,
             status,
             buyerAddress,
-            sellerAddress,
-            ordering
+            sellerAddress
         } as OrderSearchParams;
 
-        return await this.orderService.search(searchArgs);
+        return await this.orderService.search(orderSearchParams);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: listingItemId, number, optional
+     *  [5]: status, OrderItemStatus, optional
+     *  [6]: buyerAddress, string, optional
+     *  [7]: sellerAddress, string, optional
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // todo: validations
+        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+
+        const listingItemId = data.params[4];       // optional
+        const status = data.params[5];              // optional
+        const buyerAddress = data.params[6];        // optional
+        const sellerAddress = data.params[7];       // optional
+
+        // * -> undefined
+        data.params[4] = listingItemId !== '*' ? listingItemId : undefined;
+        if (status && !EnumHelper.containsName(OrderItemStatus, status)) {
+            if (status === '*') {
+                data.params[5] = undefined;
+            }
+            throw new InvalidParamException('type', 'CommentType');
+        }
+        data.params[6] = buyerAddress !== '*' ? buyerAddress : undefined;
+        data.params[7] = sellerAddress !== '*' ? sellerAddress : undefined;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [(<itemhash>|*) [(<status>|*) [(<buyerAddress>|*) [(<sellerAddress>|*) [<ordering>]]]]]';
+        return this.getName() + ' [listingItemId] [orderItemStatus] [buyerAddress] [sellerAddress]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to searchBy orders for. \n'
-            + '                                A value of * specifies that any item hash is acceptable. \n'
-            + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n'
-            + '                                The status of the orders we want to searchBy for \n'
-            + '                                A value of * specifies that any order status is acceptable. \n'
-            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to searchBy for. \n'
-            + '                                A value of * specifies that any buyer address is acceptable. \n'
-            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to searchBy for. \n'
-            + '                                A value of * specifies that any seller address is acceptable. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. ';
+            + '    <page>                   - number - The number of result page we want to return. \n'
+            + '    <pageLimit>              - number - The number of results per page. \n'
+            + '    <order>                  - SearchOrder - The order of the returned results. \n'
+            + '    <orderField>             - SearchOrderField - The field to order the results by. \n'
+            + '    <listingItemId>          - string - The Id of the ListingItem we want to search Orders for. \n'
+            + '    <orderItemStatus>        - [optional] OrderItemStatus - The status of the Orders we want to search for \n'
+            + '    <buyerAddress>           - [optional] string - The address of the buyer in the Orders we want to search for. \n'
+            + '    <sellerAddress>          - [optional] string - The address of the seller in the Orders we want to search for. \n';
     }
 
     public description(): string {
-        return 'Search for orders by item hash, order status, or addresses. ';
+        return 'Search for Orders by listingItemId, orderItemStatus, or addresses. ';
     }
 
     public example(): string {
-        return 'TODO';
+        return 'order ' + this.getName() + ' 0 10 \'ASC\' \'FIELD\' 1'
+            + ' AWAITING_ESCROW pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
+
 }

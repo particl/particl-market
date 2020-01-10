@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,7 +19,6 @@ import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 import { OrderStatus } from '../../enums/OrderStatus';
-import * as resources from 'resources';
 
 export class OrderService {
 
@@ -57,12 +57,7 @@ export class OrderService {
      */
     @validate()
     public async search(@request(OrderSearchParams) options: OrderSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Order>> {
-
-        // if item hash was given, set the item id
-        if (options.listingItemHash) {
-            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
-            options.listingItemId = foundListing.Id;
-        }
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.orderRepo.search(options, withRelated);
     }
 

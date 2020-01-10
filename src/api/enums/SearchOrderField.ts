@@ -15,7 +15,11 @@ export enum SearchOrderField {
 }
 
 export enum BidSearchOrderField {
-    POSTED_AT = 'posted_at',
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
+export enum OrderSearchOrderField {
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'
 }
