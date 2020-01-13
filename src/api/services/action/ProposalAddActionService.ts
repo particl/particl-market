@@ -68,7 +68,7 @@ export class ProposalAddActionService extends BaseActionService {
             options: params.options,
             sender: params.sender,
             category: params.category,
-            itemHash: params.itemHash,
+            target: params.target,
             market: params.market.receiveAddress
         } as ProposalAddMessageCreateParams);
 

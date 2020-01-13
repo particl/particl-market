@@ -312,7 +312,7 @@ describe('ProposalAddActionListener', () => {
             title: listingItem.hash,
             description: 'I WANT THIS GONE',
             options,
-            itemHash: listingItem.hash
+            target: listingItem.hash
         } as ProposalAddRequest;
 
         const smsgSendResponse: SmsgSendResponse = await proposalAddActionService.post(postRequest);

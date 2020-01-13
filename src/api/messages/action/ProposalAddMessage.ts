@@ -27,7 +27,8 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
     public category: ProposalCategory;
     @IsNotEmpty()
     public hash: string;
-    public item?: string;   // itemHash
+
+    public target?: string; // target of the flagging, ListingItem.hash or Market.receiveAddress
 
     public objects?: KVS[];
 

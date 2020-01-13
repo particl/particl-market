@@ -13,5 +13,5 @@ export interface ProposalAddMessageCreateParams extends MessageCreateParamsInter
     sender: resources.Identity;
     category: ProposalCategory;
     market?: string;
-    itemHash?: string;
+    target?: string; // target of the flagging, ListingItem.hash or Market.receiveAddress
 }

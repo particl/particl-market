@@ -57,7 +57,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             category: proposalMessage.category,
             title: proposalMessage.title,
             description: proposalMessage.description,
-            item: proposalMessage.item,
+            item: proposalMessage.target,
             options: optionsList,
             ...smsgData
         } as ProposalCreateRequest;

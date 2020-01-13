@@ -46,12 +46,6 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             throw new MissingParamException('category');
         }
 
-        // const category = params.category
-        //    ? params.category
-        //    : params.itemHash   // todo: having itemHash is not a quarantee that the category is ITEM_VOTE, it could also be MARKET_VOTE
-        //        ? ProposalCategory.ITEM_VOTE
-        //        : ProposalCategory.PUBLIC_VOTE;
-
         const message: ProposalAddMessage = {
             type: GovernanceAction.MPA_PROPOSAL_ADD,
             submitter: params.sender.address,
@@ -59,7 +53,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             description: params.description,
             options: optionsList,
             category: params.category,
-            item: params.itemHash
+            target: params.target
         } as ProposalAddMessage;
 
         // hash the proposal

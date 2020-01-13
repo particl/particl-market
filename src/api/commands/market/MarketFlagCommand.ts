@@ -70,7 +70,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
             title,
             description,
             options,
-            itemHash: market.receiveAddress // todo: rename to target
+            target: market.receiveAddress
         } as ProposalAddRequest;
 
         return await this.proposalAddActionService.post(postRequest);

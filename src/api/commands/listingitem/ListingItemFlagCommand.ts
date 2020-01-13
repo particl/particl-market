@@ -78,7 +78,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             title,
             description,
             options,
-            itemHash: listingItem.hash
+            target: listingItem.hash
         } as ProposalAddRequest;
 
         return await this.proposalAddActionService.post(postRequest);
