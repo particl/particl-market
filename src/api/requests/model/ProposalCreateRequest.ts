@@ -16,17 +16,16 @@ export class ProposalCreateRequest extends RequestBody implements ModelRequestIn
 
     public msgid: string;
 
+    public market: string;
+
     @IsNotEmpty()
     @IsEnum(ProposalCategory)
     public category: ProposalCategory;
-
-    public item: string;
+    public target: string;
 
     @IsNotEmpty()
     public title: string;
     public description: string;
-
-    public market: string;
 
     @IsNotEmpty()
     public timeStart: number;

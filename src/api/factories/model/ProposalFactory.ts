@@ -57,7 +57,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             category: proposalMessage.category,
             title: proposalMessage.title,
             description: proposalMessage.description,
-            item: proposalMessage.target,
+            target: proposalMessage.target,
             options: optionsList,
             ...smsgData
         } as ProposalCreateRequest;
@@ -65,7 +65,7 @@ export class ProposalFactory implements ModelFactoryInterface {
         // if ProposalCategory.ITEM_VOTE or MARKET_VOTE, the itemHash/marketReceiveAddress is in the title
         if (proposalMessage.category === ProposalCategory.ITEM_VOTE
             || proposalMessage.category === ProposalCategory.MARKET_VOTE) {
-            createRequest.item = proposalMessage.title;
+            createRequest.target = proposalMessage.title;
         }
 
         // hash the proposal

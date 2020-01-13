@@ -134,7 +134,7 @@ export class ProposalService {
         // set new values
         proposal.Submitter = body.submitter;
         proposal.Hash = body.hash;
-        proposal.Item = body.item;
+        proposal.Target = body.target;
         proposal.Category = body.category;
         proposal.Title = body.title;
         proposal.Description = body.description;

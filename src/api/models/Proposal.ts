@@ -126,8 +126,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
-    public get Item(): string { return this.get('item'); }
-    public set Item(value: string) { this.set('item', value); }
+    public get Target(): string { return this.get('target'); }
+    public set Target(value: string) { this.set('target', value); }
 
     public get Category(): string { return this.get('category'); }
     public set Category(value: string) { this.set('category', value); }

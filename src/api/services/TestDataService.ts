@@ -916,7 +916,7 @@ export class TestDataService {
         const proposalCreateRequest = {
             submitter,
             category,
-            item,
+            target: item,
             title,
             description,
             options,
