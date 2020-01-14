@@ -5965,10 +5965,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-omp-lib@^0.1.126:
-  version "0.1.126"
-  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.126.tgz#21a0454e11d723ab57f9da8b87c281e9916d718b"
-  integrity sha512-6JrufEgQMhNXI+lFBP9DYnbuWwd/4ekeujkG2h54KMFzGkUg2m6xSY+kh6qGKzwvYpGESp6tqXrAZrwKGL2+YQ==
+omp-lib@^0.1.127:
+  version "0.1.127"
+  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.127.tgz#53e2baa18d906ea3b60f714ec47a783fb7191d2a"
+  integrity sha512-JoYQ4ey9lnYb/hPHhZH4egvS6GBkwhv6b6QCG+772slnTPVXipHzWgp7YPY0Vq9BkeqVxbvdwKEa+DJvSgF44w==
   dependencies:
     inversify "^4.13.0"
     js-sha256 "^0.9.0"

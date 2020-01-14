@@ -45,7 +45,7 @@ export class VoteActionListener extends BaseActionListenr implements interfaces.
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
-        // processProposal will create or update the Proposal
+        // processVote will create or update the Vote
         return await this.voteActionService.processVote(actionMessage, smsgMessage)
             .then(vote => {
                 if (vote) {

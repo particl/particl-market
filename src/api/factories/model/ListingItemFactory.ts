@@ -88,7 +88,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
         const createRequest = {
             msgid: params.msgid,
-            seller,  // was: smsgMessage.from,
+            seller,
             market: params.market,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,

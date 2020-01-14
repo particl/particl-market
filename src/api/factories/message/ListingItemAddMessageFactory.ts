@@ -67,7 +67,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         const item = {
             information,
             seller: {
-                address: params.seller.address
+                address: params.seller.address,
+                signature: params.signature
             } as SellerInfo,
             payment,
             messaging,

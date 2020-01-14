@@ -10,5 +10,6 @@ export interface ListingItemAddMessageCreateParams extends MessageCreateParamsIn
     listingItem: resources.ListingItem | resources.ListingItemTemplate;
     seller: resources.Identity;
     cryptoAddress: CryptoAddress;
+    signature: string;
 }
 

@@ -256,7 +256,7 @@ export class VoteActionService extends BaseActionService {
 
     /**
      * processVote "processes" the Vote, creating or updating the Vote.
-     * called from send() and processVoteReceivedEvent(), meaning before the VoteMessage is sent
+     * called from send() and onEvent(), meaning before the VoteMessage is sent
      * and after the VoteMessage is received.
      *
      * - processVote()
@@ -278,6 +278,7 @@ export class VoteActionService extends BaseActionService {
         // TODO: way too long method, needs to be refactored
 
         // get the address balance
+        // TODO: balance can be checked later
         const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => parseInt(value.balance, 10));
         this.log.debug('processVote(), voteMessage.voter: ', voteMessage.voter);
         this.log.debug('processVote(), balance: ', balance);
@@ -301,7 +302,7 @@ export class VoteActionService extends BaseActionService {
 
         // address needs to have balance for the vote to matter
         // already checked in send, but doing it again since we call this also from onEvent()
-        // if (balance > 0) {
+
 
         // find the ProposalOption for which the Vote is for
         const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
