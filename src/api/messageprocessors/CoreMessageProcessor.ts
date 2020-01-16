@@ -103,8 +103,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
                         this.log.error('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
                         this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
                         this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
-                        await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
-                    }                    // add event processing to the queue
+                        await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
+                    }
 
                 }, {
                     priority: MessageQueuePriority.SMSGMESSAGE

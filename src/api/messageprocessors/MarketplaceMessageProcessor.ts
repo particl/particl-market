@@ -92,11 +92,17 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
         this.log.debug('PROCESS msgid: ', msgid);
 
         const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msgid, ActionDirection.INCOMING).then(value => value.toJSON());
+
+        // update status and processed count before the actual processing,
+        // the message processing result will be updated in process()
+        await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.PROCESSING);
+        await this.smsgMessageService.updateProcessedCount(smsgMessage.id);
+
         const marketplaceMessage: MarketplaceMessage | undefined = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage)
             .then(value => value)
             .catch(async reason => {
                 this.log.error('Could not parse the MarketplaceMessage.');
-                // TODO: should not happen, but handle properly
+                await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
                 throw reason;
             });
 
@@ -118,67 +124,67 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
         // add the action processing function to the messageprocessing queue
         switch (smsgMessage.type) {
             case MPAction.MPA_LISTING_ADD:
-                await this.actionQueue.add(() => this.listingItemAddActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.listingItemAddActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_LISTING_ADD
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_BID:
-                await this.actionQueue.add(() => this.bidActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_BID
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_ACCEPT:
-                await this.actionQueue.add(() => this.bidAcceptActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidAcceptActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_ACCEPT
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_CANCEL:
-                await this.actionQueue.add(() => this.bidCancelActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidCancelActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_CANCEL
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_REJECT:
-                await this.actionQueue.add(() => this.bidRejectActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidRejectActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_REJECT
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_LOCK:
-                await this.actionQueue.add(() => this.escrowLockActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowLockActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_LOCK
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_COMPLETE:
-                await this.actionQueue.add(() => this.escrowCompleteActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowCompleteActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_COMPLETE
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_SHIP:
-                await this.actionQueue.add(() => this.orderItemShipActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.orderItemShipActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_SHIP
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_RELEASE:
-                await this.actionQueue.add(() => this.escrowReleaseActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowReleaseActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_RELEASE
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_REFUND:
-                await this.actionQueue.add(() => this.escrowRefundActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowRefundActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_REFUND
                 } as DefaultAddOptions);
                 break;
             case GovernanceAction.MPA_PROPOSAL_ADD:
-                await this.actionQueue.add(() => this.proposalAddActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.proposalAddActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_PROPOSAL_ADD
                 } as DefaultAddOptions);
                 break;
             case GovernanceAction.MPA_VOTE:
-                await this.actionQueue.add(() => this.voteActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.voteActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_VOTE
                 } as DefaultAddOptions);
                 break;
             case CommentAction.MPA_COMMENT_ADD:
-                await this.actionQueue.add(() => this.commentAddActionListener.onEvent(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.commentAddActionListener.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_COMMENT_ADD
                 } as DefaultAddOptions);
                 break;

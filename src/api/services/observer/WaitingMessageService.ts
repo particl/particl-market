@@ -60,17 +60,56 @@ export class WaitingMessageService extends BaseObserverService {
         super(__filename, 5 * 1000, Logger);
     }
 
+    /**
+     * Fetch the waiting SmsgMessages and pass them to MarketplaceMessageProcessor for processing
+     *
+     * @param currentStatus
+     */
     public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
         // TODO: refactor
         // poll for SmsgMessageStatus.WAITING, then try to process them...
+
+        const searchParams = {
+            orderField: SmsgMessageSearchOrderField.RECEIVED,
+            order: SearchOrder.DESC,
+            direction: ActionDirection.INCOMING,
+            status: SmsgMessageStatus.WAITING,  // but only the ones WAITING to be reprocessed for reason or another
+            types: [] as ActionMessageTypes[],  // search all types of MarketplaceMessages
+            page: 0,
+            pageLimit: 10,
+            age: 1000 * 20      // at least 20s old ones
+        } as SmsgMessageSearchParams;
+
+        const smsgMessages: resources.SmsgMessage[] = await this.smsgMessageService.searchBy(searchParams)
+            .then(value => value.toJSON());
+
+        if (!_.isEmpty(smsgMessages) && smsgMessages.length > 0) {
+            this.log.debug('run(), found ' + smsgMessages.length + ' messages. types: [' + searchParams.types + '], status: ' + searchParams.status);
+
+            await this.updateSmsgMessagesStatuses(smsgMessages, SmsgMessageStatus.PROCESSING);
+
+            await this.process(smsgMessages, emitEvent);
+
+            // we just processed certain types of messages, so skip processing the next types until we
+            // have processed all of these
+            return false;
+        } else {
+            nextInterval = params.nextInverval;
+
+            // move to process the next types of messages
+            return true;
+        }
+
+        // this.log.debug('Messageprocessor.poll(), fetchNext: ', fetchNext);
+
+        // -----
         await this.poll();
 
         return ObserverStatus.RUNNING;
     }
 
     /**
-     * main messageprocessor, ...
      *
      * @param {module:resources.SmsgMessage[]} smsgMessages
      * @param {boolean} emitEvent, used for testing
@@ -185,7 +224,7 @@ export class WaitingMessageService extends BaseObserverService {
                 this.log.error('eventType:', JSON.stringify(smsgMessage.type, null, 2));
                 this.log.error('emitEvent:', JSON.stringify(emitEvent, null, 2));
                 this.log.error('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
-                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
+                await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.PARSING_FAILED);
             }
         }
     }
@@ -232,7 +271,7 @@ export class WaitingMessageService extends BaseObserverService {
                             this.log.debug('poll(), smsgMessages.length: ' + smsgMessages.length);
 
                             for (const smsgMessage of smsgMessages) {
-                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.PROCESSING)
+                                await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.PROCESSING)
                                     .then(value => {
                                         // this.log.debug('poll(), updated smsgMessage.status: ' + SmsgMessageStatus.PROCESSING);
                                         const msg: resources.SmsgMessage = value.toJSON();
@@ -285,7 +324,7 @@ export class WaitingMessageService extends BaseObserverService {
             types,
             page: 0,
             pageLimit: amount,
-            age: 1000 * 20
+            age: 1000 * 20      // at least 20s old ones
         } as SmsgMessageSearchParams;
 
         const messages: resources.SmsgMessage[] = await this.smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
@@ -294,5 +333,15 @@ export class WaitingMessageService extends BaseObserverService {
             this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);
         }
         return messages;
+    }
+
+    private async updateSmsgMessagesStatuses(smsgMessages: resources.SmsgMessage[], status: SmsgMessageStatus): Promise<resources.SmsgMessage[]> {
+        const updatedMessages: resources.SmsgMessage[] = [];
+        for (const smsgMessage of smsgMessages) {
+            const updatedMessage: resources.SmsgMessage = await this.smsgMessageService.updateStatus(smsgMessage.id, status)
+                .then(value => value.toJSON());
+            updatedMessages.push(updatedMessage);
+        }
+        return updatedMessages;
     }
 }

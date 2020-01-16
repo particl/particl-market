@@ -98,7 +98,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
     }
 
     /**
-     * handle the event
+     * handle the event, called from process()
      * @param event
      */
     public abstract async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus>;
@@ -113,7 +113,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
      * @param event
      * @returns {Promise<void>}
      */
-    public async act(event: MarketplaceMessageEvent): Promise<void> {
+    public async process(event: MarketplaceMessageEvent): Promise<void> {
         this.log.info('Received event: ', event.smsgMessage.type);
 
         // TODO: refactor validation
@@ -122,14 +122,14 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
             const isValid = await this.isValidSequence(event.marketplaceMessage);
 
             if (!isValid) {
-                // todo: we should propably add processingCount or something for the SmsgMessage
-                // if the sequence is not valid, then wait to process again later if not expired
+                // if the sequence is not valid and if not expired, then wait to process again later
                 if (event.smsgMessage.expiration >= Date.now()) {
                     this.log.error('Marketplace message has an invalid sequence. Waiting to process later. msgid: ', event.smsgMessage.msgid);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, SmsgMessageStatus.WAITING);
+                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.WAITING);
                 } else {
+                    // expired, set processing failed.
                     this.log.error('Marketplace message has an invalid sequence and has expired. msgid: ', event.smsgMessage.msgid);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
+                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
                 }
                 // skip this.onEvent()
                 return;
@@ -137,20 +137,20 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
 
             await this.onEvent(event)
                 .then(async status => {
-                    this.log.debug(event.smsgMessage.type + ', new status: ', status);
-                    const updatedSmsgMessage = await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, status)
-                        .then(value => value.toJSON());
-                    // this.log.debug('updatedSmsgMessage: ', JSON.stringify(updatedSmsgMessage, null, 2));
+                    // update the status based on onEvent result
+                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, status).then(value => value.toJSON());
 
                 })
                 .catch(async reason => {
-                    this.log.error('ERROR: ', reason);
+                    // if exception was thrown, processing failed
                     // todo: handle different reasons?
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
+                    this.log.error('ERROR: ', reason);
+                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
                 });
+
         } else {
             this.log.error('event.marketplaceMessage validation failed. msgid: ', event.smsgMessage.msgid);
-            await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage.id, SmsgMessageStatus.VALIDATION_FAILED);
+            await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.VALIDATION_FAILED);
         }
     }
 

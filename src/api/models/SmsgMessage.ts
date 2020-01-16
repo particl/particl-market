@@ -176,6 +176,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
     public get Text(): string { return this.get('text'); }
     public set Text(value: string) { this.set('text', value); }
 
+    public get ProcessedCount(): number { return this.get('processed_count'); }
+    public set ProcessedCount(value: number) { this.set('processed_count', value); }
+
+    public get ProcessedAt(): number { return this.get('processed_at'); }
+    public set ProcessedAt(value: number) { this.set('processed_at', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

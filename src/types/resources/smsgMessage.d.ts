@@ -30,6 +30,9 @@ declare module 'resources' {
         direction: ActionDirection;
         target: string;
 
+        processedCount: number;
+        processedAt: number;
+
         createdAt: Date;
         updatedAt: Date;
     }

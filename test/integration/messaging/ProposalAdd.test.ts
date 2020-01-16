@@ -462,7 +462,7 @@ describe('ProposalAddActionListener', () => {
             marketplaceMessage
         };
 
-        await proposalAddActionListener.act(marketplaceEvent);
+        await proposalAddActionListener.process(marketplaceEvent);
 
         // once the smsgmessage is processed:
         // - SmsgMessage status should have been updated
@@ -515,7 +515,7 @@ describe('ProposalAddActionListener', () => {
                 marketplaceMessage
             };
 
-            await voteActionListener.act(marketplaceEvent);
+            await voteActionListener.process(marketplaceEvent);
 
             // once the smsgmessage is processed:
             // - SmsgMessage status should have been updated

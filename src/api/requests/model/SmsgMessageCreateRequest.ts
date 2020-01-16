@@ -54,6 +54,9 @@ export class SmsgMessageCreateRequest extends RequestBody implements ModelReques
     @IsNotEmpty()
     public text: string;
 
+    public processedCount: number;
+    public processedAt: number;
+
     // these are only here because we need to set these manually since knex doesn't set these in correct format
     public updated_at: number;
     public created_at: number;

@@ -100,10 +100,8 @@ export class SmsgMessageService {
     @validate()
     public async update(id: number, @request(SmsgMessageUpdateRequest) body: SmsgMessageUpdateRequest): Promise<SmsgMessage> {
 
-        // find the existing one without related
         const smsgMessage = await this.findOne(id, false);
 
-        // set new values
         smsgMessage.Type = body.type;
         smsgMessage.Status = body.status;
         smsgMessage.Direction = body.direction;
@@ -120,24 +118,35 @@ export class SmsgMessageService {
         smsgMessage.From = body.from;
         smsgMessage.To = body.to;
         smsgMessage.Text = body.text;
+        smsgMessage.ProcessedCount = body.processedCount;
+        smsgMessage.ProcessedAt = body.processedAt;
 
-        // update smsgMessage record
-        const updatedSmsgMessage = await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
-
-        // const newSmsgMessage = await this.findOne(id);
-        // return newSmsgMessage;
-
-        return updatedSmsgMessage;
+        return await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
     }
 
     /**
-     * update the status of the processed message, clean the text field if processing was successfull
+     * update the processed count and time
      *
      * @param id
      * @param {SmsgMessageStatus} status
      * @returns {Promise<module:resources.SmsgMessage>}
      */
-    public async updateSmsgMessageStatus(id: number, status: SmsgMessageStatus): Promise<SmsgMessage> {
+    public async updateProcessedCount(id: number): Promise<SmsgMessage> {
+        const smsgMessage = await this.findOne(id, false);
+        smsgMessage.set('processed_at', Date.now());
+        smsgMessage.set('processed_count', smsgMessage.ProcessedCount + 1);
+        await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
+        return await this.findOne(id);
+    }
+
+    /**
+     * update the status of the message
+     *
+     * @param id
+     * @param {SmsgMessageStatus} status
+     * @returns {Promise<module:resources.SmsgMessage>}
+     */
+    public async updateStatus(id: number, status: SmsgMessageStatus): Promise<SmsgMessage> {
         const smsgMessage = await this.findOne(id, false);
         smsgMessage.set('status', status);
         await this.smsgMessageRepo.update(id, smsgMessage.toJSON());

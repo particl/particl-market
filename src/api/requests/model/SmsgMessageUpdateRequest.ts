@@ -52,5 +52,8 @@ export class SmsgMessageUpdateRequest extends RequestBody implements ModelReques
 
     public text: string;
 
+    public processedCount: number;
+    public processedAt: number;
+
 }
 // tslint:enable:variable-name
