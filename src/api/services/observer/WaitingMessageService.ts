@@ -8,14 +8,11 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from '../../../core/api/events';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { MessageException } from '../../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
@@ -63,7 +60,7 @@ export class WaitingMessageService extends BaseObserverService {
             for (const smsgMessage of smsgMessages) {
                 if (this.shouldReprocessMessage(smsgMessage)) {
                     this.log.debug('PROCESSING: ', smsgMessage.msgid);
-                    this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+                    // this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
 
                     // marketplaceMessageProcessor.process() will update status and processed count and time
                     // before adding the message to processing queue

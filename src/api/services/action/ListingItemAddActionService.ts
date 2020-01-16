@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -30,7 +31,6 @@ import { ListingItemService } from '../model/ListingItemService';
 import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
-import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../model/MarketService';
 
 export interface SellerMessage {
@@ -130,22 +130,32 @@ export class ListingItemAddActionService extends BaseActionService {
      *
      *
      * @param message
+     * @param smsgMessage
      */
     public async verifyMessage(message: ActionMessageInterface, smsgMessage: resources.SmsgMessage): Promise<boolean> {
 
         const actionMessage = message as ListingItemAddMessage;
 
+        if (_.isEmpty(actionMessage.item.seller)) {
+            this.log.error('Missing seller data, likely a message from an old client.');
+            return false;
+        }
+
         // verify that the ListingItemAddMessage was actually sent by the seller
         const verified = await this.verifySellerMessage(actionMessage);
         if (!verified) {
-            throw new MessageException('Received seller signature failed validation.');
+            this.log.error('Received seller signature failed validation.');
+            return false;
+            // throw new MessageException('Received seller signature failed validation.');
         }
 
         // LISTINGITEM_ADD's should be allowed to send only from the publish address to the market receive address
         const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
         if (market.publishAddress !== smsgMessage.from) {
             // message was sent from an address which isnt allowed
-            throw new MessageException('Invalid message sender.');
+            this.log.error('Invalid message sender.');
+            return false;
+            // throw new MessageException('Invalid message sender.');
         }
 
         return true;

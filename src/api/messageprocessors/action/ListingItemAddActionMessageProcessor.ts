@@ -44,11 +44,11 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        await this.listingItemAddActionService.verifyMessage(actionMessage, smsgMessage)
-            .catch(reason => {
-                this.log.error('Message verification failed: ', reason);
-                return SmsgMessageStatus.VALIDATION_FAILED;
-            });
+        const verified = await this.listingItemAddActionService.verifyMessage(actionMessage, smsgMessage);
+        if (!verified) {
+            this.log.error('MPA_LISTING_ADD failed validation.');
+            return SmsgMessageStatus.VALIDATION_FAILED;
+        }
 
         // processMessage will create the ListingItem
         return await this.listingItemAddActionService.processMessage(actionMessage, smsgMessage);

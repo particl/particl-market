@@ -121,7 +121,9 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
             + ' : ' + smsgMessage.status
             + ' : ' + smsgMessage.msgid);
 
+        this.log.debug('=====================================================================================================');
         this.log.debug('ADDING MPAction TO QUEUE msgid: ', msgid);
+        this.log.debug('=====================================================================================================');
 
         // add the action processing function to the messageprocessing queue
         switch (smsgMessage.type) {
