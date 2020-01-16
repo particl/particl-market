@@ -17,7 +17,6 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { ActionListenerInterface } from '../ActionListenerInterface';
 import { BaseActionListenr } from '../BaseActionListenr';
 import { BidService } from '../../services/model/BidService';
-import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
 

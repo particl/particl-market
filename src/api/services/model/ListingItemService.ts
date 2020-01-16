@@ -331,6 +331,7 @@ export class ListingItemService {
         }
 
         // Comments dont have a hard link to ListinItems
+        // TODO: we might not want to delete Comments just yet since the LstingItem might get relisted
         const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {
@@ -354,20 +355,6 @@ export class ListingItemService {
     }
 
     /**
-     * delete expired listing items
-     *
-     * @returns {Promise<void>}
-     */
-    public async deleteExpiredListingItems(): Promise<void> {
-       const listingItems: resources.ListingItem[] = await this.findAllExpired().then(value => value.toJSON());
-       for (const listingItem of listingItems) {
-           if (listingItem.expiredAt <= Date.now()) {
-               await this.destroy(listingItem.id);
-           }
-       }
-    }
-
-    /**
      *
      * @param listingItem
      * @param listingItemTemplate
@@ -385,7 +372,6 @@ export class ListingItemService {
      *
      * @returns {Promise<void>}
      */
-    // public async setRemovedFlag(itemHash: string, marketReceiveAddress: string, removed: boolean): Promise<void> {
     public async setRemovedFlag(id: number, removed: boolean): Promise<void> {
         const listingItem: resources.ListingItem = await this.findOne(id).then(value => value.toJSON());
         await this.listingItemRepo.update(listingItem.id, { removed });

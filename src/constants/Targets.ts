@@ -167,8 +167,10 @@ export const Targets = {
             VoteService: 'VoteService'
         },
         observer: {
+            BaseObserverService: 'BaseObserverService',
             CoreCookieService: 'CoreCookieService',
-            CoreConnectionStatusService: 'CoreConnectionStatusService'
+            CoreConnectionStatusService: 'CoreConnectionStatusService',
+            ExpiredListingItemService: 'ExpiredListingItemService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -430,7 +432,6 @@ export const Targets = {
     },
     MessageProcessor:     {
         CoreMessageProcessor: 'CoreMessageProcessor',
-        ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         ProposalResultProcessor: 'ProposalResultProcessor',
         WaitingMessageProcessor: 'WaitingMessageProcessor'

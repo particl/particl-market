@@ -49,8 +49,8 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
-    private queue: PQueue;
-    private actionQueue: PQueue;
+    private queue: PQueue;          // Queue processing the SmsgMessages
+    private actionQueue: PQueue;    // Queue processing the MarketplaceMessages, prioritizing by type
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
@@ -104,6 +104,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         // get the message and set it as read
         const msg: CoreSmsgMessage = await this.smsgService.smsg(msgid, false, true);
 
+        // TODO: MarketplaceMessage processing to separate MessageProcessor?
         if (await this.isMarketplaceMessage(msg)) {
             // has this message already been processed?
             const isProcessed = await this.isCoreMessageAlreadyProcessed(msg);

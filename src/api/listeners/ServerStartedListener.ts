@@ -14,22 +14,23 @@ import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
 import { WaitingMessageProcessor } from '../messageprocessors/WaitingMessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
-import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
 import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
 import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
-import { CoreCookieService, CoreCookieServiceStatus } from '../services/observer/CoreCookieService';
+import { CoreCookieService } from '../services/observer/CoreCookieService';
 import { SmsgService } from '../services/SmsgService';
-import { CoreConnectionStatusService, CoreConnectionStatusServiceStatus } from '../services/observer/CoreConnectionStatusService';
-import pForever from 'pm-forever';
-import delay from 'pm-delay';
+import { CoreConnectionStatusService } from '../services/observer/CoreConnectionStatusService';
+import { IdentityService } from '../services/model/IdentityService';
+import { ExpiredListingItemService } from '../services/observer/ExpiredListingItemService';
 import { IdentityType } from '../enums/IdentityType';
 import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
 import { ProfileService } from '../services/model/ProfileService';
-import {IdentityService} from '../services/model/IdentityService';
+import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatusServiceStatus';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -51,8 +52,8 @@ export class ServerStartedListener implements interfaces.Listener {
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.WaitingMessageProcessor) public waitingMessageProcessor: WaitingMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
+        @inject(Types.Service) @named(Targets.Service.observer.ExpiredListingItemService) public expiredListingItemService: ExpiredListingItemService,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -89,12 +90,12 @@ export class ServerStartedListener implements interfaces.Listener {
             i++;
 
             this.log.debug('this.coreCookieService.status: ' + this.coreCookieService.status);
-            this.log.debug('this.coreConnectionStatusService.status: ' + this.coreConnectionStatusService.status);
+            this.log.debug('this.coreConnectionStatusService.status: ' + this.coreConnectionStatusService.connectionStatus);
             this.log.debug('this.BOOTSTRAPPING: ' + this.BOOTSTRAPPING);
 
             // keep checking whether we are connected to the core and when we are, call this.bootstrap()
             // then STOP the polling, if bootstrap was successful
-            if (this.coreConnectionStatusService.status === CoreConnectionStatusServiceStatus.CONNECTED
+            if (this.coreConnectionStatusService.connectionStatus === CoreConnectionStatusServiceStatus.CONNECTED
                 && this.BOOTSTRAPPING) {
                 this.STOP = await this.bootstrap()
                     .catch(reason => {
@@ -204,7 +205,7 @@ export class ServerStartedListener implements interfaces.Listener {
             if (process.env.NODE_ENV !== 'test') {
 
                 // TODO: these should start automatically
-                this.expiredListingItemProcessor.scheduleProcess();
+                // this.expiredListingItemProcessor.scheduleProcess();
                 this.proposalResultProcessor.scheduleProcess();
 
                 // poll for waiting smsgmessages to be processed
