@@ -5,43 +5,43 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Targets, Types } from '../../constants';
-import { EventEmitter } from '../../core/api/events';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { SmsgMessageService } from '../services/model/SmsgMessageService';
-import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
-import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { SearchOrder } from '../enums/SearchOrder';
-import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
-import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { MessageException } from '../exceptions/MessageException';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { EventEmitter } from '../../../core/api/events';
+import { MessageProcessorInterface } from '../../messageprocessors/MessageProcessorInterface';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { SmsgMessageService } from '../model/SmsgMessageService';
+import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
+import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import { MessageException } from '../../exceptions/MessageException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { GovernanceAction } from '../enums/GovernanceAction';
-import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import { MPActionExtended } from '../enums/MPActionExtended';
-import { ActionDirection } from '../enums/ActionDirection';
-import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
-import { BidActionListener } from '../listeners/action/BidActionListener';
-import { BidAcceptActionListener } from '../listeners/action/BidAcceptActionListener';
-import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
-import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
-import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
-import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
-import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
-import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
-import { VoteActionListener } from '../listeners/action/VoteActionListener';
-import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
-import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
-import { CommentAction } from '../enums/CommentAction';
-import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
-import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
+import { GovernanceAction } from '../../enums/GovernanceAction';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { ListingItemAddActionListener } from '../../listeners/action/ListingItemAddActionListener';
+import { BidActionListener } from '../../listeners/action/BidActionListener';
+import { BidAcceptActionListener } from '../../listeners/action/BidAcceptActionListener';
+import { BidCancelActionListener } from '../../listeners/action/BidCancelActionListener';
+import { BidRejectActionListener } from '../../listeners/action/BidRejectActionListener';
+import { EscrowLockActionListener } from '../../listeners/action/EscrowLockActionListener';
+import { EscrowReleaseActionListener } from '../../listeners/action/EscrowReleaseActionListener';
+import { EscrowRefundActionListener } from '../../listeners/action/EscrowRefundActionListener';
+import { ProposalAddActionListener } from '../../listeners/action/ProposalAddActionListener';
+import { VoteActionListener } from '../../listeners/action/VoteActionListener';
+import { EscrowCompleteActionListener } from '../../listeners/action/EscrowCompleteActionListener';
+import { OrderItemShipActionListener } from '../../listeners/action/OrderItemShipActionListener';
+import { CommentAction } from '../../enums/CommentAction';
+import { CommentAddActionListener } from '../../listeners/action/CommentAddActionListener';
+import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
 import pForever from 'pm-forever';
 import delay from 'pm-delay';
 
-export class WaitingMessageProcessor implements MessageProcessorInterface {
+export class WaitingMessageService implements MessageProcessorInterface {
 
     public log: LoggerType;
 
@@ -80,7 +80,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
             this.isStarted = true;
             await delay(this.INTERVAL);
-            this.log.info('WaitingMessageProcessor: ', i);
+            this.log.info('WaitingMessageService: ', i);
 
             return i;
         }, 0).catch(async reason => {
@@ -288,7 +288,7 @@ export class WaitingMessageProcessor implements MessageProcessorInterface {
             }
         }
 
-        // this.log.debug('WaitingMessageProcessor.poll #' + this.pollCount + ': ' + (Date.now() - startTime) + 'ms');
+        // this.log.debug('WaitingMessageService.poll #' + this.pollCount + ': ' + (Date.now() - startTime) + 'ms');
         this.pollCount++;
 
         return nextInterval;

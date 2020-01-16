@@ -4,25 +4,19 @@
 
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Core, Targets, Types } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ProposalService } from '../services/model/ProposalService';
-import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
-import { ProposalCategory } from '../enums/ProposalCategory';
-import { ProposalResultService } from '../services/model/ProposalResultService';
-import { ListingItemService } from '../services/model/ListingItemService';
-import { MarketService } from '../services/model/MarketService';
-import { FlaggedItemService } from '../services/model/FlaggedItemService';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ProposalService } from '../model/ProposalService';
+import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
+import { ProposalResultService } from '../model/ProposalResultService';
+import { ListingItemService } from '../model/ListingItemService';
+import { MarketService } from '../model/MarketService';
+import { FlaggedItemService } from '../model/FlaggedItemService';
+import { BaseObserverService } from './BaseObserverService';
+import { ObserverStatus } from '../../enums/ObserverStatus';
 
-// TODO: this should be refactored, this is not a MessageProcessor!
+export class ProposalResultRecalcService extends BaseObserverService {
 
-export class ProposalResultProcessor implements MessageProcessorInterface {
-
-    public log: LoggerType;
-
-    private timeout: any;
-    private interval = 60 * 1000;
     // interval to recalculate ProposalResults in milliseconds (passed by minutes)
     private recalculationInterval = process.env.PROPOSAL_RESULT_RECALCULATION_INTERVAL * 60 * 1000;
 
@@ -34,15 +28,13 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService
     ) {
-        this.log = new Logger(__filename);
+        super(__filename, 60 * 1000, Logger);
     }
 
     /**
      * Periodically recalculate the active Proposals ProposalResults
      */
-    public async process(): Promise<void> {
-
-        // this.log.debug('process(), recalculate ProposalResults...');
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
         // return Proposals ending after Date.now()
         const proposalSearchParams = {
@@ -84,15 +76,7 @@ export class ProposalResultProcessor implements MessageProcessorInterface {
             }
         } // for
 
+        return ObserverStatus.RUNNING;
     }
 
-    public scheduleProcess(): void {
-        this.timeout = setTimeout(
-            async () => {
-                await this.process();
-                this.scheduleProcess();
-            },
-            this.interval
-        );
-    }
 }

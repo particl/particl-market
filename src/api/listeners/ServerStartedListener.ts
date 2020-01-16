@@ -12,10 +12,10 @@ import { DefaultItemCategoryService } from '../services/DefaultItemCategoryServi
 import { DefaultProfileService } from '../services/DefaultProfileService';
 import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
-import { WaitingMessageProcessor } from '../messageprocessors/WaitingMessageProcessor';
+import { WaitingMessageService } from '../services/observer/WaitingMessageService';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
-import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
+import { ProposalResultRecalcService } from '../services/observer/ProposalResultRecalcService';
 import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
@@ -50,10 +50,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.WaitingMessageProcessor) public waitingMessageProcessor: WaitingMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
-        @inject(Types.Service) @named(Targets.Service.observer.ExpiredListingItemService) public expiredListingItemService: ExpiredListingItemService,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -64,6 +61,9 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.observer.CoreCookieService) public coreCookieService: CoreCookieService,
         @inject(Types.Service) @named(Targets.Service.observer.CoreConnectionStatusService) public coreConnectionStatusService: CoreConnectionStatusService,
+        @inject(Types.Service) @named(Targets.Service.observer.WaitingMessageService) public waitingMessageService: WaitingMessageService,
+        @inject(Types.Service) @named(Targets.Service.observer.ProposalResultRecalcService) public proposalResultRecalcService: ProposalResultRecalcService,
+        @inject(Types.Service) @named(Targets.Service.observer.ExpiredListingItemService) public expiredListingItemService: ExpiredListingItemService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -206,7 +206,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
                 // TODO: these should start automatically
                 // this.expiredListingItemProcessor.scheduleProcess();
-                this.proposalResultProcessor.scheduleProcess();
+                // this.proposalResultRecalcService.scheduleProcess();
 
                 // poll for waiting smsgmessages to be processed
                 // this.waitingMessageProcessor.schedulePoll();

@@ -36,7 +36,7 @@ export class CoreCookieService extends BaseObserverService {
         // this.log = new Logger(__filename);
     }
 
-    public async observerLoop(currentStatus: ObserverStatus): Promise<ObserverStatus> {
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
         const cookie = this.getPathToCookie();
 

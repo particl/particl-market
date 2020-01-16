@@ -29,7 +29,7 @@ export class CoreConnectionStatusService extends BaseObserverService {
         // this.log = new Logger(__filename);
     }
 
-    public async observerLoop(currentStatus: ObserverStatus): Promise<ObserverStatus> {
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
         this.previousStatus = this.connectionStatus;
 
         this.connectionStatus = await this.checkConnection();

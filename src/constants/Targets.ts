@@ -170,7 +170,9 @@ export const Targets = {
             BaseObserverService: 'BaseObserverService',
             CoreCookieService: 'CoreCookieService',
             CoreConnectionStatusService: 'CoreConnectionStatusService',
-            ExpiredListingItemService: 'ExpiredListingItemService'
+            ExpiredListingItemService: 'ExpiredListingItemService',
+            ProposalResultRecalcService: 'ProposalResultRecalcService',
+            WaitingMessageService: 'WaitingMessageService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -432,9 +434,7 @@ export const Targets = {
     },
     MessageProcessor:     {
         CoreMessageProcessor: 'CoreMessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface',
-        ProposalResultProcessor: 'ProposalResultProcessor',
-        WaitingMessageProcessor: 'WaitingMessageProcessor'
+        MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

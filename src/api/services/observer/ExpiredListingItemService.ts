@@ -24,7 +24,7 @@ export class ExpiredListingItemService extends BaseObserverService {
      *
      * @param currentStatus
      */
-    public async observerLoop(currentStatus: ObserverStatus): Promise<ObserverStatus> {
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
         const listingItems: resources.ListingItem[] = await this.listingItemService.findAllExpired().then(value => value.toJSON());
         for (const listingItem of listingItems) {

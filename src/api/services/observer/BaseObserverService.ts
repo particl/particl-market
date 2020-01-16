@@ -19,8 +19,12 @@ export abstract class BaseObserverService {
 
     constructor(@unmanaged() observerClass: string, @unmanaged() observerLoopInterval: number, Logger: typeof LoggerType) {
         this.log = new Logger(observerClass);
-
         this.INTERVAL = observerLoopInterval;
+
+        const seconds = observerLoopInterval / 1000;
+        this.log.info('Starting up, loop run interval: ' + (observerLoopInterval / 1000) + ' second'
+                + (seconds !== 1 ? 's' : '') + '.');
+
         this.start();
     }
 
@@ -28,14 +32,14 @@ export abstract class BaseObserverService {
      * loop to handle the whatever observing you need to do...
      * @param currentStatus
      */
-    public abstract async observerLoop(currentStatus: ObserverStatus): Promise<ObserverStatus>;
+    public abstract async run(currentStatus: ObserverStatus): Promise<ObserverStatus>;
 
     public async start(): Promise<void> {
 
         await pForever(async (previousValue) => {
             previousValue++;
 
-            this.status = await this.observerLoop(this.status)
+            this.status = await this.run(this.status)
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
                     return ObserverStatus.ERROR;
