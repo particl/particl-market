@@ -24,7 +24,6 @@ import { ProposalResultCreateRequest } from '../../requests/model/ProposalResult
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { MarketService } from './MarketService';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ProposalService {
 
@@ -51,6 +50,10 @@ export class ProposalService {
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         return await this.proposalRepo.findAll(withRelated);
+    }
+
+    public async findAllExpired(): Promise<Bookshelf.Collection<Proposal>> {
+        return await this.proposalRepo.findAllExpired();
     }
 
     public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {

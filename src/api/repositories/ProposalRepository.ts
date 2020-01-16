@@ -44,6 +44,10 @@ export class ProposalRepository {
         return await this.search(searchParams, withRelated);
     }
 
+    public async findAllExpired(): Promise<Bookshelf.Collection<Proposal>> {
+        return this.ProposalModel.fetchExpired();
+    }
+
     public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
             market,

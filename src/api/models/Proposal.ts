@@ -111,6 +111,14 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchExpired(): Promise<Collection<Proposal>> {
+        const collection = Proposal.forge<Model<Proposal>>()
+            .query(qb => {
+                qb.where('expired_at', '<=', Date.now());
+            });
+        return await collection.fetchAll();
+    }
+
     public get tableName(): string { return 'proposals'; }
     public get hasTimestamps(): boolean { return true; }
 
