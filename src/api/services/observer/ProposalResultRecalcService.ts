@@ -14,6 +14,7 @@ import { MarketService } from '../model/MarketService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { BaseObserverService } from './BaseObserverService';
 import { ObserverStatus } from '../../enums/ObserverStatus';
+import {ProposalCategory} from '../../enums/ProposalCategory';
 
 export class ProposalResultRecalcService extends BaseObserverService {
 
@@ -68,7 +69,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
             if (!proposalResult || (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now())) {
 
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-                await this.flaggedItemService.removeIfNeeded(proposal.FlaggedItem.id, proposalResult);
+                await this.removeIfNeeded(proposal.FlaggedItem.id, proposalResult);
 
             } else {
                 this.log.debug('process(), skip proposal.hash: ', proposal.hash);
@@ -79,4 +80,33 @@ export class ProposalResultRecalcService extends BaseObserverService {
         return ObserverStatus.RUNNING;
     }
 
+    public async removeIfNeeded(id: number, proposalResult: resources.ProposalResult, flagOnly: boolean = false): Promise<void> {
+
+        // fetch the FlaggedItem and remove if thresholds are hit
+        if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
+            const flaggedItem: resources.FlaggedItem = await this.flaggedItemService.findOne(id)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    this.log.error('ERROR: ', reason);
+                });
+
+            if (flaggedItem) {
+                const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
+                if (shouldRemove) {
+                    switch (proposalResult.Proposal.category) {
+                        case ProposalCategory.ITEM_VOTE:
+                            await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
+                            // TODO: Blacklist
+                            break;
+                        case ProposalCategory.MARKET_VOTE:
+                            await this.marketService.destroy(flaggedItem.Market!.id);
+                            // TODO: Blacklist
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
 }

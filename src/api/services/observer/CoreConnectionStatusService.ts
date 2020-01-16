@@ -26,7 +26,6 @@ export class CoreConnectionStatusService extends BaseObserverService {
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(__filename, 1000, Logger);
-        // this.log = new Logger(__filename);
     }
 
     public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {

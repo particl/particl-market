@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from '../../../core/api/events';
-import { MessageProcessorInterface } from '../../messageprocessors/MessageProcessorInterface';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
@@ -38,17 +37,12 @@ import { OrderItemShipActionListener } from '../../listeners/action/OrderItemShi
 import { CommentAction } from '../../enums/CommentAction';
 import { CommentAddActionListener } from '../../listeners/action/CommentAddActionListener';
 import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
+import { BaseObserverService } from './BaseObserverService';
+import { ObserverStatus } from '../../enums/ObserverStatus';
 import pForever from 'pm-forever';
 import delay from 'pm-delay';
 
-export class WaitingMessageService implements MessageProcessorInterface {
-
-    public log: LoggerType;
-
-    public isStarted = false;
-    private pollCount = 0;
-    private INTERVAL = 5 * 1000;
-    private STOP = false;
+export class WaitingMessageService extends BaseObserverService {
 
     // TODO: not needed anymore, these are here because we used to poll for all the messages
     private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
@@ -65,33 +59,16 @@ export class WaitingMessageService implements MessageProcessorInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
-        this.log = new Logger(__filename);
-        this.start();
+        super(__filename, 5 * 1000, Logger);
     }
 
-    public async start(): Promise<void> {
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
-        await pForever(async (i) => {
-            i++;
+        // TODO: refactor this and CoreMessageProcessor
+        // poll for SmsgMessageStatus.WAITING, then try to process them...
+        await this.poll();
 
-            await this.poll();
-            if (this.STOP) {
-                return pForever.end;
-            }
-            this.isStarted = true;
-            await delay(this.INTERVAL);
-            this.log.info('WaitingMessageService: ', i);
-
-            return i;
-        }, 0).catch(async reason => {
-            this.log.error('ERROR: ', reason);
-            await delay(this.INTERVAL);
-            this.start();
-        });
-    }
-
-    public async stop(): Promise<void> {
-        this.STOP = true;
+        return ObserverStatus.RUNNING;
     }
 
     /**
@@ -289,7 +266,6 @@ export class WaitingMessageService implements MessageProcessorInterface {
         }
 
         // this.log.debug('WaitingMessageService.poll #' + this.pollCount + ': ' + (Date.now() - startTime) + 'ms');
-        this.pollCount++;
 
         return nextInterval;
     }
