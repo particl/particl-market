@@ -434,6 +434,7 @@ export const Targets = {
     },
     MessageProcessor:     {
         CoreMessageProcessor: 'CoreMessageProcessor',
+        MarketplaceMessageProcessor: 'MarketplaceMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {

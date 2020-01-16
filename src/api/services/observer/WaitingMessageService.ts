@@ -39,8 +39,6 @@ import { CommentAddActionListener } from '../../listeners/action/CommentAddActio
 import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseObserverService } from './BaseObserverService';
 import { ObserverStatus } from '../../enums/ObserverStatus';
-import pForever from 'pm-forever';
-import delay from 'pm-delay';
 
 export class WaitingMessageService extends BaseObserverService {
 
@@ -64,7 +62,7 @@ export class WaitingMessageService extends BaseObserverService {
 
     public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
-        // TODO: refactor this and CoreMessageProcessor
+        // TODO: refactor
         // poll for SmsgMessageStatus.WAITING, then try to process them...
         await this.poll();
 
