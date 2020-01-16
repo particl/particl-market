@@ -5,7 +5,7 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { injectable } from 'inversify';
-import { ActionListenerInterface } from './ActionListenerInterface';
+import { ActionMessageProcessorInterface } from './ActionMessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ListingItemAddValidator } from '../messages/validator/ListingItemAddValidator';
@@ -43,10 +43,10 @@ import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddValidator } from '../messages/validator/CommentValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
+import {ListingItemAddMessage} from '../messages/action/ListingItemAddMessage';
 
-// TODO: rename, refactor
 @injectable()
-export abstract class BaseActionListenr implements ActionListenerInterface {
+export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static validate(msg: MarketplaceMessage): boolean {
 
@@ -118,7 +118,7 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
 
         // TODO: refactor validation
 
-        if (BaseActionListenr.validate(event.marketplaceMessage)) {
+        if (BaseActionMessageProcessor.validate(event.marketplaceMessage)) {
             const isValid = await this.isValidSequence(event.marketplaceMessage);
 
             if (!isValid) {
@@ -142,9 +142,14 @@ export abstract class BaseActionListenr implements ActionListenerInterface {
 
                 })
                 .catch(async reason => {
+
                     // if exception was thrown, processing failed
-                    // todo: handle different reasons?
                     this.log.error('ERROR: ', reason);
+
+                    this.log.error('marketplaceMessage:', JSON.stringify(event.marketplaceMessage, null, 2));
+                    this.log.error('eventType:', JSON.stringify(event.smsgMessage.type, null, 2));
+                    this.log.error('PROCESSING: ' + event.smsgMessage.msgid + ' PARSING FAILED');
+
                     await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
                 });
 

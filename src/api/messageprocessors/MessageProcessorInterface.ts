@@ -7,5 +7,5 @@ import { ProcessableMessages } from '../enums/ProcessableMessages';
  * This is the interface for MessageProcessors, which there was supposed to be several and perhaps there is after the next refactoring round...
  */
 export interface MessageProcessorInterface {
-    process( message: ProcessableMessages, emitEvent: boolean): any;
+    process(message: ProcessableMessages): void;
 }

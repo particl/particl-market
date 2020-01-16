@@ -433,6 +433,23 @@ export const Targets = {
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
+        action: {
+            BidAcceptActionMessageProcessor: 'BidAcceptActionMessageProcessor',
+            BidActionMessageProcessor: 'BidActionMessageProcessor',
+            BidCancelActionMessageProcessor: 'BidCancelActionMessageProcessor',
+            BidRejectActionMessageProcessor: 'BidRejectActionMessageProcessor',
+            CommentAddActionMessageProcessor: 'CommentAddActionMessageProcessor',
+            EscrowCompleteActionMessageProcessor: 'EscrowCompleteActionMessageProcessor',
+            EscrowLockActionMessageProcessor: 'EscrowLockActionMessageProcessor',
+            EscrowRefundActionMessageProcessor: 'EscrowRefundActionMessageProcessor',
+            EscrowReleaseActionMessageProcessor: 'EscrowReleaseActionMessageProcessor',
+            ListingItemAddActionMessageProcessor: 'ListingItemAddActionMessageProcessor',
+            OrderItemShipActionMessageProcessor: 'OrderItemShipActionMessageProcessor',
+            ProposalAddActionMessageProcessor: 'ProposalAddActionMessageProcessor',
+            VoteActionMessageProcessor: 'VoteActionMessageProcessor'
+        },
+        ActionMessageProcessorInterface: 'ActionMessageProcessorInterface',
+        BaseActionMessageProcessor: 'BaseActionMessageProcessor',
         CoreMessageProcessor: 'CoreMessageProcessor',
         MarketplaceMessageProcessor: 'MarketplaceMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface'
@@ -444,23 +461,6 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        action: {
-            BidAcceptActionListener: 'BidAcceptActionListener',
-            BidActionListener: 'BidActionListener',
-            BidCancelActionListener: 'BidCancelActionListener',
-            BidRejectActionListener: 'BidRejectActionListener',
-            CommentAddActionListener: 'CommentAddActionListener',
-            EscrowCompleteActionListener: 'EscrowCompleteActionListener',
-            EscrowLockActionListener: 'EscrowLockActionListener',
-            EscrowRefundActionListener: 'EscrowRefundActionListener',
-            EscrowReleaseActionListener: 'EscrowReleaseActionListener',
-            ListingItemAddActionListener: 'ListingItemAddActionListener',
-            OrderItemShipActionListener: 'OrderItemShipActionListener',
-            ProposalAddActionListener: 'ProposalAddActionListener',
-            VoteActionListener: 'VoteActionListener'
-        },
-        ActionListenerInterface: 'ActionListenerInterface',
-        BaseActionListenr: 'BaseActionListenr',
         ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {

@@ -10,8 +10,8 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ActionListenerInterface } from '../ActionListenerInterface';
-import { BaseActionListenr } from '../BaseActionListenr';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
+import { BaseActionMessageProcessor } from '../BaseActionMessageProcessor';
 import { BidService } from '../../services/model/BidService';
 import { CommentAction } from '../../enums/CommentAction';
 import { CommentService } from '../../services/model/CommentService';
@@ -19,7 +19,7 @@ import { CommentAddActionService } from '../../services/action/CommentAddActionS
 import { ProposalService } from '../../services/model/ProposalService';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 
-export class CommentAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(CommentAction.MPA_COMMENT_ADD);
 

@@ -14,8 +14,8 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { ActionListenerInterface } from '../ActionListenerInterface';
-import { BaseActionListenr } from '../BaseActionListenr';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
+import { BaseActionMessageProcessor } from '../BaseActionMessageProcessor';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { MessageException } from '../../exceptions/MessageException';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
@@ -26,7 +26,7 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
-export class BidActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class BidActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPAction.MPA_BID);
 

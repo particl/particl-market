@@ -14,7 +14,7 @@ import { BidCreateRequest } from '../requests/model/BidCreateRequest';
 import { BidCreateParams } from '../factories/model/ModelCreateParams';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { BidFactory } from '../factories/model/BidFactory';
-import { BaseActionListenr } from './BaseActionListenr';
+import { BaseActionMessageProcessor } from './BaseActionMessageProcessor';
 import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
 import { BidCancelMessage } from '../messages/action/BidCancelMessage';
 import { BidRejectMessage } from '../messages/action/BidRejectMessage';
@@ -28,7 +28,7 @@ export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRe
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
 
 @injectable()
-export abstract class BaseBidActionListenr extends BaseActionListenr {
+export abstract class BaseBidActionMessageProcessor extends BaseActionMessageProcessor {
 
     public listingItemService: ListingItemService;
     public bidFactory: BidFactory;

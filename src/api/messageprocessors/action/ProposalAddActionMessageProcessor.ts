@@ -10,30 +10,30 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ActionListenerInterface } from '../ActionListenerInterface';
-import { BaseActionListenr } from '../BaseActionListenr';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
+import { BaseActionMessageProcessor } from '../BaseActionMessageProcessor';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import { VoteActionService } from '../../services/action/VoteActionService';
-import { VoteMessage } from '../../messages/action/VoteMessage';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 
-export class VoteActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class ProposalAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
-    public static Event = Symbol(GovernanceAction.MPA_VOTE);
+    public static Event = Symbol(GovernanceAction.MPA_PROPOSAL_ADD);
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, smsgMessageService, bidService, proposalService, Logger);
+        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, bidService, proposalService, Logger);
     }
 
     /**
-     * handles the received VoteMessage and returns SmsgMessageStatus as a result
+     * handles the received ProposalAddMessage and returns SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
      *
@@ -43,23 +43,18 @@ export class VoteActionListener extends BaseActionListenr implements interfaces.
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
+        const actionMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
 
-        // processVote will create or update the Vote
-        return await this.voteActionService.processVote(actionMessage, smsgMessage)
-            .then(vote => {
-                if (vote) {
-                    this.log.debug('==> PROCESSED VOTE: ', vote.signature);
-                } else {
-                    this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
-                }
+        // processProposal will create or update the Proposal
+        return await this.proposalAddActionService.processProposal(actionMessage, smsgMessage)
+            .then(value => {
+                this.log.debug('==> PROCESSED PROPOSAL: ', value.hash);
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.debug('==> VOTE PROCESSING FAILED: ', reason);
+                this.log.debug('==> PROPOSAL PROCESSING FAILED: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
-
 
 }

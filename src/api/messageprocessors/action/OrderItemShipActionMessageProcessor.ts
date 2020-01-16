@@ -13,7 +13,7 @@ import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { ActionListenerInterface } from '../ActionListenerInterface';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
@@ -22,9 +22,9 @@ import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage
 import { ProposalService } from '../../services/model/ProposalService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderStatus } from '../../enums/OrderStatus';
-import { BaseBidActionListenr } from '../BaseBidActionListenr';
+import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 
-export class OrderItemShipActionListener extends BaseBidActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class OrderItemShipActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPActionExtended.MPA_SHIP);
 

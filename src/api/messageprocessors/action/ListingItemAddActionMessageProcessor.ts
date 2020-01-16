@@ -14,11 +14,11 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ProposalService } from '../../services/model/ProposalService';
-import { ActionListenerInterface } from '../ActionListenerInterface';
-import { BaseActionListenr } from '../BaseActionListenr';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
+import { BaseActionMessageProcessor } from '../BaseActionMessageProcessor';
 import { BidService } from '../../services/model/BidService';
 
-export class ListingItemAddActionListener extends BaseActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class ListingItemAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPAction.MPA_LISTING_ADD);
 

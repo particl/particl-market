@@ -4,11 +4,9 @@
 
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
+import { MessageProcessorInterface } from './MessageProcessorInterface';
 
-/**
- * ActionListenerInterface defines how the Listener classes for the different ActionMessages should be implemented
- */
-export interface ActionListenerInterface {
+export interface ActionMessageProcessorInterface extends MessageProcessorInterface {
 
     /**
      * handle the event

@@ -10,37 +10,35 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { ActionListenerInterface } from '../ActionListenerInterface';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
 import { BidFactory } from '../../factories/model/BidFactory';
-import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
-import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
 import { BidService } from '../../services/model/BidService';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
+import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 import { ProposalService } from '../../services/model/ProposalService';
-import { BaseBidActionListenr } from '../BaseBidActionListenr';
+import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 
-export class BidAcceptActionListener extends BaseBidActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
-    public static Event = Symbol(MPAction.MPA_ACCEPT);
+    public static Event = Symbol(MPActionExtended.MPA_COMPLETE);
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) public bidAcceptActionService: BidAcceptActionService,
+        @inject(Types.Service) @named(Targets.Service.action.EscrowCompleteActionService) public escrowCompleteActionService: EscrowCompleteActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_COMPLETE, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
     }
 
     /**
-     * handles the received BidAcceptMessage and return SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
+     * handles the received EscrowCompleteMessage and return SmsgMessageStatus as a result
      *
      * @param event
      */
@@ -48,15 +46,15 @@ export class BidAcceptActionListener extends BaseBidActionListenr implements int
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
+        const actionMessage: EscrowCompleteMessage = marketplaceMessage.action as EscrowCompleteMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_ACCEPT) and update the OrderItem.status and Order.status
+        // - then, save the new Bid (MPA_COMPLETE) and update the OrderItem.status and Order.status
 
         return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.bidAcceptActionService.createBid(actionMessage, bidCreateRequest)
+                return await this.escrowCompleteActionService.createBid(actionMessage, bidCreateRequest)
                     .then(value => {
                         return SmsgMessageStatus.PROCESSED;
                     })
@@ -69,4 +67,6 @@ export class BidAcceptActionListener extends BaseBidActionListenr implements int
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
+
+
 }

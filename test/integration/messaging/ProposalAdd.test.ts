@@ -20,7 +20,7 @@ import { SmsgSendResponse } from '../../../src/api/responses/SmsgSendResponse';
 import { SmsgMessageService } from '../../../src/api/services/model/SmsgMessageService';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { ProposalService } from '../../../src/api/services/model/ProposalService';
-import { ProposalAddActionListener } from '../../../src/api/listeners/action/ProposalAddActionListener';
+import { ProposalAddActionMessageProcessor } from '../../../src/api/messageprocessors/action/ProposalAddActionMessageProcessor';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
 import { MarketplaceMessageEvent } from '../../../src/api/messages/MarketplaceMessageEvent';
 import { SmsgMessageFactory } from '../../../src/api/factories/model/SmsgMessageFactory';
@@ -33,7 +33,7 @@ import { TestDataGenerateRequest } from '../../../src/api/requests/testdata/Test
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ItemVote } from '../../../src/api/enums/ItemVote';
 import { VoteService } from '../../../src/api/services/model/VoteService';
-import { VoteActionListener } from '../../../src/api/listeners/action/VoteActionListener';
+import { VoteActionMessageProcessor } from '../../../src/api/messageprocessors/action/VoteActionMessageProcessor';
 
 
 describe('ProposalAddActionListener', () => {
@@ -49,8 +49,8 @@ describe('ProposalAddActionListener', () => {
     let proposalService: ProposalService;
     let voteService: VoteService;
     let proposalAddActionService: ProposalAddActionService;
-    let proposalAddActionListener: ProposalAddActionListener;
-    let voteActionListener: VoteActionListener;
+    let proposalAddActionListener: ProposalAddActionMessageProcessor;
+    let voteActionListener: VoteActionMessageProcessor;
     let smsgMessageFactory: SmsgMessageFactory;
     let coreMessageProcessor: CoreMessageProcessor;
 
@@ -77,8 +77,8 @@ describe('ProposalAddActionListener', () => {
         proposalAddActionService = app.IoC.getNamed<ProposalAddActionService>(Types.Service, Targets.Service.action.ProposalAddActionService);
         coreMessageProcessor = app.IoC.getNamed<CoreMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CoreMessageProcessor);
 
-        proposalAddActionListener = app.IoC.getNamed<ProposalAddActionListener>(Types.Listener, Targets.Listener.action.ProposalAddActionListener);
-        voteActionListener = app.IoC.getNamed<VoteActionListener>(Types.Listener, Targets.Listener.action.VoteActionListener);
+        proposalAddActionListener = app.IoC.getNamed<ProposalAddActionMessageProcessor>(Types.Listener, Targets.Listener.action.ProposalAddActionListener);
+        voteActionListener = app.IoC.getNamed<VoteActionMessageProcessor>(Types.Listener, Targets.Listener.action.VoteActionListener);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data

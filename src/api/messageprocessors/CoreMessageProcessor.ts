@@ -23,19 +23,6 @@ import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
 import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
 import { MessageQueuePriority } from '../enums/MessageQueuePriority';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
-import { BidActionListener } from '../listeners/action/BidActionListener';
-import { BidAcceptActionListener } from '../listeners/action/BidAcceptActionListener';
-import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
-import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
-import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
-import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
-import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
-import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
-import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
-import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
-import { VoteActionListener } from '../listeners/action/VoteActionListener';
-import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
 import { MarketplaceMessageProcessor } from './MarketplaceMessageProcessor';
 
 export class CoreMessageProcessor implements MessageProcessorInterface {

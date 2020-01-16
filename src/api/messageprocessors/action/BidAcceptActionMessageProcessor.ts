@@ -13,32 +13,34 @@ import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { ActionListenerInterface } from '../ActionListenerInterface';
+import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
 import { BidFactory } from '../../factories/model/BidFactory';
+import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
+import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
 import { BidService } from '../../services/model/BidService';
-import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
 import { ProposalService } from '../../services/model/ProposalService';
-import { BaseBidActionListenr } from '../BaseBidActionListenr';
+import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 
-export class EscrowLockActionListener extends BaseBidActionListenr implements interfaces.Listener, ActionListenerInterface {
+export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
-    public static Event = Symbol(MPAction.MPA_LOCK);
+    public static Event = Symbol(MPAction.MPA_ACCEPT);
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.action.EscrowLockActionService) public escrowLockActionService: EscrowLockActionService,
+        @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) public bidAcceptActionService: BidAcceptActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LOCK, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_ACCEPT, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
     }
 
     /**
-     * handles the received EscrowLockMessage and return SmsgMessageStatus as a result
+     * handles the received BidAcceptMessage and return SmsgMessageStatus as a result
+     *
+     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
      * @param event
      */
@@ -46,15 +48,15 @@ export class EscrowLockActionListener extends BaseBidActionListenr implements in
 
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
+        const actionMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
 
         // - first get the previous Bid (MPA_BID), fail if it doesn't exist
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_LOCK) and update the OrderItem.status and Order.status
+        // - then, save the new Bid (MPA_ACCEPT) and update the OrderItem.status and Order.status
 
         return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
             .then(async bidCreateRequest => {
-                return await this.escrowLockActionService.createBid(actionMessage, bidCreateRequest)
+                return await this.bidAcceptActionService.createBid(actionMessage, bidCreateRequest)
                     .then(value => {
                         return SmsgMessageStatus.PROCESSED;
                     })
@@ -67,5 +69,4 @@ export class EscrowLockActionListener extends BaseBidActionListenr implements in
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
-
 }

@@ -26,22 +26,22 @@ import { MessageQueuePriority } from '../enums/MessageQueuePriority';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import { ListingItemAddActionListener } from '../listeners/action/ListingItemAddActionListener';
-import { BidActionListener } from '../listeners/action/BidActionListener';
-import { BidAcceptActionListener } from '../listeners/action/BidAcceptActionListener';
-import { BidCancelActionListener } from '../listeners/action/BidCancelActionListener';
-import { BidRejectActionListener } from '../listeners/action/BidRejectActionListener';
-import { EscrowLockActionListener } from '../listeners/action/EscrowLockActionListener';
+import { ListingItemAddActionMessageProcessor } from './action/ListingItemAddActionMessageProcessor';
+import { BidActionMessageProcessor } from './action/BidActionMessageProcessor';
+import { BidAcceptActionMessageProcessor } from './action/BidAcceptActionMessageProcessor';
+import { BidCancelActionMessageProcessor } from './action/BidCancelActionMessageProcessor';
+import { BidRejectActionMessageProcessor } from './action/BidRejectActionMessageProcessor';
+import { EscrowLockActionMessageProcessor } from './action/EscrowLockActionMessageProcessor';
 import { MPActionExtended } from '../enums/MPActionExtended';
-import { EscrowCompleteActionListener } from '../listeners/action/EscrowCompleteActionListener';
-import { OrderItemShipActionListener } from '../listeners/action/OrderItemShipActionListener';
-import { EscrowReleaseActionListener } from '../listeners/action/EscrowReleaseActionListener';
-import { EscrowRefundActionListener } from '../listeners/action/EscrowRefundActionListener';
+import { EscrowCompleteActionMessageProcessor } from './action/EscrowCompleteActionMessageProcessor';
+import { OrderItemShipActionMessageProcessor } from './action/OrderItemShipActionMessageProcessor';
+import { EscrowReleaseActionMessageProcessor } from './action/EscrowReleaseActionMessageProcessor';
+import { EscrowRefundActionMessageProcessor } from './action/EscrowRefundActionMessageProcessor';
 import { GovernanceAction } from '../enums/GovernanceAction';
-import { ProposalAddActionListener } from '../listeners/action/ProposalAddActionListener';
-import { VoteActionListener } from '../listeners/action/VoteActionListener';
+import { ProposalAddActionMessageProcessor } from './action/ProposalAddActionMessageProcessor';
+import { VoteActionMessageProcessor } from './action/VoteActionMessageProcessor';
 import { CommentAction } from '../enums/CommentAction';
-import { CommentAddActionListener } from '../listeners/action/CommentAddActionListener';
+import { CommentAddActionMessageProcessor } from './action/CommentAddActionMessageProcessor';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 
@@ -52,23 +52,25 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
     private actionQueue: PQueue;    // Queue processing the MarketplaceMessages, prioritizing by type
 
     constructor(
+        // tslint:disable:max-line-length
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
-        @inject(Types.Listener) @named(Targets.Listener.action.ListingItemAddActionListener) private listingItemAddActionListener: ListingItemAddActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.BidActionListener) private bidActionListener: BidActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.BidAcceptActionListener) private bidAcceptActionListener: BidAcceptActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.BidCancelActionListener) private bidCancelActionListener: BidCancelActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.BidRejectActionListener) private bidRejectActionListener: BidRejectActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.EscrowLockActionListener) private escrowLockActionListener: EscrowLockActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.EscrowCompleteActionListener) private escrowCompleteActionListener: EscrowCompleteActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.OrderItemShipActionListener) private orderItemShipActionListener: OrderItemShipActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.EscrowReleaseActionListener) private escrowReleaseActionListener: EscrowReleaseActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.EscrowRefundActionListener) private escrowRefundActionListener: EscrowRefundActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.ProposalAddActionListener) private proposalAddActionListener: ProposalAddActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.VoteActionListener) private voteActionListener: VoteActionListener,
-        @inject(Types.Listener) @named(Targets.Listener.action.CommentAddActionListener) private commentAddActionListener: CommentAddActionListener,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.ListingItemAddActionMessageProcessor) private listingItemAddActionMessageProcessor: ListingItemAddActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidActionMessageProcessor) private bidActionMessageProcessor: BidActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidAcceptActionMessageProcessor) private bidAcceptActionMessageProcessor: BidAcceptActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidCancelActionMessageProcessor) private bidCancelActionMessageProcessor: BidCancelActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidRejectActionMessageProcessor) private bidRejectActionMessageProcessor: BidRejectActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.EscrowLockActionMessageProcessor) private escrowLockActionMessageProcessor: EscrowLockActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.EscrowCompleteActionMessageProcessor) private escrowCompleteActionMessageProcessor: EscrowCompleteActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.OrderItemShipActionMessageProcessor) private orderItemShipActionMessageProcessor: OrderItemShipActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.EscrowReleaseActionMessageProcessor) private escrowReleaseActionMessageProcessor: EscrowReleaseActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.EscrowRefundActionMessageProcessor) private escrowRefundActionMessageProcessor: EscrowRefundActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.ProposalAddActionMessageProcessor) private proposalAddActionMessageProcessor: ProposalAddActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.VoteActionMessageProcessor) private voteActionMessageProcessor: VoteActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.CommentAddActionMessageProcessor) private commentAddActionMessageProcessor: CommentAddActionMessageProcessor,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
+        // tslint:enable:max-line-length
     ) {
         this.log = new Logger(__filename);
 
@@ -124,67 +126,67 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
         // add the action processing function to the messageprocessing queue
         switch (smsgMessage.type) {
             case MPAction.MPA_LISTING_ADD:
-                await this.actionQueue.add(async () => await this.listingItemAddActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.listingItemAddActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_LISTING_ADD
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_BID:
-                await this.actionQueue.add(async () => await this.bidActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_BID
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_ACCEPT:
-                await this.actionQueue.add(async () => await this.bidAcceptActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidAcceptActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_ACCEPT
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_CANCEL:
-                await this.actionQueue.add(async () => await this.bidCancelActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidCancelActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_CANCEL
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_REJECT:
-                await this.actionQueue.add(async () => await this.bidRejectActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.bidRejectActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_REJECT
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_LOCK:
-                await this.actionQueue.add(async () => await this.escrowLockActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowLockActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_LOCK
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_COMPLETE:
-                await this.actionQueue.add(async () => await this.escrowCompleteActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowCompleteActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_COMPLETE
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_SHIP:
-                await this.actionQueue.add(async () => await this.orderItemShipActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.orderItemShipActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_SHIP
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_RELEASE:
-                await this.actionQueue.add(async () => await this.escrowReleaseActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowReleaseActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_RELEASE
                 } as DefaultAddOptions);
                 break;
             case MPActionExtended.MPA_REFUND:
-                await this.actionQueue.add(async () => await this.escrowRefundActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.escrowRefundActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_REFUND
                 } as DefaultAddOptions);
                 break;
             case GovernanceAction.MPA_PROPOSAL_ADD:
-                await this.actionQueue.add(async () => await this.proposalAddActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.proposalAddActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_PROPOSAL_ADD
                 } as DefaultAddOptions);
                 break;
             case GovernanceAction.MPA_VOTE:
-                await this.actionQueue.add(async () => await this.voteActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.voteActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_VOTE
                 } as DefaultAddOptions);
                 break;
             case CommentAction.MPA_COMMENT_ADD:
-                await this.actionQueue.add(async () => await this.commentAddActionListener.process(marketplaceEvent), {
+                await this.actionQueue.add(async () => await this.commentAddActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_COMMENT_ADD
                 } as DefaultAddOptions);
                 break;
