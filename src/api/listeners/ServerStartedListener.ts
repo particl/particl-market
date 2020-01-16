@@ -31,6 +31,7 @@ import { ProfileService } from '../services/model/ProfileService';
 import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatusServiceStatus';
 import pForever from 'pm-forever';
 import delay from 'pm-delay';
+import {ExpiredProposalService} from '../services/observer/ExpiredProposalService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -60,10 +61,14 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.observer.CoreCookieService) public coreCookieService: CoreCookieService,
+
+        // inject all observers here to make sure they start up
         @inject(Types.Service) @named(Targets.Service.observer.CoreConnectionStatusService) public coreConnectionStatusService: CoreConnectionStatusService,
         @inject(Types.Service) @named(Targets.Service.observer.WaitingMessageService) public waitingMessageService: WaitingMessageService,
         @inject(Types.Service) @named(Targets.Service.observer.ProposalResultRecalcService) public proposalResultRecalcService: ProposalResultRecalcService,
         @inject(Types.Service) @named(Targets.Service.observer.ExpiredListingItemService) public expiredListingItemService: ExpiredListingItemService,
+        @inject(Types.Service) @named(Targets.Service.observer.ExpiredProposalService) public expiredProposalService: ExpiredProposalService,
+
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -121,26 +126,6 @@ export class ServerStartedListener implements interfaces.Listener {
             this.start();
         });
     }
-/*
-    // DEPRECATED
-    public pollForConnection(): void {
-        this.timeout = setTimeout(
-            async () => {
-                this.isStarted = await this.checkConnection();
-                this.pollForConnection();
-            },
-            this.INTERVAL
-        );
-    }
-
-    // DEPRECATED
-    public stop(): void {
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-            this.timeout = undefined;
-        }
-    }
-*/
 
     /**
      *  - Default Profile, Market and Identity creation on app startup.
@@ -204,7 +189,6 @@ export class ServerStartedListener implements interfaces.Listener {
             // start message polling and other stuff, unless we're running integration tests
             if (process.env.NODE_ENV !== 'test') {
 
-                // TODO: these should start automatically
                 // this.expiredListingItemProcessor.scheduleProcess();
                 // this.proposalResultRecalcService.scheduleProcess();
 

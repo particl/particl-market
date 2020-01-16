@@ -171,6 +171,7 @@ export const Targets = {
             CoreCookieService: 'CoreCookieService',
             CoreConnectionStatusService: 'CoreConnectionStatusService',
             ExpiredListingItemService: 'ExpiredListingItemService',
+            ExpiredProposalService: 'ExpiredProposalService',
             ProposalResultRecalcService: 'ProposalResultRecalcService',
             WaitingMessageService: 'WaitingMessageService'
         },
@@ -450,6 +451,7 @@ export const Targets = {
         },
         ActionMessageProcessorInterface: 'ActionMessageProcessorInterface',
         BaseActionMessageProcessor: 'BaseActionMessageProcessor',
+        BaseBidActionMessageProcessor: 'BaseBidActionMessageProcessor',
         CoreMessageProcessor: 'CoreMessageProcessor',
         MarketplaceMessageProcessor: 'MarketplaceMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface'

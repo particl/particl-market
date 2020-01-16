@@ -27,7 +27,7 @@ import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
 
-@injectable()
+// @injectable()
 export abstract class BaseBidActionMessageProcessor extends BaseActionMessageProcessor {
 
     public listingItemService: ListingItemService;

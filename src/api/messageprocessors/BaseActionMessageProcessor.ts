@@ -43,9 +43,8 @@ import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddValidator } from '../messages/validator/CommentValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import {ListingItemAddMessage} from '../messages/action/ListingItemAddMessage';
 
-@injectable()
+// @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static validate(msg: MarketplaceMessage): boolean {

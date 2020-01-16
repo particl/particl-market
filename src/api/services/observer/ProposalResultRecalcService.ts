@@ -14,7 +14,7 @@ import { MarketService } from '../model/MarketService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { BaseObserverService } from './BaseObserverService';
 import { ObserverStatus } from '../../enums/ObserverStatus';
-import {ProposalCategory} from '../../enums/ProposalCategory';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 
 export class ProposalResultRecalcService extends BaseObserverService {
 

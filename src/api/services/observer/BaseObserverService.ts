@@ -39,6 +39,7 @@ export abstract class BaseObserverService {
         await pForever(async (previousValue) => {
             previousValue++;
 
+            // this.log.info('running... ' + previousValue);
             this.status = await this.run(this.status)
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
@@ -49,7 +50,6 @@ export abstract class BaseObserverService {
                 return pForever.end;
             }
             await delay(this.INTERVAL);
-            // this.log.info(previousValue + '');
 
             return previousValue;
         }, 0).catch(async reason => {
