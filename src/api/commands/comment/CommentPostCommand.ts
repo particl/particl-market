@@ -28,6 +28,7 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
 import { IdentityType } from '../../enums/IdentityType';
+import { ProposalService } from '../../services/model/ProposalService';
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -40,6 +41,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.COMMENT_POST);
@@ -49,8 +51,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      *  [0]: identity, resources.Identity
-     *  [1]: receiver
-     *  [2]: type, CommentType
+     *  [1]: type, CommentType
+     *  [2]: receiver
      *  [3]: target
      *  [4]: message
      *  [5]: parentComment, resources.Comment, optional
@@ -64,8 +66,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const identity: resources.Identity = data.params[0];
-        const toAddress = data.params[1];
-        const type  = CommentType[data.params[2]];
+        const type = CommentType[data.params[1]];
+        const toAddress = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
         const parentComment = data.params.length > 5 ? data.params[5] : undefined;
@@ -154,22 +156,38 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             throw new InvalidParamException('Identity', 'IdentityType.MARKET');
         }
 
-        // get the Market which the Identity is related to, and make sure the ListingItem with the hash exists
-        if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
+        // in all of the currently supported CommentTypes, receiver is the marketReceiveAddress
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, receiver)
+            .then(value => value.toJSON())
+            .catch(() => {
+                throw new ModelNotFoundException('Market');
+            });
+        data.params[6] = market;
 
-             const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, receiver)
-                 .then(value => value.toJSON())
-                 .catch(() => {
-                    throw new ModelNotFoundException('Market');
-                 });
-             data.params[6] = market;
+        switch (type) {
+            case CommentType.LISTINGITEM_QUESTION_AND_ANSWERS:
+                await this.listingItemService.findOneByHashAndMarketReceiveAddress(target, market.receiveAddress).then(value => value.toJSON())
+                    .catch(() => {
+                        throw new ModelNotFoundException('ListingItem');
+                    });
+                break;
+            case CommentType.PROPOSAL_QUESTION_AND_ANSWERS:
+                // todo: findOneByHashAndMarket
+                await this.proposalService.findOneByHash(target).then(value => value.toJSON())
+                    .catch(() => {
+                        throw new ModelNotFoundException('ListingItem');
+                    });
+                break;
+            case CommentType.MARKETPLACE_COMMENT:
+                await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, target)
+                    .then(value => value.toJSON())
+                    .catch(() => {
+                        throw new ModelNotFoundException('Market');
+                    });
+                break;
+            default:
+                throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
 
-             await this.listingItemService.findOneByHashAndMarketReceiveAddress(target, market.receiveAddress).then(value => value.toJSON())
-                .catch(() => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        } else {
-            throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
         }
 
         // make sure Comment with the hash exists

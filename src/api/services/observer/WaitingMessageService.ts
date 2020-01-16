@@ -60,14 +60,7 @@ export class WaitingMessageService extends BaseObserverService {
         const smsgMessages: resources.SmsgMessage[] = await this.getWaitingSmsgMessages();
 
         if (!_.isEmpty(smsgMessages) && smsgMessages.length > 0) {
-
             for (const smsgMessage of smsgMessages) {
-
-                // dont reprocess everything all the time:
-                // for first 10 tries, wait for 1 minute in between
-                // for next 10 tries, wait for 10 minutes in between
-                // for next 10 tries, wait for 1 hour in between
-                // for next 10 tries, wait for 1 day in between
                 if (this.shouldReprocessMessage(smsgMessage)) {
                     this.log.debug('PROCESSING: ', smsgMessage.msgid);
                     this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
