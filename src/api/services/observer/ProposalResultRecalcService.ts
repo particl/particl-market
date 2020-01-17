@@ -3,18 +3,21 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { ProposalService } from '../model/ProposalService';
-import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
-import { ProposalResultService } from '../model/ProposalResultService';
-import { ListingItemService } from '../model/ListingItemService';
-import { MarketService } from '../model/MarketService';
-import { FlaggedItemService } from '../model/FlaggedItemService';
-import { BaseObserverService } from './BaseObserverService';
-import { ObserverStatus } from '../../enums/ObserverStatus';
-import { ProposalCategory } from '../../enums/ProposalCategory';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ProposalService} from '../model/ProposalService';
+import {ProposalSearchParams} from '../../requests/search/ProposalSearchParams';
+import {ProposalResultService} from '../model/ProposalResultService';
+import {ListingItemService} from '../model/ListingItemService';
+import {MarketService} from '../model/MarketService';
+import {FlaggedItemService} from '../model/FlaggedItemService';
+import {BaseObserverService} from './BaseObserverService';
+import {ObserverStatus} from '../../enums/ObserverStatus';
+import {ProposalCategory} from '../../enums/ProposalCategory';
+import {BlacklistService} from '../model/BlacklistService';
+import {BlacklistCreateRequest} from '../../requests/model/BlacklistCreateRequest';
+import {BlacklistType} from '../../enums/BlacklistType';
 
 export class ProposalResultRecalcService extends BaseObserverService {
 
@@ -25,6 +28,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService
@@ -80,11 +84,11 @@ export class ProposalResultRecalcService extends BaseObserverService {
         return ObserverStatus.RUNNING;
     }
 
-    public async removeIfNeeded(id: number, proposalResult: resources.ProposalResult, flagOnly: boolean = false): Promise<void> {
+    public async removeIfNeeded(flaggedItemId: number, proposalResult: resources.ProposalResult, flagOnly: boolean = false): Promise<void> {
 
         // fetch the FlaggedItem and remove if thresholds are hit
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
-            const flaggedItem: resources.FlaggedItem = await this.flaggedItemService.findOne(id)
+            const flaggedItem: resources.FlaggedItem = await this.flaggedItemService.findOne(flaggedItemId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
@@ -96,12 +100,29 @@ export class ProposalResultRecalcService extends BaseObserverService {
                     switch (proposalResult.Proposal.category) {
                         case ProposalCategory.ITEM_VOTE:
                             await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
-                            // TODO: Blacklist
-                            break;
+
+                            const blacklistListingCreateRequest = {
+                                type: BlacklistType.LISTINGITEM,
+                                target: flaggedItem.ListingItem!.hash,
+                                market: flaggedItem.Proposal.market,
+                                listing_item_id: flaggedItem.ListingItem!.id
+                            } as BlacklistCreateRequest;
+
+                            // todo: remove existing Blacklists with relation to Profile
+                            return await this.blacklistService.create(blacklistListingCreateRequest).then(value => value.toJSON());
+
                         case ProposalCategory.MARKET_VOTE:
                             await this.marketService.destroy(flaggedItem.Market!.id);
-                            // TODO: Blacklist
-                            break;
+
+                            const blacklistMarketCreateRequest = {
+                                type: BlacklistType.LISTINGITEM,
+                                target: flaggedItem.Proposal.market,
+                                market: flaggedItem.Proposal.market
+                            } as BlacklistCreateRequest;
+
+                            // todo: remove existing Blacklists with relation to Profile
+                            return await this.blacklistService.create(blacklistMarketCreateRequest).then(value => value.toJSON());
+
                         default:
                             break;
                     }
