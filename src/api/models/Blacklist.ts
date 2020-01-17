@@ -5,11 +5,12 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { BlacklistType } from '../enums/BlacklistType';
-
+import { Profile } from './Profile';
 
 export class Blacklist extends Bookshelf.Model<Blacklist> {
 
     public static RELATIONS = [
+        'Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Blacklist> {
@@ -23,11 +24,28 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
     }
 
     public static async fetchAllByType(type: BlacklistType): Promise<Collection<Blacklist>> {
-        const blacklistResultCollection = Blacklist.forge<Model<Blacklist>>()
+        const collection = Blacklist.forge<Model<Blacklist>>()
             .query(qb => {
-                qb.where('blacklists.type', '=', type);
+                qb.where('type', '=', type);
             });
-        return await blacklistResultCollection.fetchAll();
+        return await collection.fetchAll();
+    }
+
+    public static async fetchAllByTypeAndProfileId(type: BlacklistType, profileId: number, withRelated: boolean = true): Promise<Collection<Blacklist>> {
+        const collection = Blacklist.forge<Model<Blacklist>>()
+            .query(qb => {
+                qb.where('type', '=', type);
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await collection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await collection.fetchAll();
+        }
     }
 
     public get tableName(): string { return 'blacklists'; }
@@ -39,15 +57,20 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
-    public get Hash(): string { return this.get('hash'); }
-    public set Hash(value: string) { this.set('hash', value); }
+    public get Target(): string { return this.get('target'); }
+    public set Target(value: string) { this.set('target', value); }
 
-    // TODO: add Market
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
+    }
 
 }

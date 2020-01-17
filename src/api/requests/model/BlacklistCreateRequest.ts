@@ -14,7 +14,10 @@ export class BlacklistCreateRequest extends RequestBody implements ModelRequestI
     public type: BlacklistType;
 
     @IsNotEmpty()
-    public hash: string;
+    public target: string;
+
+    public market: string;
+    public profile_id: number;
 
 }
 // tslint:enable:variable-name

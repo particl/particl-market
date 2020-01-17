@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -49,8 +50,13 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Blacklist>> {
         const type: BlacklistType = data.params[0];
-        // TODO: filter by Profile
-        return await this.blacklistService.findAllByType(type);
+
+        if (_.isEmpty(data.params[1])) {
+            return await this.blacklistService.findAllByType(type);
+        } else {
+            const profile: resources.Profile = data.params[1];
+            return await this.blacklistService.findAllByTypeAndProfileId(type, profile.id);
+        }
     }
 
     /**
