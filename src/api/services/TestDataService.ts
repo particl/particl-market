@@ -1558,7 +1558,7 @@ export class TestDataService {
         const type = generateParams.type ? generateParams.type : Faker.random.arrayElement(Object.getOwnPropertyNames(BlacklistType));
         const blacklistCreateRequest = {
             type,
-            hash: Faker.random.uuid()
+            target: Faker.random.uuid()
         } as BlacklistCreateRequest;
 
         return blacklistCreateRequest;
