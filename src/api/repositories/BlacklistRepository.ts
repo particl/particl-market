@@ -35,6 +35,10 @@ export class BlacklistRepository {
         return await this.BlacklistModel.fetchAllByTypeAndProfileId(type, profileId);
     }
 
+    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return await this.BlacklistModel.fetchAllByTargetAndProfileId(target, profileId);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Blacklist> {
         return await this.BlacklistModel.fetchById(id, withRelated);
     }

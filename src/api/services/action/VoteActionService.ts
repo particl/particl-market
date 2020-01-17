@@ -31,13 +31,17 @@ import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreat
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
-import { RpcUnspentOutput} from 'omp-lib/dist/interfaces/rpc';
+import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { VoteValidator } from '../../messages/validator/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
 import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 import { MarketService } from '../model/MarketService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
+import { BlacklistType } from '../../enums/BlacklistType';
+import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { BlacklistService } from '../model/BlacklistService';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -63,6 +67,7 @@ export class VoteActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
@@ -237,8 +242,25 @@ export class VoteActionService extends BaseActionService {
                 voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
             await this.listingItemService.setRemovedFlag(listingItem.id, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
             this.log.debug('vote(), removed flag set');
+
+            // todo: get rid of the remove flag, use Blacklist...
+
+
         } else if (voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
             // TODO: await this.marketService.setRemovedFlag()
+        }
+
+        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
+            || voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
+
+            // Blacklist the ListingItem.hash/Market.receiveAddress for the Profile thats voting
+            if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
+                // only if voting for removal
+                await this.createBlacklistForVote(voteRequest);
+            } else {
+                await this.removeBlacklistForVote(voteRequest);
+            }
+
         }
 
         if (msgids.length === 0) {
@@ -358,6 +380,76 @@ export class VoteActionService extends BaseActionService {
         return vote;
     }
 
+    /**
+     * When we are voting for removal, a Blacklist is created for whatever we vote to remove for.
+     *
+     * @param voteRequest
+     */
+    public async createBlacklistForVote(voteRequest: VoteRequest): Promise<resources.Blacklist> {
+
+        const proposal: resources.Proposal = voteRequest.proposal;
+        const voterIdentity: resources.Identity = voteRequest.sender;
+
+        const type: BlacklistType = this.getBlacklistType(proposal.category);
+        const target = proposal.title;  // hash/marketReceiveAddress in title
+
+        const profileId = voterIdentity.Profile.id;
+
+        let listingItem: resources.ListingItem | undefined;
+        if (!_.isEmpty(proposal.FlaggedItem.ListingItem)) {
+            listingItem = proposal.FlaggedItem.ListingItem;
+        }
+
+        // only create if Blacklist doesn't exist
+        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
+
+        if (_.isEmpty(blacklisted)) {
+            const blacklistCreateRequest = {
+                type,
+                target,
+                market: proposal.market,
+                profile_id: profileId,
+                listing_item_id: listingItem ? listingItem.id : undefined
+            } as BlacklistCreateRequest;
+
+            return await this.blacklistService.create(blacklistCreateRequest).then(value => value.toJSON());
+        } else {
+            return blacklisted[0];
+        }
+    }
+    /**
+     * When we are voting to NOT remove, remove the existing Blacklist if such exists.
+     *
+     * @param voteRequest
+     */
+    public async removeBlacklistForVote(voteRequest: VoteRequest): Promise<void> {
+
+        const target = voteRequest.proposal.title;  // hash/marketReceiveAddress in title
+        const profileId = voteRequest.sender.Profile.id;
+
+        // only remove if Blacklist exists
+        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
+
+        if (!_.isEmpty(blacklisted)) {
+            // there shouldn't be multiple, but wth
+            // todo: add findOne...
+            for (const blacklist of blacklisted) {
+                await this.blacklistService.destroy(blacklist.id);
+            }
+        }
+    }
+
+    private getBlacklistType(proposalCategory: ProposalCategory): BlacklistType {
+        switch (proposalCategory) {
+            case ProposalCategory.ITEM_VOTE:
+                return BlacklistType.LISTINGITEM;
+            case ProposalCategory.MARKET_VOTE:
+                return BlacklistType.MARKET;
+            case ProposalCategory.PUBLIC_VOTE:
+            default:
+                throw new NotImplementedException();
+        }
+    }
 
     /**
      * get the Identity wallets addresses

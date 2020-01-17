@@ -4,35 +4,38 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
-import { SmsgService } from '../SmsgService';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { EventEmitter } from 'events';
-import { ProposalService } from '../model/ProposalService';
-import { MessageException } from '../../exceptions/MessageException';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ProposalCategory } from '../../enums/ProposalCategory';
-import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ListingItemService } from '../model/ListingItemService';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ItemVote } from '../../enums/ItemVote';
-import { FlaggedItemService } from '../model/FlaggedItemService';
-import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
-import { VoteActionService } from './VoteActionService';
-import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
-import { ProposalFactory } from '../../factories/model/ProposalFactory';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
-import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
-import { BaseActionService } from './BaseActionService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
-import { ProposalAddValidator } from '../../messages/validator/ProposalAddValidator';
-import { VoteRequest } from '../../requests/action/VoteRequest';
-import { MarketService } from '../model/MarketService';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ProposalCreateRequest} from '../../requests/model/ProposalCreateRequest';
+import {SmsgService} from '../SmsgService';
+import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
+import {EventEmitter} from 'events';
+import {ProposalService} from '../model/ProposalService';
+import {MessageException} from '../../exceptions/MessageException';
+import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
+import {ProposalCategory} from '../../enums/ProposalCategory';
+import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
+import {ListingItemService} from '../model/ListingItemService';
+import {SmsgMessageService} from '../model/SmsgMessageService';
+import {ItemVote} from '../../enums/ItemVote';
+import {FlaggedItemService} from '../model/FlaggedItemService';
+import {FlaggedItemCreateRequest} from '../../requests/model/FlaggedItemCreateRequest';
+import {VoteActionService} from './VoteActionService';
+import {ProposalAddMessageFactory} from '../../factories/message/ProposalAddMessageFactory';
+import {ProposalFactory} from '../../factories/model/ProposalFactory';
+import {ompVersion} from 'omp-lib/dist/omp';
+import {ProposalCreateParams} from '../../factories/model/ModelCreateParams';
+import {ProposalAddMessageCreateParams} from '../../requests/message/ProposalAddMessageCreateParams';
+import {BaseActionService} from './BaseActionService';
+import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
+import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
+import {ProposalAddValidator} from '../../messages/validator/ProposalAddValidator';
+import {VoteRequest} from '../../requests/action/VoteRequest';
+import {MarketService} from '../model/MarketService';
+import {BlacklistCreateRequest} from '../../requests/model/BlacklistCreateRequest';
+import {BlacklistType} from '../../enums/BlacklistType';
+import {NotImplementedException} from '../../exceptions/NotImplementedException';
 
 export class ProposalAddActionService extends BaseActionService {
 
@@ -110,8 +113,7 @@ export class ProposalAddActionService extends BaseActionService {
 
         // processProposal "processes" the Proposal, creating or updating the Proposal.
         // called from both beforePost() and onEvent()
-        // TODO: currently do not pass smsgMessage to the processProposal here as that would set the values from smsgMessage
-        // TODO: add received or similar flag instead of this
+        // TODO: maybe add received or similar flag instead of this?
         await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
 
         // TODO: what is this supposed to test?
@@ -123,8 +125,10 @@ export class ProposalAddActionService extends BaseActionService {
 
             // this.log.debug('afterPost(), proposal: ', JSON.stringify(proposal, null, 2));
 
-            // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
-            if (ProposalCategory.ITEM_VOTE === proposal.category) {
+            // if the Proposal is of category ITEM_VOTE or MARKET_VOTE,
+            // we also need to send votes for the ListingItem/Market removal
+            if (ProposalCategory.ITEM_VOTE === proposal.category
+                || ProposalCategory.MARKET_VOTE === proposal.category) {
 
                 const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
                     return o.description === ItemVote.REMOVE;
@@ -136,7 +140,7 @@ export class ProposalAddActionService extends BaseActionService {
                 }
 
                 // prepare the VoteRequest for sending votes
-                const postRequest = {
+                const voteRequest = {
                     sendParams: params.sendParams,
                     sender: params.sender,
                     market: params.market,
@@ -144,12 +148,12 @@ export class ProposalAddActionService extends BaseActionService {
                     proposalOption
                 } as VoteRequest;
 
-                postRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
+                voteRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
 
                 this.log.debug('afterPost(), sending votes...');
 
                 // send the VoteMessages from each of senderProfiles addresses
-                const voteSmsgSendResponse = await this.voteActionService.vote(postRequest);
+                const voteSmsgSendResponse = await this.voteActionService.vote(voteRequest);
                 smsgSendResponse.msgids = voteSmsgSendResponse.msgids;
                 // ProposalResult will be calculated after each vote has been sent...
             }
@@ -197,9 +201,11 @@ export class ProposalAddActionService extends BaseActionService {
             for (const market of markets) {
                 let flaggedItem: resources.FlaggedItem;
                 if (_.isEmpty(market.FlaggedItem)) {
+                    // only create if FlaggedItem doesnt already exist
                     flaggedItemCreateRequest.market_id = market.id;
                     flaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
                 } else {
+                    // else just return the existing
                     flaggedItem = await this.flaggedItemService.findOne(market.FlaggedItem.id).then(value => value.toJSON());
                 }
                 createdFlaggedItems.push(flaggedItem);
@@ -212,6 +218,7 @@ export class ProposalAddActionService extends BaseActionService {
             throw new MessageException('Unsupported ProposalCategory.');
         }
     }
+
 
     /**
      * processProposal "processes" the Proposal, creating or updating the Proposal.

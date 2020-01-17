@@ -40,6 +40,10 @@ export class BlacklistService {
         return this.blacklistRepo.findAllByTypeAndProfileId(type, profileId);
     }
 
+    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return this.blacklistRepo.findAllByTargetAndProfileId(target, profileId);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Blacklist> {
         const blacklist = await this.blacklistRepo.findOne(id, withRelated);
         if (blacklist === null) {

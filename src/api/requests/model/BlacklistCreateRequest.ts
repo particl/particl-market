@@ -16,8 +16,8 @@ export class BlacklistCreateRequest extends RequestBody implements ModelRequestI
     @IsNotEmpty()
     public target: string;
 
-    public market: string;
-    public profile_id: number;
-
+    public market: string;              // optional market to be blacklisted on
+    public profile_id: number;          // optional profile to have relation to
+    public listing_item_id: number;     // optional listingitem to have relation to
 }
 // tslint:enable:variable-name

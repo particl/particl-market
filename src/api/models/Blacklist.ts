@@ -48,6 +48,23 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
         }
     }
 
+    public static async fetchAllByTargetAndProfileId(target: string, profileId: number, withRelated: boolean = true): Promise<Collection<Blacklist>> {
+        const collection = Blacklist.forge<Model<Blacklist>>()
+            .query(qb => {
+                qb.where('target', '=', target);
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await collection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await collection.fetchAll();
+        }
+    }
+
     public get tableName(): string { return 'blacklists'; }
     public get hasTimestamps(): boolean { return true; }
 
