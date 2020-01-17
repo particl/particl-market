@@ -12,9 +12,10 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('type').notNullable();
 
-            table.string('target').nullable();  // optional target, if it isn't listingitem
+            table.string('target').notNullable();  // target listing/market/image/...
             table.string('market').nullable();  // optional market to be blacklisted on
 
+            // this is to easily be able to remove blacklisted listings from searches by a profile
             table.integer('listing_item_id').unsigned().nullable();  // listingitem to blacklist
             table.foreign('listing_item_id').references('id').inTable('listing_items').onDelete('CASCADE');
 
