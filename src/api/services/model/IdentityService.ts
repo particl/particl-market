@@ -131,20 +131,21 @@ export class IdentityService {
         // create and load a new blank wallet
         // TODO: encrypt by default?
         const walletName = 'profiles/' + profile.name + '/' + marketName;
-        await this.coreRpcService.createAndLoadWallet(walletName, false, true)
-            .catch(async reason => {
-                // catch in case the wallet file already exists and use the existing wallet..
-                // this should only happen because of lazy/stupid dev :)
-                this.log.error('reason:', JSON.stringify(reason.body.error.message, null, 2));
-                if (_.includes(reason.body.error.message, 'already exists.')) {
-                    const isLoaded = await this.coreRpcService.walletLoaded(walletName);
-                    if (!isLoaded) {
-                        await this.coreRpcService.loadWallet(walletName);
-                    }
-                } else {
+        const walletExists = await this.coreRpcService.walletExists(walletName);
+
+        if (!walletExists) {
+            await this.coreRpcService.createAndLoadWallet(walletName, false, true)
+                .catch(async reason => {
+                    this.log.error('reason:', JSON.stringify(reason.body.error.message, null, 2));
                     throw new MessageException(reason.body.error.message);
-                }
-            });
+                });
+
+        } else { // this should not really happen, and wouldn't recommended to use existing wallet
+            const isLoaded = await this.coreRpcService.walletLoaded(walletName);
+            if (!isLoaded) {
+                await this.coreRpcService.loadWallet(walletName);
+            }
+        }
 
         // import the key and set up the market wallet
         const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);

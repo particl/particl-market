@@ -11,7 +11,15 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('type').notNullable();
-            table.string('hash').notNullable();
+
+            table.string('target').nullable();  // optional target, if it isn't listingitem
+            table.string('market').nullable();  // optional market to be blacklisted on
+
+            table.integer('listing_item_id').unsigned().nullable();  // listingitem to blacklist
+            table.foreign('listing_item_id').references('id').inTable('listing_items').onDelete('CASCADE');
+
+            table.integer('profile_id').unsigned().nullable();  // profile to blacklist for
+            table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
