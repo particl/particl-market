@@ -20,6 +20,19 @@ export interface ActionServiceInterface {
     smsgMessageFactory: SmsgMessageFactory;
 
     /**
+     * create the MarketplaceMessage to which is to be posted to the network
+     * @param params
+     */
+    createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
+
+    /**
+     * called before post is executed and message is sent
+     * @param params
+     * @param message
+     */
+    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
+
+    /**
      * posts the MarketplaceMessage, this is the method that should be called from the command to execute
      * command action.
      *
@@ -38,13 +51,6 @@ export interface ActionServiceInterface {
     post(params: ActionRequestInterface): Promise<SmsgSendResponse>;
 
     /**
-     * called before post is executed and message is sent
-     * @param params
-     * @param message
-     */
-    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
-
-    /**
      * called after post is executed and message is sent
      * @param params
      * @param message
@@ -54,9 +60,4 @@ export interface ActionServiceInterface {
     afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
               smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
-    /**
-     * create the MarketplaceMessage to which is to be posted to the network
-     * @param params
-     */
-    createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 }

@@ -9,6 +9,7 @@ import { MPM} from 'omp-lib/dist/interfaces/omp';
 import { ActionMessageValidatorInterface } from './ActionMessageValidatorInterface';
 import { FV_MPA_BID } from 'omp-lib/dist/format-validators/mpa_bid';
 import { decorate, injectable } from 'inversify';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -20,7 +21,7 @@ export class BidValidator extends FV_MPA_BID implements ActionMessageValidatorIn
         super();
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (message.action.type !== MPAction.MPA_BID) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_BID]);
         }
@@ -29,7 +30,7 @@ export class BidValidator extends FV_MPA_BID implements ActionMessageValidatorIn
         return FV_MPA_BID.validate(message as MPM);
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         return true;
     }
 

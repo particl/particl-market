@@ -7,14 +7,14 @@ import { ValidationException } from '../exceptions/ValidationException';
 import { ActionMessageValidatorInterface } from './ActionMessageValidatorInterface';
 import { MessageException } from '../exceptions/MessageException';
 import { CommentAction } from '../enums/CommentAction';
-import {BidAcceptMessage} from '../messages/action/BidAcceptMessage';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
  */
 export class CommentAddValidator implements ActionMessageValidatorInterface {
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (!message.version) {
             throw new MessageException('version: missing');
         }
@@ -35,7 +35,7 @@ export class CommentAddValidator implements ActionMessageValidatorInterface {
         return true;
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         return true;
     }
 }

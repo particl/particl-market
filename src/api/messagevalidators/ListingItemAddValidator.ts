@@ -9,6 +9,7 @@ import { FV_MPA_LISTING } from 'omp-lib/dist/format-validators/mpa_listing_add';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MPM } from 'omp-lib/dist/interfaces/omp';
 import { decorate, injectable } from 'inversify';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -20,7 +21,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
         super();
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (message.action.type !== MPAction.MPA_LISTING_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LISTING_ADD]);
         }
@@ -29,7 +30,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
         return FV_MPA_LISTING.validate(message as MPM);
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         return true;
     }
 

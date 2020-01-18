@@ -91,16 +91,6 @@ export class BidAcceptActionService extends BaseActionService {
     }
 
     /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return await this.validator.validateMessage(marketplaceMessage);
-    }
-
-    /**
      * called after createMessage and before post is executed and message is sent
      *
      * @param params

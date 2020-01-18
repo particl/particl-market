@@ -14,6 +14,7 @@ import { Targets, Types } from '../../constants';
 import { BidService } from '../services/model/BidService';
 import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -25,7 +26,7 @@ export class OrderItemShipValidator implements ActionMessageValidatorInterface {
     ) {
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (!message.version) {
             throw new MessageException('version: missing');
         }
@@ -44,7 +45,7 @@ export class OrderItemShipValidator implements ActionMessageValidatorInterface {
         return true;
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         // MPA_COMPLETE should exists
         // -> orderItem should have status OrderItemStatus.ESCROW_COMPLETED, meaning there's no race condition
         // -> (msg.action as MPA_SHIP).bid is the hash of MPA_BID and should be found

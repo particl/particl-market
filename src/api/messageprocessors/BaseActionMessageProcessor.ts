@@ -14,6 +14,8 @@ import { BidService } from '../services/model/BidService';
 import { ProposalService } from '../services/model/ProposalService';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {ActionDirection} from '../enums/ActionDirection';
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -54,8 +56,12 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public async process(event: MarketplaceMessageEvent): Promise<void> {
         this.log.info('Received event: ', event.smsgMessage.type);
 
-        const validContent = await this.validator.validateMessage(event.marketplaceMessage).then(value => value).catch(reason => false);
-        const validSequence = await this.validator.validateSequence(event.marketplaceMessage).then(value => value).catch(reason => false);
+        const validContent = await this.validator.validateMessage(event.marketplaceMessage, ActionDirection.INCOMING)
+            .then(value => value)
+            .catch(reason => false);
+        const validSequence = await this.validator.validateSequence(event.marketplaceMessage, ActionDirection.INCOMING)
+            .then(value => value)
+            .catch(reason => false);
 
         if (validContent) {
             if (!validSequence) {

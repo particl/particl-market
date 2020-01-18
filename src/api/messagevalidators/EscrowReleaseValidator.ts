@@ -13,6 +13,7 @@ import { inject, named } from 'inversify';
 import { Targets, Types } from '../../constants';
 import { BidService } from '../services/model/BidService';
 import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -24,7 +25,7 @@ export class EscrowReleaseValidator implements ActionMessageValidatorInterface {
     ) {
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (!message.version) {
             throw new MessageException('version: missing');
         }
@@ -43,7 +44,7 @@ export class EscrowReleaseValidator implements ActionMessageValidatorInterface {
         return true;
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         // both MPA_COMPLETE and MPA_SHIP should exists
         // -> (msg.action as MPA_RELEASE).bid is the hash of MPA_BID and should be found
         // -> Bid of the type MPA_BID should have ChildBid of type MPA_LOCK

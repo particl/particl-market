@@ -11,6 +11,7 @@ import { VoteMessage } from '../messages/action/VoteMessage';
 import { inject, named } from 'inversify';
 import { Targets, Types } from '../../constants';
 import { ProposalService } from '../services/model/ProposalService';
+import {ActionDirection} from '../enums/ActionDirection';
 
 /**
  *
@@ -22,7 +23,7 @@ export class VoteValidator implements ActionMessageValidatorInterface {
     ) {
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (!message.version) {
             throw new MessageException('version: missing');
         }
@@ -44,7 +45,7 @@ export class VoteValidator implements ActionMessageValidatorInterface {
         return true;
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         // MPA_PROPOSAL_ADD should exists
         // -> (msg.action as MPA_VOTE).proposalHash is the hash of Proposal
         return await this.proposalService.findOneByHash((message.action as VoteMessage).proposalHash, true)

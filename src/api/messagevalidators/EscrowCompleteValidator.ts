@@ -14,6 +14,7 @@ import { Targets, Types } from '../../constants';
 import { BidService } from '../services/model/BidService';
 import { EscrowCompleteMessage } from '../messages/action/EscrowCompleteMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -25,7 +26,7 @@ export class EscrowCompleteValidator implements ActionMessageValidatorInterface 
     ) {
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (!message.version) {
             throw new MessageException('version: missing');
         }
@@ -44,7 +45,7 @@ export class EscrowCompleteValidator implements ActionMessageValidatorInterface 
         return true;
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         // MPA_LOCK should exists
         // -> (msg.action as MPA_COMPLETE).bid is the hash of MPA_BID and should be found
         // -> Bid of the type MPA_BID should have ChildBid of type MPA_LOCK

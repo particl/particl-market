@@ -14,6 +14,7 @@ import { decorate, inject, injectable, named } from 'inversify';
 import { Targets, Types } from '../../constants';
 import { BidService } from '../services/model/BidService';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
+import { ActionDirection } from '../enums/ActionDirection';
 
 /**
  *
@@ -27,7 +28,7 @@ export class EscrowLockValidator extends FV_MPA_LOCK implements ActionMessageVal
         super();
     }
 
-    public async validateMessage(message: MarketplaceMessage): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         if (message.action.type !== MPAction.MPA_LOCK) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LOCK]);
         }
@@ -36,7 +37,7 @@ export class EscrowLockValidator extends FV_MPA_LOCK implements ActionMessageVal
         return FV_MPA_LOCK.validate(message as MPM);
     }
 
-    public async validateSequence(message: MarketplaceMessage): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
         // MPA_ACCEPT should exists
         // -> (msg.action as MPA_LOCK).bid is the hash of MPA_BID
         // -> Bid of the type MPA_BID should have ChildBid of type MPA_ACCEPT
