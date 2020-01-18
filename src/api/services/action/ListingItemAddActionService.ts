@@ -13,7 +13,7 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';

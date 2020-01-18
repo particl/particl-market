@@ -16,7 +16,7 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';

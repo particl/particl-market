@@ -28,7 +28,7 @@ import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { VoteMessageCreateParams } from '../../requests/message/VoteMessageCreateParams';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';

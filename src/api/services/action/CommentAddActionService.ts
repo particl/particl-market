@@ -14,7 +14,7 @@ import { CoreRpcService } from '../CoreRpcService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';

@@ -102,7 +102,6 @@ export const Targets = {
     Service:     {
         action: {
             ActionServiceInterface: 'ActionServiceInterface',
-            BaseActionService: 'BaseActionService',
             BidAcceptActionService: 'BidAcceptActionService',
             BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
@@ -117,6 +116,7 @@ export const Targets = {
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
+        BaseActionService: 'BaseActionService',
         CoreRpcService: 'CoreRpcService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',

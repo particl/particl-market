@@ -17,7 +17,7 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';

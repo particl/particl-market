@@ -27,7 +27,7 @@ import { ProposalFactory } from '../../factories/model/ProposalFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
 import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
-import { BaseActionService } from './BaseActionService';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';

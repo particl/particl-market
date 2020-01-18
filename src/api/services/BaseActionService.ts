@@ -4,21 +4,21 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { ActionServiceInterface } from './ActionServiceInterface';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ActionDirection } from '../../enums/ActionDirection';
-import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
-import { SmsgService } from '../SmsgService';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { SmsgMessageCreateParams } from '../../factories/model/ModelCreateParams';
-import { MessageException } from '../../exceptions/MessageException';
-import { ValidationException } from '../../exceptions/ValidationException';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { ActionServiceInterface } from './action/ActionServiceInterface';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ActionDirection } from '../enums/ActionDirection';
+import { ActionRequestInterface } from '../requests/action/ActionRequestInterface';
+import { SmsgService } from './SmsgService';
+import { SmsgMessageService } from './model/SmsgMessageService';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
+import { MessageException } from '../exceptions/MessageException';
+import { ValidationException } from '../exceptions/ValidationException';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { strip } from 'omp-lib/dist/util';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { ActionMessageValidatorInterface } from '../../messagevalidators/ActionMessageValidatorInterface';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -71,6 +71,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
             this.log.error('ERROR:', reason);
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
         });
+        // TODO: also validate the sequence?
 
         // return smsg fee estimate, if thats what was requested
         if (params.sendParams.estimateFee) {
