@@ -20,6 +20,7 @@ import { BidAcceptActionService } from '../../services/action/BidAcceptActionSer
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
+import { BidAcceptValidator } from '../../messagevalidators/BidAcceptValidator';
 
 export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,9 +33,10 @@ export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidAcceptValidator) public validator: BidAcceptValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_ACCEPT, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
     }
 
     /**

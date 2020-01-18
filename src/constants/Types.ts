@@ -21,6 +21,7 @@ export const Types = {
     Command: Symbol('Command'),
     Factory: Symbol('Factory'),
     MessageProcessor: Symbol('MessageProcessor'),
+    MessageValidator: Symbol('MessageValidator'),
     Listener: Symbol('Listener'),
     Repository: Symbol('Repository'),
     Middleware: Symbol('Middleware')

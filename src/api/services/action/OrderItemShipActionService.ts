@@ -24,7 +24,7 @@ import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest';
-import { OrderItemShipValidator } from '../../messages/validator/OrderItemShipValidator';
+import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { OrderItemShipMessageFactory } from '../../factories/message/OrderItemShipMessageFactory';
 import { OrderItemShipMessageCreateParams } from '../../requests/message/OrderItemShipMessageCreateParams';
@@ -34,17 +34,17 @@ export class OrderItemShipActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public orderItemShipMessageFactory: OrderItemShipMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -73,17 +73,6 @@ export class OrderItemShipActionService extends BaseActionService {
 
             });
 
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        // todo: implement a Base/CommonMessageValidator for validating the common stuff
-        return OrderItemShipValidator.isValid(marketplaceMessage);
     }
 
     /**

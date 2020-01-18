@@ -32,7 +32,7 @@ import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
-import { VoteValidator } from '../../messages/validator/VoteValidator';
+import { VoteValidator } from '../../messagevalidators/VoteValidator';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { ItemVote } from '../../enums/ItemVote';
 import { OutputType } from 'omp-lib/dist/interfaces/crypto';
@@ -71,10 +71,11 @@ export class VoteActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.message.VoteMessageFactory) private voteMessageFactory: VoteMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.VoteFactory) private voteFactory: VoteFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -100,15 +101,6 @@ export class VoteActionService extends BaseActionService {
             version: ompVersion(),
             action: actionMessage
         } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return VoteValidator.isValid(marketplaceMessage);
     }
 
     /**

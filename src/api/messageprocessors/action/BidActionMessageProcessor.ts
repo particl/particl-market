@@ -25,6 +25,7 @@ import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { BidValidator } from '../../messagevalidators/BidValidator';
 
 export class BidActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -37,9 +38,10 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidValidator) public validator: BidValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgMessageService, bidService, proposalService, Logger);
+        super(MPAction.MPA_BID, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**

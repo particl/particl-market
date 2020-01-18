@@ -433,6 +433,21 @@ export const Targets = {
         },
         RpcCommandFactory: 'RpcCommandFactory'
     },
+    MessageValidator:     {
+        BidAcceptValidator: 'BidAcceptValidator',
+        BidCancelValidator: 'BidCancelValidator',
+        BidRejectValidator: 'BidRejectValidator',
+        BidValidator: 'BidValidator',
+        CommentAddValidator: 'CommentAddValidator',
+        EscrowCompleteValidator: 'EscrowCompleteValidator',
+        EscrowLockValidator: 'EscrowLockValidator',
+        EscrowRefundValidator: 'EscrowRefundValidator',
+        EscrowReleaseValidator: 'EscrowReleaseValidator',
+        ListingItemAddValidator: 'ListingItemAddValidator',
+        OrderItemShipValidator: 'OrderItemShipValidator',
+        ProposalAddValidator: 'ProposalAddValidator',
+        VoteValidator: 'VoteValidator'
+    },
     MessageProcessor:     {
         action: {
             BidAcceptActionMessageProcessor: 'BidAcceptActionMessageProcessor',

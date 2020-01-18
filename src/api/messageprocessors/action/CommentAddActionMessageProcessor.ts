@@ -18,6 +18,7 @@ import { CommentService } from '../../services/model/CommentService';
 import { CommentAddActionService } from '../../services/action/CommentAddActionService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
+import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 
 export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -29,9 +30,10 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public commentAddActionService: CommentAddActionService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(CommentAction.MPA_COMMENT_ADD, smsgMessageService, bidService, proposalService, Logger);
+        super(CommentAction.MPA_COMMENT_ADD, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**

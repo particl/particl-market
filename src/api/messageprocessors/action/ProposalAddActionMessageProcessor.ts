@@ -17,6 +17,7 @@ import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
+import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
 
 export class ProposalAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -27,9 +28,10 @@ export class ProposalAddActionMessageProcessor extends BaseActionMessageProcesso
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, bidService, proposalService, Logger);
+        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**

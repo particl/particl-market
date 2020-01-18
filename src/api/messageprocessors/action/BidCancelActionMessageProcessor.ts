@@ -20,6 +20,7 @@ import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelActionService } from '../../services/action/BidCancelActionService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
+import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
 
 export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,9 +33,10 @@ export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_CANCEL, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
     }
 
     /**

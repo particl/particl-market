@@ -26,7 +26,7 @@ import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessa
 import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
-import { BidAcceptValidator } from '../../messages/validator/BidAcceptValidator';
+import { BidAcceptValidator } from '../../messagevalidators/BidAcceptValidator';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
@@ -45,10 +45,11 @@ export class BidAcceptActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidAcceptValidator) public validator: BidAcceptValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -96,7 +97,7 @@ export class BidAcceptActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidAcceptValidator.isValid(marketplaceMessage);
+        return await this.validator.validateMessage(marketplaceMessage);
     }
 
     /**

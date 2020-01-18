@@ -18,6 +18,7 @@ import { ValidationException } from '../../exceptions/ValidationException';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { strip } from 'omp-lib/dist/util';
 import { Logger as LoggerType } from '../../../core/Logger';
+import { ActionMessageValidatorInterface } from '../../messagevalidators/ActionMessageValidatorInterface';
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -26,11 +27,14 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
     public smsgMessageFactory: SmsgMessageFactory;
+    public validator: ActionMessageValidatorInterface;
 
-    constructor(smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory) {
+    constructor(smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory,
+                validator: ActionMessageValidatorInterface) {
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.smsgMessageFactory = smsgMessageFactory;
+        this.validator = validator;
     }
 
     /**
@@ -40,14 +44,6 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param params
      */
     public abstract async createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
-
-    /**
-     * Validate the MarketplaceMessage to which is to be posted to the network.
-     * Called after the call to createMessage().
-     *
-     * @param marketplaceMessage
-     */
-    public abstract async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean>;
 
     /**
      * - create the marketplaceMessage, extending class should implement
@@ -70,14 +66,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
             marketplaceMessage.action.objects.push(...(params.objects ? params.objects : []));
         }
 
-        // validate it, extending class should implement
-        const validated = await this.validateMessage(marketplaceMessage).catch(reason => {
+        // validate message with the messageValidator
+        await this.validator.validateMessage(marketplaceMessage).catch(reason => {
             this.log.error('ERROR:', reason);
-            return false;
-        });
-        if (!validated) {
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
-        }
+        });
 
         // return smsg fee estimate, if thats what was requested
         if (params.sendParams.estimateFee) {

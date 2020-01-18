@@ -20,6 +20,7 @@ import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessa
 import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
+import { EscrowCompleteValidator } from '../../messagevalidators/EscrowCompleteValidator';
 
 export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,9 +33,10 @@ export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessagePr
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowCompleteValidator) public validator: EscrowCompleteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_COMPLETE, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_COMPLETE, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
     }
 
     /**

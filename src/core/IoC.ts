@@ -60,11 +60,12 @@ export class IoC {
         await this.bindCommands();
         this.log.info('binding factories');
         await this.bindFactories();
+        this.log.info('binding message validators');
+        await this.bindMessageValidators();
         this.log.info('binding message processors');
         await this.bindMessageProcessors();
         this.log.info('binding listeners');
         await this.bindListeners();
-        this.log.info('binding listeners DONE');
 
         if (!Environment.isTest()) {
             this.log.info('binding middlewares');
@@ -128,6 +129,13 @@ export class IoC {
             '/messageprocessors/**/*Processor.ts',
             Targets.MessageProcessor,
             (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
+    }
+
+    private bindMessageValidators(): Promise<void> {
+        return this.bindFiles(
+            '/messagevalidators/**/*Validator.ts',
+            Targets.MessageValidator,
+            (name: any, value: any) => this.bindFile(Types.MessageValidator, name, value));
     }
 
     private bindMiddlewares(): Promise<void> {

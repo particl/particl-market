@@ -24,7 +24,7 @@ import { CommentAddMessageCreateParams } from '../../requests/message/CommentAdd
 import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest';
 import { CommentCreateParams } from '../../factories/model/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
-import { CommentAddValidator } from '../../messages/validator/CommentValidator';
+import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { NotificationType } from '../../enums/NotificationType';
 import { NotificationService } from '../NotificationService';
@@ -50,9 +50,10 @@ export class CommentAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -81,15 +82,6 @@ export class CommentAddActionService extends BaseActionService {
             version: ompVersion(),
             action: actionMessage
         } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return CommentAddValidator.isValid(marketplaceMessage);
     }
 
     /**

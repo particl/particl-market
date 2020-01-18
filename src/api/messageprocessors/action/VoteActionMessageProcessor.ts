@@ -17,6 +17,7 @@ import { VoteActionService } from '../../services/action/VoteActionService';
 import { VoteMessage } from '../../messages/action/VoteMessage';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
+import { VoteValidator } from '../../messagevalidators/VoteValidator';
 
 export class VoteActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -27,9 +28,10 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, smsgMessageService, bidService, proposalService, Logger);
+        super(GovernanceAction.MPA_VOTE, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**

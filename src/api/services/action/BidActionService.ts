@@ -26,7 +26,7 @@ import { OmpService } from '../OmpService';
 import { BidConfiguration } from 'omp-lib/dist/interfaces/configs';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidValidator } from '../../messages/validator/BidValidator';
+import { BidValidator } from '../../messagevalidators/BidValidator';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
@@ -53,10 +53,11 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidValidator) public validator: BidValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -99,16 +100,6 @@ export class BidActionService extends BaseActionService {
 
         // use omp to generate BidMessage
         return await this.ompService.bid(params.sendParams.wallet, config, listingItemAddMPM.action as ListingItemAddMessage);
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidValidator.isValid(marketplaceMessage);
     }
 
     /**

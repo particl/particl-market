@@ -4,38 +4,35 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {ProposalCreateRequest} from '../../requests/model/ProposalCreateRequest';
-import {SmsgService} from '../SmsgService';
-import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
-import {EventEmitter} from 'events';
-import {ProposalService} from '../model/ProposalService';
-import {MessageException} from '../../exceptions/MessageException';
-import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
-import {ProposalCategory} from '../../enums/ProposalCategory';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
-import {ListingItemService} from '../model/ListingItemService';
-import {SmsgMessageService} from '../model/SmsgMessageService';
-import {ItemVote} from '../../enums/ItemVote';
-import {FlaggedItemService} from '../model/FlaggedItemService';
-import {FlaggedItemCreateRequest} from '../../requests/model/FlaggedItemCreateRequest';
-import {VoteActionService} from './VoteActionService';
-import {ProposalAddMessageFactory} from '../../factories/message/ProposalAddMessageFactory';
-import {ProposalFactory} from '../../factories/model/ProposalFactory';
-import {ompVersion} from 'omp-lib/dist/omp';
-import {ProposalCreateParams} from '../../factories/model/ModelCreateParams';
-import {ProposalAddMessageCreateParams} from '../../requests/message/ProposalAddMessageCreateParams';
-import {BaseActionService} from './BaseActionService';
-import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
-import {ProposalAddRequest} from '../../requests/action/ProposalAddRequest';
-import {ProposalAddValidator} from '../../messages/validator/ProposalAddValidator';
-import {VoteRequest} from '../../requests/action/VoteRequest';
-import {MarketService} from '../model/MarketService';
-import {BlacklistCreateRequest} from '../../requests/model/BlacklistCreateRequest';
-import {BlacklistType} from '../../enums/BlacklistType';
-import {NotImplementedException} from '../../exceptions/NotImplementedException';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
+import { SmsgService } from '../SmsgService';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { EventEmitter } from 'events';
+import { ProposalService } from '../model/ProposalService';
+import { MessageException } from '../../exceptions/MessageException';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import { ListingItemService } from '../model/ListingItemService';
+import { SmsgMessageService } from '../model/SmsgMessageService';
+import { ItemVote } from '../../enums/ItemVote';
+import { FlaggedItemService } from '../model/FlaggedItemService';
+import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
+import { VoteActionService } from './VoteActionService';
+import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
+import { ProposalFactory } from '../../factories/model/ProposalFactory';
+import { ompVersion } from 'omp-lib/dist/omp';
+import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
+import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
+import { BaseActionService } from './BaseActionService';
+import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
+import { VoteRequest } from '../../requests/action/VoteRequest';
+import { MarketService } from '../model/MarketService';
 
 export class ProposalAddActionService extends BaseActionService {
 
@@ -51,10 +48,11 @@ export class ProposalAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -79,15 +77,6 @@ export class ProposalAddActionService extends BaseActionService {
             version: ompVersion(),
             action: actionMessage
         } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return ProposalAddValidator.isValid(marketplaceMessage);
     }
 
     /**

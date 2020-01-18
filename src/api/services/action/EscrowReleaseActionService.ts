@@ -36,7 +36,7 @@ import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowReleaseMessageFactory } from '../../factories/message/EscrowReleaseMessageFactory';
 import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
-import { EscrowReleaseValidator } from '../../messages/validator/EscrowReleaseValidator';
+import { EscrowReleaseValidator } from '../../messagevalidators/EscrowReleaseValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
@@ -46,8 +46,6 @@ export class EscrowReleaseActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -57,9 +55,11 @@ export class EscrowReleaseActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public escrowReleaseMessageFactory: EscrowReleaseMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowReleaseValidator) public validator: EscrowReleaseValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -118,16 +118,6 @@ export class EscrowReleaseActionService extends BaseActionService {
                             });
                     });
             });
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return EscrowReleaseValidator.isValid(marketplaceMessage);
     }
 
     /**

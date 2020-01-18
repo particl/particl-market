@@ -23,6 +23,7 @@ import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
 import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
+import {ActionMessageValidatorInterface} from '../messagevalidators/ActionMessageValidatorInterface';
 
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
@@ -34,9 +35,9 @@ export abstract class BaseBidActionMessageProcessor extends BaseActionMessagePro
     public bidFactory: BidFactory;
 
     constructor(eventType: ActionMessageTypes, smsgMessageService: SmsgMessageService, bidService: BidService,
-                proposalService: ProposalService, listingItemService: ListingItemService,
+                proposalService: ProposalService, validator: ActionMessageValidatorInterface, listingItemService: ListingItemService,
                 bidFactory: BidFactory, Logger: typeof LoggerType) {
-        super(eventType, smsgMessageService, bidService, proposalService, Logger);
+        super(eventType, smsgMessageService, bidService, proposalService, validator, Logger);
 
         this.listingItemService = listingItemService;
         this.bidFactory = bidFactory;

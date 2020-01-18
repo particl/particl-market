@@ -16,7 +16,7 @@ import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessa
 import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddValidator } from '../../messages/validator/ListingItemAddValidator';
+import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
@@ -53,10 +53,11 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -83,23 +84,6 @@ export class ListingItemAddActionService extends BaseActionService {
             version: ompVersion(),
             action: actionMessage
         } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        // TODO: create MessageValidator and move to base
-        this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
-
-        try {
-            return ListingItemAddValidator.isValid(marketplaceMessage);
-        } catch (e) {
-            this.log.debug('ERROR:', e);
-            return false;
-        }
     }
 
     /**

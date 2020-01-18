@@ -59,11 +59,4 @@ export interface ActionServiceInterface {
      * @param params
      */
     createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     * @param message
-     */
-    validateMessage(message: MarketplaceMessage): Promise<boolean>;
-
 }

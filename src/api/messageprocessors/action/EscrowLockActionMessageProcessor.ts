@@ -20,6 +20,7 @@ import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
+import { EscrowLockValidator } from '../../messagevalidators/EscrowLockValidator';
 
 export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,9 +33,10 @@ export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProces
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LOCK, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_LOCK, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
     }
 
     /**

@@ -23,6 +23,7 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
+import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 
 export class OrderItemShipActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -35,9 +36,10 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_SHIP, smsgMessageService, bidService, proposalService, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_SHIP, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
     }
 
     /**

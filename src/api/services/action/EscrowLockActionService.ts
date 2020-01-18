@@ -29,7 +29,7 @@ import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
-import { EscrowLockValidator } from '../../messages/validator/EscrowLockValidator';
+import { EscrowLockValidator } from '../../messagevalidators/EscrowLockValidator';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
@@ -44,8 +44,6 @@ export class EscrowLockActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -54,9 +52,11 @@ export class EscrowLockActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -105,17 +105,6 @@ export class EscrowLockActionService extends BaseActionService {
                             });
                     });
             });
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        this.log.debug('validate, marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
-        return EscrowLockValidator.isValid(marketplaceMessage);
     }
 
     /**
@@ -183,7 +172,7 @@ export class EscrowLockActionService extends BaseActionService {
      * @param escrowLockMessage
      * @param bidCreateRequest
      */
-    public async createBid(escrowLockMessage: EscrowLockMessage,  bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async createBid(escrowLockMessage: EscrowLockMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
 
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {

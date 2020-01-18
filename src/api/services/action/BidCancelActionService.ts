@@ -6,6 +6,7 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { ompVersion } from 'omp-lib';
+import { EventEmitter } from 'events';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { BidService } from '../model/BidService';
@@ -26,7 +27,7 @@ import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
 import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
-import { BidCancelValidator } from '../../messages/validator/BidCancelValidator';
+import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
 
 export class BidCancelActionService extends BaseActionService {
 
@@ -34,15 +35,16 @@ export class BidCancelActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -63,16 +65,6 @@ export class BidCancelActionService extends BaseActionService {
             version: ompVersion(),
             action: actionMessage
         } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidCancelValidator.isValid(marketplaceMessage);
     }
 
     /**

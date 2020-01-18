@@ -39,7 +39,7 @@ import { EscrowCompleteMessageFactory } from '../../factories/message/EscrowComp
 import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
 import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
-import { EscrowCompleteValidator } from '../../messages/validator/EscrowCompleteValidator';
+import { EscrowCompleteValidator } from '../../messagevalidators/EscrowCompleteValidator';
 
 export class EscrowCompleteActionService extends BaseActionService {
 
@@ -47,8 +47,6 @@ export class EscrowCompleteActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -58,9 +56,11 @@ export class EscrowCompleteActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowCompleteMessageFactory) public escrowCompleteMessageFactory: EscrowCompleteMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowCompleteValidator) public validator: EscrowCompleteValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -129,16 +129,6 @@ export class EscrowCompleteActionService extends BaseActionService {
                             });
                     });
             });
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return EscrowCompleteValidator.isValid(marketplaceMessage);
     }
 
     /**

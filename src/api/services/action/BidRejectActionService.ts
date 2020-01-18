@@ -27,8 +27,9 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
 import { BidRejectMessageCreateParams } from '../../requests/message/BidRejectMessageCreateParams';
-import { BidRejectValidator } from '../../messages/validator/BidRejectValidator';
+import { BidRejectValidator } from '../../messagevalidators/BidRejectValidator';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
+import {BidCancelValidator} from '../../messagevalidators/BidCancelValidator';
 
 export class BidRejectActionService extends BaseActionService {
 
@@ -36,17 +37,17 @@ export class BidRejectActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidRejectValidator) public validator: BidRejectValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
+        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
         this.log = new Logger(__filename);
     }
 
@@ -69,16 +70,6 @@ export class BidRejectActionService extends BaseActionService {
             action: actionMessage
         } as MarketplaceMessage;
 
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return BidRejectValidator.isValid(marketplaceMessage);
     }
 
     /**
