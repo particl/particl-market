@@ -3,8 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { NotificationType } from '../enums/NotificationType';
+import { ActionNotificationInterface } from './notification/ActionNotificationInterface';
 
 export class MarketplaceNotification {
     public event: NotificationType;
-    public payload: object;
+    public payload: ActionNotificationInterface;
 }

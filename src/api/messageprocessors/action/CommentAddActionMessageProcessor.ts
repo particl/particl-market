@@ -19,6 +19,7 @@ import { CommentAddActionService } from '../../services/action/CommentAddActionS
 import { ProposalService } from '../../services/model/ProposalService';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -33,7 +34,7 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(CommentAction.MPA_COMMENT_ADD, smsgMessageService, bidService, proposalService, validator, Logger);
+        super(CommentAction.MPA_COMMENT_ADD, commentAddActionService, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**
@@ -50,9 +51,9 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         const actionMessage: CommentAddMessage = marketplaceMessage.action as CommentAddMessage;
 
         // processProposal will create or update the Proposal
-        return await this.commentAddActionService.processComment(actionMessage, smsgMessage)
+        return await this.commentAddActionService.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage)
             .then(value => {
-                this.log.debug('==> PROCESSED COMMENT: ', value ? value.hash : '');
+                this.log.debug('==> PROCESSED COMMENT: ', smsgMessage ? smsgMessage.msgid : '');
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {

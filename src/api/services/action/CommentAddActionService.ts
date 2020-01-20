@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -11,7 +10,6 @@ import { SmsgService } from '../SmsgService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { CoreRpcService } from '../CoreRpcService';
-import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { BaseActionService } from '../BaseActionService';
@@ -29,6 +27,9 @@ import { MarketplaceNotification } from '../../messages/MarketplaceNotification'
 import { NotificationType } from '../../enums/NotificationType';
 import { NotificationService } from '../NotificationService';
 import { IdentityService } from '../model/IdentityService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
+import { CommentAction } from '../../enums/CommentAction';
 
 export interface CommentTicket {
     address: string;
@@ -42,19 +43,24 @@ export class CommentAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
-        this.log = new Logger(__filename);
+        super(CommentAction.MPA_COMMENT_ADD,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger);
     }
 
     /**
@@ -103,21 +109,8 @@ export class CommentAddActionService extends BaseActionService {
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(commentRequest: CommentAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-
-        // processVote "processes" the Vote, creating or updating the Vote.
-        // called from both beforePost() and onEvent()
-        // TODO: currently do not pass smsgMessage to the processVote here as that would set the values from smsgMessage
-        // TODO: maybe add received or similar flag instead of this
-
-        await this.processComment(marketplaceMessage.action as CommentAddMessage);
-
-        if (smsgSendResponse.msgid) {
-            await this.commentService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid);
-        } else {
-            throw new MessageException('Failed to set Comment msgid');
-        }
 
         return smsgSendResponse;
     }
@@ -125,11 +118,11 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * send a Comment
      *
-     * @param commentRequest
+     * @param commentAddRequest
      */
-    public async send(commentRequest: CommentAddRequest): Promise<SmsgSendResponse> {
+    public async send(commentAddRequest: CommentAddRequest): Promise<SmsgSendResponse> {
 
-        const smsgSendResponse = await this.post(commentRequest);
+        const smsgSendResponse = await this.post(commentAddRequest);
 
         const result = {
             result: 'Sent.',
@@ -141,24 +134,29 @@ export class CommentAddActionService extends BaseActionService {
     }
 
     /**
+     * called after posting a message and after receiving it
+     *
+     * processMessage "processes" the Message (ListingItemAdd/Bid/ProposalAdd/Vote/etc), often creating and/or updating
+     * the whatever we're "processing" here.
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
      */
-    public async processComment(commentAddMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Comment | undefined> {
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage> {
 
-        // verify that the comment was actually sent by the owner of the address
-        const verified = await this.verifyComment(commentAddMessage);
-        if (!verified) {
-            throw new MessageException('Received signature failed validation.');
-        } else {
-            this.log.debug('comment verified!');
-        }
+        const commentAddMessage: CommentAddMessage = marketplaceMessage.action as CommentAddMessage;
 
         let parentCommentId;
         if (commentAddMessage.parentCommentHash) {
             parentCommentId = await this.commentService.findOneByHash(commentAddMessage.parentCommentHash)
             .then(value => value.toJSON().id);
         }
-        const commentRequest: CommentCreateRequest = await this.commentFactory.get({
-            msgid: smsgMessage ? smsgMessage.msgid : '',
+
+        const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
+            msgid: smsgMessage.msgid,
             sender: commentAddMessage.sender,
             receiver: commentAddMessage.receiver,
             type: commentAddMessage.commentType,
@@ -167,32 +165,76 @@ export class CommentAddActionService extends BaseActionService {
             parentCommentId
         } as CommentCreateParams, commentAddMessage, smsgMessage);
 
-        this.log.debug('processComment(), commentAddMessage.hash: ', commentAddMessage.hash);
-        this.log.debug('processComment(), commentRequest.hash: ', commentRequest.hash);
+        this.log.debug('processMessage(), commentAddMessage.hash: ', commentAddMessage.hash);
+        this.log.debug('processMessage(), commentCreateRequest.hash: ', commentCreateRequest.hash);
 
-        let comment: resources.Comment = await this.commentService.findOneByHash(commentRequest.hash)
+        let comment: resources.Comment = await this.commentService.findOneByHash(commentAddMessage.hash)
             .then(value => value.toJSON())
             .catch(async () => {
-
-                // comment doesnt exist yet, so we need to create it.
-                const createdComment: resources.Comment = await this.commentService.create(commentRequest).then(value => value.toJSON());
-
+                // if Comment doesnt exist yet, we need to create it.
+                const createdComment: resources.Comment = await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
                 return await this.commentService.findOne(createdComment.id).then(value => value.toJSON());
             });
 
-        if (commentRequest.postedAt !== Number.MAX_SAFE_INTEGER) {
-            // means processComment was called from onEvent() and we should update the Comment data
-            comment = await this.commentService.updateTimes(comment.id, commentRequest.postedAt, commentRequest.receivedAt,
-                commentRequest.expiredAt).then(value => value.toJSON());
-            this.log.debug('processComment(), comment updated');
+        // update the time fields each time a message is received
+        if (ActionDirection.INCOMING === actionDirection) {
+            // means processMessage was called from onEvent() and we should update the Comment data
+            comment = await this.commentService.updateTimes(comment.id, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
+                .then(value => value.toJSON());
+            this.log.debug('processMessage(), comment times updated');
         } else {
-            // called from send(), we already created the Comment so nothing else needs to be done
+            // when called from send(), the times do not need to be updated
         }
 
-        this.processNotifications(comment);
+        return smsgMessage;
+    }
 
-        // this.log.debug('processComment(), comment:', JSON.stringify(comment, null, 2));
-        return comment;
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+
+            // only notify if the Comment is not from you
+            // TODO: this doesn't consider Profiles!!!
+            const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
+                return true;
+            }).catch(reason => {
+                return false;
+            });
+
+            // Dont need notifications about my own comments
+            if (isMyComment) {
+                return undefined;
+            }
+
+            const payload = {
+                id: comment.id,
+                hash: comment.hash,
+                target: comment.target,
+                sender: comment.sender,
+                receiver: comment.receiver,
+                commentType: comment.commentType
+            } as CommentAddNotification;
+
+            if (comment.ParentComment) {
+                payload.parent = {
+                    id: comment.ParentComment.id,
+                    hash: comment.ParentComment.hash
+                } as CommentAddNotification;
+            }
+
+            const notification: MarketplaceNotification = {
+                event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                payload
+            };
+
+            return notification;
+        }
+
+        return undefined;
     }
 
     /**
@@ -212,58 +254,5 @@ export class CommentAddActionService extends BaseActionService {
         return await this.coreRpcService.signMessage(data.sender.wallet, data.sender.address, commentTicket);
     }
 
-    /**
-     * verifies Comment, returns boolean
-     *
-     * @param {CommentAddMessage} commentAddMessage
-     */
-    private async verifyComment(commentAddMessage: CommentAddMessage): Promise<boolean> {
-        const commentTicket = {
-            address: commentAddMessage.sender,
-            type: commentAddMessage.commentType,
-            target: commentAddMessage.target,
-            parentCommentHash: commentAddMessage.parentCommentHash,
-            message: commentAddMessage.message
-        } as CommentTicket;
-
-        return await this.coreRpcService.verifyMessage(commentAddMessage.sender, commentAddMessage.signature, commentTicket);
-    }
-
-    private async processNotifications(comment: resources.Comment): Promise<void> {
-        try {
-            // const isMyComment = await this.coreRpcService.isAddressMine(comment.sender);
-            const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
-                return true;
-            }).catch(reason => {
-                return false;
-            });
-
-            // Dont need notifications about my own comments
-            if (isMyComment) {
-                return;
-            }
-
-            const notification: MarketplaceNotification = {
-                event: NotificationType.NEW_COMMENT,
-                payload: {
-                    id: comment.id,
-                    hash: comment.hash,
-                    type: comment.type,
-                    target: comment.target
-                }
-            };
-
-            if (comment.ParentComment) {
-                notification.payload['parent'] = {
-                    id: comment.ParentComment.id,
-                    hash: comment.ParentComment.hash
-                };
-            }
-
-            this.notificationService.send(notification);
-        } catch (e) {
-            this.log.error('Error processing comment notifications: ', e);
-        }
-    }
 
 }

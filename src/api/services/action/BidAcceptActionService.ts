@@ -142,11 +142,7 @@ export class BidAcceptActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
-
                 const bid: resources.Bid = value.toJSON();
-                this.log.debug('bid.ParentBid.OrderItem.id: ', bid.ParentBid.OrderItem.id);
-                this.log.debug('bid.ParentBid.OrderItem.Order.id: ', bid.ParentBid.OrderItem.Order.id);
-                this.log.debug('bid.id: ', bid.id);
 
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);

@@ -14,8 +14,9 @@ import { BidService } from '../services/model/BidService';
 import { ProposalService } from '../services/model/ProposalService';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {ActionDirection} from '../enums/ActionDirection';
+import { ActionDirection } from '../enums/ActionDirection';
+import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
+import {MarketplaceNotification} from '../messages/MarketplaceNotification';
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -26,8 +27,9 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public log: LoggerType;
     public eventType: ActionMessageTypes;
     public validator: ActionMessageValidatorInterface;
+    public actionService: ActionServiceInterface;
 
-    constructor(eventType: ActionMessageTypes, smsgMessageService: SmsgMessageService, bidService: BidService,
+    constructor(eventType: ActionMessageTypes, actionService: ActionServiceInterface, smsgMessageService: SmsgMessageService, bidService: BidService,
                 proposalService: ProposalService, validator: ActionMessageValidatorInterface, Logger: typeof LoggerType) {
         this.log = new Logger(eventType);
         this.smsgMessageService = smsgMessageService;
@@ -63,6 +65,8 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             .then(value => value)
             .catch(reason => false);
 
+        let updatedSmsgMessage: resources.SmsgMessage;
+
         if (validContent) {
             if (!validSequence) {
                 // if the sequence is not valid and if not expired, then wait to process again later
@@ -81,8 +85,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             await this.onEvent(event)
                 .then(async status => {
                     // update the status based on onEvent result
-                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, status).then(value => value.toJSON());
-
+                    updatedSmsgMessage = await this.smsgMessageService.updateStatus(event.smsgMessage.id, status).then(value => value.toJSON());
                 })
                 .catch(async reason => {
 
@@ -93,13 +96,23 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                     this.log.error('eventType:', JSON.stringify(event.smsgMessage.type, null, 2));
                     this.log.error('PROCESSING: ' + event.smsgMessage.msgid + ' PARSING FAILED');
 
-                    await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED);
+                    updatedSmsgMessage = await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.PROCESSING_FAILED)
+                        .then(value => value.toJSON());
                 });
-
         } else {
             this.log.error('event.marketplaceMessage validation failed. msgid: ', event.smsgMessage.msgid);
-            await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.VALIDATION_FAILED);
+            updatedSmsgMessage = await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.VALIDATION_FAILED)
+                .then(value => value.toJSON());
         }
+
+        const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
+            ActionDirection.INCOMING, updatedSmsgMessage!);
+
+        // only send if we created one
+        if (notification) {
+            await this.actionService.sendNotification(notification);
+        }
+
     }
 
     public getKVSValueByKey(values: resources.BidData[] | KVS[], keyToFind: string): string | number | undefined {

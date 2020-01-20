@@ -58,6 +58,15 @@ export class CommentService {
         return comment;
     }
 
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Comment> {
+        const comment = await this.commentRepo.findOneByMsgId(msgId, withRelated);
+        if (comment === null) {
+            this.log.warn(`Comment with the msgId=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
+        }
+        return comment;
+    }
+
     /**
      * search Comments using given CommentSearchParams
      *

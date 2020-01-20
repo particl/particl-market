@@ -36,6 +36,16 @@ export class Comment extends Bookshelf.Model<Comment> {
         }
     }
 
+    public static async fetchByMsgId(msgId: string, withRelated: boolean = true): Promise<Comment> {
+        if (withRelated) {
+            return await Comment.where<Comment>({ msgid: msgId }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Comment.where<Comment>({ msgid: msgId }).fetch();
+        }
+    }
+
     public static async fetchAllByTypeAndTarget(type: string, target: string): Promise<Collection<Comment>> {
       const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {

@@ -19,6 +19,9 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { strip } from 'omp-lib/dist/util';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
+import { MarketplaceNotification } from '../messages/MarketplaceNotification';
+import { NotificationService } from './NotificationService';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -26,13 +29,21 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
+    public notificationService: NotificationService;
     public smsgMessageFactory: SmsgMessageFactory;
     public validator: ActionMessageValidatorInterface;
 
-    constructor(smsgService: SmsgService, smsgMessageService: SmsgMessageService, smsgMessageFactory: SmsgMessageFactory,
-                validator: ActionMessageValidatorInterface) {
+    constructor(eventType: ActionMessageTypes,
+                smsgService: SmsgService,
+                smsgMessageService: SmsgMessageService,
+                notificationService: NotificationService,
+                smsgMessageFactory: SmsgMessageFactory,
+                validator: ActionMessageValidatorInterface,
+                Logger: typeof LoggerType) {
+        this.log = new Logger(eventType);
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
+        this.notificationService = notificationService;
         this.smsgMessageFactory = smsgMessageFactory;
         this.validator = validator;
     }
@@ -97,13 +108,31 @@ export abstract class BaseActionService implements ActionServiceInterface {
         const smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
 
         // do whatever needs to be done after sending the message, extending class should implement
-        smsgSendResponse = await this.afterPost(params, marketplaceMessage, smsgMessage, smsgSendResponse);
+        smsgSendResponse = await this.afterPost(marketplaceMessage, smsgMessage, smsgSendResponse);
+
+        // called for incoming and outgoing message
+        await this.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage);
+        const notification: MarketplaceNotification | undefined = await this.createNotification(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage);
+
+        // only send if we created one
+        if (notification) {
+            await this.sendNotification(notification);
+        }
 
         return smsgSendResponse;
     }
 
     /**
-     * called before post is executed and message is sent
+     * sends the notification, also called from the MessageProcessor
+     *
+     * @param notification
+     */
+    public async sendNotification(notification: MarketplaceNotification): Promise<void> {
+        await this.notificationService.send(notification);
+    }
+
+    /**
+     * called before post is executed (and )message is sent)
      *
      * if you need to add something to MarketplaceMessage, this is the place to do it.
      * @param params
@@ -112,19 +141,47 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public abstract async beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
 
     /**
-     * called after post is executed and message is sent
-     * @param params
-     * @param message
+     * called after post is executed (message is sent)
+     *
+     * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public abstract async afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public abstract async afterPost(marketplaceMessage: MarketplaceMessage,
+                                    smsgMessage: resources.SmsgMessage,
                                     smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
+
+    /**
+     * called after posting a message and after receiving it
+     *
+     * processMessage "processes" the Message (ListingItemAdd/Bid/ProposalAdd/Vote/etc), often creating and/or updating
+     * the whatever we're "processing" here.
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public abstract async processMessage(marketplaceMessage: MarketplaceMessage,
+                                         actionDirection: ActionDirection,
+                                         smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage>;
+
+
+    /**
+     * create MarketplaceNotification to be sent to the gui, return undefined if notification is not needed
+     *
+     * called after onEvent, so smsgMessage also contains the latest status, processedCount and processedAt
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public abstract async createNotification(marketplaceMessage: MarketplaceMessage,
+                                             actionDirection: ActionDirection,
+                                             smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined>;
 
     /**
      * finds the CoreSmsgMessage and saves it into the database as SmsgMessage
      *
-     * @param direction
      * @param msgid
      */
     private async saveOutgoingMessage(msgid: string): Promise<resources.SmsgMessage> {

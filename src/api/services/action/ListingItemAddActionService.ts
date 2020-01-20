@@ -32,6 +32,7 @@ import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export interface SellerMessage {
     hash: string;               // item hash being added
@@ -156,7 +157,11 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param smsgMessage
      */
     public async processMessage(message: ActionMessageInterface, smsgMessage: resources.SmsgMessage): Promise<SmsgMessageStatus> {
-
+/*
+        marketplaceMessage: MarketplaceMessage,
+        actionDirection: ActionDirection,
+        smsgMessage?: resources.SmsgMessage
+*/
         const actionMessage = message as ListingItemAddMessage;
 
         // - if ListingItem contains a custom category, create them

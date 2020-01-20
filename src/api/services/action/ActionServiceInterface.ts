@@ -9,6 +9,9 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgService } from '../SmsgService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { NotificationService } from '../NotificationService';
 
 /**
  * ActionServiceInterface defines how the Service classes for the different Actions should be implemented
@@ -16,6 +19,7 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 export interface ActionServiceInterface {
 
     smsgService: SmsgService;
+    notificationService: NotificationService;
     smsgMessageService: SmsgMessageService;
     smsgMessageFactory: SmsgMessageFactory;
 
@@ -52,12 +56,38 @@ export interface ActionServiceInterface {
 
     /**
      * called after post is executed and message is sent
-     * @param params
-     * @param message
+     * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    afterPost(params: ActionRequestInterface, message: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    afterPost(marketplaceMessage: MarketplaceMessage,
+              smsgMessage: resources.SmsgMessage,
               smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
+    /**
+     * called after posting a message and after receiving it
+     *
+     * processMessage "processes" the Message (ListingItemAdd/Bid/ProposalAdd/Vote/etc), often creating and/or updating
+     * the whatever we're "processing" here.
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+     processMessage(marketplaceMessage: MarketplaceMessage,
+                    actionDirection: ActionDirection,
+                    smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage>;
+
+    /**
+     * create MarketplaceNotification to be sent to the gui, return undefined if notification is not needed
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    createNotification(marketplaceMessage: MarketplaceMessage,
+                       actionDirection: ActionDirection,
+                       smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined>;
+
+    sendNotification(notification: MarketplaceNotification): Promise<void>;
 }
