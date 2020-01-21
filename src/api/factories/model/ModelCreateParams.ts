@@ -4,13 +4,12 @@
 
 import * as resources from 'resources';
 import { ActionDirection } from '../../enums/ActionDirection';
-import {AddressCreateRequest} from '../../requests/model/AddressCreateRequest';
-import {CoreSmsgMessage} from '../../messages/CoreSmsgMessage';
-import {OrderStatus} from '../../enums/OrderStatus';
-import {EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
-import {AddressType} from '../../enums/AddressType';
-import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
+import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
+import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
+import { OrderStatus } from '../../enums/OrderStatus';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 
 export interface ModelCreateParams {
     //

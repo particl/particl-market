@@ -65,7 +65,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             .then(value => value)
             .catch(reason => false);
 
-        let updatedSmsgMessage: resources.SmsgMessage;
+        let updatedSmsgMessage: resources.SmsgMessage  = {} as resources.SmsgMessage;
 
         if (validContent) {
             if (!validSequence) {
@@ -106,19 +106,12 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
         }
 
         const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
-            ActionDirection.INCOMING, updatedSmsgMessage!);
+            ActionDirection.INCOMING, updatedSmsgMessage);
 
         // only send if we created one
         if (notification) {
             await this.actionService.sendNotification(notification);
         }
 
-    }
-
-    public getKVSValueByKey(values: resources.BidData[] | KVS[], keyToFind: string): string | number | undefined {
-        const kvsValue = _.find(values, value => {
-            return value.key === keyToFind;
-        });
-        return kvsValue ? kvsValue.value : undefined;
     }
 }

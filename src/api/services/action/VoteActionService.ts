@@ -292,7 +292,7 @@ export class VoteActionService extends BaseActionService {
                 const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
                         msgid: smsgMessage.msgid,
                         proposalOption: votedProposalOption,
-                        weight: balance,
+                        weight: balance
                     } as VoteCreateParams,
                     voteMessage,
                     smsgMessage);

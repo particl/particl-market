@@ -4,6 +4,7 @@
 
 export enum NotificationType {
 
-    NEW_COMMENT = 'NEW_COMMENT'
+    NEW_COMMENT = 'NEW_COMMENT',
+    NEW_BID = 'NEW_BID'
 
 }

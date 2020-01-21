@@ -18,7 +18,7 @@ import { VoteMessage } from '../../messages/action/VoteMessage';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { VoteValidator } from '../../messagevalidators/VoteValidator';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class VoteActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -49,7 +49,7 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
         // processVote will create or update the Vote
-        return await this.voteActionService.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage)
+        return await this.voteActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 if (value) {
                     this.log.debug('==> PROCESSED VOTE: ', smsgMessage ? smsgMessage.msgid : '');

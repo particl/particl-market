@@ -60,7 +60,8 @@ export class CommentAddActionService extends BaseActionService {
             notificationService,
             smsgMessageFactory,
             validator,
-            Logger);
+            Logger
+        );
     }
 
     /**

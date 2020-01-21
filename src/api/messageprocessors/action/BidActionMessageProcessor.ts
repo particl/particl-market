@@ -26,6 +26,9 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { BidValidator } from '../../messagevalidators/BidValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 export class BidActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -41,13 +44,18 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidValidator) public validator: BidValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_BID, smsgMessageService, bidService, proposalService, validator, Logger);
+        super(MPAction.MPA_BID,
+            bidActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            Logger
+        );
     }
 
     /**
      * handles the received BidMessage and return SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the response to those
      *
      * @param event
      */
@@ -57,10 +65,17 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
 
-        // - first get the Market receiveAddress on which ListingItem were bidding for is located, fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - we are receiving a Bid, so we are seller, so if there's no related ListingItemTemplate.Profile -> fail
+        return await this.bidActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                this.log.debug('bid created: ', value.id);
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                this.log.error('PROCESSING_FAILED, reason: ', reason);
+                return SmsgMessageStatus.PROCESSING_FAILED;
+            });
 
+/*
         const marketAddress = this.getKVSValueByKey(actionMessage.objects || [], ActionMessageObjects.BID_ON_MARKET);
         if (!marketAddress) {
             this.log.error('BidMessage is missing ActionMessageObjects.BID_ON_MARKET.');
@@ -91,19 +106,12 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
                     // parentBid: undefined
                 } as BidCreateParams;
 
-                // note: factory makes sure the hashes match
-                return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
-                    .then(async bidCreateRequest => {
-                        return await this.bidActionService.createBid(actionMessage, bidCreateRequest, smsgMessage)
-                            .then(value => {
-                                this.log.debug('bid created: ', value.id);
-                                return SmsgMessageStatus.PROCESSED;
-                            })
-                            .catch(reason => {
-                                this.log.error('PROCESSING_FAILED, reason: ', reason);
-                                return SmsgMessageStatus.PROCESSING_FAILED;
-                            });
-                    });
+                const postRequest = {
+                    sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+                    listingItem,
+                    market,
+                    address
+                } as BidRequest;
             })
             .catch(reason => {
                 // TODO: user is receiving a Bid for his own ListingItem, so if it not found, something is seriously wrong.
@@ -111,6 +119,8 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
                 this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.WAITING;
             });
+    */
+
     }
 
 }

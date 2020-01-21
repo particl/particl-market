@@ -14,6 +14,7 @@ declare module 'resources' {
         bidder: string;
         generatedAt: number;
         type: MPAction | MPActionExtended;
+
         BidDatas: BidData[];
         ListingItem: ListingItem;
         ShippingAddress: Address;

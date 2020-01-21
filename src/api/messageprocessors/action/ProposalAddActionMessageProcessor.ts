@@ -18,6 +18,7 @@ import { ProposalAddActionService } from '../../services/action/ProposalAddActio
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export class ProposalAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -31,7 +32,14 @@ export class ProposalAddActionMessageProcessor extends BaseActionMessageProcesso
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_PROPOSAL_ADD, smsgMessageService, bidService, proposalService, validator, Logger);
+        super(GovernanceAction.MPA_PROPOSAL_ADD,
+            proposalAddActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            Logger
+        );
     }
 
     /**
@@ -48,9 +56,9 @@ export class ProposalAddActionMessageProcessor extends BaseActionMessageProcesso
         const actionMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
 
         // processProposal will create or update the Proposal
-        return await this.proposalAddActionService.processProposal(actionMessage, smsgMessage)
+        return await this.proposalAddActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
-                this.log.debug('==> PROCESSED PROPOSAL: ', value.hash);
+                this.log.debug('==> PROCESSED PROPOSAL: ', value.msgid ? value.msgid : '');
                 return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
