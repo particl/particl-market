@@ -54,7 +54,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
      *
      * @param params
      */
-    public abstract async createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
+    public abstract async createMarketplaceMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
      * - create the marketplaceMessage, extending class should implement
@@ -64,17 +64,17 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * - send marketplaceMessage
      * - save outgoing marketplaceMessage to database
      *
-     * @param params
+     * @param actionRequest
      */
-    public async post(params: ActionRequestInterface): Promise<SmsgSendResponse> {
+    public async post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse> {
 
         // create the marketplaceMessage, extending class should implement
-        let marketplaceMessage = await this.createMessage(params);
+        let marketplaceMessage = await this.createMarketplaceMessage(actionRequest);
 
         // each message has objects?: KVS[] for extending messages, add those to the message here
-        if (!_.isEmpty(params.objects)) {
+        if (!_.isEmpty(actionRequest.objects)) {
             marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [];
-            marketplaceMessage.action.objects.push(...(params.objects ? params.objects : []));
+            marketplaceMessage.action.objects.push(...(actionRequest.objects ? actionRequest.objects : []));
         }
 
         // validate message with the messageValidator
@@ -85,33 +85,34 @@ export abstract class BaseActionService implements ActionServiceInterface {
         // TODO: also validate the sequence?
 
         // return smsg fee estimate, if thats what was requested
-        if (params.sendParams.estimateFee) {
-            return await this.smsgService.estimateFee(params.sendParams.wallet, marketplaceMessage, params.sendParams);
+        if (actionRequest.sendParams.estimateFee) {
+            return await this.smsgService.estimateFee(actionRequest.sendParams.wallet, marketplaceMessage, actionRequest.sendParams);
         }
 
         // if message is paid, make sure we have enough balance to pay for it
-        if (params.sendParams.paidMessage) {
-            const canAfford = await this.smsgService.canAffordToSendMessage(params.sendParams.wallet, marketplaceMessage, params.sendParams);
+        if (actionRequest.sendParams.paidMessage) {
+            const canAfford = await this.smsgService.canAffordToSendMessage(actionRequest.sendParams.wallet, marketplaceMessage, actionRequest.sendParams);
             if (!canAfford) {
                 throw new MessageException('Not enough balance to send the message.');
             }
         }
 
         // do whatever still needs to be done before sending the message, extending class should implement
-        marketplaceMessage = await this.beforePost(params, marketplaceMessage);
+        marketplaceMessage = await this.beforePost(actionRequest, marketplaceMessage);
         marketplaceMessage = strip(marketplaceMessage);
 
         // finally send the message
-        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(params.sendParams.wallet, marketplaceMessage, params.sendParams);
+        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(actionRequest.sendParams.wallet, marketplaceMessage,
+            actionRequest.sendParams);
 
         // save the outgoing message to database as SmsgMessage
-        const smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
+        let smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
 
         // do whatever needs to be done after sending the message, extending class should implement
-        smsgSendResponse = await this.afterPost(marketplaceMessage, smsgMessage, smsgSendResponse);
+        smsgSendResponse = await this.afterPost(actionRequest, marketplaceMessage, smsgMessage, smsgSendResponse);
 
         // called for incoming and outgoing message
-        await this.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage);
+        smsgMessage = await this.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage, actionRequest);
         const notification: MarketplaceNotification | undefined = await this.createNotification(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage);
 
         // only send if we created one
@@ -143,11 +144,13 @@ export abstract class BaseActionService implements ActionServiceInterface {
     /**
      * called after post is executed (message is sent)
      *
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public abstract async afterPost(marketplaceMessage: MarketplaceMessage,
+    public abstract async afterPost(actionRequest: ActionRequestInterface,
+                                    marketplaceMessage: MarketplaceMessage,
                                     smsgMessage: resources.SmsgMessage,
                                     smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
@@ -160,10 +163,12 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param marketplaceMessage
      * @param actionDirection
      * @param smsgMessage
+     * @param actionRequest
      */
-    public abstract async processMessage(marketplaceMessage: MarketplaceMessage,
+    public abstract async processMessage(marketplaceMessage: MarketplaceMessage, // TODO: change to ActionMessageInterface, but first move _rawtx
                                          actionDirection: ActionDirection,
-                                         smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage>;
+                                         smsgMessage: resources.SmsgMessage,
+                                         actionRequest?: ActionRequestInterface): Promise<resources.SmsgMessage>;
 
 
     /**

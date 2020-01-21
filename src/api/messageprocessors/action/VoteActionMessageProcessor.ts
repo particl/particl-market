@@ -18,6 +18,7 @@ import { VoteMessage } from '../../messages/action/VoteMessage';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { VoteValidator } from '../../messagevalidators/VoteValidator';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export class VoteActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -31,7 +32,7 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, smsgMessageService, bidService, proposalService, validator, Logger);
+        super(GovernanceAction.MPA_VOTE, voteActionService, smsgMessageService, bidService, proposalService, validator, Logger);
     }
 
     /**
@@ -48,10 +49,10 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
         // processVote will create or update the Vote
-        return await this.voteActionService.processVote(actionMessage, smsgMessage)
-            .then(vote => {
-                if (vote) {
-                    this.log.debug('==> PROCESSED VOTE: ', vote.signature);
+        return await this.voteActionService.processMessage(marketplaceMessage, ActionDirection.OUTGOING, smsgMessage)
+            .then(value => {
+                if (value) {
+                    this.log.debug('==> PROCESSED VOTE: ', smsgMessage ? smsgMessage.msgid : '');
                 } else {
                     this.log.debug('==> PROCESSED VOTE, with no weight. vote ignored.');
                 }

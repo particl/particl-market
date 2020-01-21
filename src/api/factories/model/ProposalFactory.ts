@@ -28,9 +28,9 @@ export class ProposalFactory implements ModelFactoryInterface {
 
     /**
      *
+     * @param params TODO: not used, get rid of this
      * @param {ProposalAddMessage} proposalMessage
      * @param smsgMessage
-     * @param params
      * @returns {Promise<ProposalCreateRequest>}
      */
     public async get(params: ProposalCreateParams, proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {

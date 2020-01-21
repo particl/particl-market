@@ -27,7 +27,7 @@ export interface ActionServiceInterface {
      * create the MarketplaceMessage to which is to be posted to the network
      * @param params
      */
-    createMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
+    createMarketplaceMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
      * called before post is executed and message is sent
@@ -56,11 +56,16 @@ export interface ActionServiceInterface {
 
     /**
      * called after post is executed and message is sent
+     *
+     * TODO: this might be unnecessary
+     *
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    afterPost(marketplaceMessage: MarketplaceMessage,
+    afterPost(actionRequest: ActionRequestInterface,
+              marketplaceMessage: MarketplaceMessage,
               smsgMessage: resources.SmsgMessage,
               smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse>;
 
@@ -73,10 +78,12 @@ export interface ActionServiceInterface {
      * @param marketplaceMessage
      * @param actionDirection
      * @param smsgMessage
+     * @param actionRequest
      */
      processMessage(marketplaceMessage: MarketplaceMessage,
                     actionDirection: ActionDirection,
-                    smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage>;
+                    smsgMessage: resources.SmsgMessage,
+                    actionRequest?: ActionRequestInterface): Promise<resources.SmsgMessage>;
 
     /**
      * create MarketplaceNotification to be sent to the gui, return undefined if notification is not needed

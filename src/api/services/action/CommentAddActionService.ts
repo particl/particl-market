@@ -66,21 +66,21 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMessage(params: CommentAddRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: CommentAddRequest): Promise<MarketplaceMessage> {
 
         // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
-        const signature = await this.signComment(params);
+        const signature = await this.signComment(actionRequest);
         // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: CommentAddMessage = await this.commentAddMessageFactory.get({
-            sender: params.sender,
-            receiver: params.receiver,
-            type: params.type,
-            target: params.target,
-            message: params.message,
-            parentComment: params.parentComment,
+            sender: actionRequest.sender,
+            receiver: actionRequest.receiver,
+            type: actionRequest.type,
+            target: actionRequest.target,
+            message: actionRequest.message,
+            parentComment: actionRequest.parentComment,
             signature
         } as CommentAddMessageCreateParams);
 
@@ -93,10 +93,10 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * called before post is executed and message is sent
      *
-     * @param commentRequest
+     * @param actionRequest
      * @param marketplaceMessage
      */
-    public async beforePost(commentRequest: CommentAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: CommentAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
         return marketplaceMessage;
     }
 
@@ -104,12 +104,14 @@ export class CommentAddActionService extends BaseActionService {
     /**
      * called after post is executed and message is sent
      *
-     * @param commentRequest
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: CommentAddRequest,
+                           marketplaceMessage: MarketplaceMessage,
+                           smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
         return smsgSendResponse;
@@ -122,6 +124,7 @@ export class CommentAddActionService extends BaseActionService {
      */
     public async send(commentAddRequest: CommentAddRequest): Promise<SmsgSendResponse> {
 
+        // TODO: why not call post directly?
         const smsgSendResponse = await this.post(commentAddRequest);
 
         const result = {
@@ -142,10 +145,12 @@ export class CommentAddActionService extends BaseActionService {
      * @param marketplaceMessage
      * @param actionDirection
      * @param smsgMessage
+     * @param actionRequest, undefined when called from onEvent
      */
     public async processMessage(marketplaceMessage: MarketplaceMessage,
                                 actionDirection: ActionDirection,
-                                smsgMessage: resources.SmsgMessage): Promise<resources.SmsgMessage> {
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: CommentAddRequest): Promise<resources.SmsgMessage> {
 
         const commentAddMessage: CommentAddMessage = marketplaceMessage.action as CommentAddMessage;
 
@@ -154,32 +159,34 @@ export class CommentAddActionService extends BaseActionService {
             parentCommentId = await this.commentService.findOneByHash(commentAddMessage.parentCommentHash)
             .then(value => value.toJSON().id);
         }
-
-        const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
-            msgid: smsgMessage.msgid,
-            sender: commentAddMessage.sender,
-            receiver: commentAddMessage.receiver,
-            type: commentAddMessage.commentType,
-            target: commentAddMessage.target,
-            message: commentAddMessage.message,
-            parentCommentId
-        } as CommentCreateParams, commentAddMessage, smsgMessage);
-
         this.log.debug('processMessage(), commentAddMessage.hash: ', commentAddMessage.hash);
-        this.log.debug('processMessage(), commentCreateRequest.hash: ', commentCreateRequest.hash);
 
-        let comment: resources.Comment = await this.commentService.findOneByHash(commentAddMessage.hash)
+        const comment: resources.Comment = await this.commentService.findOneByHash(commentAddMessage.hash)
             .then(value => value.toJSON())
             .catch(async () => {
                 // if Comment doesnt exist yet, we need to create it.
-                const createdComment: resources.Comment = await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
-                return await this.commentService.findOne(createdComment.id).then(value => value.toJSON());
+
+                const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
+                        msgid: smsgMessage.msgid,
+                        sender: commentAddMessage.sender,
+                        receiver: commentAddMessage.receiver,
+                        type: commentAddMessage.commentType,
+                        target: commentAddMessage.target,
+                        message: commentAddMessage.message,
+                        parentCommentId
+                    } as CommentCreateParams,
+                    commentAddMessage,
+                    smsgMessage);
+
+                this.log.debug('processMessage(), commentCreateRequest.hash: ', commentCreateRequest.hash);
+
+                return await this.commentService.create(commentCreateRequest).then(value => value.toJSON());
             });
 
         // update the time fields each time a message is received
         if (ActionDirection.INCOMING === actionDirection) {
             // means processMessage was called from onEvent() and we should update the Comment data
-            comment = await this.commentService.updateTimes(comment.id, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
+            await this.commentService.updateTimes(comment.id, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
                 .then(value => value.toJSON());
             this.log.debug('processMessage(), comment times updated');
         } else {
@@ -197,8 +204,8 @@ export class CommentAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             // only notify if the Comment is not from you
-            // TODO: this doesn't consider Profiles!!!
             const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            // TODO: this doesn't consider that there could be different Profiles!!!
             const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
                 return true;
             }).catch(reason => {
@@ -210,27 +217,24 @@ export class CommentAddActionService extends BaseActionService {
                 return undefined;
             }
 
-            const payload = {
-                id: comment.id,
-                hash: comment.hash,
-                target: comment.target,
-                sender: comment.sender,
-                receiver: comment.receiver,
-                commentType: comment.commentType
-            } as CommentAddNotification;
+            const notification: MarketplaceNotification = {
+                event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                payload: {
+                    id: comment.id,
+                    hash: comment.hash,
+                    target: comment.target,
+                    sender: comment.sender,
+                    receiver: comment.receiver,
+                    commentType: comment.commentType
+                } as CommentAddNotification
+            };
 
             if (comment.ParentComment) {
-                payload.parent = {
+                (notification.payload as CommentAddNotification).parent = {
                     id: comment.ParentComment.id,
                     hash: comment.ParentComment.hash
                 } as CommentAddNotification;
             }
-
-            const notification: MarketplaceNotification = {
-                event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
-                payload
-            };
-
             return notification;
         }
 

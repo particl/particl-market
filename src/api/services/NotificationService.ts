@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// import { app } from '../../app';
+import { app } from '../../app';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -21,8 +21,8 @@ export class NotificationService {
 
     public async send(notification: MarketplaceNotification): Promise<void> {
         // TODO: inject SocketIOServer
-        // if (app.SocketIOServer) {
-        //    app.SocketIOServer.emit(notification.event, JSON.stringify(notification.payload));
-        // }
+        if (app.SocketIOServer) {
+            app.SocketIOServer.emit(notification.event, JSON.stringify(notification.payload));
+        }
     }
 }

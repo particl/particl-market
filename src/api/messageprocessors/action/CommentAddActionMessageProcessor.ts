@@ -41,7 +41,6 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
      * handles the received CommentAddMessage and returns SmsgMessageStatus as a result
      *
      * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
-     *
      * @param event
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {

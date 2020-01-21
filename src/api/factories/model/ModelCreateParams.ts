@@ -66,7 +66,6 @@ export interface VoteCreateParams extends ModelCreateParams {
     proposalOption: resources.ProposalOption;
     weight: number;
     msgid: string;
-    create: boolean;
 }
 
 export interface SmsgMessageCreateParams extends ModelCreateParams {

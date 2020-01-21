@@ -69,12 +69,12 @@ export class BidActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: BidRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(params: BidRequest): Promise<MarketplaceMessage> {
 
         this.log.debug('createMessage()');
 
         // note: factory checks that the hashes match
-        const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMessage({
+        const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
             listingItem: params.listingItem
         } as ListingItemAddRequest);

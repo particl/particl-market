@@ -67,7 +67,7 @@ export class ListingItemAddActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(params: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
         // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
         const signature = await this.signSellerMessage(params.sendParams.wallet, params.seller.address, params.listingItem.hash);

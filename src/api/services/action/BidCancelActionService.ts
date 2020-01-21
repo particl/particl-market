@@ -55,7 +55,7 @@ export class BidCancelActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: BidCancelRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(params: BidCancelRequest): Promise<MarketplaceMessage> {
 
         const actionMessage: BidCancelMessage = await this.bidCancelMessageFactory.get({
             bidHash: params.bid.hash

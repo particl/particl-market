@@ -76,10 +76,10 @@ export class EscrowCompleteActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: EscrowCompleteRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(params: EscrowCompleteRequest): Promise<MarketplaceMessage> {
 
         // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMessage({
+        return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
             listingItem: params.bid.ListingItem
         } as ListingItemAddRequest)

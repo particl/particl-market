@@ -5,7 +5,7 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
+import {  Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
 import { SmsgService } from '../SmsgService';
@@ -42,6 +42,10 @@ import { BlacklistType } from '../../enums/BlacklistType';
 import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { BlacklistService } from '../model/BlacklistService';
+import { GovernanceAction } from '../../enums/GovernanceAction';
+import { NotificationService } from '../NotificationService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 
 export interface VoteTicket {
     proposalHash: string;       // proposal being voted for
@@ -58,6 +62,7 @@ export class VoteActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
@@ -75,25 +80,32 @@ export class VoteActionService extends BaseActionService {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
+        super(GovernanceAction.MPA_VOTE,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger);
         this.log = new Logger(__filename);
     }
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMessage(params: VoteRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: VoteRequest): Promise<MarketplaceMessage> {
 
         // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
-        const signature = await this.signVote(params.sendParams.wallet, params.proposal, params.proposalOption, params.addressInfo.address);
+        const signature = await this.signVote(actionRequest.sendParams.wallet, actionRequest.proposal, actionRequest.proposalOption,
+            actionRequest.addressInfo.address);
         // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: VoteMessage = await this.voteMessageFactory.get({
-            proposalHash: params.proposal.hash,
-            proposalOptionHash: params.proposalOption.hash,
-            voter: params.addressInfo.address,
+            proposalHash: actionRequest.proposal.hash,
+            proposalOptionHash: actionRequest.proposalOption.hash,
+            voter: actionRequest.addressInfo.address,
             signature
         } as VoteMessageCreateParams);
 
@@ -106,10 +118,10 @@ export class VoteActionService extends BaseActionService {
     /**
      * called before post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      */
-    public async beforePost(params: VoteRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: VoteRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
         return marketplaceMessage;
     }
 
@@ -117,27 +129,267 @@ export class VoteActionService extends BaseActionService {
     /**
      * called after post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: VoteRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: VoteRequest,
+                           marketplaceMessage: MarketplaceMessage,
+                           smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
         // processVote "processes" the Vote, creating or updating the Vote.
         // called from both beforePost() and onEvent()
         // TODO: currently do not pass smsgMessage to the processVote here as that would set the values from smsgMessage
         // TODO: maybe add received or similar flag instead of this
-        await this.processVote(marketplaceMessage.action as VoteMessage);
+        // await this.processMessage(marketplaceMessage.action as VoteMessage);
 
-        if (smsgSendResponse.msgid) {
-            await this.voteService.updateMsgId((marketplaceMessage.action as VoteMessage).signature, smsgSendResponse.msgid);
-        } else {
-            throw new MessageException('Failed to set Proposal msgid');
-        }
+        // if (smsgSendResponse.msgid) {
+        //    await this.voteService.updateMsgId((marketplaceMessage.action as VoteMessage).signature, smsgSendResponse.msgid);
+        // } else {
+        //     throw new MessageException('Failed to set Proposal msgid');
+        // }
 
         return smsgSendResponse;
+    }
+
+    /**
+     * vote for given Proposal and ProposalOption using all wallet addresses
+     *
+     * - vote( profile, ... ):
+     *   - get all addresses having balance
+     *   - for (voteAddress: addresses):
+     *     - this.send( voteAddress )
+     *
+     * @param voteRequest
+     */
+    public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
+
+        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(voteRequest.sender.wallet, 0);
+
+        this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
+        if (_.isEmpty(addressInfos)) {
+            this.log.error('Wallet has no usable addresses for voting.');
+            return {
+                result: 'Wallet has no usable addresses for voting.'
+            } as SmsgSendResponse;
+        }
+
+        const msgids: string[] = [];
+        for (const addressInfo of addressInfos) {
+            this.log.debug('================================================');
+            this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
+
+            if (addressInfo.balance > 0) {
+                // change sender to be the output address, then post the vote
+                voteRequest.sendParams.fromAddress = addressInfo.address;
+                voteRequest.sendParams.paidMessage = false; // vote messages should be free
+                voteRequest.addressInfo = addressInfo;
+
+                await this.post(voteRequest)
+                    .then(smsgSendResponse => {
+                        if (smsgSendResponse.msgid) {
+                            msgids.push(smsgSendResponse.msgid);
+                        }
+                    });
+            }
+        }
+
+        // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
+        // TODO: removed flag should not be needed anymore
+        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
+                voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
+            await this.listingItemService.setRemovedFlag(listingItem.id, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
+            this.log.debug('vote(), removed flag set');
+
+            // todo: get rid of the remove flag, use Blacklist...
+
+
+        } else if (voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
+            // TODO: await this.marketService.setRemovedFlag()
+        }
+
+        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
+            || voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
+
+            // Blacklist the ListingItem.hash/Market.receiveAddress for the Profile thats voting
+            if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
+                // only if voting for removal
+                await this.createBlacklistForVote(voteRequest);
+            } else {
+                await this.removeBlacklistForVote(voteRequest);
+            }
+
+        }
+
+        if (msgids.length === 0) {
+            throw new MessageException('Wallet has no usable addresses for voting.');
+        }
+
+        const result = {
+            result: 'Sent.',
+            msgids
+        } as SmsgSendResponse;
+
+        this.log.debug('vote(), result: ', JSON.stringify(result, null, 2));
+        return result;
+    }
+
+    /**
+     * processMessage "processes" the Vote, creating or updating the Vote.
+     * called from send() and onEvent(), meaning before the VoteMessage is sent
+     * and after the VoteMessage is received.
+     *
+     * - processMessage()
+     *   - verify the vote is valid
+     *     - verifymessage address votemessage.signature votemessage.voteticket
+     *     - get the balance for the address
+     *   - if Vote is valid and has balance:
+     *     - save/update Vote locally (update: add the fields from smsgmessage)
+     *     - proposalService.recalculateProposalResult(proposal)
+     *     - if ITEM_VOTE
+     *       - check if listingitem should be removed
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param actionRequest
+     * @param smsgMessage
+     */
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: VoteRequest): Promise<resources.SmsgMessage> {
+
+        const voteMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
+
+        // TODO: dont return undefined
+        // TODO: way too long method, needs to be refactored
+
+        // get the address balance
+        // TODO: balance can be checked later
+        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => parseInt(value.balance, 10));
+        this.log.debug('processMessage(), voteMessage.voter: ', voteMessage.voter);
+        this.log.debug('processMessage(), balance: ', balance);
+
+        let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
+        if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
+            this.log.error('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
+            // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
+            // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
+            throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
+        }
+
+        // find the ProposalOption for which the Vote is for
+        const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
+
+        // find the Vote and if it exists, update it, and if not, then create it
+        const vote: resources.Vote = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
+            .then(async value => {
+                // Vote was found, update it
+                const foundVote: resources.Vote = value.toJSON();
+                const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
+                        msgid: smsgMessage.msgid,
+                        proposalOption: votedProposalOption,
+                        weight: balance,
+                    } as VoteCreateParams,
+                    voteMessage,
+                    smsgMessage);
+
+                return await this.voteService.update(foundVote.id, voteUpdateRequest).then(value2 => value.toJSON());
+
+            })
+            .catch(async () => {
+
+                // if Vote doesnt exist yet, we need to create it.
+                this.log.debug('did not find Vote, creating...');
+                const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
+                        msgid: smsgMessage ? smsgMessage.msgid : '',
+                        proposalOption: votedProposalOption,
+                        weight: balance
+                    } as VoteCreateParams,
+                    voteMessage,
+                    smsgMessage);
+
+                return await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
+            });
+
+        // after creating/updating the Vote, recalculate the ProposalResult
+        proposal = await this.proposalService.findOne(vote.ProposalOption.Proposal.id).then(value => value.toJSON());
+        const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+        // after recalculating the ProposalResult, we can now flag the ListingItem/Market as removed, if needed
+        await this.flaggedItemService.flagAsRemovedIfNeeded(proposal.FlaggedItem.id, proposalResult, vote);
+
+        return smsgMessage;
+    }
+
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+        // undefined -> don't send notifications about Proposals
+        return undefined;
+    }
+
+    /**
+     * When we are voting for removal, a Blacklist is created for whatever we vote to remove for.
+     *
+     * @param voteRequest
+     */
+    public async createBlacklistForVote(voteRequest: VoteRequest): Promise<resources.Blacklist> {
+
+        const proposal: resources.Proposal = voteRequest.proposal;
+        const voterIdentity: resources.Identity = voteRequest.sender;
+
+        const type: BlacklistType = this.getBlacklistType(proposal.category);
+        const target = proposal.title;  // hash/marketReceiveAddress in title
+
+        const profileId = voterIdentity.Profile.id;
+
+        let listingItem: resources.ListingItem | undefined;
+        if (!_.isEmpty(proposal.FlaggedItem.ListingItem)) {
+            listingItem = proposal.FlaggedItem.ListingItem;
+        }
+
+        // only create if Blacklist doesn't exist
+        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
+
+        if (_.isEmpty(blacklisted)) {
+            const blacklistCreateRequest = {
+                type,
+                target,
+                market: proposal.market,
+                profile_id: profileId,
+                listing_item_id: listingItem ? listingItem.id : undefined
+            } as BlacklistCreateRequest;
+
+            return await this.blacklistService.create(blacklistCreateRequest).then(value => value.toJSON());
+        } else {
+            return blacklisted[0];
+        }
+    }
+
+    /**
+     * When we are voting to NOT remove, remove the existing Blacklist if such exists.
+     *
+     * @param voteRequest
+     */
+    public async removeBlacklistForVote(voteRequest: VoteRequest): Promise<void> {
+
+        const target = voteRequest.proposal.title;  // hash/marketReceiveAddress in title
+        const profileId = voteRequest.sender.Profile.id;
+
+        // only remove if Blacklist exists
+        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
+
+        if (!_.isEmpty(blacklisted)) {
+            // there shouldn't be multiple, but wth
+            // todo: add findOne...
+            for (const blacklist of blacklisted) {
+                await this.blacklistService.destroy(blacklist.id);
+            }
+        }
     }
 
     /**
@@ -187,250 +439,9 @@ export class VoteActionService extends BaseActionService {
     }
 
     /**
-     * vote for given Proposal and ProposalOption using all wallet addresses
      *
-     * - vote( profile, ... ):
-     *   - get all addresses having balance
-     *   - for (voteAddress: addresses):
-     *     - this.send( voteAddress )
-     *
-     * @param voteRequest
+     * @param proposalCategory
      */
-    public async vote(voteRequest: VoteRequest): Promise<SmsgSendResponse> {
-
-        const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(voteRequest.sender.wallet, 0);
-
-        this.log.debug('posting votes from addresses: ', JSON.stringify(addressInfos, null, 2));
-        if (_.isEmpty(addressInfos)) {
-            this.log.error('Wallet has no usable addresses for voting.');
-            return {
-                result: 'Wallet has no usable addresses for voting.'
-            } as SmsgSendResponse;
-        }
-
-        const msgids: string[] = [];
-        for (const addressInfo of addressInfos) {
-            this.log.debug('================================================');
-            this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
-
-            if (addressInfo.balance > 0) {
-                // change sender to be the output address, then post the vote
-                voteRequest.sendParams.fromAddress = addressInfo.address;
-                voteRequest.sendParams.paidMessage = false; // vote messages should be free
-                voteRequest.addressInfo = addressInfo;
-
-                await this.post(voteRequest)
-                    .then(smsgSendResponse => {
-                        if (smsgSendResponse.msgid) {
-                            msgids.push(smsgSendResponse.msgid);
-                        }
-                    });
-            }
-        }
-
-        // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
-        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
-                voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
-            await this.listingItemService.setRemovedFlag(listingItem.id, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
-            this.log.debug('vote(), removed flag set');
-
-            // todo: get rid of the remove flag, use Blacklist...
-
-
-        } else if (voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
-            // TODO: await this.marketService.setRemovedFlag()
-        }
-
-        if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE
-            || voteRequest.proposal.category === ProposalCategory.MARKET_VOTE) {
-
-            // Blacklist the ListingItem.hash/Market.receiveAddress for the Profile thats voting
-            if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
-                // only if voting for removal
-                await this.createBlacklistForVote(voteRequest);
-            } else {
-                await this.removeBlacklistForVote(voteRequest);
-            }
-
-        }
-
-        if (msgids.length === 0) {
-            throw new MessageException('Wallet has no usable addresses for voting.');
-        }
-
-        const result = {
-            result: 'Sent.',
-            msgids
-        } as SmsgSendResponse;
-
-        this.log.debug('vote(), result: ', JSON.stringify(result, null, 2));
-        return result;
-    }
-
-    /**
-     * processVote "processes" the Vote, creating or updating the Vote.
-     * called from send() and onEvent(), meaning before the VoteMessage is sent
-     * and after the VoteMessage is received.
-     *
-     * - processVote()
-     *   - verify the vote is valid
-     *     - verifymessage address votemessage.signature votemessage.voteticket
-     *     - get the balance for the address
-     *   - if Vote is valid and has balance:
-     *     - save/update Vote locally (update: add the fields from smsgmessage)
-     *     - proposalService.recalculateProposalResult(proposal)
-     *     - if ITEM_VOTE
-     *       - check if listingitem should be removed
-     *
-     * @param voteMessage
-     * @param smsgMessage
-     */
-    public async processVote(voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Vote | undefined> {
-
-        // TODO: dont return undefined
-        // TODO: way too long method, needs to be refactored
-
-        // get the address balance
-        // TODO: balance can be checked later
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => parseInt(value.balance, 10));
-        this.log.debug('processVote(), voteMessage.voter: ', voteMessage.voter);
-        this.log.debug('processVote(), balance: ', balance);
-
-        // verify that the vote was actually sent by the owner of the address
-        const verified = await this.verifyVote(voteMessage);
-        if (!verified) {
-            throw new MessageException('Received signature failed validation.');
-        } else {
-            this.log.debug('processVote(), vote verified!');
-        }
-
-        let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
-
-        if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
-            this.log.error('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + smsgMessage.sent);
-            // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
-            // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
-            throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
-        }
-
-        // address needs to have balance for the vote to matter
-        // already checked in send, but doing it again since we call this also from onEvent()
-
-
-        // find the ProposalOption for which the Vote is for
-        const votedProposalOption = await this.proposalOptionService.findOneByHash(voteMessage.proposalOptionHash).then(value => value.toJSON());
-
-        // find the Vote and if it exists, update it, and if not, then create it
-        let vote: resources.Vote | undefined = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id)
-            .then(value => value.toJSON())
-            .catch(reason => this.log.debug('Vote not found: ', reason));
-
-        // todo: createOrUpdateVote
-        if (vote) {
-            // Vote was found, update it
-            // when vote is found, we are either receiving our own vote or someone is voting again
-            // if this is our own vote, then the relevant smsgMessage data will be updated and included in the request
-            const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
-                    proposalOption: votedProposalOption,
-                    weight: balance,
-                    create: false
-                } as VoteCreateParams,
-                voteMessage,
-                smsgMessage);
-            this.log.debug('found vote, updating the existing one');
-            this.log.debug('voteRequest.voter: ' + voteUpdateRequest.voter);
-            this.log.debug('proposal.id: ' + proposal.id);
-            this.log.debug('vote.id: ' + vote.id);
-            vote = await this.voteService.update(vote.id, voteUpdateRequest).then(value => value.toJSON());
-            // this.log.debug('vote: ' + JSON.stringify(vote, null, 2));
-
-        } else {
-            // Vote doesnt exist yet, so we need to create it.
-            // when called from send() we create a VoteCreateRequest with fake smsgMessage data, which will be updated when the message is received.
-            this.log.debug('did not find vote, creating...');
-            const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
-                    msgid: smsgMessage ? smsgMessage.msgid : '',
-                    proposalOption: votedProposalOption,
-                    weight: balance,
-                    create: true
-                } as VoteCreateParams,
-                voteMessage,
-                smsgMessage);
-
-            vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
-            // this.log.debug('created vote: ', JSON.stringify(vote, null, 2));
-        }
-
-        // after creating/updating the Vote, recalculate the ProposalResult
-        proposal = await this.proposalService.findOne(vote!.ProposalOption.Proposal.id).then(value => value.toJSON());
-        const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
-
-        // after recalculating the ProposalResult, we can now flag the ListingItem/Market as removed, if needed
-        await this.flaggedItemService.flagAsRemovedIfNeeded(proposal.FlaggedItem.id, proposalResult, vote!);
-
-        return vote;
-    }
-
-    /**
-     * When we are voting for removal, a Blacklist is created for whatever we vote to remove for.
-     *
-     * @param voteRequest
-     */
-    public async createBlacklistForVote(voteRequest: VoteRequest): Promise<resources.Blacklist> {
-
-        const proposal: resources.Proposal = voteRequest.proposal;
-        const voterIdentity: resources.Identity = voteRequest.sender;
-
-        const type: BlacklistType = this.getBlacklistType(proposal.category);
-        const target = proposal.title;  // hash/marketReceiveAddress in title
-
-        const profileId = voterIdentity.Profile.id;
-
-        let listingItem: resources.ListingItem | undefined;
-        if (!_.isEmpty(proposal.FlaggedItem.ListingItem)) {
-            listingItem = proposal.FlaggedItem.ListingItem;
-        }
-
-        // only create if Blacklist doesn't exist
-        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
-
-        if (_.isEmpty(blacklisted)) {
-            const blacklistCreateRequest = {
-                type,
-                target,
-                market: proposal.market,
-                profile_id: profileId,
-                listing_item_id: listingItem ? listingItem.id : undefined
-            } as BlacklistCreateRequest;
-
-            return await this.blacklistService.create(blacklistCreateRequest).then(value => value.toJSON());
-        } else {
-            return blacklisted[0];
-        }
-    }
-    /**
-     * When we are voting to NOT remove, remove the existing Blacklist if such exists.
-     *
-     * @param voteRequest
-     */
-    public async removeBlacklistForVote(voteRequest: VoteRequest): Promise<void> {
-
-        const target = voteRequest.proposal.title;  // hash/marketReceiveAddress in title
-        const profileId = voteRequest.sender.Profile.id;
-
-        // only remove if Blacklist exists
-        const blacklisted: resources.Blacklist[] = await this.blacklistService.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
-
-        if (!_.isEmpty(blacklisted)) {
-            // there shouldn't be multiple, but wth
-            // todo: add findOne...
-            for (const blacklist of blacklisted) {
-                await this.blacklistService.destroy(blacklist.id);
-            }
-        }
-    }
-
     private getBlacklistType(proposalCategory: ProposalCategory): BlacklistType {
         switch (proposalCategory) {
             case ProposalCategory.ITEM_VOTE:
@@ -497,23 +508,7 @@ export class VoteActionService extends BaseActionService {
             proposalOptionHash: proposalOption.hash,
             address
         } as VoteTicket;
-
         return await this.coreRpcService.signMessage(wallet, address, voteTicket);
-    }
-
-    /**
-     * verifies VoteTicket, returns boolean
-     *
-     * @param voteMessage
-     * @param address
-     */
-    private async verifyVote(voteMessage: VoteMessage): Promise<boolean> {
-        const voteTicket = {
-            proposalHash: voteMessage.proposalHash,
-            proposalOptionHash: voteMessage.proposalOptionHash,
-            address: voteMessage.voter
-        } as VoteTicket;
-        return await this.coreRpcService.verifyMessage(voteMessage.voter, voteMessage.signature, voteTicket);
     }
 
 }

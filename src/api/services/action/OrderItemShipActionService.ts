@@ -53,7 +53,7 @@ export class OrderItemShipActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMessage(params: OrderItemShipRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(params: OrderItemShipRequest): Promise<MarketplaceMessage> {
 
         // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
         return this.smsgMessageService.findOneByMsgId(params.bid.msgid)

@@ -2,6 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { inject, named } from 'inversify';
+import { Core, Targets, Types } from '../../constants';
+import { CoreRpcService } from '../services/CoreRpcService';
+import { Logger as LoggerType } from '../../core/Logger';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ValidationException } from '../exceptions/ValidationException';
 import { ActionMessageValidatorInterface } from './ActionMessageValidatorInterface';
@@ -10,10 +14,6 @@ import { CommentAction } from '../enums/CommentAction';
 import { ActionDirection } from '../enums/ActionDirection';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 import { CommentTicket } from '../services/action/CommentAddActionService';
-import { inject, named } from 'inversify';
-import { Core, Targets, Types } from '../../constants';
-import { CoreRpcService } from '../services/CoreRpcService';
-import { Logger as LoggerType } from '../../core/Logger';
 
 /**
  *
@@ -53,7 +53,7 @@ export class CommentAddValidator implements ActionMessageValidatorInterface {
         if (!verified) {
             throw new MessageException('Received signature failed validation.');
         } else {
-            this.log.debug('comment verified!');
+            this.log.debug('Comment verified!');
         }
 
         return true;
