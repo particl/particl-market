@@ -39,15 +39,23 @@ import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowR
 import { EscrowReleaseValidator } from '../../messagevalidators/EscrowReleaseValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { BaseBidActionService } from '../BaseBidActionService';
+import {NotificationService} from '../NotificationService';
+import {ActionDirection} from '../../enums/ActionDirection';
+import {MarketplaceNotification} from '../../messages/MarketplaceNotification';
+import {EscrowRefundMessage} from '../../messages/action/EscrowRefundMessage';
+import {EscrowRefundRequest} from '../../requests/action/EscrowRefundRequest';
 
-export class EscrowReleaseActionService extends BaseActionService {
+export class EscrowReleaseActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
-        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
@@ -59,7 +67,17 @@ export class EscrowReleaseActionService extends BaseActionService {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
+        super(MPActionExtended.MPA_RELEASE,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger,
+            listingItemService,
+            bidService,
+            bidFactory
+        );
         this.log = new Logger(__filename);
     }
 
@@ -73,39 +91,39 @@ export class EscrowReleaseActionService extends BaseActionService {
      * - post the releasetx
      * - generate EscrowReleaseMessage and pass the releasetxid forward to inform the seller
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMarketplaceMessage(params: EscrowReleaseRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: EscrowReleaseRequest): Promise<MarketplaceMessage> {
 
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: params.bid.ListingItem
+            listingItem: actionRequest.bid.ListingItem
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
+                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
                     .then(async bid => {
                         const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
                         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
 
-                        return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid)
+                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid)
                             .then(async bidAccept => {
                                 const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
                                 const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
 
                                 // finally use omp to generate releasetx
                                 const releasetx = await this.ompService.release(
-                                    params.sendParams.wallet,
+                                    actionRequest.sendParams.wallet,
                                     listingItemAddMPM.action as ListingItemAddMessage,
                                     bidMPM.action as BidMessage,
                                     bidAcceptMPM.action as BidAcceptMessage
                                 );
 
                                 const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
-                                    bidHash: params.bid.hash,
-                                    memo: params.memo
+                                    bidHash: actionRequest.bid.hash,
+                                    memo: actionRequest.memo
                                 } as EscrowReleaseMessageCreateParams);
 
                                 // store the releasetx temporarily in the actionMessage
@@ -127,10 +145,10 @@ export class EscrowReleaseActionService extends BaseActionService {
      * - store the txid in the actionMessage
      * - and then send the rawtx
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage, MPA_RELEASE
      */
-    public async beforePost(params: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
 
         // send the release rawtx
         const releasetx = marketplaceMessage.action['_releasetx'];
@@ -153,24 +171,13 @@ export class EscrowReleaseActionService extends BaseActionService {
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: EscrowReleaseRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-
-        const bidCreateParams = {
-            listingItem: params.bid.ListingItem,
-            bidder: params.bid.bidder,
-            parentBid: params.bid
-        } as BidCreateParams;
-
-        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowReleaseMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as EscrowReleaseMessage, bidCreateRequest);
-            });
 
         return smsgSendResponse;
     }
@@ -180,10 +187,17 @@ export class EscrowReleaseActionService extends BaseActionService {
      * - update OrderItem.status
      * - update Order.status
      *
-     * @param escrowReleaseMessage
-     * @param bidCreateRequest
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     * @param actionRequest
      */
-    public async createBid(escrowReleaseMessage: EscrowReleaseMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: EscrowReleaseRequest): Promise<resources.SmsgMessage> {
+        const escrowReleaseMessage: EscrowReleaseMessage = marketplaceMessage.action as EscrowReleaseMessage;
+        const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(escrowReleaseMessage, smsgMessage);
 
         return await this.bidService.create(bidCreateRequest)
             .then(async value => {
@@ -195,4 +209,22 @@ export class EscrowReleaseActionService extends BaseActionService {
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
     }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+            return this.createBidNotification(marketplaceMessage, smsgMessage);
+        }
+        return undefined;
+    }
+
 }
