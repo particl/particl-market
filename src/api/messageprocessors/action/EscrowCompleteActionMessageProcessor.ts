@@ -21,14 +21,15 @@ import { EscrowCompleteActionService } from '../../services/action/EscrowComplet
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { EscrowCompleteValidator } from '../../messagevalidators/EscrowCompleteValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPActionExtended.MPA_COMPLETE);
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.EscrowCompleteActionService) public escrowCompleteActionService: EscrowCompleteActionService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -36,7 +37,15 @@ export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessagePr
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowCompleteValidator) public validator: EscrowCompleteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_COMPLETE, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_COMPLETE,
+            escrowCompleteActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger);
     }
 
     /**
@@ -54,21 +63,12 @@ export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessagePr
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - then, save the new Bid (MPA_COMPLETE) and update the OrderItem.status and Order.status
 
-        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.escrowCompleteActionService.createBid(actionMessage, bidCreateRequest)
-                    .then(value => {
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        return await this.escrowCompleteActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
-
-
 }

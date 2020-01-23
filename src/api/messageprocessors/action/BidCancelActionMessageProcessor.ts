@@ -21,7 +21,7 @@ import { BidCancelActionService } from '../../services/action/BidCancelActionSer
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
