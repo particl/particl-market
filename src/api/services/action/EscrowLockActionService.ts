@@ -15,15 +15,13 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
-import { BaseActionService } from '../BaseActionService';
+import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
@@ -37,27 +35,41 @@ import { CoreRpcService } from '../CoreRpcService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { BaseBidActionService } from '../BaseBidActionService';
+import { NotificationService } from '../NotificationService';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 
-export class EscrowLockActionService extends BaseActionService {
+export class EscrowLockActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
-        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_LOCK,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger,
+            listingItemService,
+            bidService,
+            bidFactory
+        );
     }
 
     /**
@@ -70,25 +82,25 @@ export class EscrowLockActionService extends BaseActionService {
      *
      * @param params
      */
-    public async createMarketplaceMessage(params: EscrowLockRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: EscrowLockRequest): Promise<MarketplaceMessage> {
 
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: params.bid.ListingItem
+            listingItem: actionRequest.bid.ListingItem
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
                 // this.log.debug('params: ', JSON.stringify(params, null, 2));
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(params.bid.msgid, ActionDirection.OUTGOING)
+                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid, ActionDirection.OUTGOING)
                     .then(async bid => {
 
                         const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
                         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
                         // this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
 
-                        return this.smsgMessageService.findOneByMsgId(params.bidAccept.msgid, ActionDirection.INCOMING)
+                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid, ActionDirection.INCOMING)
                             .then(async bidAccept => {
 
                                 const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
@@ -97,7 +109,7 @@ export class EscrowLockActionService extends BaseActionService {
 
                                 // finally use omp to generate EscrowLockMessage
                                 return await this.ompService.lock(
-                                    params.sendParams.wallet,
+                                    actionRequest.sendParams.wallet,
                                     listingItemAddMPM.action as ListingItemAddMessage,
                                     bidMPM.action as BidMessage,
                                     bidAcceptMPM.action as BidAcceptMessage
@@ -113,7 +125,7 @@ export class EscrowLockActionService extends BaseActionService {
      * @param params
      * @param marketplaceMessage, omp generated MPA_ACCEPT
      */
-    public async beforePost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
         return marketplaceMessage;
     }
 
@@ -129,37 +141,8 @@ export class EscrowLockActionService extends BaseActionService {
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: EscrowLockRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: EscrowLockRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-
-        const bidCreateParams = {
-            listingItem: params.bid.ListingItem,
-            bidder: params.bid.bidder,
-            parentBid: params.bid
-        } as BidCreateParams;
-
-        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as EscrowLockMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as EscrowLockMessage, bidCreateRequest)
-                    .then(async value => {
-
-                        this.log.debug('beforePost(): created new bid: ', JSON.stringify(value, null, 2));
-
-                        if (params.bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
-                            // send the lock rawtx
-                            const bidtx = marketplaceMessage.action['_rawbidtx'];
-                            const txid = await this.coreRpcService.sendRawTransaction(bidtx);
-
-                            // add txid to the EscrowLockMessage to be sent to the seller
-                            const bidMessage = marketplaceMessage.action as BidMessage;
-                            bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                            bidMessage.objects.push({
-                                key: ActionMessageObjects.TXID_LOCK,
-                                value: txid
-                            } as KVS);
-                        }
-                    });
-            });
 
         return smsgSendResponse;
     }
@@ -169,14 +152,41 @@ export class EscrowLockActionService extends BaseActionService {
      * - update OrderItem.status -> AWAITING_ESCROW
      * - update Order.status
      *
-     * @param escrowLockMessage
-     * @param bidCreateRequest
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     * @param actionRequest
      */
-    public async createBid(escrowLockMessage: EscrowLockMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: EscrowCompleteRequest): Promise<resources.SmsgMessage> {
 
-        return await this.bidService.create(bidCreateRequest)
+        const escrowLockMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
+        const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(escrowLockMessage, smsgMessage);
+
+        await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
+
+                if (ActionDirection.OUTGOING === actionDirection) {
+
+                    this.log.debug('beforePost(): created new bid: ', JSON.stringify(value, null, 2));
+
+                    if (bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
+                        // send the lock rawtx
+                        const bidtx = marketplaceMessage.action['_rawbidtx'];
+                        const txid = await this.coreRpcService.sendRawTransaction(bidtx);
+
+                        // add txid to the EscrowLockMessage to be sent to the seller
+                        const bidMessage = marketplaceMessage.action as BidMessage;
+                        bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+                        bidMessage.objects.push({
+                            key: ActionMessageObjects.TXID_LOCK,
+                            value: txid
+                        } as KVS);
+                    }
+                }
 
                 // mp@0.1.7: because of a bug in smsg, some messages might not have been received and 'smsg resend'-command was added to allow resending
                 // those smsgmessages to fix the buy flow. it was possible for buyers to not receive the MPA_COMPLETE, but receive the next MPA_SHIP which
@@ -193,5 +203,25 @@ export class EscrowLockActionService extends BaseActionService {
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
+
+        return smsgMessage;
     }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+            return this.createBidNotification(marketplaceMessage, smsgMessage);
+        }
+        return undefined;
+    }
+
 }

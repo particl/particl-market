@@ -75,7 +75,6 @@ export class EscrowCompleteActionService extends BaseBidActionService {
             bidService,
             bidFactory
         );
-        this.log = new Logger(__filename);
     }
 
     /**

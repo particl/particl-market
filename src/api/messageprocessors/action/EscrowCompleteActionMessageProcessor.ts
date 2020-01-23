@@ -59,10 +59,6 @@ export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessagePr
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: EscrowCompleteMessage = marketplaceMessage.action as EscrowCompleteMessage;
 
-        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_COMPLETE) and update the OrderItem.status and Order.status
-
         return await this.escrowCompleteActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 return SmsgMessageStatus.PROCESSED;

@@ -21,14 +21,15 @@ import { EscrowLockActionService } from '../../services/action/EscrowLockActionS
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { EscrowLockValidator } from '../../messagevalidators/EscrowLockValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPAction.MPA_LOCK);
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.EscrowLockActionService) public escrowLockActionService: EscrowLockActionService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -36,7 +37,15 @@ export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProces
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_LOCK, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_LOCK,
+            escrowLockActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger);
     }
 
     /**
@@ -50,22 +59,11 @@ export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProces
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
 
-        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - then, save the new Bid (MPA_LOCK) and update the OrderItem.status and Order.status
-
-        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.escrowLockActionService.createBid(actionMessage, bidCreateRequest)
-                    .then(value => {
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        return await this.escrowLockActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
