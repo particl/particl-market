@@ -17,14 +17,12 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
@@ -41,11 +39,9 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { BaseBidActionService } from '../BaseBidActionService';
-import {NotificationService} from '../NotificationService';
-import {ActionDirection} from '../../enums/ActionDirection';
-import {MarketplaceNotification} from '../../messages/MarketplaceNotification';
-import {EscrowRefundMessage} from '../../messages/action/EscrowRefundMessage';
-import {EscrowRefundRequest} from '../../requests/action/EscrowRefundRequest';
+import { NotificationService } from '../NotificationService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 
 export class EscrowReleaseActionService extends BaseBidActionService {
 
@@ -78,7 +74,6 @@ export class EscrowReleaseActionService extends BaseBidActionService {
             bidService,
             bidFactory
         );
-        this.log = new Logger(__filename);
     }
 
     /**
@@ -196,6 +191,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
                                 actionDirection: ActionDirection,
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: EscrowReleaseRequest): Promise<resources.SmsgMessage> {
+
         const escrowReleaseMessage: EscrowReleaseMessage = marketplaceMessage.action as EscrowReleaseMessage;
         const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(escrowReleaseMessage, smsgMessage);
 

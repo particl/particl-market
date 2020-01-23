@@ -11,7 +11,6 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
 import { BidFactory } from '../../factories/model/BidFactory';
@@ -24,14 +23,15 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class OrderItemShipActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPActionExtended.MPA_SHIP);
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.OrderItemShipActionService) public orderItemShipActionService: OrderItemShipActionService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -39,7 +39,16 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_SHIP, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_SHIP,
+            orderItemShipActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger
+        );
     }
 
     /**
@@ -72,24 +81,12 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
         if (mpaBid.OrderItem.status === OrderItemStatus.ESCROW_COMPLETED
             && mpaBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOne(mpaBid.ListingItem.id).then(value => value.toJSON());
-
-            const bidCreateParams = {
-                msgid: smsgMessage.msgid,
-                listingItem,
-                bidder: smsgMessage.to,
-                parentBid: mpaBid
-            } as BidCreateParams;
-
-            return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage)
-                .then(async orderItemShipRequest => {
-                    return await this.orderItemShipActionService.createBid(actionMessage, orderItemShipRequest)
-                        .then(value => {
-                            return SmsgMessageStatus.PROCESSED;
-                        })
-                        .catch(reason => {
-                            return SmsgMessageStatus.PROCESSING_FAILED;
-                        });
+            return await this.orderItemShipActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+                .then(value => {
+                    return SmsgMessageStatus.PROCESSED;
+                })
+                .catch(reason => {
+                    return SmsgMessageStatus.PROCESSING_FAILED;
                 });
         } else {
             // escrow is not locked yet, send to waiting queue, until escrow gets locked

@@ -83,6 +83,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             }
 
             await this.onEvent(event)
+
                 .then(async status => {
                     // update the status based on onEvent result
                     updatedSmsgMessage = await this.smsgMessageService.updateStatus(event.smsgMessage.id, status).then(value => value.toJSON());
