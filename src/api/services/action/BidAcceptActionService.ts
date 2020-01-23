@@ -21,7 +21,6 @@ import { ListingItemAddActionService } from './ListingItemAddActionService';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
 import { BidAcceptValidator } from '../../messagevalidators/BidAcceptValidator';
@@ -34,8 +33,6 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
-import { BidNotification } from '../../messages/notification/BidNotification';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ListingItemService } from '../model/ListingItemService';
 

@@ -12,11 +12,10 @@ import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { BidService } from '../services/model/BidService';
 import { ProposalService } from '../services/model/ProposalService';
-import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
-import {MarketplaceNotification} from '../messages/MarketplaceNotification';
+import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
