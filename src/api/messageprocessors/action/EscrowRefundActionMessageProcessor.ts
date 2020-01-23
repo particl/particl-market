@@ -21,14 +21,15 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { EscrowRefundValidator } from '../../messagevalidators/EscrowRefundValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
     public static Event = Symbol(MPActionExtended.MPA_REFUND);
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.EscrowRefundActionService) public escrowRefundActionService: EscrowRefundActionService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -36,7 +37,16 @@ export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProc
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowRefundValidator) public validator: EscrowRefundValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPActionExtended.MPA_REFUND, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPActionExtended.MPA_REFUND,
+            escrowRefundActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger
+        );
     }
 
     /**
@@ -54,18 +64,11 @@ export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProc
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - then, save the new Bid (MPA_REFUND) and update the OrderItem.status and Order.status
 
-        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.escrowRefundActionService.createBid(actionMessage, bidCreateRequest)
-                    .then(value => {
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        return await this.escrowRefundActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

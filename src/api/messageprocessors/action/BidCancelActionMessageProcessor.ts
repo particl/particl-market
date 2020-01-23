@@ -45,7 +45,8 @@ export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcess
             validator,
             listingItemService,
             bidFactory,
-            Logger);
+            Logger
+        );
     }
 
     /**

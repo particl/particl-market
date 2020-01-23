@@ -45,7 +45,8 @@ export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcess
             validator,
             listingItemService,
             bidFactory,
-            Logger);
+            Logger
+        );
     }
 
     /**

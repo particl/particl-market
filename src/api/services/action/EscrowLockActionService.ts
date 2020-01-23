@@ -38,7 +38,6 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 
 export class EscrowLockActionService extends BaseBidActionService {
 
@@ -80,7 +79,7 @@ export class EscrowLockActionService extends BaseBidActionService {
      * - find the received BidAcceptMessage
      * - generate EscrowLockMessage with omp using recreated ListingItemMessage and previously stored BidMessage and BidAcceptMessage
      *
-     * @param params
+     * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: EscrowLockRequest): Promise<MarketplaceMessage> {
 
@@ -122,10 +121,25 @@ export class EscrowLockActionService extends BaseBidActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage, omp generated MPA_ACCEPT
      */
     public async beforePost(actionRequest: EscrowLockRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+
+        if (actionRequest.bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
+            // send the lock rawtx
+            const bidtx = marketplaceMessage.action['_rawbidtx'];
+            const txid = await this.coreRpcService.sendRawTransaction(bidtx);
+
+            // add txid to the EscrowLockMessage to be sent to the seller
+            const bidMessage = marketplaceMessage.action as BidMessage;
+            bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+            bidMessage.objects.push({
+                key: ActionMessageObjects.TXID_LOCK,
+                value: txid
+            } as KVS);
+        }
+
         return marketplaceMessage;
     }
 
@@ -136,7 +150,7 @@ export class EscrowLockActionService extends BaseBidActionService {
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
@@ -160,7 +174,7 @@ export class EscrowLockActionService extends BaseBidActionService {
     public async processMessage(marketplaceMessage: MarketplaceMessage,
                                 actionDirection: ActionDirection,
                                 smsgMessage: resources.SmsgMessage,
-                                actionRequest?: EscrowCompleteRequest): Promise<resources.SmsgMessage> {
+                                actionRequest?: EscrowLockRequest): Promise<resources.SmsgMessage> {
 
         const escrowLockMessage: EscrowLockMessage = marketplaceMessage.action as EscrowLockMessage;
         const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(escrowLockMessage, smsgMessage);
@@ -168,25 +182,6 @@ export class EscrowLockActionService extends BaseBidActionService {
         await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
-
-                if (ActionDirection.OUTGOING === actionDirection) {
-
-                    this.log.debug('beforePost(): created new bid: ', JSON.stringify(value, null, 2));
-
-                    if (bid.ListingItem.PaymentInformation.Escrow.type === EscrowType.MULTISIG) {
-                        // send the lock rawtx
-                        const bidtx = marketplaceMessage.action['_rawbidtx'];
-                        const txid = await this.coreRpcService.sendRawTransaction(bidtx);
-
-                        // add txid to the EscrowLockMessage to be sent to the seller
-                        const bidMessage = marketplaceMessage.action as BidMessage;
-                        bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
-                        bidMessage.objects.push({
-                            key: ActionMessageObjects.TXID_LOCK,
-                            value: txid
-                        } as KVS);
-                    }
-                }
 
                 // mp@0.1.7: because of a bug in smsg, some messages might not have been received and 'smsg resend'-command was added to allow resending
                 // those smsgmessages to fix the buy flow. it was possible for buyers to not receive the MPA_COMPLETE, but receive the next MPA_SHIP which

@@ -45,7 +45,8 @@ export class EscrowLockActionMessageProcessor extends BaseBidActionMessageProces
             validator,
             listingItemService,
             bidFactory,
-            Logger);
+            Logger
+        );
     }
 
     /**

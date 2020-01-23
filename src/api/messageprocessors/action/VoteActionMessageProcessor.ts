@@ -32,7 +32,14 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE, voteActionService, smsgMessageService, bidService, proposalService, validator, Logger);
+        super(GovernanceAction.MPA_VOTE,
+            voteActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            Logger
+        );
     }
 
     /**

@@ -45,7 +45,8 @@ export class EscrowCompleteActionMessageProcessor extends BaseBidActionMessagePr
             validator,
             listingItemService,
             bidFactory,
-            Logger);
+            Logger
+        );
     }
 
     /**
