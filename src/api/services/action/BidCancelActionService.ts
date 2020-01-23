@@ -16,10 +16,7 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
-import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
@@ -28,24 +25,42 @@ import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
 import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
+import { BaseBidActionService } from '../BaseBidActionService';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { NotificationService } from '../NotificationService';
+import { ListingItemService } from '../model/ListingItemService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 
-export class BidCancelActionService extends BaseActionService {
+export class BidCancelActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_CANCEL,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger,
+            listingItemService,
+            bidService,
+            bidFactory
+        );
     }
 
     /**
@@ -53,12 +68,12 @@ export class BidCancelActionService extends BaseActionService {
      *
      * - generate BidCancelMessage
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMarketplaceMessage(params: BidCancelRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: BidCancelRequest): Promise<MarketplaceMessage> {
 
         const actionMessage: BidCancelMessage = await this.bidCancelMessageFactory.get({
-            bidHash: params.bid.hash
+            bidHash: actionRequest.bid.hash
         } as BidCancelMessageCreateParams);
 
         return {
@@ -70,10 +85,10 @@ export class BidCancelActionService extends BaseActionService {
     /**
      * called after createMessage and before post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage, generated MPA_CANCEL
      */
-    public async beforePost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: BidCancelRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
         return marketplaceMessage;
     }
 
@@ -84,24 +99,13 @@ export class BidCancelActionService extends BaseActionService {
      *   - the previous Bid should be added as parentBid to create the relation
      * - call createBid to create the Bid and update Order and OrderItem statuses
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: BidCancelRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: BidCancelRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-
-        const bidCreateParams = {
-            listingItem: params.bid.ListingItem,
-            bidder: params.bid.bidder,
-            parentBid: params.bid
-        } as BidCreateParams;
-
-        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as BidCancelMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as BidCancelMessage, bidCreateRequest);
-            });
 
         return smsgSendResponse;
     }
@@ -111,12 +115,20 @@ export class BidCancelActionService extends BaseActionService {
      * - update OrderItem.status -> AWAITING_ESCROW
      * - update Order.status
      *
-     * @param bidCancelMessage
-     * @param bidCreateRequest
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     * @param actionRequest
      */
-    public async createBid(bidCancelMessage: BidCancelMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: BidCancelRequest): Promise<resources.SmsgMessage> {
 
-        return await this.bidService.create(bidCreateRequest)
+        const bidCancelMessage: BidCancelMessage = marketplaceMessage.action as BidCancelMessage;
+        const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(bidCancelMessage, smsgMessage);
+
+        await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
@@ -127,5 +139,25 @@ export class BidCancelActionService extends BaseActionService {
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
+
+        return smsgMessage;
     }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+            return this.createBidNotification(marketplaceMessage, smsgMessage);
+        }
+        return undefined;
+    }
+
 }

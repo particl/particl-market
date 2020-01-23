@@ -42,8 +42,8 @@ export class BidAcceptActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
@@ -148,7 +148,6 @@ export class BidAcceptActionService extends BaseBidActionService {
                                 actionRequest?: BidAcceptRequest): Promise<resources.SmsgMessage> {
 
         const bidAcceptMessage: BidAcceptMessage = marketplaceMessage.action as BidAcceptMessage;
-
         const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(bidAcceptMessage, smsgMessage);
 
         // TODO: currently we support just one OrderItem per Order

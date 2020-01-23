@@ -21,6 +21,7 @@ import { BidCancelActionService } from '../../services/action/BidCancelActionSer
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
+import {ActionDirection} from '../../enums/ActionDirection';
 
 export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -36,7 +37,15 @@ export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_CANCEL,
+            bidCancelActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger);
     }
 
     /**
@@ -54,22 +63,12 @@ export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcess
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - then, save the new Bid (MPA_CANCEL) and update the OrderItem.status and Order.status
 
-        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.bidCancelActionService.createBid(actionMessage, bidCreateRequest)
-                    .then(value => {
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        return await this.bidCancelActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('ERROR, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
-
     }
-
-
 }
