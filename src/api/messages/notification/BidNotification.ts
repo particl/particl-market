@@ -3,11 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { ActionNotificationInterface } from './ActionNotificationInterface';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class BidNotification implements ActionNotificationInterface {
 
-    public type: MPAction.MPA_BID;
     public id: number;
     public hash: string;
 

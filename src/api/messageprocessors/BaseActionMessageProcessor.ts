@@ -31,12 +31,13 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
 
     constructor(eventType: ActionMessageTypes, actionService: ActionServiceInterface, smsgMessageService: SmsgMessageService, bidService: BidService,
                 proposalService: ProposalService, validator: ActionMessageValidatorInterface, Logger: typeof LoggerType) {
-        this.log = new Logger(eventType);
+        this.eventType = eventType;
+        this.actionService = actionService;
         this.smsgMessageService = smsgMessageService;
         this.bidService = bidService;
         this.proposalService = proposalService;
-        this.eventType = eventType;
         this.validator = validator;
+        this.log = new Logger(eventType);
     }
 
     /**

@@ -52,9 +52,9 @@ export class BidActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
@@ -252,7 +252,7 @@ export class BidActionService extends BaseActionService {
             const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {
-                event: NotificationType.NEW_BID,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                event: NotificationType.MPA_BID,    // TODO: NotificationType could be replaced with ActionMessageTypes
                 payload: {
                     id: bid.id,
                     hash: bid.hash,

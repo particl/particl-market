@@ -5,6 +5,8 @@
 export enum NotificationType {
 
     NEW_COMMENT = 'NEW_COMMENT',
-    NEW_BID = 'NEW_BID'
+
+    MPA_BID = 'MPA_BID',
+    MPA_ACCEPT = 'MPA_ACCEPT'
 
 }

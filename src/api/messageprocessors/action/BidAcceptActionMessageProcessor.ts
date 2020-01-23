@@ -21,6 +21,7 @@ import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { BidAcceptValidator } from '../../messagevalidators/BidAcceptValidator';
+import { ActionDirection } from '../../enums/ActionDirection';
 
 export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -36,7 +37,15 @@ export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidAcceptValidator) public validator: BidAcceptValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT, smsgMessageService, bidService, proposalService, validator, listingItemService, bidFactory, Logger);
+        super(MPAction.MPA_ACCEPT,
+            bidAcceptActionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            listingItemService,
+            bidFactory,
+            Logger);
     }
 
     /**
@@ -56,18 +65,12 @@ export class BidAcceptActionMessageProcessor extends BaseBidActionMessageProcess
         // - then get the ListingItem the Bid is for, fail if it doesn't exist
         // - then, save the new Bid (MPA_ACCEPT) and update the OrderItem.status and Order.status
 
-        return await this.createChildBidCreateRequest(actionMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.bidAcceptActionService.createBid(actionMessage, bidCreateRequest)
-                    .then(value => {
-                        return SmsgMessageStatus.PROCESSED;
-                    })
-                    .catch(reason => {
-                        return SmsgMessageStatus.PROCESSING_FAILED;
-                    });
+        return await this.bidAcceptActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+            .then(value => {
+                return SmsgMessageStatus.PROCESSED;
             })
             .catch(reason => {
-                this.log.error('ERROR, reason: ', reason);
+                this.log.error('PROCESSING_FAILED, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }

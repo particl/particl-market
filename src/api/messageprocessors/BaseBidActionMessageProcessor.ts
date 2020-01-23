@@ -24,9 +24,7 @@ import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import {ActionMessageValidatorInterface} from '../messagevalidators/ActionMessageValidatorInterface';
-
-export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
-    | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
+import {ActionServiceInterface} from '../services/action/ActionServiceInterface';
 
 // @injectable()
 export abstract class BaseBidActionMessageProcessor extends BaseActionMessageProcessor {
@@ -34,32 +32,27 @@ export abstract class BaseBidActionMessageProcessor extends BaseActionMessagePro
     public listingItemService: ListingItemService;
     public bidFactory: BidFactory;
 
-    constructor(eventType: ActionMessageTypes, smsgMessageService: SmsgMessageService, bidService: BidService,
-                proposalService: ProposalService, validator: ActionMessageValidatorInterface, listingItemService: ListingItemService,
-                bidFactory: BidFactory, Logger: typeof LoggerType) {
-        super(eventType, smsgMessageService, bidService, proposalService, validator, Logger);
+    constructor(eventType: ActionMessageTypes,
+                actionService: ActionServiceInterface,
+                smsgMessageService: SmsgMessageService,
+                bidService: BidService,
+                proposalService: ProposalService,
+                validator: ActionMessageValidatorInterface,
+                listingItemService: ListingItemService,
+                bidFactory: BidFactory,
+                Logger: typeof LoggerType) {
+        super(eventType,
+            actionService,
+            smsgMessageService,
+            bidService,
+            proposalService,
+            validator,
+            Logger
+        );
 
         this.listingItemService = listingItemService;
         this.bidFactory = bidFactory;
     }
 
-    public async createChildBidCreateRequest(actionMessage: ChildBidActionMessages, smsgMessage: resources.SmsgMessage): Promise<BidCreateRequest> {
-
-        // - first get the previous Bid (MPA_BID), fail if it doesn't exist
-        // - then get the ListingItem the Bid is for, fail if it doesn't exist
-        // - create and return BidCreateRequest
-
-        const mpaBid: resources.Bid = await this.bidService.findOneByHash(actionMessage.bid).then(value => value.toJSON());
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(mpaBid.ListingItem.id).then(value => value.toJSON());
-
-        const bidCreateParams = {
-            msgid: smsgMessage.msgid,
-            listingItem,
-            bidder: smsgMessage.to,
-            parentBid: mpaBid
-        } as BidCreateParams;
-
-        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage);
-    }
-
+    // TOOD: this class isn't really needed anymore
 }

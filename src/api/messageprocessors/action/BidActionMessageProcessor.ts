@@ -12,23 +12,16 @@ import { MarketplaceMessageEvent } from '../../messages/MarketplaceMessageEvent'
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { ActionMessageProcessorInterface } from '../ActionMessageProcessorInterface';
 import { BaseActionMessageProcessor } from '../BaseActionMessageProcessor';
 import { BidMessage } from '../../messages/action/BidMessage';
-import { MessageException } from '../../exceptions/MessageException';
-import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
-import { AddressType } from '../../enums/AddressType';
 import { BidFactory } from '../../factories/model/BidFactory';
 import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
-import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { BidValidator } from '../../messagevalidators/BidValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
-import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
-import {BidRequest} from '../../requests/action/BidRequest';
 
 export class BidActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
