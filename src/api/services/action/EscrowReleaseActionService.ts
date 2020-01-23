@@ -195,7 +195,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
         const escrowReleaseMessage: EscrowReleaseMessage = marketplaceMessage.action as EscrowReleaseMessage;
         const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(escrowReleaseMessage, smsgMessage);
 
-        return await this.bidService.create(bidCreateRequest)
+        await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
@@ -204,6 +204,8 @@ export class EscrowReleaseActionService extends BaseBidActionService {
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
+
+        return smsgMessage;
     }
 
     /**

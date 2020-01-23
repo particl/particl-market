@@ -23,7 +23,6 @@ import { ListingItemAddMessageCreateParams } from '../../requests/message/Listin
 import { CoreRpcService } from '../CoreRpcService';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
@@ -32,7 +31,12 @@ import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { NotificationService } from '../NotificationService';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { NotificationType } from '../../enums/NotificationType';
+import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 
 export interface SellerMessage {
     hash: string;               // item hash being added
@@ -44,6 +48,7 @@ export class ListingItemAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -58,8 +63,14 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory, validator);
-        this.log = new Logger(__filename);
+        super(MPAction.MPA_LISTING_ADD,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger
+        );
     }
 
     /**
@@ -111,58 +122,22 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     *
-     *
-     *
-     * @param message
-     * @param smsgMessage
-     */
-    public async verifyMessage(message: ActionMessageInterface, smsgMessage: resources.SmsgMessage): Promise<boolean> {
-
-        const actionMessage = message as ListingItemAddMessage;
-
-        if (_.isEmpty(actionMessage.item.seller)) {
-            this.log.error('Missing seller data, likely a message from an old client.');
-            return false;
-        }
-
-        // verify that the ListingItemAddMessage was actually sent by the seller
-        const verified = await this.verifySellerMessage(actionMessage);
-        if (!verified) {
-            this.log.error('Received seller signature failed validation.');
-            return false;
-            // throw new MessageException('Received seller signature failed validation.');
-        }
-
-        // LISTINGITEM_ADD's should be allowed to send only from the publish address to the market receive address
-        const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
-        if (market.publishAddress !== smsgMessage.from) {
-            // message was sent from an address which isnt allowed
-            this.log.error('Invalid message sender.');
-            return false;
-            // throw new MessageException('Invalid message sender.');
-        }
-
-        return true;
-    }
-
-    /**
      * processListingItem "processes" the ListingItem, creating it.
      *
      * called from MessageListener.onEvent(), after the ListingItemAddMessage is received.
      *
-     * TODO: add to BaseActionService
-     *
+     * @param marketplaceMessage
      * @param message
+     * @param actionDirection
      * @param smsgMessage
+     * @param actionRequest
      */
-    public async processMessage(message: ActionMessageInterface, smsgMessage: resources.SmsgMessage): Promise<SmsgMessageStatus> {
-/*
-        marketplaceMessage: MarketplaceMessage,
-        actionDirection: ActionDirection,
-        smsgMessage?: resources.SmsgMessage
-*/
-        const actionMessage = message as ListingItemAddMessage;
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
+
+        const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
         // - if ListingItem contains a custom category, create them
         // - fetch the root category with related to create the listingItemCreateRequest
@@ -172,7 +147,7 @@ export class ListingItemAddActionService extends BaseActionService {
 
         // todo: custom categories not supported yet, this propably needs to be refactored
         const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
-            smsgMessage.to, actionMessage.item.information.category);
+            smsgMessage.to, listingItemAddMessage.item.information.category);
         const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
 
         const listingItemCreateRequest = await this.listingItemFactory.get({
@@ -180,10 +155,10 @@ export class ListingItemAddActionService extends BaseActionService {
                 market: smsgMessage.to,
                 rootCategory
             } as ListingItemCreateParams,
-            actionMessage,
+            listingItemAddMessage,
             smsgMessage);
 
-        return await this.listingItemService.create(listingItemCreateRequest)
+        await this.listingItemService.create(listingItemCreateRequest)
             .then(async value => {
                 const listingItem: resources.ListingItem = value.toJSON();
 
@@ -198,6 +173,31 @@ export class ListingItemAddActionService extends BaseActionService {
                 this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
+
+        return smsgMessage;
+    }
+
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+
+            const notification: MarketplaceNotification = {
+                event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                payload: {
+                    id: listingItem.id,
+                    hash: listingItem.hash,
+                    seller: listingItem.seller,
+                    market: listingItem.market
+                } as ListingItemNotification
+            };
+            return notification;
+        }
+        return undefined;
     }
 
     /**
@@ -267,19 +267,5 @@ export class ListingItemAddActionService extends BaseActionService {
 
         return await this.coreRpcService.signMessage(wallet, address, message);
     }
-
-    /**
-     * verifies SellerMessage, returns boolean
-     *
-     * @param listingItemAddMessage
-     */
-    private async verifySellerMessage(listingItemAddMessage: ListingItemAddMessage): Promise<boolean> {
-        const message = {
-            address: listingItemAddMessage.item.seller.address,
-            hash: listingItemAddMessage.hash
-        } as SellerMessage;
-        return await this.coreRpcService.verifyMessage(listingItemAddMessage.item.seller.address, listingItemAddMessage.item.seller.signature, message);
-    }
-
 
 }

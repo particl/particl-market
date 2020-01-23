@@ -132,7 +132,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
         const orderItemShipMessage: OrderItemShipMessage = marketplaceMessage.action as OrderItemShipMessage;
         const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(orderItemShipMessage, smsgMessage);
 
-        return await this.bidService.create(bidCreateRequest)
+        await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
@@ -143,6 +143,8 @@ export class OrderItemShipActionService extends BaseBidActionService {
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
+
+        return smsgMessage;
     }
 
     /**
