@@ -4,27 +4,17 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { injectable } from 'inversify';
 import { SmsgMessageService } from '../services/model/SmsgMessageService';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { BidService } from '../services/model/BidService';
 import { ProposalService } from '../services/model/ProposalService';
-import { BidCreateRequest } from '../requests/model/BidCreateRequest';
-import { BidCreateParams } from '../factories/model/ModelCreateParams';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { BidFactory } from '../factories/model/BidFactory';
 import { BaseActionMessageProcessor } from './BaseActionMessageProcessor';
-import { BidAcceptMessage } from '../messages/action/BidAcceptMessage';
-import { BidCancelMessage } from '../messages/action/BidCancelMessage';
-import { BidRejectMessage } from '../messages/action/BidRejectMessage';
-import { EscrowCompleteMessage } from '../messages/action/EscrowCompleteMessage';
-import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
-import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
-import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
-import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
-import {ActionMessageValidatorInterface} from '../messagevalidators/ActionMessageValidatorInterface';
-import {ActionServiceInterface} from '../services/action/ActionServiceInterface';
+import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
+import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
+import { unmanaged } from 'inversify';
 
 // @injectable()
 export abstract class BaseBidActionMessageProcessor extends BaseActionMessageProcessor {
@@ -32,15 +22,15 @@ export abstract class BaseBidActionMessageProcessor extends BaseActionMessagePro
     public listingItemService: ListingItemService;
     public bidFactory: BidFactory;
 
-    constructor(eventType: ActionMessageTypes,
-                actionService: ActionServiceInterface,
-                smsgMessageService: SmsgMessageService,
-                bidService: BidService,
-                proposalService: ProposalService,
-                validator: ActionMessageValidatorInterface,
-                listingItemService: ListingItemService,
-                bidFactory: BidFactory,
-                Logger: typeof LoggerType) {
+    constructor(@unmanaged() eventType: ActionMessageTypes,
+                @unmanaged() actionService: ActionServiceInterface,
+                @unmanaged() smsgMessageService: SmsgMessageService,
+                @unmanaged() bidService: BidService,
+                @unmanaged() proposalService: ProposalService,
+                @unmanaged() validator: ActionMessageValidatorInterface,
+                @unmanaged() listingItemService: ListingItemService,
+                @unmanaged() bidFactory: BidFactory,
+                @unmanaged() Logger: typeof LoggerType) {
         super(eventType,
             actionService,
             smsgMessageService,

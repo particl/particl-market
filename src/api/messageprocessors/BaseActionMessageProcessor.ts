@@ -16,6 +16,7 @@ import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMess
 import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
+import { unmanaged } from 'inversify';
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -28,8 +29,13 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public validator: ActionMessageValidatorInterface;
     public actionService: ActionServiceInterface;
 
-    constructor(eventType: ActionMessageTypes, actionService: ActionServiceInterface, smsgMessageService: SmsgMessageService, bidService: BidService,
-                proposalService: ProposalService, validator: ActionMessageValidatorInterface, Logger: typeof LoggerType) {
+    constructor(@unmanaged() eventType: ActionMessageTypes,
+                @unmanaged() actionService: ActionServiceInterface,
+                @unmanaged() smsgMessageService: SmsgMessageService,
+                @unmanaged() bidService: BidService,
+                @unmanaged() proposalService: ProposalService,
+                @unmanaged() validator: ActionMessageValidatorInterface,
+                @unmanaged() Logger: typeof LoggerType) {
         this.eventType = eventType;
         this.actionService = actionService;
         this.smsgMessageService = smsgMessageService;

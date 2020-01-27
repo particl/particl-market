@@ -117,6 +117,7 @@ export const Targets = {
             VoteActionService: 'VoteActionService'
         },
         BaseActionService: 'BaseActionService',
+        BaseBidActionService: 'BaseBidActionService',
         CoreRpcService: 'CoreRpcService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',

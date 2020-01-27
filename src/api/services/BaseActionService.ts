@@ -22,6 +22,7 @@ import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMess
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { NotificationService } from './NotificationService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import {unmanaged} from 'inversify';
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -33,13 +34,14 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public smsgMessageFactory: SmsgMessageFactory;
     public validator: ActionMessageValidatorInterface;
 
-    constructor(eventType: ActionMessageTypes,
-                smsgService: SmsgService,
-                smsgMessageService: SmsgMessageService,
-                notificationService: NotificationService,
-                smsgMessageFactory: SmsgMessageFactory,
-                validator: ActionMessageValidatorInterface,
-                Logger: typeof LoggerType) {
+    constructor(@unmanaged() eventType: ActionMessageTypes,
+                @unmanaged() smsgService: SmsgService,
+                @unmanaged() smsgMessageService: SmsgMessageService,
+                @unmanaged() notificationService: NotificationService,
+                @unmanaged() smsgMessageFactory: SmsgMessageFactory,
+                @unmanaged() validator: ActionMessageValidatorInterface,
+                @unmanaged() Logger: typeof LoggerType
+    ) {
         this.log = new Logger(eventType);
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;

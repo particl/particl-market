@@ -29,6 +29,7 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { NotificationType } from '../enums/NotificationType';
 import { BidNotification } from '../messages/notification/BidNotification';
+import {unmanaged} from 'inversify';
 
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
@@ -39,16 +40,16 @@ export abstract class BaseBidActionService extends BaseActionService {
     public bidService: BidService;
     public bidFactory: BidFactory;
 
-    constructor(eventType: ActionMessageTypes,
-                smsgService: SmsgService,
-                smsgMessageService: SmsgMessageService,
-                notificationService: NotificationService,
-                smsgMessageFactory: SmsgMessageFactory,
-                validator: ActionMessageValidatorInterface,
-                Logger: typeof LoggerType,
-                listingItemService: ListingItemService,
-                bidService: BidService,
-                bidFactory: BidFactory) {
+    constructor(@unmanaged() eventType: ActionMessageTypes,
+                @unmanaged() smsgService: SmsgService,
+                @unmanaged() smsgMessageService: SmsgMessageService,
+                @unmanaged() notificationService: NotificationService,
+                @unmanaged() smsgMessageFactory: SmsgMessageFactory,
+                @unmanaged() validator: ActionMessageValidatorInterface,
+                @unmanaged() Logger: typeof LoggerType,
+                @unmanaged() listingItemService: ListingItemService,
+                @unmanaged() bidService: BidService,
+                @unmanaged() bidFactory: BidFactory) {
         super(eventType,
             smsgService,
             smsgMessageService,
