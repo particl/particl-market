@@ -112,6 +112,7 @@ export const Targets = {
             EscrowRefundActionService: 'EscrowRefundActionService',
             EscrowReleaseActionService: 'EscrowReleaseActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
+            ListingItemImageAddActionService: 'ListingItemImageAddActionService',
             OrderItemShipActionService: 'OrderItemShipActionService',
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
@@ -414,6 +415,7 @@ export const Targets = {
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
+            ListingItemImageAddMessageFactory: 'ListingItemImageAddMessageFactory',
             MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
@@ -423,6 +425,7 @@ export const Targets = {
         model: {
             BidFactory: 'BidFactory',
             CommentFactory: 'CommentFactory',
+            ItemImageFactory: 'ItemImageFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             ModelCreateParams: 'ModelCreateParams',
@@ -445,6 +448,7 @@ export const Targets = {
         EscrowRefundValidator: 'EscrowRefundValidator',
         EscrowReleaseValidator: 'EscrowReleaseValidator',
         ListingItemAddValidator: 'ListingItemAddValidator',
+        ListingItemImageAddValidator: 'ListingItemImageAddValidator',
         OrderItemShipValidator: 'OrderItemShipValidator',
         ProposalAddValidator: 'ProposalAddValidator',
         VoteValidator: 'VoteValidator'

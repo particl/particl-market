@@ -10,7 +10,7 @@ import { validate, request } from '../../core/api/Validate';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateService } from './model/ListingItemTemplateService';
 import { ItemImageService } from './model/ItemImageService';
-import { ImagePostUploadRequest } from '../requests/action/ImagePostUploadRequest';
+import { ImageUploadRequest } from '../requests/action/ImageUploadRequest';
 
 export class ItemImageHttpUploadService {
 
@@ -38,7 +38,7 @@ export class ItemImageHttpUploadService {
      * @param uploadRequest
      */
     @validate()
-    public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<resources.ItemImage[]> {
+    public async httpPostImageUpload(@request(ImageUploadRequest) uploadRequest: ImageUploadRequest): Promise<resources.ItemImage[]> {
 
         const createdItemImages: resources.ItemImage[] = [];
 

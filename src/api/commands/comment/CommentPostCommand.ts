@@ -93,9 +93,9 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * data.params[]:
      *  [0]: identityId, number
-     *  [1]: type, CommentType (LISTINGITEM_QUESTION_AND_ANSWERS)
-     *  [2]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the receiving profile address
-     *  [3]: target, string, when type === LISTINGITEM_QUESTION_AND_ANSWERS, ListingItem.hash
+     *  [1]: type, CommentType (LISTINGITEM_QUESTION_AND_ANSWERS, PROPOSAL_QUESTION_AND_ANSWERS, MARKETPLACE_COMMENT, PRIVATE_MESSAGE)
+     *  [2]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the receiving profile or identity address
+     *  [3]: target, string, target identifier, when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash
      *  [4]: message, string
      *  [5]: parentCommentHash, string, optional
      *

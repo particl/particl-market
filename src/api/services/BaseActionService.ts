@@ -84,7 +84,9 @@ export abstract class BaseActionService implements ActionServiceInterface {
             this.log.error('ERROR:', reason);
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
         });
+
         // TODO: also validate the sequence?
+        // await this.validator.validateSequence(marketplaceMessage, ActionDirection.OUTGOING);
 
         // return smsg fee estimate, if thats what was requested
         if (actionRequest.sendParams.estimateFee) {

@@ -12,59 +12,69 @@ import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { CoreRpcService } from '../CoreRpcService';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { ListingItemService } from '../model/ListingItemService';
 import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { NotificationType } from '../../enums/NotificationType';
-import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
+import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
+import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
+import { ListingItemImageAddMessageCreateParams } from '../../requests/message/ListingItemImageAddMessageCreateParams';
+import { ListingItemImageAddValidator } from '../../messagevalidators/ListingItemImageAddValidator';
+import {ItemImageService} from '../model/ItemImageService';
+import {ItemImageDataService} from '../model/ItemImageDataService';
+import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
+import {ItemImageDataCreateRequest} from '../../requests/model/ItemImageDataCreateRequest';
+import {ItemImageCreateRequest} from '../../requests/model/ItemImageCreateRequest';
+import {ItemImageUpdateRequest} from '../../requests/model/ItemImageUpdateRequest';
 
-export interface SellerMessage {
-    hash: string;               // item hash being added
+export interface ImageAddMessage {
     address: string;            // seller address
+    hash: string;               // image hash being added
+    target: string;             // listing hash the image is related to
 }
 
-export class ListingItemAddActionService extends BaseActionService {
+export class ListingItemImageAddActionService extends BaseActionService {
 
     constructor(
+        // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
-        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemImageAddValidator) public validator: ListingItemImageAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        // tslint:enable:max-line-length
     ) {
-        super(MPAction.MPA_LISTING_ADD,
+        super(MPActionExtended.MPA_LISTING_IMAGE_ADD,
             smsgService,
             smsgMessageService,
             notificationService,
@@ -79,19 +89,19 @@ export class ListingItemAddActionService extends BaseActionService {
      *
      * @param actionRequest
      */
-    public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
-        const signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.listingItem.hash);
-        // this.log.debug('createMessage, signature: ', signature);
+        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
+        const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.image.hash,
+            actionRequest.listingItem.hash);
+        // this.log.debug('createMarketplaceMessage(), signature: ', signature);
 
-        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            // in this case this is actually the listingItemTemplate, as we use to create the message from both
+        const actionMessage: ListingItemImageAddMessage = await this.listingItemImageAddMessageFactory.get({
             listingItem: actionRequest.listingItem,
-            seller: actionRequest.seller,
-            // cryptoAddress, we could override the payment address here
+            image: actionRequest.image,
+            withData: true,
             signature
-        } as ListingItemAddMessageCreateParams);
+        } as ListingItemImageAddMessageCreateParams);
 
         return {
             version: ompVersion(),
@@ -123,9 +133,9 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * processListingItem "processes" the ListingItem, creating it.
+     * processListingItem "processes" the incoming ListingItemImageAddMessage, updating the existing ItemImage with data.
      *
-     * called from MessageListener.onEvent(), after the ListingItemAddMessage is received.
+     * called from MessageListener.onEvent(), after the ListingItemImageAddMessage is received.
      *
      * @param marketplaceMessage
      * @param actionDirection
@@ -137,18 +147,39 @@ export class ListingItemAddActionService extends BaseActionService {
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
 
-        const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
+        const imageAddMessage: ListingItemImageAddMessage = marketplaceMessage.action as ListingItemImageAddMessage;
 
-        // - if ListingItem contains a custom category, create them
-        // - fetch the root category with related to create the listingItemCreateRequest
-        // - create the ListingItem locally with the listingItemCreateRequest
-        // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
-        // - if there's a matching ListingItemTemplate, create a relation
+        if (ActionDirection.INCOMING === actionDirection) {
 
-        // todo: custom categories not supported yet, this propably needs to be refactored
-        const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
-            smsgMessage.to, listingItemAddMessage.item.information.category);
-        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+            // for all incoming messages, update the image data
+            const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+
+            for (const itemImage of itemImages) {
+
+                const updateRequest = {
+                    data: [{
+                        dataId: imageAddMessage.data[0].dataId,
+                        protocol: imageAddMessage.data[0].protocol,
+                        encoding: imageAddMessage.data[0].encoding,
+                        data: imageAddMessage.data[0].data,
+                        imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
+                        imageHash: imageAddMessage.hash
+                    }] as ItemImageDataCreateRequest[],
+                    hash: imageAddMessage.hash,
+                    featured: false     // TODO: add featured flag as param
+                } as ItemImageUpdateRequest;
+
+                await this.itemImageService.update(updateRequest);
+
+                for (const itemImageData of itemImage.ItemImageDatas) {
+                    await this.itemImageDataService.destroy(itemImageData.id);
+                }
+            }
+
+            await this.listingItemService.findAllByHash()
+
+
+        }
 
         const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
                 msgid: smsgMessage.msgid,
@@ -193,7 +224,7 @@ export class ListingItemAddActionService extends BaseActionService {
                     hash: listingItem.hash,
                     seller: listingItem.seller,
                     market: listingItem.market
-                } as ListingItemNotification
+                } as ListingItemImageNotification
             };
             return notification;
         }
@@ -218,51 +249,19 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * If a Proposal to remove the ListingItem is found, create FlaggedItem
-     *
-     * @param listingItem
-     */
-    private async createFlaggedItemIfNeeded(listingItem: resources.ListingItem): Promise<resources.FlaggedItem | void> {
-        await this.proposalService.findOneByItemHash(listingItem.hash)
-            .then(async value => {
-                const proposal: resources.Proposal = value.toJSON();
-                return await this.createFlaggedItemForListingItem(listingItem, proposal);
-            })
-            .catch(reason => {
-                return null;
-            });
-    }
-
-    /**
-     * Create FlaggedItem for ListingItem having a Proposal to remove it
-     *
-     * @param listingItem
-     * @param {module:resources.Proposal} proposal
-     * @returns {Promise<module:resources.FlaggedItem>}
-     */
-    private async createFlaggedItemForListingItem(listingItem: resources.ListingItem,
-                                                  proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        const flaggedItemCreateRequest = {
-            listing_item_id: listingItem.id,
-            proposal_id: proposal.id,
-            reason: proposal.description
-        } as FlaggedItemCreateRequest;
-
-        return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-    }
-
-    /**
      * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
      *
      * @param wallet
      * @param address
      * @param hash
+     * @param target
      */
-    private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
+    private async signImageMessage(wallet: string, address: string, hash: string, target: string): Promise<string> {
         const message = {
-            address,        // seller address
-            hash            // item hash
-        } as SellerMessage;
+            address,            // sellers address
+            hash,               // image hash
+            target              // item hash
+        } as ImageAddMessage;
 
         return await this.coreRpcService.signMessage(wallet, address, message);
     }

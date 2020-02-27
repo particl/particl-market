@@ -5,7 +5,7 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 
-export class ImagePostUploadRequest extends RequestBody {
+export class ImageUploadRequest extends RequestBody {
 
     @IsNotEmpty()
     @IsNumber()

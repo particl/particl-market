@@ -10,6 +10,7 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import {ContentReference} from 'omp-lib/dist/interfaces/dsn';
 
 export interface ModelCreateParams {
     //
@@ -38,6 +39,10 @@ export interface ListingItemCreateParams extends ModelCreateParams {
     market: string;
     rootCategory: resources.ItemCategory;
     msgid: string;
+}
+
+export interface ItemImageCreateParams extends ModelCreateParams {
+    image: ContentReference;
 }
 
 export interface BidCreateParams extends ModelCreateParams {

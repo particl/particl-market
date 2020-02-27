@@ -11,7 +11,7 @@ import { app } from '../../app';
 import { ItemImageService } from '../services/model/ItemImageService';
 import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ImagePostUploadRequest } from '../requests/action/ImagePostUploadRequest';
+import { ImageUploadRequest } from '../requests/action/ImageUploadRequest';
 import { MessageException } from '../exceptions/MessageException';
 import { ItemImageDataService } from '../services/model/ItemImageDataService';
 
@@ -55,7 +55,7 @@ export class ItemImageController {
             listingItemTemplateId,
             requestBody: body,
             request: req
-        } as ImagePostUploadRequest;
+        } as ImageUploadRequest;
         return this.itemImageHttpUploadService.httpPostImageUpload(imagePostRequest);
     }
 

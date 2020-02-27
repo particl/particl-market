@@ -22,6 +22,9 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import {ItemImageDataCreateRequest} from '../../requests/model/ItemImageDataCreateRequest';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -50,20 +53,30 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
-
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
-        // create item images
-        const itemImage = await this.itemImageService.create({
+        // TODO: use factory
+        const createRequest = {
             item_information_id: listingItemTemplate.ItemInformation.id,
             data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],
                 data: data.params[4],
-                imageVersion: ImageVersions.ORIGINAL.propName
-            }]
-        } as ItemImageCreateRequest);
+                imageVersion: ImageVersions.ORIGINAL.propName,
+                imageHash: 'hashToBeCreatedFromORIGINAL.data'
+            } as ItemImageDataCreateRequest],
+            hash: 'hashToBeCreatedFromORIGINAL.data',
+            featured: false     // TODO: add featured flag as param
+        } as ItemImageCreateRequest;
+
+        // create the hash
+        createRequest.hash = ConfigurableHasher.hash({
+            data: createRequest.data[0].data    // using the ORIGINAL image data to create the hash
+        }, new HashableItemImageCreateRequestConfig());
+        createRequest.data[0].imageHash = createRequest.hash;
+
+        const itemImage = await this.itemImageService.create(createRequest);
 
         if (!data.params[5]) {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
@@ -97,6 +110,10 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         } else if (data.params.length < 5) {
             throw new MissingParamException('data');
         }
+
+        // TODO: dataId should be optional
+        // TODO: encoding is not needed
+        // TODO: skipResize is not documented
 
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
@@ -142,7 +159,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] ';
+        return this.getName() + ' <listingItemTemplateId> [dataId] [protocol] [encoding] [data>] ';
     }
 
     public help(): string {

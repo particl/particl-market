@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { ItemImageData } from './ItemImageData';
 import { ItemInformation } from './ItemInformation';
 
@@ -23,6 +23,22 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
             });
         } else {
             return await ItemImage.where<ItemImage>({ id: value }).fetch();
+        }
+    }
+
+    // fetchAll because multiple listings could be using the same image
+    public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ItemImage>> {
+        const collection = ItemImage.forge<Model<ItemImage>>()
+            .query(qb => {
+                qb.where('hash', '=', hash);
+            });
+
+        if (withRelated) {
+            return await collection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await collection.fetchAll();
         }
     }
 

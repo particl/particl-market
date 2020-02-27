@@ -34,20 +34,20 @@ import {
     ItemObject,
     Location,
     LocationMarker, MessagingInfo, PaymentInfo,
-    PaymentInfoEscrow,
     PaymentOption, ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ListingItemCreateParams } from './ModelCreateParams';
+import {ItemImageCreateParams, ListingItemCreateParams} from './ModelCreateParams';
 import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { ItemImageFactory } from './ItemImageFactory';
 
 export class ListingItemFactory implements ModelFactoryInterface {
 
@@ -56,6 +56,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService
     ) {
         this.log = new Logger(__filename);
@@ -223,10 +224,12 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
     private async getModelItemInformation(information: ItemInfo, rootCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
         const itemCategory = await this.itemCategoryFactory.getModel(information.category, rootCategory);
+
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
         let itemImages: ItemImageCreateRequest[] | undefined;
 
+        // TODO: make ItemLocation non-optional
         if (information.location) {
             itemLocation = await this.getModelLocation(information.location);
         }
@@ -236,7 +239,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         if (information.images) {
-            itemImages = await this.getModelImages(information.images);
+            itemImages = await this.getItemImageCreateRequests(information.images);
         }
 
         return {
@@ -301,33 +304,16 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return destinations;
     }
 
-    private async getModelImages(images: ContentReference[]): Promise<ItemImageCreateRequest[]> {
+    private async getItemImageCreateRequests(images: ContentReference[]): Promise<ItemImageCreateRequest[]> {
 
         const imageCreateRequests: ItemImageCreateRequest[] = [];
         for (const image of images) {
-            const data = await this.getModelImageDatas(image.data);
-            imageCreateRequests.push({
-                hash: image.hash,
-                data
-                // todo: featured
-            } as ItemImageCreateRequest);
+
+            const createRequest: ItemImageCreateRequest = await this.itemImageFactory.get({
+                image
+            } as ItemImageCreateParams);
+            imageCreateRequests.push(createRequest);
         }
         return imageCreateRequests;
-    }
-
-    private async getModelImageDatas(imageDatas: DSN[]): Promise<ItemImageDataCreateRequest[]> {
-
-        const imageDataCreateRequests: any[] = [];
-
-        for (const imageData of imageDatas) {
-            imageDataCreateRequests.push({
-                dataId: imageData.dataId,
-                protocol: imageData.protocol,
-                imageVersion: ImageVersions.ORIGINAL.propName,
-                encoding: imageData.encoding,
-                data: imageData.data
-            });
-        }
-        return imageDataCreateRequests;
     }
 }

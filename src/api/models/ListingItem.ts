@@ -15,7 +15,6 @@ import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import { Proposal } from './Proposal';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 

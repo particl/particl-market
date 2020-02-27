@@ -30,6 +30,10 @@ export class ItemImageRepository {
         return await this.ItemImageModel.fetchById(id, withRelated);
     }
 
+    public async findAllByHash(id: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImage>> {
+        return await this.ItemImageModel.fetchAllByHash(id, withRelated);
+    }
+
     public async create(data: any): Promise<ItemImage> {
         const startTime = Date.now();
         const itemImage = this.ItemImageModel.forge<ItemImage>(data);

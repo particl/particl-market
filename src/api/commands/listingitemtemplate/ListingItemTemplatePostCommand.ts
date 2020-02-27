@@ -31,21 +31,24 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
 import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
-import { Identity } from 'resources';
-import {MarketType} from '../../enums/MarketType';
+import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
+import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
+        // tslint:disable:max-line-length
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemImageAddActionService) public listingItemImageAddActionService: ListingItemImageAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ItemPriceService) public itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        // tslint:enable:max-line-length
     ) {
         super(Commands.TEMPLATE_POST);
         this.log = new Logger(__filename);
@@ -66,7 +69,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        let listingItemTemplate: resources.ListingItem = data.params[0];
+        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const market: resources.Market = data.params[2];
         const estimateFee: boolean = data.params[3];
@@ -94,13 +97,20 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const postRequest = {
             sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate,
+            market, // TODO: remove this? it doesn't seem to be used
             seller: market.Identity
         } as ListingItemAddRequest;
 
         this.log.debug('postRequest.sendParams:', JSON.stringify(postRequest.sendParams, null, 2));
 
-        const response: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
-        return response;
+        // first post the ListingItem
+        const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
+
+        // then post the Images related to the ListingItem one by one
+        const imageSmsgSendResponse: SmsgSendResponse = await this.postListingItemImages(listingItemTemplate, postRequest);
+        smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
+
+        return smsgSendResponse;
     }
 
     /**
@@ -253,6 +263,43 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                             .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
                     });
             });
+    }
+
+    /**
+     * Post ItemImages
+     *
+     * @param listingItemTemplate
+     * @param listingItemAddRequest
+     */
+    private async postListingItemImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest):
+        Promise<SmsgSendResponse> {
+
+        // then prepare the ListingItemImageAddRequest for sending the images
+        const imageAddRequest = {
+            sendParams: listingItemAddRequest.sendParams,
+            listingItem: listingItemTemplate,
+            market: listingItemAddRequest.market, // TODO: remove this? it doesn't seem to be used
+            seller: listingItemAddRequest.seller
+        } as ListingItemImageAddRequest;
+
+        imageAddRequest.sendParams.paidMessage = false; // sending images is free for now
+
+        const msgids: string[] = [];
+
+        // send each image related to the ListingItem
+        for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
+            imageAddRequest.image = itemImage;
+            const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
+            msgids.push(smsgSendResponse.msgid || '');
+        }
+
+        const result = {
+            result: 'Sent.',
+            msgids
+        } as SmsgSendResponse;
+
+        this.log.debug('postListingItemImages(), result: ', JSON.stringify(result, null, 2));
+        return result;
     }
 
 }

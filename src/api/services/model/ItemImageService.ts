@@ -24,6 +24,10 @@ import { ItemImageDataRepository } from '../../repositories/ItemImageDataReposit
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableItemImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import {ItemImageDataUpdateRequest} from '../../requests/model/ItemImageDataUpdateRequest';
+import {EnumHelper} from '../../../core/helpers/EnumHelper';
+import {CreatableModel} from '../../enums/CreatableModel';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 export class ItemImageService {
 
@@ -53,6 +57,17 @@ export class ItemImageService {
     }
 
     /**
+     * Return all ItemImages with a certain hash.
+     * There could be several, since the same image could be used in multiple ListingItems.
+     *
+     * @param hash
+     * @param withRelated
+     */
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImage>> {
+        return await this.itemImageRepo.findAllByHash(hash, withRelated);
+    }
+
+    /**
      * create(), but get data from a local file instead.
      * used to create the ORIGINAL image version from the uploaded file
      *
@@ -66,6 +81,7 @@ export class ItemImageService {
 
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
 
+        // TODO: use factory
         const itemImageDataCreateRequest = {
             dataId: imageFile.fieldname, // replaced with local url in factory
             protocol: ProtocolDSN.LOCAL,
@@ -76,10 +92,13 @@ export class ItemImageService {
             originalName: imageFile.originalname
         } as ItemImageDataCreateRequest;
 
+        // TODO: use factory
         const itemImageCreateRequest = {
             item_information_id: itemInformationId,
             data: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
+
+        itemImageCreateRequest.hash = ConfigurableHasher.hash(itemImageCreateRequest, new HashableItemImageCreateRequestConfig());
 
         return await this.create(itemImageCreateRequest);
     }
@@ -93,32 +112,36 @@ export class ItemImageService {
     public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
 
         // const startTime = new Date().getTime();
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ItemImageCreateRequest = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
-        // get the existing ItemImageDatas
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
-        // get the original out of those
-        const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
+        // find the ImageVersions.ORIGINAL from the existing ItemImageDatas
+        // the ORIGINAL should always exist, its used to create the other versions
+        // also when receiving a ListingItem, it should be the only one we receive
+        const itemImageDataCreateRequests: ItemImageDataCreateRequest[] = body.data;
+        const itemImageDataOriginal = _.find(itemImageDataCreateRequests, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
         // remove ItemImageDatas from the body
         delete body.data;
 
-        if (itemImageDataOriginal) { // the original should always exist, its used to create the other versions
+        if (itemImageDataOriginal) {
 
-            // TODO: create a factory for the ItemImageCreateRequest and move hashing there
-            // use the original image version to create a hash for the ItemImage
-            body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
+            // the original image version data is used to create a hash for the ItemImage
+            // hash should be calculated in the factory, if needed (by the seller only)
+            // body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
 
             // get all protocols
-            const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
+            // const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
+            // if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+            //    throw new MessageException('Invalid image protocol.');
+            // }
 
-            if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+            if (!EnumHelper.containsValue(ProtocolDSN, itemImageDataOriginal.protocol)) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
-                throw new MessageException('Invalid image protocol.');
+                throw new InvalidParamException('data.protocol', 'ProtocolDSN');
             }
 
             if (_.isEmpty(itemImageDataOriginal.data)) {
@@ -126,24 +149,21 @@ export class ItemImageService {
             }
 
             // create the ItemImage
-            const itemImage = await this.itemImageRepo.create(body);
+            const itemImage: resources.ItemImage = await this.itemImageRepo.create(body).then(value => value.toJSON());
 
             // then create the other imageDatas from the given original data,
             // original is automatically added as one of the versions
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(
-                itemImage.Id, itemImage.Hash, itemImageDataOriginal, toVersions);
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.id, itemImage.hash, itemImageDataOriginal,
+                toVersions);
 
             // save all ItemImageDatas
             for (const imageData of imageDatas) {
-                // const fileName = await this.itemImageDataService.saveImageFile(imageData.data, body.hash, imageData.imageVersion);
-                // imageData.data = fileName;
-
                 await this.itemImageDataService.create(imageData);
             }
 
             // finally find and return the created itemImage
-            const newItemImage = await this.findOne(itemImage.Id);
+            const newItemImage = await this.findOne(itemImage.id);
             // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
 
             // this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
@@ -157,10 +177,11 @@ export class ItemImageService {
     public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
         const startTime = new Date().getTime();
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ItemImageUpdateRequest = JSON.parse(JSON.stringify(data));
 
         // grab the existing imagedatas
-        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
+        const itemImageDatas: ItemImageDataUpdateRequest[] = body.data;
+
         // get the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
@@ -168,19 +189,16 @@ export class ItemImageService {
 
         delete body.data;
 
-        const itemImage = await this.findOne(id, false);
-
         if (itemImageDataOriginal) {
+
+            const itemImage = await this.findOne(id, false);
 
             // use the original image version to create a hash for the ItemImage
             body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
 
-            // get all protocols
-            const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
-
-            if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+            if (!EnumHelper.containsValue(ProtocolDSN, itemImageDataOriginal.protocol)) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
-                throw new MessageException('Invalid image protocol.');
+                throw new InvalidParamException('data.protocol', 'ProtocolDSN');
             }
 
             if (_.isEmpty(itemImageDataOriginal.data)) {
@@ -192,8 +210,7 @@ export class ItemImageService {
             itemImage.Featured = body.featured;
 
             // update itemImage record
-            const updatedItemImageModel = await this.itemImageRepo.update(id, itemImage.toJSON());
-            const updatedItemImage: resources.ItemImage = updatedItemImageModel.toJSON();
+            const updatedItemImage: resources.ItemImage = await this.itemImageRepo.update(id, itemImage.toJSON()).then(value => value.toJSON());
 
             // find and remove old related ItemImageDatas and files
             for (const imageData of updatedItemImage.ItemImageDatas) {

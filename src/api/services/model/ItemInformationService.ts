@@ -21,6 +21,10 @@ import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
+import {ItemCategoryUpdateRequest} from '../../requests/model/ItemCategoryUpdateRequest';
+import {ItemLocationCreateRequest} from '../../requests/model/ItemLocationCreateRequest';
+import {ShippingDestinationCreateRequest} from '../../requests/model/ShippingDestinationCreateRequest';
+import {ItemImageCreateRequest} from '../../requests/model/ItemImageCreateRequest';
 
 export class ItemInformationService {
 
@@ -73,10 +77,11 @@ export class ItemInformationService {
         }
 
         // extract and remove related models from request
-        const itemCategory = body.itemCategory;
-        const itemLocation = body.itemLocation;
-        const shippingDestinations = body.shippingDestinations || [];
-        const itemImages = body.itemImages || [];
+        const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
+        const itemLocation: ItemLocationCreateRequest = body.itemLocation;
+        const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
+        const itemImages: ItemImageCreateRequest[] = body.itemImages || [];
+
         delete body.itemCategory;
         delete body.itemLocation;
         delete body.shippingDestinations;
@@ -84,36 +89,36 @@ export class ItemInformationService {
 
         if (!body.item_category_id) {
             // get existing ItemCategory or create new one
-            const existingItemCategory = await this.getOrCreateItemCategory(itemCategory);
-            body.item_category_id = existingItemCategory.Id;
+            const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(itemCategory).then(value => value.toJSON());
+            body.item_category_id = existingItemCategory.id;
         }
 
         // ready to save, if the request body was valid, create the itemInformation
-        const itemInformation = await this.itemInformationRepo.create(body);
+        const itemInformation: resources.ItemInformation = await this.itemInformationRepo.create(body).then(value => value.toJSON());
 
         // create related models
         if (!_.isEmpty(itemLocation)) {
-            itemLocation.item_information_id = itemInformation.Id;
+            itemLocation.item_information_id = itemInformation.id;
             await this.itemLocationService.create(itemLocation);
         }
 
         if (shippingDestinations) {
             for (const shippingDestination of shippingDestinations) {
-                shippingDestination.item_information_id = itemInformation.Id;
+                shippingDestination.item_information_id = itemInformation.id;
                 await this.shippingDestinationService.create(shippingDestination);
             }
         }
 
         if (itemImages) {
             for (const itemImage of itemImages) {
-                itemImage.item_information_id = itemInformation.Id;
+                itemImage.item_information_id = itemInformation.id;
                 // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
                 await this.itemImageService.create(itemImage);
             }
         }
 
         // finally find and return the created itemInformation
-        const result = await this.findOne(itemInformation.Id);
+        const result = await this.findOne(itemInformation.id);
         // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;

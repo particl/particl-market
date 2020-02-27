@@ -10,11 +10,10 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ItemImageUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    public hash: string;
-
     @IsNotEmpty()
     public data: ItemImageDataUpdateRequest[];
 
+    public hash: string;
     public featured: boolean;
 
 }

@@ -11,18 +11,24 @@ import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import {
-    EscrowConfig, EscrowRatio,
-    Item, ItemInfo, ItemObject,
+    EscrowConfig,
+    EscrowRatio,
+    Item,
+    ItemInfo,
+    ItemObject,
     Location,
-    MessagingInfo, MessagingOption,
+    MessagingInfo,
+    MessagingOption,
     MPA,
-    PaymentInfo, PaymentInfoEscrow, PaymentOption, SellerInfo,
+    PaymentInfo,
+    PaymentInfoEscrow,
+    PaymentOption,
+    SellerInfo,
     ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
 import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -33,15 +39,18 @@ import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listing
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
     constructor(
+        // tslint:disable:max-line-length
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        // tslint:enable:max-line-length
     ) {
         this.log = new Logger(__filename);
     }
@@ -92,10 +101,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
     private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {
-        const category = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
-        const location = await this.getMessageItemInfoLocation(itemInformation.ItemLocation);
-        const shippingDestinations = await this.getMessageItemInfoShippingDestinations(itemInformation.ShippingDestinations);
-        const images = await this.getMessageInformationImages(itemInformation.ItemImages);
+        const category: string[] = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
+        const location: Location = await this.getMessageItemInfoLocation(itemInformation.ItemLocation);
+        const shippingDestinations: string[] | undefined = await this.getMessageItemInfoShippingDestinations(itemInformation.ShippingDestinations);
+        const images: ContentReference[] = await this.getMessageInformationImages(itemInformation.ItemImages);
 
         return {
             title: itemInformation.title,
@@ -152,11 +161,22 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return shippingDesArray;
     }
 
+    /**
+     * create message.item.information.images: ContentReference[]
+     * we are now sending the images as separate messages, so skip the image data...
+     *
+     * ContentReference (an image)
+     *   - hash: string, the image hash
+     *   - data: DSN[], image data sources, currently we support just one per image
+     *   - featured: boolean, whether the image is the featured one or not
+     *
+     * @param images
+     */
     private async getMessageInformationImages(images: resources.ItemImage[]): Promise<ContentReference[]> {
         const contentReferences: ContentReference[] = [];
 
         for (const image of images) {
-            const imageData = await this.getMessageItemInfoImageData(image.ItemImageDatas);
+            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ItemImageDatas, false);
             contentReferences.push({
                 hash: image.hash,
                 data: imageData,
@@ -166,41 +186,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return contentReferences;
     }
 
-    private async getMessageItemInfoImageData(itemImageDatas: resources.ItemImageData[]): Promise<DSN[]> {
-        const dsns: DSN[] = [];
-
-        let selectedImageData = _.find(itemImageDatas, (imageData) => {
-            return imageData.imageVersion === ImageVersions.RESIZED.propName;
-        });
-
-        if (!selectedImageData) {
-            // if theres no resized version, then ORIGINAL can be used
-            selectedImageData = _.find(itemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
-            });
-
-            if (!selectedImageData) {
-                // there's something wrong with the ItemImage if original image doesnt have data
-                throw new MessageException('Original image data not found.');
-            }
-        }
-
-        // load the actual image data
-        const data = await this.itemImageDataService.loadImageFile(selectedImageData.imageHash, selectedImageData.imageVersion);
-        dsns.push({
-            protocol: selectedImageData.protocol,
-            encoding: selectedImageData.encoding,
-            data,
-            dataId: selectedImageData.dataId
-        } as DSN);
-
-        return dsns;
-    }
-
-
     private async getMessagePayment(paymentInformation: resources.PaymentInformation, cryptoAddress: CryptoAddress): Promise<PaymentInfo> {
-        const escrow = await this.getMessageEscrow(paymentInformation.Escrow);
-        const options = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
+        const escrow: EscrowConfig = await this.getMessageEscrow(paymentInformation.Escrow);
+        const options: PaymentOption[] = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
+
         switch (paymentInformation.type) {
             case SaleType.SALE:
                 return {

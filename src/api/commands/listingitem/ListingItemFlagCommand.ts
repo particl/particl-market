@@ -114,8 +114,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
             voteRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
 
-            this.log.debug('afterPost(), sending votes...');
-
             // we're not calling post here as post will only post a single message
             // send the VoteMessages from each of senderProfiles addresses
             const voteSmsgSendResponse = await this.voteActionService.vote(voteRequest);

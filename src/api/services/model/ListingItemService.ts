@@ -128,17 +128,18 @@ export class ListingItemService {
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
         const startTime = new Date().getTime();
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ListingItemCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
-        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
-        delete body.messagingInformation;
         const listingItemObjects = body.listingItemObjects || [];
+
+        delete body.itemInformation;
+        delete body.paymentInformation;
+        delete body.messagingInformation;
         delete body.listingItemObjects;
 
         // this.log.debug('body:', JSON.stringify(body, null, 2));
@@ -150,25 +151,25 @@ export class ListingItemService {
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_id = listingItem.id;
-            await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+            await this.itemInformationService.create(itemInformation);
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.id;
-            await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            await this.paymentInformationService.create(paymentInformation);
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_id = listingItem.id;
-                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+                await this.messagingInformationService.create(msgInfo);
             }
         }
 
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_id = listingItem.id;
-                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+                await this.listingItemObjectService.create(object);
             }
         }
 
