@@ -83,12 +83,14 @@ export class DefaultMarketService {
         const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(profile.id)
             .then(value => value.toJSON())
             .catch(async reason => {
+
+                this.log.debug('seedDefaultMarketForProfile(), ...catching that and setting it');
                 // if theres no default Market yet, create it and set it as default
                 // first create the Market Identity
                 const marketName = 'particl-market';
                 const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile, marketName)
                     .then(value => value.toJSON());
-                this.log.debug('seedDefaultMarket(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
+                this.log.debug('seedDefaultMarketForProfile(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
 
                 // then create the Market
                 const newMarket = await this.createDefaultMarket(profile, marketIdentity);
@@ -136,7 +138,7 @@ export class DefaultMarketService {
     private async createDefaultMarket(profile: resources.Profile, marketIdentity: resources.Identity): Promise<resources.Market> {
 
         // get the default Market settings
-        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
+        const profileSettings: resources.Setting[] = await this.settingService.findAll().then(value => value.toJSON());
         const marketNameSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_NAME;
         });

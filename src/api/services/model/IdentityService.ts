@@ -218,7 +218,14 @@ export class IdentityService {
         this.log.info('createProfileIdentity(), mnemonic: ' + mnemonic.mnemonic);
 
         // import master key from bip44 mnemonic root key and derive default account
-        await this.coreRpcService.extKeyGenesisImport(walletName, [mnemonic.mnemonic, passphrase]);
+        await this.coreRpcService.extKeyGenesisImport(walletName, [
+            mnemonic.mnemonic,
+            passphrase,
+            false,
+            'Master Key',
+            'Default Account',
+            -1                  // skip scan
+        ]);
         this.log.info('createProfileIdentity(), mnemonic imported...');
 
         const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(walletName, true);
