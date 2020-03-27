@@ -15,7 +15,7 @@ export class CommentAddNotification implements ActionNotificationInterface {
 
     public sender: string;
     public receiver: string;
-    public commentType: CommentType;
+    public commentType: CommentType;    // todo: rename to CommentCategory?
 
     public parent: CommentAddNotification;
 

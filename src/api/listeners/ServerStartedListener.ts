@@ -103,6 +103,10 @@ export class ServerStartedListener implements interfaces.Listener {
             if (this.coreConnectionStatusService.connectionStatus === CoreConnectionStatusServiceStatus.CONNECTED
                 && this.BOOTSTRAPPING) {
                 this.STOP = await this.bootstrap()
+                    .then((started) => {
+                        this.isStarted = started;
+                        return started;
+                    })
                     .catch(reason => {
                         this.log.error('ERROR: marketplace bootstrap failed: ', reason);
                         // stop if there's an error
@@ -186,6 +190,8 @@ export class ServerStartedListener implements interfaces.Listener {
             // seed the default categories to default market
             await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
 
+            // this.log.debug('bootstrap(), process.env.NODE_ENV:', process.env.NODE_ENV);
+
             // start message polling and other stuff, unless we're running integration tests
             if (process.env.NODE_ENV !== 'test') {
 
@@ -203,7 +209,7 @@ export class ServerStartedListener implements interfaces.Listener {
             throw new MessageException('Missing default Market configuration.');
         }
 
-        this.log.debug('bootstrap(), DONE');
+        this.log.info('bootstrap(), DONE');
 
         return true;
     }

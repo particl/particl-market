@@ -43,6 +43,7 @@ import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
 import {ItemImageDataCreateRequest} from '../../requests/model/ItemImageDataCreateRequest';
 import {ItemImageCreateRequest} from '../../requests/model/ItemImageCreateRequest';
 import {ItemImageUpdateRequest} from '../../requests/model/ItemImageUpdateRequest';
+import {ListingItemImageNotification} from '../../messages/notification/ListingItemImageNotification';
 
 export interface ImageAddMessage {
     address: string;            // seller address
@@ -169,41 +170,11 @@ export class ListingItemImageAddActionService extends BaseActionService {
                     featured: false     // TODO: add featured flag as param
                 } as ItemImageUpdateRequest;
 
-                await this.itemImageService.update(updateRequest);
-
-                for (const itemImageData of itemImage.ItemImageDatas) {
-                    await this.itemImageDataService.destroy(itemImageData.id);
-                }
+                // update the image with the real data
+                await this.itemImageService.update(itemImage.id, updateRequest);
             }
 
-            await this.listingItemService.findAllByHash()
-
-
         }
-
-        const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
-                msgid: smsgMessage.msgid,
-                market: smsgMessage.to,
-                rootCategory
-            } as ListingItemCreateParams,
-            listingItemAddMessage,
-            smsgMessage);
-
-        await this.listingItemService.create(listingItemCreateRequest)
-            .then(async value => {
-                const listingItem: resources.ListingItem = value.toJSON();
-
-                await this.createFlaggedItemIfNeeded(listingItem);
-                await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
-
-                this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                return SmsgMessageStatus.PROCESSED;
-
-            })
-            .catch(reason => {
-                this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
 
         return smsgMessage;
     }
@@ -212,18 +183,19 @@ export class ListingItemImageAddActionService extends BaseActionService {
                                     actionDirection: ActionDirection,
                                     smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
 
+        const imageAddMessage: ListingItemImageAddMessage = marketplaceMessage.action as ListingItemImageAddMessage;
+
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            // const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {
                 event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
                 payload: {
-                    id: listingItem.id,
-                    hash: listingItem.hash,
-                    seller: listingItem.seller,
-                    market: listingItem.market
+                    hash: imageAddMessage.hash,
+                    listingItemHash: imageAddMessage.target
                 } as ListingItemImageNotification
             };
             return notification;

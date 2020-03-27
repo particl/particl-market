@@ -92,6 +92,7 @@ export class SmsgService {
                     return value.toJSON();
                 })
                 .catch(reason => {
+                    this.log.info('No new smsg messages waiting to be processed.');
                     return undefined;
                 });
             if (!lastSmsgMessage) {

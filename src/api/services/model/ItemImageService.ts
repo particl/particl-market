@@ -182,7 +182,7 @@ export class ItemImageService {
         // grab the existing imagedatas
         const itemImageDatas: ItemImageDataUpdateRequest[] = body.data;
 
-        // get the original out of those
+        // find the original out of those
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
@@ -194,7 +194,7 @@ export class ItemImageService {
             const itemImage = await this.findOne(id, false);
 
             // use the original image version to create a hash for the ItemImage
-            body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
+            // body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
 
             if (!EnumHelper.containsValue(ProtocolDSN, itemImageDataOriginal.protocol)) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
@@ -219,11 +219,14 @@ export class ItemImageService {
 
             // then recreate the other imageDatas from the given original data
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+
+            // todo: imageDataFactory
             const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(
                 itemImage.Id, itemImage.Hash, itemImageDataOriginal, toVersions);
 
             // save all ItemImageDatas
             for (const imageData of imageDatas) {
+                // todo: update
                 await this.itemImageDataService.create(imageData);
             }
 
