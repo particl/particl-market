@@ -40,7 +40,7 @@ export class ServerStartedListener implements interfaces.Listener {
     public log: LoggerType;
 
     public updated = 0;
-    public isStarted = false;
+    public isStarted = false;       // todo: status enum
     private previousState = false;
 
     private timeout: any;

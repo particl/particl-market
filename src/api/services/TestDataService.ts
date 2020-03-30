@@ -176,6 +176,7 @@ export class TestDataService {
                 this.log.debug('failed cleaning the db: ' + reason);
             });
 
+        /*
         if (seed) {
             this.log.debug('seeding default data after cleaning');
             // seed the default Profile
@@ -201,6 +202,7 @@ export class TestDataService {
                 });
 
         }
+        */
 
         this.log.info('cleanup & default seeds done.');
         return;
@@ -370,7 +372,7 @@ export class TestDataService {
             'shopping_cart',
             'item_categories',
             'markets',
-            'wallets',
+            'identities',
             'settings',
             'price_ticker', // todo: price_tickers
             'flagged_items',

@@ -29,7 +29,13 @@ dotenv.config({ path: config.envFile });
 
 const newApp = new App();
 
+console.log('app, Environment.isTest():', Environment.isTest());
+console.log('app, Environment.isBlackBoxTest():', Environment.isBlackBoxTest());
+
 if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
+
+    console.log('app, starting in non-test environment...');
+
     // integration tests will bootstrap the app
     newApp.configure(new CustomConfig());
     newApp.bootstrap()
@@ -37,6 +43,9 @@ if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
             console.log('ERROR:', reason);
         });
 
+} else {
+    console.log('app, starting in test environment...');
 }
+
 
 export const app = newApp;

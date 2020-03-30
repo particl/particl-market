@@ -7,9 +7,13 @@ declare module 'resources' {
     interface Blacklist {
         id: number;
         type: string;
-        hash: string;
+        target: string;         // target listing/market/image/...
+        market: string;         // optional market to be blacklisted on
+
+        ListingItem: ListingItem;
+        Profile: Profile;
+
         createdAt: Date;
         updatedAt: Date;
     }
-
 }
