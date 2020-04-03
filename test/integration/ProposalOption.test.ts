@@ -83,6 +83,13 @@ describe('ProposalOption', () => {
 
     });
 
+    test('Should throw ValidationException because we want to create a empty ProposalOption', async () => {
+        expect.assertions(1);
+        await proposalOptionService.create({} as ProposalOptionCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await proposalOptionService.create(testData).catch(e =>
