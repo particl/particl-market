@@ -18,7 +18,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
 
     public type: string;
     public bidder: string;
-    public listingItemSeller: string;
+    public seller: string;
     public parentBidId: number;
 
 
@@ -48,7 +48,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.type = generateParams[3] ? generateParams[3] : null;
             this.bidder = generateParams[4] ? generateParams[4] : null;
 
-            this.listingItemSeller = generateParams[5] ? generateParams[5] : null;
+            this.seller = generateParams[5] ? generateParams[5] : null;
             if (generateParams[6]) {
                 this.parentBidId = generateParams[6];
             }
@@ -62,7 +62,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.listingItemId,
             this.type,
             this.bidder,
-            this.listingItemSeller,
+            this.seller,
             this.parentBidId
         ];
     }

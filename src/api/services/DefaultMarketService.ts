@@ -78,10 +78,11 @@ export class DefaultMarketService {
      */
     public async seedDefaultMarketForProfile(profile: resources.Profile): Promise<resources.Market> {
 
+        this.log.debug('seedDefaultMarketForProfile(), profile: ', JSON.stringify(profile, null, 2));
+
         // check whether the default Market for the Profile exists, throws if not found
         // if we're upgrading, the old market is not set as default, so it wont be found
         const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(profile.id)
-            .then(value => value.toJSON())
             .catch(async reason => {
 
                 this.log.debug('seedDefaultMarketForProfile(), ...catching that and setting it');
@@ -90,15 +91,21 @@ export class DefaultMarketService {
                 const marketName = 'particl-market';
                 const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile, marketName)
                     .then(value => value.toJSON());
+
                 this.log.debug('seedDefaultMarketForProfile(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
 
                 // then create the Market
                 const newMarket = await this.createDefaultMarket(profile, marketIdentity);
 
                 // then set the Market as default for the Profile
-                await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, newMarket.id);
-                return newMarket;
-            });
+                const setting: resources.Setting = await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, newMarket.id);
+                this.log.debug('seedDefaultMarketForProfile(), setting: ', JSON.stringify(setting, null, 2));
+
+                return await this.marketService.findOne(newMarket.id);
+            })
+            .then(value => value.toJSON());
+
+        this.log.debug('seedDefaultMarketForProfile(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
         return await this.marketService.findOne(defaultMarket.id, true).then(value => value.toJSON());
     }
@@ -164,7 +171,7 @@ export class DefaultMarketService {
             publishAddress: marketAddressSetting.value
         } as MarketCreateRequest).then(value => value.toJSON());
 
-        this.log.debug('createMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
+        this.log.debug('createDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
 
         // load the wallet unless already loaded
         await this.coreRpcService.walletLoaded(newMarket.Identity.wallet)

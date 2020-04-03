@@ -40,11 +40,11 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateItemPrice = true;
     public generateMessagingInformation = true;
     public generateListingItemObjects = true;
-
     public generateObjectDatas = true;
-    public profileId: number;
+    public profileId: number;               // Profile owning the template
+
     public generateListingItem = false;
-    public marketId: number;
+    public soldOnMarketId: number;          // Market on which the ListingItem is sold on (for payment address)
     public categoryId: number;
 
     /**
@@ -61,7 +61,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [9]: generateObjectDatas
      * [10]: profileId
      * [11]: generateListingItem
-     * [12]: marketId
+     * [12]: soldOnMarketId
      * [13]: categoryId
      *
      * @param generateParams
@@ -79,10 +79,10 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateMessagingInformation   = generateParams[7] ? true : false;
             this.generateListingItemObjects     = generateParams[8] ? true : false;
             this.generateObjectDatas            = generateParams[9] ? true : false;
-            this.profileId                      = generateParams[10] ? generateParams[10] : null;
+            this.profileId                      = generateParams[10] ? generateParams[10] : undefined;
             this.generateListingItem            = generateParams[11] ? true : false;
-            this.marketId                       = generateParams[12] ? generateParams[12] : null;
-            this.categoryId                     = generateParams[13] ? generateParams[13] : null;
+            this.soldOnMarketId                 = generateParams[12] ? generateParams[12] : undefined;
+            this.categoryId                     = generateParams[13] ? generateParams[13] : undefined;
         }
     }
 
@@ -100,7 +100,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateObjectDatas,
             this.profileId,
             this.generateListingItem,
-            this.marketId,
+            this.soldOnMarketId,
             this.categoryId
         ];
     }

@@ -51,7 +51,9 @@ export class MarketService {
             throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.');
         }
         this.log.debug('getDefaultForProfile(), marketIdSetting: ', marketIdSetting!.value);
-        return await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
+        const result = await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
+        this.log.debug('getDefaultForProfile(), result: ', JSON.stringify(result.toJSON(), null, 2));
+        return result;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {

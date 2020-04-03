@@ -37,7 +37,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     public listingItemTemplateHash: string;
     public seller: string;
     public categoryId: number;
-    public marketId: number;
+    public soldOnMarketId: number;
 
     /**
      * generateParams[]:
@@ -54,7 +54,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [10]: listingItemTemplateHash
      * [11]: seller
      * [12]: categoryId
-     * [13]: marketId
+     * [13]: soldOnMarketId
      *
      * TODO: add proposal generation
      *
@@ -76,7 +76,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.listingItemTemplateHash        = generateParams[10] ? generateParams[10] : undefined;
             this.seller                         = generateParams[11] ? generateParams[11] : undefined;
             this.categoryId                     = generateParams[12] ? generateParams[12] : undefined;
-            this.marketId                       = generateParams[13] ? generateParams[13] : undefined;
+            this.soldOnMarketId                 = generateParams[13] ? generateParams[13] : undefined;
         }
     }
 
@@ -95,7 +95,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.listingItemTemplateHash,
             this.seller,
             this.categoryId,
-            this.marketId
+            this.soldOnMarketId
         ];
     }
 

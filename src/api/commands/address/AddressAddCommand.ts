@@ -148,7 +148,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         }
         if (data.params[10]) {
             const type = data.params[10];
-            const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_ORDER, AddressType.SHIPPING_OWN];
+            const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_OWN];
             if (type && !_.includes(validTypes, type)) {
                 throw new InvalidParamException('zipCode');
             }

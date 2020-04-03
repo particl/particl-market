@@ -3,9 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import {Collection, Model} from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { Profile } from './Profile';
-import {Market} from './Market';
+import { Market } from './Market';
 
 export class Setting extends Bookshelf.Model<Setting> {
 

@@ -17,6 +17,7 @@ declare module 'resources' {
         ShoppingCart: ShoppingCart[];
         Markets: Market[];
         Identities: Identity[];
+        Settings: Setting[];
 
     }
 

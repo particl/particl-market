@@ -48,7 +48,7 @@ describe('AddressListCommand', () => {
         state: 'Mel State',
         country: 'Finland',
         zipCode: '85001',
-        type: AddressType.SHIPPING_ORDER
+        type: AddressType.SHIPPING_OWN
     };
 
     beforeAll(async () => {
@@ -150,7 +150,7 @@ describe('AddressListCommand', () => {
         const result: resources.Address[] = res.getBody()['result'];
         expect(result.length).toBe(2);
 
-        res = await testUtil.rpc(addressCommand, [addressListCommand, defaultProfile.id, AddressType.SHIPPING_ORDER]);
+        res = await testUtil.rpc(addressCommand, [addressListCommand, defaultProfile.id, AddressType.SHIPPING_OWN]);
         res.expectJson();
         res.expectStatusCode(200);
         const resultOrder: resources.Address[] = res.getBody()['result'];

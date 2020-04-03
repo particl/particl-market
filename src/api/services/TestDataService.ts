@@ -310,6 +310,65 @@ export class TestDataService {
     }
 
     /**
+     * Generates a new Profile with default Market and Identity
+     */
+    public async generateProfile(): Promise<resources.Profile> {
+
+        const sellerProfileParams = new GenerateProfileParams([true, true, true]).toParamsArray();
+        const profiles = await this.generate({
+            model: CreatableModel.PROFILE,
+            amount: 1,
+            withRelated: true,
+            generateParams: sellerProfileParams
+        } as TestDataGenerateRequest);
+
+        // seed the default Market for default Profile, also creates the market Identity for the Profile
+        await this.defaultMarketService.seedDefaultMarketForProfile(profiles[0])
+            .catch(reason => {
+                this.log.error('ERROR: seedDefaultMarket, ' + reason);
+                throw reason;
+            });
+
+        return await this.profileService.findOne(profiles[0].id).then(value => value.toJSON());
+    }
+
+    /**
+     * Generates a new ListingItemTemplate with ListingItem
+     */
+    public async generateListingItemWithTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
+                                                 generateItemImages: boolean = false): Promise<resources.ListingItem> {
+
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,                   // generateItemInformation
+            true,                   // generateItemLocation
+            true,                   // generateShippingDestinations
+            generateItemImages,     // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            false,                  // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            sellerProfile.id,       // profileId
+            true,                   // generateListingItem
+            bidderMarket.id         // soldOnMarketId
+        ]).toParamsArray();
+
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await this.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
+        } as TestDataGenerateRequest);
+
+        this.log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
+
+        return await this.listingItemService.findOne(listingItemTemplates[0].ListingItems[0].id).then(value => value.toJSON());
+
+    }
+
+    /**
      * Generates an random colored image with specified width, height and quality
      * @param width width of the image
      * @param height height of the image
@@ -424,14 +483,27 @@ export class TestDataService {
             if (generateParams.generateListingItem) {
 
                 this.log.debug('listingItemTemplate.Profile.id: ', listingItemTemplate.Profile.id);
-                const market: resources.Market = generateParams.marketId === undefined || generateParams.marketId === null
-                    ? await this.marketService.getDefaultForProfile(listingItemTemplate.Profile.id).then(value => value.toJSON())
-                    : await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
+
+                const soldOnMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
+                const sellersMarketIdentityAddress: string = await this.profileService.findOne(generateParams.profileId)
+                    .then(value => {
+                        const sellerProfile: resources.Profile = value.toJSON();
+                        const foundMarket = _.find(sellerProfile.Markets, sellersMarket => {
+                            return sellersMarket.receiveAddress === soldOnMarket.receiveAddress;
+                        });
+
+                        if (foundMarket) {
+                            return foundMarket.Identity.address;
+                        } else {
+                            throw new MessageException('Seller does not have a market on which the ListingItem is posted on.');
+                        }
+                    });
+
+                this.log.debug('sellersMarketIdentityAddress: ', sellersMarketIdentityAddress);
 
                 const listingItemCreateRequest = {
-                    // seller: listingItemTemplate.Profile.address,
-                    seller: market.Identity.address,
-                    market: market.receiveAddress,
+                    seller: sellersMarketIdentityAddress,
+                    market: soldOnMarket.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
@@ -446,16 +518,13 @@ export class TestDataService {
                 } as ListingItemCreateRequest;
 
                 listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
-
                 // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-                const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
-                    .then(value => value.toJSON());
+                const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
                 // this.log.debug('created listingItem, hash: ', listingItem.hash);
 
                 listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
-
             }
             items.push(listingItemTemplate);
         }
@@ -548,45 +617,10 @@ export class TestDataService {
         amount: number, withRelated: boolean = true, generateParams: GenerateBidParams):
     Promise<resources.Bid[]> {
 
-        this.log.debug('generateBids, generateParams: ', generateParams);
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
 
         // TODO: implement listingitem and template generation
-
-        /*
-        const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false,   // generateListingItemObjects
-            false,   // generateObjectDatas
-            generateParams.listingItemSeller, // profileId
-            false,   // generateListingItem
-            0,       // marketId
-            0       // categoryId
-        ]).toParamsArray();
-
-        const listingItemGenerateParams = new GenerateListingItemParams([
-            true,                               // generateItemInformation
-            true,                               // generateItemLocation
-            true,                               // generateShippingDestinations
-            false,                              // generateItemImages
-            true,                               // generatePaymentInformation
-            true,                               // generateEscrow
-            true,                               // generateItemPrice
-            true,                               // generateMessagingInformation
-            true,                               // generateListingItemObjects
-            false,                              // generateObjectDatas
-            createdListingItemTemplate.hash,    // listingItemTemplateHash
-            sellerProfile.address               // seller
-        ]).toParamsArray();
-*/
 
         let listingItemTemplate: resources.ListingItemTemplate;
         let listingItem: resources.ListingItem;
@@ -608,7 +642,7 @@ export class TestDataService {
         if (generateParams.generateListingItem) {
 
             // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : '';
+            listingItemGenerateParams.seller = generateParams.seller ? generateParams.seller : '';
 
             this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
 
@@ -623,13 +657,12 @@ export class TestDataService {
             generateParams.listingItemId = listingItem.id;
         }
 
-        this.log.debug('generateParams:', generateParams);
-
         const items: resources.Bid[] = [];
         for (let i = amount; i > 0; i--) {
             const bidCreateRequest = await this.generateBidData(generateParams);
-            const result: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
-            items.push(result);
+            const bidderBid: resources.Bid = await this.bidService.create(bidCreateRequest[0]).then(value => value.toJSON());
+            const sellerBid: resources.Bid = await this.bidService.create(bidCreateRequest[1]).then(value => value.toJSON());
+            items.push(bidderBid, sellerBid);
         }
 
         // this.log.debug('bids:', JSON.stringify(items, null, 2));
@@ -637,43 +670,49 @@ export class TestDataService {
         return this.generateResponse(items, withRelated);
     }
 
-    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
+    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest[]> {
 
-        // TODO: defaultProfile might not be the correct one
-        const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+        this.log.debug('generateBidData, generateParams: ', JSON.stringify(generateParams, null, 2));
+
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(generateParams.listingItemId).then(value => value.toJSON());
-        const identity: resources.Identity = await this.identityService.findOneByAddress(listingItem.seller).then(value => value.toJSON());
-
-        const bidder = generateParams.bidder ? generateParams.bidder : await this.coreRpcService.getNewAddress(identity.wallet);
+        const bidderIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.bidder).then(value => value.toJSON());
+        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.seller).then(value => value.toJSON());
         const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
 
         // TODO: generate biddatas
-        const bidDatas = [
-            {key: 'size', value: 'XL'},
-            {key: 'color', value: 'pink'}
-        ] as BidDataCreateRequest[];
+        const bidDatas = [{
+            key: 'size',
+            value: 'XL'
+        }, {
+            key: 'color',
+            value: 'pink'
+        }] as BidDataCreateRequest[];
 
-        const bidCreateRequest = {
+        const bidCreateRequestForBidder = {
+            listing_item_id: listingItem.id,
+            profile_id: bidderIdentity.Profile.id,
             parent_bid_id: generateParams.parentBidId,
             type,
-            bidder,
+            bidder: bidderIdentity.address,
             bidDatas,
             generatedAt: +Date.now(),
-            msgid: Faker.random.uuid()
+            msgid: Faker.random.uuid(),
+            address: MPAction.MPA_BID === type ? {
+                profile_id: bidderIdentity.Profile.id,
+                firstName: Faker.name.firstName(),
+                lastName: Faker.name.lastName(),
+                addressLine1: Faker.address.streetAddress(),
+                zipCode: Faker.address.zipCode(),
+                city: Faker.address.city(),
+                state: Faker.address.state(),
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                type: AddressType.SHIPPING_OWN
+            } as AddressCreateRequest : undefined
         } as BidCreateRequest;
-
-        if (MPAction.MPA_BID === type) {
-            const addresses = await this.generateAddressesData(1);
-            // this.log.debug('Generated addresses = ' + JSON.stringify(addresses, null, 2));
-            const address = addresses[0];
-
-            address.profile_id = defaultProfile.id;
-            bidCreateRequest.address = address;
-        }
 
         // TODO: this hash is incorrect and should be fixed.
         // TODO: add market to the hash?
-        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
+        bidCreateRequestForBidder.hash = ConfigurableHasher.hash(bidCreateRequestForBidder, new HashableBidCreateRequestConfig([{
             value: listingItem.hash,
             to: HashableBidField.ITEM_HASH
         }, {
@@ -684,14 +723,15 @@ export class TestDataService {
             to: HashableBidField.PAYMENT_CRYPTO
         }]));
 
-        // if we have a hash, fetch the listingItem and set the relation
-        if (generateParams.listingItemId && listingItem) {
-            bidCreateRequest.listing_item_id = listingItem.id;
-        }
+        const bidCreateRequestForSeller: BidCreateRequest = JSON.parse(JSON.stringify(bidCreateRequestForBidder));
+        bidCreateRequestForSeller.profile_id = sellerIdentity.Profile.id;
+        bidCreateRequestForSeller.address.profile_id = sellerIdentity.Profile.id;
+        bidCreateRequestForSeller.address.type = AddressType.SHIPPING_BID;
 
-        this.log.debug('bidCreateRequest: ' + JSON.stringify(bidCreateRequest, null, 2));
+        // this.log.debug('bidCreateRequestForBidder: ' + JSON.stringify(bidCreateRequestForBidder, null, 2));
+        // this.log.debug('bidCreateRequestForSeller: ' + JSON.stringify(bidCreateRequestForSeller, null, 2));
 
-        return bidCreateRequest;
+        return [bidCreateRequestForBidder, bidCreateRequestForSeller];
     }
 
     // -------------------
@@ -1058,16 +1098,19 @@ export class TestDataService {
     // -------------------
     // profiles
 
-    private async generateProfiles(
-        amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams):
-    Promise<resources.Profile[]> {
+    private async generateProfiles(amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams): Promise<resources.Profile[]> {
 
         const items: resources.Profile[] = [];
         for (let i = amount; i > 0; i--) {
-            const profile = await this.generateProfileData(generateParams);
-            const result: resources.Profile = await this.profileService.create(profile)
-                .then(value => value.toJSON());
-            items.push(result);
+            const profileCreateRequest: ProfileCreateRequest = await this.generateProfileData(generateParams, i);
+
+            // create the Profile
+            const profile: resources.Profile = await this.profileService.create(profileCreateRequest).then(value => value.toJSON());
+
+            // create Identity for the Profile
+            await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
+
+            items.push(profile);
         }
         return this.generateResponse(items, withRelated);
     }
@@ -1084,15 +1127,19 @@ export class TestDataService {
         }
     }
 
-    private async generateProfileData(generateParams: GenerateProfileParams): Promise<ProfileCreateRequest> {
-        const name = 'TEST-' + Faker.name.firstName();
+    private async generateProfileData(generateParams: GenerateProfileParams, i: number): Promise<ProfileCreateRequest> {
+        // added the i in order to reduce the number of wallets created for testing...
+        const name = 'TEST-' + i;
+
         const shippingAddresses = generateParams.generateShippingAddresses
-            ? await this.generateAddressesData(_.random(1, 5))
+            ? await this.generateAddressesData(_.random(1, 2))
             : [];
+
         // todo: these are not really used
         // const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses
         //     ? await this.generateCryptocurrencyAddressesData(_.random(1, 5))
         //     : [];
+
         const settings = generateParams.generateSettings
             ? await this.generateSettings(_.random(1, 5))
             : [];
@@ -1139,22 +1186,23 @@ export class TestDataService {
         const settings: SettingCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             settings.push({
-                key: Faker.random.word(),
+                key: 'TEST-PROFILE-SETTING-' + i,
                 value: Faker.random.word()
             } as SettingCreateRequest);
-            settings.push({
-                key: SettingValue.APP_DEFAULT_MARKETPLACE_NAME.toString(),
-                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME]
-            } as SettingCreateRequest);
-            settings.push({
-                key: SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
-                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY]
-            } as SettingCreateRequest);
-            settings.push({
-                key: SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS.toString(),
-                value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS]
-            } as SettingCreateRequest);
         }
+
+        settings.push({
+            key: SettingValue.APP_DEFAULT_MARKETPLACE_NAME.toString(),
+            value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME]
+        } as SettingCreateRequest);
+        settings.push({
+            key: SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
+            value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY]
+        } as SettingCreateRequest);
+        settings.push({
+            key: SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS.toString(),
+            value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS]
+        } as SettingCreateRequest);
         return settings;
     }
 
@@ -1170,12 +1218,12 @@ export class TestDataService {
         const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         let market: resources.Market;
-        if (generateParams.marketId) {
-            market = await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
+        if (generateParams.soldOnMarketId) {
+            market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
         } else {
             market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
         }
-        generateParams.marketId = market.id;
+        generateParams.soldOnMarketId = market.id;
 
         // set seller to given address or get a new one
         const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress(market.Identity.wallet);
@@ -1288,7 +1336,7 @@ export class TestDataService {
             itemCategory.key = this.randomCategoryKey();
         }
 
-        const itemInformation = {
+        const itemInformationCreateRequest = {
             title: Faker.commerce.productName(),
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
@@ -1297,14 +1345,16 @@ export class TestDataService {
             shippingDestinations,
             itemImages
         } as ItemInformationCreateRequest;
-        return itemInformation;
+
+        return itemInformationCreateRequest;
     }
 
-    private async generatePaymentInformationData(
-        generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
-    Promise<PaymentInformationCreateRequest> {
+    private async generatePaymentInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
+        Promise<PaymentInformationCreateRequest> {
 
-        const wallet = await this.marketService.findOne(generateParams.marketId).then(value => {
+        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+
+        const wallet = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => {
             const market: resources.Market = value.toJSON();
             return market.Identity.wallet;
         });
@@ -1335,12 +1385,13 @@ export class TestDataService {
             } as ItemPriceCreateRequest
             : undefined;
 
-        const paymentInformation = {
+        const paymentInformationCreateRequest = {
             type: SaleType.SALE, // Faker.random.arrayElement(Object.getOwnPropertyNames(SaleType)),
             escrow,
             itemPrice
         } as PaymentInformationCreateRequest;
-        return paymentInformation;
+
+        return paymentInformationCreateRequest;
     }
 
     private generateMessagingInformationData(): MessagingInformationCreateRequest[] {
@@ -1378,20 +1429,20 @@ export class TestDataService {
 
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
 
-        let profile: resources.Profile;
-        if (generateParams.profileId) {
-            profile = await this.profileService.findOne(generateParams.profileId).then(value => value.toJSON());
-        } else {
-            profile = await this.profileService.getDefault().then(value => value.toJSON());
+        let profileId;
+
+        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+
+        if (generateParams.generateListingItem) {
+
         }
 
-        let market: resources.Market;
-        if (generateParams.marketId) {
-            market = await this.marketService.findOne(generateParams.marketId).then(value => value.toJSON());
+        if (generateParams.generateListingItem) {
+            const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
+            profileId = sellerMarket.Profile.id;
         } else {
-            market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            profileId = generateParams.profileId;
         }
-        generateParams.marketId = market.id;
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1404,10 +1455,9 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            profile_id: profile.id
+            profile_id: profileId
         } as ListingItemTemplateCreateRequest;
 
-        this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
         return listingItemTemplateCreateRequest;
     }
 

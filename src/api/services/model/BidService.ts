@@ -53,6 +53,10 @@ export class BidService {
         return await this.bidRepo.findAll();
     }
 
+    public async findAllByProfileId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.bidRepo.findAllByProfileId(id, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
         const bid = await this.bidRepo.findOne(id, withRelated);
         if (bid === null) {
@@ -145,6 +149,9 @@ export class BidService {
 
                 // no profile_id set -> figure it out
                 if (!addressCreateRequest.profile_id) {
+
+                    // todo: now when there's a relation to Profile, this is propably not necessary anymore
+                    // ...or could be moved to where BidCreateRequest is created
 
                     // if identity is found for body.bidder, then we're the bidder
                     const identity: resources.Identity = await this.identityService.findOneByAddress(body.bidder)

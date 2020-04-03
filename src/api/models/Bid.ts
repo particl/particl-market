@@ -10,6 +10,7 @@ import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/search/BidSearchParams';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
+import { Profile } from './Profile';
 import { OrderItem } from './OrderItem';
 import { BidSearchOrderField } from '../enums/SearchOrderField';
 
@@ -52,8 +53,25 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemObjects',
         'ListingItem.ListingItemObjects.ListingItemObjectDatas',
         'ListingItem.ListingItemTemplate',
-        'ListingItem.ListingItemTemplate.Profile'
+        'ListingItem.ListingItemTemplate.Profile',
+        'Profile'
     ];
+
+    public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Bid>> {
+        const BidCollection = Bid.forge<Model<Bid>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await BidCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await BidCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
         if (withRelated) {
@@ -103,6 +121,10 @@ export class Bid extends Bookshelf.Model<Bid> {
 
                 if (options.listingItemId) {
                     qb.where('bids.listing_item_id', '=', options.listingItemId);
+                }
+
+                if (options.profileId) {
+                    qb.where('bids.profile_id', '=', options.profileId);
                 }
 
                 if (options.type) {
@@ -196,6 +218,10 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public ChildBids(): Collection<Bid> {
         return this.hasMany(Bid, 'parent_bid_id', 'id');
+    }
+
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
 }

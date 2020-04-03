@@ -12,6 +12,7 @@ export class BidSearchParams extends BaseSearchParams {
 
     public orderField = BidSearchOrderField.UPDATED_AT;
 
+    public profileId: number;
     public listingItemId: number;
     public type: MPAction | OrderItemStatus;
     public searchString: string;

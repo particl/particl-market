@@ -51,15 +51,6 @@ export class IdentityService {
         return identity;
     }
 
-    public async findOneByWalletName(wallet: string, withRelated: boolean = true): Promise<Identity> {
-        const identity = await this.identityRepository.findOneByWalletName(wallet, withRelated);
-        if (identity === null) {
-            this.log.warn(`Identity with the wallet=${wallet} was not found!`);
-            throw new NotFoundException(wallet);
-        }
-        return identity;
-    }
-
     public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Identity> {
         const identity = await this.identityRepository.findOneByAddress(address, withRelated);
         if (identity === null) {
@@ -83,9 +74,16 @@ export class IdentityService {
 
     @validate()
     public async create( @request(IdentityCreateRequest) data: IdentityCreateRequest): Promise<Identity> {
-        // this.log.debug('create(): ', JSON.stringify(data, null, 2));
+
+        this.log.debug('create(), data: ', JSON.stringify(data, null, 2));
         const body = JSON.parse(JSON.stringify(data));
-        return await this.identityRepository.create(body);
+
+        const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
+        const result = await this.findOne(identity.id);
+
+        this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
+
+        return result;
     }
 
     /**
@@ -113,12 +111,12 @@ export class IdentityService {
         // first get the Profile Identity
         const profileIdentity: resources.Identity = await this.findProfileIdentity(profile.id).then(value => value.toJSON());
 
-        this.log.info('createMarketIdentityForProfile(), profileIdentity.wallet: ', profileIdentity.wallet);
+        this.log.debug('createMarketIdentityForProfile(), profileIdentity.wallet: ', profileIdentity.wallet);
         const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(profileIdentity.wallet, true);
         const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
             return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
         });
-        this.log.info('createMarketIdentityForProfile(), profile masterKey: ', JSON.stringify(masterKey, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), profile masterKey: ', JSON.stringify(masterKey, null, 2));
         if (!masterKey) {
             throw new MessageException('Could not find Profile wallets Master key.');
         }
@@ -126,46 +124,46 @@ export class IdentityService {
         // TODO: PATH amountOfMarkets+1
         // ODO: path as param
         const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
-        this.log.info('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
         const walletName = 'profiles/' + profile.name + '/' + marketName;
         const walletExists = await this.coreRpcService.walletExists(walletName);
 
-        if (!walletExists) {
-            await this.coreRpcService.createAndLoadWallet(walletName, false, true)
-                .catch(async reason => {
-                    this.log.error('reason:', JSON.stringify(reason.body.error.message, null, 2));
-                    throw new MessageException(reason.body.error.message);
-                });
-
-        } else { // this should not really happen, and wouldn't recommended to use existing wallet
+        if (walletExists) {
             this.log.warn('Wallet already exists!');
             const isLoaded = await this.coreRpcService.walletLoaded(walletName);
             if (!isLoaded) {
                 await this.coreRpcService.loadWallet(walletName);
             }
+        } else {
+            await this.coreRpcService.createAndLoadWallet(walletName, false, true)
+                .catch(async reason => {
+                    this.log.error('reason:', JSON.stringify(reason.body.error.message, null, 2));
+                    throw new MessageException(reason.body.error.message);
+                });
         }
 
         // import the key and set up the market wallet
         const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);
-        this.log.info('createMarketIdentityForProfile(), extKeyAlt: ', extKeyAlt);
+        this.log.debug('createMarketIdentityForProfile(), extKeyAlt: ', extKeyAlt);
 
         const extKeyImported: RpcExtKeyResult = await this.coreRpcService.extKeyImport(walletName, extKeyAlt/*masterKey.evkey*/, 'master key', true);
-        this.log.info('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
 
         await this.coreRpcService.extKeySetMaster(walletName, extKeyImported.id);
         const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(walletName, 'market account');
-        this.log.info('createMarketIdentityForProfile(), marketAccount: ', JSON.stringify(marketAccount, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), marketAccount: ', JSON.stringify(marketAccount, null, 2));
 
         await this.coreRpcService.extKeySetDefaultAccount(walletName, marketAccount.account);
 
         const address = await this.coreRpcService.getNewAddress(walletName);
-        this.log.info('createMarketIdentityForProfile(), address: ', address);
+        this.log.debug('createMarketIdentityForProfile(), address: ', address);
 
+        this.log.debug('createMarketIdentityForProfile(), walletName: ', walletName);
         const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
-        this.log.info('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
 
         // create Identity for Market, using the created wallet
         return await this.create({
@@ -188,7 +186,7 @@ export class IdentityService {
      */
     public async createProfileIdentity(profile: resources.Profile): Promise<Identity> {
 
-        this.log.info('createProfileIdentity(), Creating new Identity for Profile: ' + profile.name);
+        this.log.debug('createProfileIdentity(), Creating new Identity for Profile: ' + profile.name);
 
         // create and load a new blank wallet
         const walletName = 'profiles/' + profile.name;
@@ -201,7 +199,9 @@ export class IdentityService {
                     throw new MessageException(reason.body.error.message);
                 });
 
-        } else { // this should not really happen, and wouldn't recommended to use existing wallet
+        } else {
+            // this should not really happen, and wouldn't recommended to use existing wallet
+            // this actually happens when running tests, since we are reusing the same wallets for new test Profiles
             this.log.warn('Wallet already exists!');
             const isLoaded = await this.coreRpcService.walletLoaded(walletName);
             if (!isLoaded) {
@@ -213,9 +213,9 @@ export class IdentityService {
         const passphrase = this.createRandom(24, true, true, true, false);
         const mnemonic: RpcMnemonic = await this.coreRpcService.mnemonic(['new', passphrase, 'english', '32', true]);
 
-        this.log.info('createProfileIdentity(), walletName: ' + walletName);
-        this.log.info('createProfileIdentity(), passphrase: ' + passphrase);
-        this.log.info('createProfileIdentity(), mnemonic: ' + mnemonic.mnemonic);
+        this.log.debug('createProfileIdentity(), walletName: ' + walletName);
+        this.log.debug('createProfileIdentity(), passphrase: ' + passphrase);
+        this.log.debug('createProfileIdentity(), mnemonic: ' + mnemonic.mnemonic);
 
         // import master key from bip44 mnemonic root key and derive default account
         await this.coreRpcService.extKeyGenesisImport(walletName, [
@@ -226,7 +226,7 @@ export class IdentityService {
             'Default Account',
             -1                  // skip scan
         ]);
-        this.log.info('createProfileIdentity(), mnemonic imported...');
+        this.log.debug('createProfileIdentity(), mnemonic imported...');
 
         const extKeys: RpcExtKey[] = await this.coreRpcService.extKeyList(walletName, true);
         const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
@@ -238,7 +238,7 @@ export class IdentityService {
         // const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(walletName, masterKey.evkey, "4444446'/0'");
 
         const address = await this.coreRpcService.getNewAddress(walletName);
-        this.log.info('createProfileIdentity(), identity.address: ' + address);
+        this.log.debug('createProfileIdentity(), identity.address: ' + address);
 
         const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
 

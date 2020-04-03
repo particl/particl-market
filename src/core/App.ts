@@ -11,7 +11,7 @@ import { Bootstrap } from './Bootstrap';
 import { Server } from './Server';
 import { IoC } from './IoC';
 import { AppConfig } from '../config/AppConfig';
-import { Types, Core } from '../constants';
+import {Types, Core, Targets} from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
@@ -23,6 +23,8 @@ import { MessageException } from '../api/exceptions/MessageException';
 import { envConfig } from '../config/EnvironmentConfig';
 import * as dotenv from 'dotenv';
 import { ZmqWorker } from './ZmqWorker';
+import {app} from '../app';
+import {TestDataService} from '../api/services/TestDataService';
 
 export interface Configurable {
     configure(app: App): void;
@@ -146,6 +148,14 @@ export class App {
         this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
 
         this.log.info('App is ready!');
+
+        if (Environment.isTest()/*|| Environment.isBlackBoxTest()*/) {
+            // todo: add env var for clean start
+            // clean up db
+            const testDataService: TestDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+            await testDataService.clean();
+            this.log.info('DB cleaned!');
+        }
 
         const eventEmitter = this.ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
         eventEmitter.emit(ServerStartedListener.Event, 'Hello!');

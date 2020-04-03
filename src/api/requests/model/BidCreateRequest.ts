@@ -16,6 +16,9 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
 
     @IsNotEmpty()
     public listing_item_id: number;
+    @IsNotEmpty()
+    public profile_id: number;
+
     public parent_bid_id: number;
 
     public msgid: string;
