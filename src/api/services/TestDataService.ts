@@ -120,6 +120,7 @@ import { BlacklistService } from './model/BlacklistService';
 import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
+import {ActionMessageTypes} from '../enums/ActionMessageTypes';
 
 
 export class TestDataService {
@@ -362,11 +363,37 @@ export class TestDataService {
             generateParams
         } as TestDataGenerateRequest);
 
-        this.log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
+        // this.log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
 
         return await this.listingItemService.findOne(listingItemTemplates[0].ListingItems[0].id).then(value => value.toJSON());
-
     }
+
+    /**
+     * Generates a new ListingItemTemplate with ListingItem
+     */
+    public async generateBid(type: ActionMessageTypes, listingItemId: number, bidderMarket: resources.Market, sellerMarket: resources.Market,
+                             parentBidId?: number): Promise<resources.ListingItem> {
+
+        const bidParams = new GenerateBidParams([
+            false,                              // generateListingItemTemplate
+            false,                              // generateListingItem
+            listingItemId,                      // listingItemId
+            type,                               // type
+            bidderMarket.Identity.address,      // bidder
+            sellerMarket.Identity.address,      // seller
+            parentBidId                         // parentBidId, should be set if type !== MPA_BID
+        ]).toParamsArray();
+
+        const bids = await this.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidParams
+        } as TestDataGenerateRequest);
+
+        return bids;
+    }
+
 
     /**
      * Generates an random colored image with specified width, height and quality
@@ -644,7 +671,7 @@ export class TestDataService {
             // set the seller for listing item generation
             listingItemGenerateParams.seller = generateParams.seller ? generateParams.seller : '';
 
-            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
+            // this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
 
             const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
             listingItem = listingItems[0];
@@ -672,7 +699,7 @@ export class TestDataService {
 
     private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest[]> {
 
-        this.log.debug('generateBidData, generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateBidData, generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(generateParams.listingItemId).then(value => value.toJSON());
         const bidderIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.bidder).then(value => value.toJSON());
@@ -740,7 +767,7 @@ export class TestDataService {
         amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams):
     Promise<resources.Order[]> {
 
-        this.log.debug('generateOrders, generateParams: ', generateParams);
+        // this.log.debug('generateOrders, generateParams: ', generateParams);
 
         let bid: resources.Bid;
 
@@ -784,7 +811,7 @@ export class TestDataService {
 
     private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
 
-        this.log.debug('generateOrderData, generateParams: ', generateParams);
+        // this.log.debug('generateOrderData, generateParams: ', generateParams);
 
         // get the bid
         const bid: resources.Bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
@@ -813,7 +840,7 @@ export class TestDataService {
         amount: number, withRelated: boolean = true,
         generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
 
-        this.log.debug('generateProposals, generateParams: ', generateParams);
+        // this.log.debug('generateProposals, generateParams: ', generateParams);
 
         // TODO: add template and item generation
 
@@ -1000,7 +1027,7 @@ export class TestDataService {
         amount: number, withRelated: boolean = true,
         generateParams: GenerateCommentParams): Promise<resources.Comment[]> {
 
-        this.log.debug('generateComments, generateParams: ', generateParams);
+        // this.log.debug('generateComments, generateParams: ', generateParams);
 
         // TODO: add template and item generation
         // generate template
@@ -1352,7 +1379,7 @@ export class TestDataService {
     private async generatePaymentInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
         Promise<PaymentInformationCreateRequest> {
 
-        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const wallet = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => {
             const market: resources.Market = value.toJSON();
@@ -1431,7 +1458,7 @@ export class TestDataService {
 
         let profileId;
 
-        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         if (generateParams.generateListingItem) {
 
@@ -1492,7 +1519,7 @@ export class TestDataService {
         amount: number, withRelated: boolean = true,
         generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
 
-        this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
+        // this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
 
         const items: resources.SmsgMessage[] = [];
 
@@ -1592,7 +1619,7 @@ export class TestDataService {
         amount: number, withRelated: boolean = true,
         generateParams: GenerateBlacklistParams): Promise<resources.Blacklist[]> {
 
-        this.log.debug('generateBlacklists, generateParams: ', generateParams);
+        // this.log.debug('generateBlacklists, generateParams: ', generateParams);
 
         const items: resources.Blacklist[] = [];
 

@@ -16,12 +16,9 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { BidDataCreateRequest } from '../../src/api/requests/model/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/model/BidDataUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {NotFoundException} from '../../src/api/exceptions/NotFoundException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 describe('BidData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,7 +37,6 @@ describe('BidData', () => {
     let bidderProfile: resources.Profile;
     let sellerProfile: resources.Profile;
     let sellerMarket: resources.Market;
-
     let listingItem: resources.ListingItem;
     let bid: resources.Bid;
     let bidData: resources.BidData;
@@ -70,30 +66,15 @@ describe('BidData', () => {
         bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
         sellerProfile = await testDataService.generateProfile();
-        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
 
         sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
-        log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+        // log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
 
-        const bidParams = new GenerateBidParams([
-            false,                              // generateListingItemTemplate
-            false,                              // generateListingItem
-            listingItem.id,                     // listingItemId
-            MPAction.MPA_BID,                   // type
-            bidderMarket.Identity.address,      // bidder
-            sellerMarket.Identity.address,      // seller
-            undefined                           // parentBidId, should be set if type !== MPA_BID
-        ]).toParamsArray();
-
-        const bids = await testDataService.generate({
-            model: CreatableModel.BID,
-            amount: 1,
-            withRelated: true,
-            generateParams: bidParams
-        } as TestDataGenerateRequest);
+        const bids = await testDataService.generateBid(MPAction.MPA_BID, listingItem.id, bidderMarket, sellerMarket);
         bid = bids[0];
 
     });

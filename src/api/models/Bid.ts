@@ -130,17 +130,11 @@ export class Bid extends Bookshelf.Model<Bid> {
                 if (options.type) {
                     qb.where('bids.type', '=', options.type);
                 }
-                /* all these should be Bids now...
-                if (searchParams.type
-                    && (searchParams.type === OrderItemStatus.AWAITING_ESCROW
-                        || searchParams.type === OrderItemStatus.COMPLETE
-                        || searchParams.type === OrderItemStatus.ESCROW_LOCKED
-                        || searchParams.type === OrderItemStatus.ESCROW_COMPLETED
-                        || searchParams.type === OrderItemStatus.SHIPPING)) {
+
+                if (options.orderItemStatus) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
-                    qb.where('order_items.status', '=', searchParams.type);
+                    qb.where('order_items.status', '=', options.orderItemStatus);
                 }
-                */
 
                 if (options.searchString) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
