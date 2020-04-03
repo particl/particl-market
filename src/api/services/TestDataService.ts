@@ -369,10 +369,10 @@ export class TestDataService {
     }
 
     /**
-     * Generates a new ListingItemTemplate with ListingItem
+     * Generates a new Bid
      */
     public async generateBid(type: ActionMessageTypes, listingItemId: number, bidderMarket: resources.Market, sellerMarket: resources.Market,
-                             parentBidId?: number): Promise<resources.ListingItem> {
+                             parentBidId?: number): Promise<resources.Bid[]> {
 
         const bidParams = new GenerateBidParams([
             false,                              // generateListingItemTemplate
@@ -392,6 +392,30 @@ export class TestDataService {
         } as TestDataGenerateRequest);
 
         return bids;
+    }
+
+    /**
+     * Generates a new Proposal
+     */
+    public async generateProposal(listingItemId: number, bidderMarket: resources.Market, generateOptions: boolean): Promise<resources.Proposal> {
+        const generateProposalParams = new GenerateProposalParams([
+            listingItemId,                              // listingItemId,
+            false,                                      // generatePastProposal,
+            0,                                          // voteCount
+            bidderMarket.Identity.address,              // submitter
+            bidderMarket.receiveAddress,                // market
+            generateOptions
+        ]).toParamsArray();
+
+        const proposals: resources.Proposal[] = await this.generate({
+            model: CreatableModel.PROPOSAL,             // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateProposalParams      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        // this.log.debug('proposals: ', JSON.stringify(proposals, null, 2));
+
+        return proposals[0];
     }
 
 
@@ -836,63 +860,14 @@ export class TestDataService {
 
     // -------------------
     // Proposals
-    private async generateProposals(
-        amount: number, withRelated: boolean = true,
-        generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
+    private async generateProposals(amount: number, withRelated: boolean = true, generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
 
-        // this.log.debug('generateProposals, generateParams: ', generateParams);
-
-        // TODO: add template and item generation
-
-        /*
-        const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
-        const listingItemGenerateParams = new GenerateListingItemParams();
-
-        let listingItemTemplate: resources.ListingItemTemplate;
-        let listingItem: resources.ListingItem;
-        */
-        // generate template
-        if (generateParams.generateListingItemTemplate) {
-            throw new NotImplementedException();
-            /*
-            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
-            listingItemTemplate = listingItemTemplates[0];
-
-            this.log.debug('templates generated:', listingItemTemplates.length);
-            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
-            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
-
-            // set the hash for listing item generation
-            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
-            */
-        }
-
-        // generate item
-        if (generateParams.generateListingItem) {
-            throw new NotImplementedException();
-            /*
-            // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.seller ? generateParams.seller : null;
-
-            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
-
-            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
-            listingItem = listingItems[0];
-
-            this.log.debug('listingItems generated:', listingItems.length);
-            this.log.debug('listingItem.id:', listingItem.id);
-            this.log.debug('listingItem.hash:', listingItem.hash);
-
-            // set the hash for bid generation
-            generateParams.listingItemHash = listingItem.hash;
-            */
-        }
-        // TODO: proposalHash is not set to listingitem
+        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const items: resources.Proposal[] = [];
 
         for (let i = amount; i > 0; i--) {
-            const proposalCreateRequest = await this.generateProposalData(generateParams);
+            const proposalCreateRequest: ProposalCreateRequest = await this.generateProposalData(generateParams);
 
             this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
             let proposal: resources.Proposal = await this.proposalService.create(proposalCreateRequest).then(value => value.toJSON());
@@ -905,7 +880,7 @@ export class TestDataService {
             // create and update ProposalResult
             let proposalResult = await this.proposalService.createEmptyProposalResult(proposal);
             proposalResult = await this.proposalService.recalculateProposalResult(proposal, true);
-            this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+            // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
             proposal = await this.proposalService.findOne(proposal.id).then(value => value.toJSON());
             items.push(proposal);
@@ -945,17 +920,22 @@ export class TestDataService {
 
         let submitter;
         if (!generateParams.submitter) {
-            const defaultProfile = await this.profileService.getDefault();
-            const profile = defaultProfile.toJSON();
-            submitter = profile.address;
+            const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            submitter = defaultMarket.Identity.address;
         } else {
             submitter = generateParams.submitter;
         }
 
-        const category = generateParams.listingItemHash ? ProposalCategory.ITEM_VOTE : ProposalCategory.PUBLIC_VOTE;
-        const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
-        const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
-        const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
+        let listingItem: resources.ListingItem | undefined;
+        if (generateParams.listingItemId && generateParams.listingItemId > 0) {
+            listingItem = await this.listingItemService.findOne(generateParams.listingItemId).then(value => value.toJSON());
+        }
+
+        const category = listingItem ? ProposalCategory.ITEM_VOTE : ProposalCategory.PUBLIC_VOTE;
+        const title = listingItem ? listingItem.hash : Faker.lorem.words(4);
+        const item = listingItem ? listingItem.hash : null;
+        const description = listingItem ? 'ILLEGAL ITEM' : Faker.lorem.words(20);
 
         const currentTime = Date.now();
 
@@ -973,16 +953,21 @@ export class TestDataService {
         // this.log.debug('blockEnd: ', blockEnd);
 
         const options: ProposalOptionCreateRequest[] = [];
-        options.push({
-            optionId: 0,
-            description: ItemVote.KEEP.toString()
-        } as ProposalOptionCreateRequest);
-        options.push({
-            optionId: 1,
-            description: ItemVote.REMOVE.toString()
-        } as ProposalOptionCreateRequest);
+
+        if (generateParams.generateOptions) {
+            options.push({
+                optionId: 0,
+                description: ItemVote.KEEP.toString()
+            } as ProposalOptionCreateRequest);
+            options.push({
+                optionId: 1,
+                description: ItemVote.REMOVE.toString()
+            } as ProposalOptionCreateRequest);
+        }
 
         const proposalCreateRequest = {
+            msgid: Faker.random.uuid(),
+            market: generateParams.market,
             submitter,
             category,
             target: item,
