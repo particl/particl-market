@@ -79,9 +79,6 @@ describe('ItemLocation', () => {
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 

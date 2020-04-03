@@ -49,9 +49,6 @@ describe('TestDataService', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
-        // clean up the db
-        await testDataService.clean();
-
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());

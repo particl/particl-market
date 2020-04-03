@@ -30,21 +30,8 @@ describe('Market', () => {
     let profileService: ProfileService;
 
     let profile: resources.Profile;
-    let createdId;
-
-    const testData = {
-        type: MarketType.MARKETPLACE,
-        name: 'TEST-MARKET',
-        receiveKey: 'TEST-PRIVATE-KEY',
-        receiveAddress: Faker.random.uuid()
-    } as MarketCreateRequest;
-
-    const testDataUpdated = {
-        type: MarketType.MARKETPLACE,
-        name: 'TEST-UPDATE-MARKET',
-        receiveKey: 'TEST-UPDATE-PRIVATE-KEY',
-        receiveAddress: Faker.random.uuid()
-    } as MarketUpdateRequest;
+    let defaultMarket: resources.Market;
+    let newMarket: resources.Market;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -53,98 +40,100 @@ describe('Market', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         profile = await profileService.getDefault().then(value => value.toJSON());
-        log.debug('profile: ', JSON.stringify(profile, null, 2));
+
+        // log.debug('profile: ', JSON.stringify(profile, null, 2));
     });
 
-    it('Should get default market', async () => {
-        const result: resources.Market = await marketService.getDefaultForProfile(profile.id)
-            .then(value => value.toJSON());
-        log.debug('result: ', JSON.stringify(result, null, 2));
+    it('Should get default defaultMarket', async () => {
+        defaultMarket = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // test the values
-        expect(result.name).toBe('DEFAULT');
-        expect(result.receiveKey).toBeDefined();
-        expect(result.receiveKey).not.toBeNull();
-        expect(result.receiveAddress).toBeDefined();
-        expect(result.receiveAddress).not.toBeNull();
+        expect(defaultMarket.name).toBe('DEFAULT');
+        expect(defaultMarket.receiveKey).toBeDefined();
+        expect(defaultMarket.receiveKey).not.toBeNull();
+        expect(defaultMarket.receiveAddress).toBeDefined();
+        expect(defaultMarket.receiveAddress).not.toBeNull();
     });
 
-    it('Should create a new market', async () => {
-
-        testData.profile_id = profile.id;
-        testData.wallet_id = profile.Wallets[0].id;
-
-        const marketModel: Market = await marketService.create(testData);
-        createdId = marketModel.Id;
-
-        const result: resources.Market = marketModel.toJSON();
-
-        // test the values
-        expect(result.name).toBe(testData.name);
-        expect(result.receiveKey).toBe(testData.receiveKey);
-        expect(result.receiveAddress).toBe(testData.receiveAddress);
-    });
-
-    test('Should throw ValidationException because we want to create a empty market', async () => {
+    test('Should throw ValidationException because we want to create a empty Market', async () => {
         expect.assertions(1);
         await marketService.create({} as MarketCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list markets with our new create one', async () => {
-        const marketCollection = await marketService.findAll();
-        const market = marketCollection.toJSON();
-        expect(market.length).toBe(2); // include with default market
+    it('Should create a new Market', async () => {
 
-        const result: resources.Market = market[1];
+        const testData = {
+            identity_id: defaultMarket.Identity.id,
+            profile_id: profile.id,
+            name: 'TEST-MARKET',
+            type: MarketType.MARKETPLACE,
+            receiveKey: 'TEST-PRIVATE-KEY',
+            receiveAddress: Faker.random.uuid()
+        } as MarketCreateRequest;
 
-        // test the values
-        expect(result.name).toBe(testData.name);
-        expect(result.receiveKey).toBe(testData.receiveKey);
-        expect(result.receiveAddress).toBe(testData.receiveAddress);
-    });
-
-    test('Should return one market', async () => {
-        const marketModel: Market = await marketService.findOne(createdId);
-        const result: resources.Market = marketModel.toJSON();
+        const result: resources.Market = await marketService.create(testData).then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe(testData.name);
         expect(result.receiveKey).toBe(testData.receiveKey);
         expect(result.receiveAddress).toBe(testData.receiveAddress);
+
+        newMarket = result;
     });
 
-    test('Should update the market', async () => {
-        const marketModel: Market = await marketService.update(createdId, testDataUpdated);
-        const result: resources.Market = marketModel.toJSON();
+    test('Should list Markets with our new create one', async () => {
+        const markets: resources.Market[] = await marketService.findAll().then(value => value.toJSON());
+        expect(markets.length).toBe(2);
+
+        const result: resources.Market = markets[1];
+        expect(result.name).toBe(newMarket.name);
+        expect(result.receiveKey).toBe(newMarket.receiveKey);
+        expect(result.receiveAddress).toBe(newMarket.receiveAddress);
+    });
+
+    test('Should return one Market', async () => {
+        const result: resources.Market = await marketService.findOne(newMarket.id).then(value => value.toJSON());
+        expect(result.name).toBe(newMarket.name);
+        expect(result.receiveKey).toBe(newMarket.receiveKey);
+        expect(result.receiveAddress).toBe(newMarket.receiveAddress);
+    });
+
+    test('Should update the Market', async () => {
+        const testDataUpdated = {
+            type: MarketType.MARKETPLACE,
+            name: 'TEST-UPDATE-MARKET',
+            receiveKey: 'TEST-UPDATE-PRIVATE-KEY',
+            receiveAddress: Faker.random.uuid()
+        } as MarketUpdateRequest;
+
+        const result: resources.Market = await marketService.update(newMarket.id, testDataUpdated).then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.receiveKey).toBe(testDataUpdated.receiveKey);
         expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
+
+        newMarket = result;
     });
 
-    test('Should find market by address', async () => {
+    test('Should find Market by address', async () => {
         const result: resources.Market = await marketService.findOneByProfileIdAndReceiveAddress(
-            profile.id, testDataUpdated.receiveAddress)
-            .then(value => value.toJSON());
+            profile.id, newMarket.receiveAddress).then(value => value.toJSON());
 
         // test the values
-        expect(result.name).toBe(testDataUpdated.name);
-        expect(result.receiveKey).toBe(testDataUpdated.receiveKey);
-        expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
+        expect(result.name).toBe(newMarket.name);
+        expect(result.receiveKey).toBe(newMarket.receiveKey);
+        expect(result.receiveAddress).toBe(newMarket.receiveAddress);
     });
 
-    test('Should delete the market', async () => {
+    test('Should delete the Market', async () => {
         expect.assertions(1);
-        await marketService.destroy(createdId);
-        await marketService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await marketService.destroy(newMarket.id);
+        await marketService.findOne(newMarket.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(newMarket.id))
         );
     });
 

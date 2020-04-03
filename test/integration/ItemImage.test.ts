@@ -86,9 +86,6 @@ describe('ItemImage', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 

@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Targets, Types } from '../../src/constants';
@@ -19,6 +20,8 @@ import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+
 
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,9 +33,16 @@ describe('Comment', () => {
     let commentService: CommentService;
     let profileService: ProfileService;
     let marketService: MarketService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let senderProfile: resources.Profile;
+    let senderMarket: resources.Market;
+    let receiverProfile: resources.Profile;
+    let receiverMarket: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+
     let createdComment: resources.Comment;
 
 
@@ -43,13 +53,16 @@ describe('Comment', () => {
         commentService = app.IoC.getNamed<CommentService>(Types.Service, Targets.Service.model.CommentService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+        senderProfile = await profileService.getDefault().then(value => value.toJSON());
+        senderMarket = await marketService.getDefaultForProfile(senderProfile.id).then(value => value.toJSON());
 
-        // get default profile and market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        receiverProfile = await testDataService.generateProfile();
+        receiverMarket = await marketService.getDefaultForProfile(receiverProfile.id).then(value => value.toJSON());
+
+        listingItem = await testDataService.generateListingItemWithTemplate(receiverProfile, senderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
     });
 
@@ -67,11 +80,14 @@ describe('Comment', () => {
     test('Should create a new Comment', async () => {
 
         const testData = {
-            sender: defaultProfile.address,
-            receiver: defaultMarket.receiveAddress,
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            target: '290be04b41717f4aa4fb27fa83ef16e63aae56bdd060c9bc14efc5cddba3f992',
-            message: 'message',
+            msgid: Faker.random.uuid(),
+            parentCommentId: 1,
+            hash: Faker.random.uuid(),
+            sender: senderMarket.Identity.address,
+            receiver: receiverMarket.receiveAddress,
+            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
+            target: listingItem.hash,
+            message: Faker.random.words(),
             postedAt: new Date().getTime(),
             receivedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 1000000
@@ -79,8 +95,7 @@ describe('Comment', () => {
 
         testData.hash = ConfigurableHasher.hash(testData, new HashableCommentCreateRequestConfig());
 
-        createdComment = await commentService.create(testData)
-            .then(value => value.toJSON());
+        createdComment = await commentService.create(testData).then(value => value.toJSON());
         const result: resources.Comment = createdComment;
 
         // todo: write tests for comments having parent comments
@@ -96,8 +111,7 @@ describe('Comment', () => {
 
     test('Should list Comments with our new create one', async () => {
 
-        const comments: resources.Comment[] = await commentService.findAll()
-            .then(value => value.toJSON());
+        const comments: resources.Comment[] = await commentService.findAll().then(value => value.toJSON());
         expect(comments.length).toBe(1);
 
         const result: resources.Comment = comments[0];
@@ -115,8 +129,7 @@ describe('Comment', () => {
     });
 
     test('Should return one Comment', async () => {
-        const result: resources.Comment = await commentService.findOne(createdComment.id)
-            .then(value => value.toJSON());
+        const result: resources.Comment = await commentService.findOne(createdComment.id).then(value => value.toJSON());
 
         expect(result.sender).toBe(createdComment.sender);
         expect(result.receiver).toBe(createdComment.receiver);
@@ -133,11 +146,10 @@ describe('Comment', () => {
             sender: 'update',
             receiver: 'update',
             target: 'update',
-            message: 'update',
+            message: 'update'
         } as CommentUpdateRequest;
 
-        const result: resources.Comment = await commentService.update(createdComment.id, testDataUpdated)
-            .then(value => value.toJSON());
+        const result: resources.Comment = await commentService.update(createdComment.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.sender).toBe(testDataUpdated.sender);
         expect(result.receiver).toBe(testDataUpdated.receiver);

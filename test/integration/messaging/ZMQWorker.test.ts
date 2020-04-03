@@ -37,9 +37,6 @@ describe('ZMQWorker', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.model.SmsgMessageService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());

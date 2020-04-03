@@ -81,8 +81,6 @@ describe('SmsgMessageCollection', () => {
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.model.SmsgMessageService);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
     });
 
     test('Should save multiple SmsgMessages at once', async () => {

@@ -53,9 +53,6 @@ describe('ShoppingCartItem', () => {
         shoppingCartItemService = app.IoC.getNamed<ShoppingCartItemService>(Types.Service, Targets.Service.model.ShoppingCartItemService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market + shoppingcart
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());

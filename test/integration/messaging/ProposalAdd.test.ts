@@ -81,9 +81,6 @@ describe('ProposalAddActionListener', () => {
         voteActionListener = app.IoC.getNamed<VoteActionMessageProcessor>(Types.Listener, Targets.Listener.action.VoteActionListener);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());

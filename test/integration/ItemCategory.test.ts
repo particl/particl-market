@@ -68,9 +68,6 @@ describe('ItemCategory', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
@@ -165,7 +162,7 @@ describe('ItemCategory', () => {
         );
 
         const itemCategories: resources.ItemCategory[] = await itemCategoryService.findAll().then(value => value.toJSON());
-        expect(itemCategories.length).toBe(82);
+        expect(itemCategories.length).toBe(89);
     }, 600000); // timeout to 600s
 
 });

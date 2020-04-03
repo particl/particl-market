@@ -51,11 +51,7 @@ describe('CryptocurrencyAddress', () => {
         cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
-        const orofileModel = await profileService.getDefault();
-        defaultProfile = orofileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
     });
 
     test('Should create a new cryptocurrency address related to profile', async () => {

@@ -102,9 +102,6 @@ describe('ListingItem', () => {
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());

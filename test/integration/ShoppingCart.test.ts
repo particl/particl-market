@@ -46,12 +46,8 @@ describe('ShoppingCart', () => {
         shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile
-        const defaultProfileModel = await profileService.getDefault();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
 
     });
 

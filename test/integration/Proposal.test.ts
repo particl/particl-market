@@ -75,9 +75,6 @@ describe('Proposal', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
     });
 
     test('Should throw ValidationException because we want to create a empty Proposal', async () => {

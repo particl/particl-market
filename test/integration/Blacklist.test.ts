@@ -48,9 +48,6 @@ describe('Blacklist', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         blacklistService = app.IoC.getNamed<BlacklistService>(Types.Service, Targets.Service.model.BlacklistService);
-
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
     });
 
     afterAll(async () => {

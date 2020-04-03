@@ -5,7 +5,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
-import {IdentityType} from '../../enums/IdentityType';
+import { IdentityType } from '../../enums/IdentityType';
 
 // tslint:disable:variable-name
 export class IdentityCreateRequest extends RequestBody implements ModelRequestInterface {

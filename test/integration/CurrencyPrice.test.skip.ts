@@ -48,8 +48,6 @@ describe('CurrencyPrice', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         currencyPriceService = app.IoC.getNamed<CurrencyPriceService>(Types.Service, Targets.Service.model.CurrencyPriceService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
     });
 
     afterAll(async () => {

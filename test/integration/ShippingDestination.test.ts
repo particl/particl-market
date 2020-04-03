@@ -66,9 +66,6 @@ describe('ShippingDestination', () => {
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         const generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateItemLocation

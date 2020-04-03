@@ -55,9 +55,6 @@ describe('ListingItemMessage', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());

@@ -75,8 +75,6 @@ describe('PriceTicker', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         priceTickerService = app.IoC.getNamed<PriceTickerService>(Types.Service, Targets.Service.model.PriceTickerService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
     });
 
     afterAll(async () => {

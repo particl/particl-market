@@ -95,9 +95,6 @@ describe('Profile', () => {
         favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
         shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation

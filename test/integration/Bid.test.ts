@@ -15,11 +15,8 @@ import { ListingItemService } from '../../src/api/services/model/ListingItemServ
 import { BidDataService } from '../../src/api/services/model/BidDataService';
 import { BidCreateRequest } from '../../src/api/requests/model/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/model/BidUpdateRequest';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { BidSearchParams } from '../../src/api/requests/search/BidSearchParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
 import { OrderService } from '../../src/api/services/model/OrderService';
 import { AddressType } from '../../src/api/enums/AddressType';

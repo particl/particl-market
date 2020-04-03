@@ -72,9 +72,6 @@ describe('MessageProcessor', () => {
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
         messageProcessor = app.IoC.getNamed<WaitingMessageService>(Types.MessageProcessor, Targets.MessageProcessor.MessageProcessor);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());

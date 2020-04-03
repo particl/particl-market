@@ -62,9 +62,6 @@ describe('ItemImageData', () => {
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
 /*
         const generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
