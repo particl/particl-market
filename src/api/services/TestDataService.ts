@@ -589,12 +589,9 @@ export class TestDataService {
     // -------------------
     // listingitems
 
-    private async generateListingItems(
-        amount: number, withRelated: boolean = true,
-        generateParams: GenerateListingItemParams):
-    Promise<resources.ListingItem[]> {
+    private async generateListingItems(amount: number, withRelated: boolean = true,
+                                       generateParams: GenerateListingItemParams): Promise<resources.ListingItem[]> {
 
-        this.log.debug('generateListingItems start');
         const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
@@ -603,26 +600,28 @@ export class TestDataService {
             // const fromAddress = await this.coreRpcService.getNewAddress();
             // const market: resources.Market = await this.marketService.getDefaultForProfile().then(value => value.toJSON());
 
-            this.log.debug('create listingitem start');
-            const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest)
-                .then(value => value.toJSON());
+            const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
+
             // TODO: make this optional/configurable
-            const savedSmsgMessage: resources.SmsgMessage = await this.createListingItemSmsgMessage(savedListingItem);
-            this.log.debug('create listingitem end');
+            if (generateParams.generatePaymentInformation && generateParams.generateEscrow && generateParams.generateItemPrice)  {
+                await this.createListingItemSmsgMessage(savedListingItem);
+            }
 
             items.push(savedListingItem);
         }
         // this.log.debug('items: ', items);
-
-        this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
     }
 
     private async createListingItemSmsgMessage(listingItem: resources.ListingItem): Promise<resources.SmsgMessage> {
 
+        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(listingItem.seller).then(value => value.toJSON());
+
         const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            listingItem
+            listingItem,
+            seller: sellerIdentity,
+            signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams);
 
         const marketplaceMessage: MarketplaceMessage = {
@@ -1228,26 +1227,25 @@ export class TestDataService {
     }
 
     /**
-     * TODO: create a Proposal
      *
      * @param {GenerateListingItemParams} generateParams
      * @returns {Promise<ListingItemCreateRequest>}
      */
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
-        // get default profile
-        const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+        // TODO: refactor this GenerateListingItemParams mess
+
+        const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         let market: resources.Market;
         if (generateParams.soldOnMarketId) {
             market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
         } else {
-            market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            generateParams.soldOnMarketId = market.id;
         }
-        generateParams.soldOnMarketId = market.id;
 
-        // set seller to given address or get a new one
-        const seller = generateParams.seller ? generateParams.seller : await this.coreRpcService.getNewAddress(market.Identity.wallet);
+        const seller = generateParams.seller ? generateParams.seller : market.Identity.address;
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1280,10 +1278,10 @@ export class TestDataService {
                 .then(value => value.toJSON());
             listingItemCreateRequest.listing_item_template_id = listingItemTemplate.id;
             listingItemCreateRequest.hash = listingItemTemplate.hash;
+            this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
         }
 
-        this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
-        // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+        this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
         return listingItemCreateRequest;
     }
 

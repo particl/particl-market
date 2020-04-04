@@ -88,9 +88,9 @@ describe('ItemLocation', () => {
             false,                               // generateItemLocation
             false,                               // generateShippingDestinations
             false,                              // generateItemImages
-            false,                               // generatePaymentInformation
-            false,                               // generateEscrow
-            false,                               // generateItemPrice
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
             false,                               // generateMessagingInformation
             false,                              // generateListingItemObjects
             false,                              // generateObjectDatas

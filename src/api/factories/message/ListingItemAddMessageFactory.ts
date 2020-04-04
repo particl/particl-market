@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import {
     EscrowConfig,
@@ -16,7 +15,7 @@ import {
     Item,
     ItemInfo,
     ItemObject,
-    Location,
+    Location, LocationMarker,
     MessagingInfo,
     MessagingOption,
     MPA,
@@ -28,7 +27,7 @@ import {
 } from 'omp-lib/dist/interfaces/omp';
 import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -119,18 +118,16 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     private async getMessageItemInfoLocation(itemLocation: resources.ItemLocation): Promise<Location> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        const informationLocation: any = {};
-        if (itemLocation.country) {
-            informationLocation.country = itemLocation.country;
-        }
-        if (itemLocation.address) {
-            informationLocation.address = itemLocation.address;
-        }
+        const informationLocation = {
+            country: itemLocation.country,
+            address: itemLocation.address
+        } as Location;
+
         if (!_.isEmpty(locationMarker)) {
             informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
-            };
+            } as LocationMarker;
 
             if (locationMarker.title) {
                 informationLocation.gps.title = locationMarker.title;
@@ -187,6 +184,16 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     }
 
     private async getMessagePayment(paymentInformation: resources.PaymentInformation, cryptoAddress: CryptoAddress): Promise<PaymentInfo> {
+        if (_.isEmpty(paymentInformation)) {
+            throw new MessageException('Missing PaymentInformation.');
+        }
+        if (_.isEmpty(paymentInformation.Escrow)) {
+            throw new MessageException('Missing Escrow.');
+        }
+        if (_.isEmpty(paymentInformation.ItemPrice)) {
+            throw new MessageException('Missing ItemPrice.');
+        }
+
         const escrow: EscrowConfig = await this.getMessageEscrow(paymentInformation.Escrow);
         const options: PaymentOption[] = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
 
