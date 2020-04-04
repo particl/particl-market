@@ -1125,11 +1125,11 @@ export class TestDataService {
             const profileCreateRequest: ProfileCreateRequest = await this.generateProfileData(generateParams, i);
 
             // create the Profile
-            const profile: resources.Profile = await this.profileService.create(profileCreateRequest).then(value => value.toJSON());
+            let profile: resources.Profile = await this.profileService.create(profileCreateRequest).then(value => value.toJSON());
 
             // create Identity for the Profile
             await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
-
+            profile = await this.profileService.findOne(profile.id).then(value => value.toJSON());
             items.push(profile);
         }
         return this.generateResponse(items, withRelated);

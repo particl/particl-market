@@ -3,7 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -19,7 +20,6 @@ import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartSe
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Profile } from '../../src/api/models/Profile';
-import { FavoriteItem } from '../../src/api/models/FavoriteItem';
 import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
@@ -28,7 +28,7 @@ import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreate
 import { AddressType } from '../../src/api/enums/AddressType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
-import * as resources from 'resources';
+import {GenerateProfileParams} from '../../src/api/requests/testdata/GenerateProfileParams';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -45,13 +45,11 @@ describe('Profile', () => {
     let favoriteItemService: FavoriteItemService;
     let shoppingCartService: ShoppingCartService;
 
-    let createdId;
-    let createdListingItem: resources.ListingItem;
+    let listingItem: resources.ListingItem;
+    let profile: resources.Profile;
 
-    // TODO: move to file or generate
     const testData = {
-        name: 'DEFAULT1',
-        address: 'DEFAULT11-ADDRESS',
+        name: 'TEST-' + Faker.random.uuid(),
         shippingAddresses: [{
             firstName: 'Robert',
             lastName: 'Downey',
@@ -77,10 +75,8 @@ describe('Profile', () => {
         }] as AddressCreateRequest[]
     } as ProfileCreateRequest;
 
-    // TODO: move to file or generate
     const testDataUpdated = {
-        name: 'DEFAULT2',
-        address: 'DEFAULT12-ADDRESS'
+        name: 'TEST-' + Faker.random.uuid()
     } as ProfileUpdateRequest;
 
     beforeAll(async () => {
@@ -114,7 +110,7 @@ describe('Profile', () => {
             withRelated: true,                  // return model
             generateParams: generateListingItemParams // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0];
+        listingItem = listingItems[0];
 
     });
 
@@ -122,188 +118,78 @@ describe('Profile', () => {
         //
     });
 
-    test('Should throw ValidationException because we want to create a empty profile', async () => {
+    test('Should throw ValidationException because we want to create a empty Profile', async () => {
         expect.assertions(1);
         await profileService.create({} as ProfileCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new profile with just delivery addresses', async () => {
-        const profileModel: Profile = await profileService.create(testData);
-        createdId = profileModel.Id;
-
-        const result = profileModel.toJSON();
+    test('Should create a new Profile with just delivery addresses', async () => {
+        const result: resources.Profile = await profileService.create(testData).then(value => value.toJSON());
 
         expect(result.name).toBe(testData.name);
-        expect(result.address).toBe(testData.address);
         expect(result.ShippingAddresses).toHaveLength(2);
-
-        // check for default ShoppingCart
         expect(result.ShoppingCart).toHaveLength(1);
         expect(result.ShoppingCart[0].name).toBe('DEFAULT');
+
+        profile = result;
     });
 
-    test('Should list profiles with our new create one', async () => {
-        const profileCollection = await profileService.findAll();
-        const profiles = profileCollection.toJSON();
+    test('Should list Profiles with our new create one', async () => {
+        const profiles: resources.Profile[] = await profileService.findAll().then(value => value.toJSON());
         expect(profiles.length).toBe(2); // including default one
 
         const result = profiles[1];
 
         expect(result.name).toBe(testData.name);
-        expect(result.address).toBe(testData.address);
         expect(result.ShippingAddresses).toBe(undefined);           // doesnt fetch related
         expect(result.CryptocurrencyAddresses).toBe(undefined);     // doesnt fetch related
         expect(result.FavoriteItems).toBe(undefined);               // doesnt fetch related
         expect(result.ShoppingCart).toBe(undefined);               // doesnt fetch related
     });
 
-    test('Should return one profile', async () => {
-        const profileModel: Profile = await profileService.findOne(createdId);
-        const result = profileModel.toJSON();
+    test('Should return one Profile', async () => {
+        const result: resources.Profile = await profileService.findOne(profile.id).then(value => value.toJSON());
 
         expect(result.name).toBe(testData.name);
-        expect(result.address).toBe(testData.address);
         expect(result.ShippingAddresses).toHaveLength(2);
         expect(result.CryptocurrencyAddresses).toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
         expect(result.ShoppingCart).toHaveLength(1);
     });
 
-    // TODO: updating profile does not affect related models
-    test('Should update the profile', async () => {
-        const profileModel: Profile = await profileService.update(createdId, testDataUpdated);
-        const result = profileModel.toJSON();
+    test('Should update the Profile', async () => {
+        const result: resources.Profile = await profileService.update(profile.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.address).toBe(testDataUpdated.address);
         expect(result.ShippingAddresses).toHaveLength(2);
         expect(result.ShoppingCart).toHaveLength(1);
+
+        profile = result;
     });
 
-    test('Should delete the profile', async () => {
+    test('Should delete the Profile', async () => {
         expect.assertions(5);
 
-        const profileModel: Profile = await profileService.findOne(createdId);
-        const result = profileModel.toJSON();
+        const result: resources.Profile = await profileService.findOne(profile.id).then(value => value.toJSON());
         expect(result.ShippingAddresses).toHaveLength(2);
 
-        const addressId1 = result.ShippingAddresses[0].id;
-        const addressId2 = result.ShippingAddresses[1].id;
-
-        await profileService.destroy(createdId);
-        await profileService.findOne(createdId).catch(e => {
-            expect(e).toEqual(new NotFoundException(createdId));
+        await profileService.destroy(profile.id);
+        await profileService.findOne(profile.id).catch(e => {
+            expect(e).toEqual(new NotFoundException(profile.id));
         });
 
         // make sure addresses were also deleted
-        await addressService.findOne(addressId1).catch(e => {
-            expect(e).toEqual(new NotFoundException(addressId1));
+        await addressService.findOne(result.ShippingAddresses[0].id).catch(e => {
+            expect(e).toEqual(new NotFoundException(result.ShippingAddresses[0].id));
         });
-        await addressService.findOne(addressId2).catch(e => {
-            expect(e).toEqual(new NotFoundException(addressId2));
+        await addressService.findOne(result.ShippingAddresses[1].id).catch(e => {
+            expect(e).toEqual(new NotFoundException(result.ShippingAddresses[1].id));
         });
-
-        const shoppingCartId = result.ShoppingCart[0].id;
-        // make sure shoppingCart were also deleted
-        await shoppingCartService.findOne(shoppingCartId).catch(e => {
-            expect(e).toEqual(new NotFoundException(shoppingCartId));
+        await shoppingCartService.findOne(result.ShoppingCart[0].id).catch(e => {
+            expect(e).toEqual(new NotFoundException(result.ShoppingCart[0].id));
         });
-    });
-
-    test('Should create and delete a new profile with delivery addresses and cryptoaddresses', async () => {
-        // TODO: use CreateableModel everywhere
-        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
-            model: 'profile',
-            amount: 1,
-            withRelated: true
-        } as TestDataGenerateRequest);
-        const result = profiles[0];
-
-        expect(result.name.substring(0, 5)).toBe('TEST-');
-        expect(result.address).toBeDefined();
-        expect(result.ShippingAddresses).not.toHaveLength(0);
-        expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
-        expect(result.FavoriteItems).toHaveLength(0);
-        expect(result.ShoppingCart).toHaveLength(1);
-
-        await profileService.destroy(result.id);
-        await profileService.findOne(result.id).catch(e => {
-            expect(e).toEqual(new NotFoundException(result.id));
-        });
-
-        const firstAddressId = result.ShippingAddresses[0].id;
-        // make sure addresses were also deleted
-        await addressService.findOne(firstAddressId).catch(e => {
-            expect(e).toEqual(new NotFoundException(firstAddressId));
-        });
-        const firstCryptoCurrAddId = result.CryptocurrencyAddresses[0].id;
-        // make sure addresses were also deleted
-        await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
-            expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
-        });
-        const shoppingCartId = result.ShoppingCart[0].id;
-        // make sure shoppingCart were also deleted
-        await shoppingCartService.findOne(shoppingCartId).catch(e => {
-            expect(e).toEqual(new NotFoundException(shoppingCartId));
-        });
-
-    });
-
-    test('Should create and delete a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
-        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
-            model: 'profile',
-            amount: 1,
-            withRelated: true
-        } as TestDataGenerateRequest);
-
-        // add fav-item for that profile.
-        const favoriteItemModel: FavoriteItem = await favoriteItemService.create({
-            profile_id: profiles[0].id,
-            listing_item_id: createdListingItem.id
-        } as FavoriteItemCreateRequest);
-
-        // get profile
-        const profileModel: Profile = await profileService.findOne(profiles[0].id);
-        const result = profileModel.toJSON();
-
-        expect(result.name.substring(0, 5)).toBe('TEST-');
-        expect(result.address).toBeDefined();
-        expect(result.ShippingAddresses).not.toHaveLength(0);
-        expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
-        expect(result.FavoriteItems).toHaveLength(1);
-        expect(result.ShoppingCart).toHaveLength(1);
-
-        await profileService.destroy(result.id);
-        await profileService.findOne(result.id).catch(e => {
-            expect(e).toEqual(new NotFoundException(result.id));
-        });
-
-        const firstAddressId = result.ShippingAddresses[0].id;
-        // make sure addresses were also deleted
-        await addressService.findOne(firstAddressId).catch(e => {
-            expect(e).toEqual(new NotFoundException(firstAddressId));
-        });
-
-        const firstCryptoCurrAddId = result.CryptocurrencyAddresses[0].id;
-        // make sure CryptocurAddress were also deleted
-        await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
-            expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
-        });
-
-        const favItemId = result.FavoriteItems[0].id;
-        // make sure favItem were also deleted
-        await favoriteItemService.findOne(favItemId).catch(e => {
-            expect(e).toEqual(new NotFoundException(favItemId));
-        });
-
-        const shoppingCartId = result.ShoppingCart[0].id;
-        // make sure shoppingCart were also deleted
-        await shoppingCartService.findOne(shoppingCartId).catch(e => {
-            expect(e).toEqual(new NotFoundException(shoppingCartId));
-        });
-
     });
 
 });

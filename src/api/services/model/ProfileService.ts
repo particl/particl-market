@@ -100,38 +100,37 @@ export class ProfileService {
         delete body.identity;
 
         // If the request body was valid we will create the profile
-        const profile = await this.profileRepo.create(body);
+        const profile = await this.profileRepo.create(body).then(value => value.toJSON());
 
         // then create related models
         for (const address of shippingAddresses) {
-            address.profile_id = profile.Id;
+            address.profile_id = profile.id;
             await this.addressService.create(address);
         }
 
         for (const cryptoAddress of cryptocurrencyAddresses) {
-            cryptoAddress.profile_id = profile.Id;
+            cryptoAddress.profile_id = profile.id;
             await this.cryptocurrencyAddressService.create(cryptoAddress);
         }
 
         for (const setting of settings) {
-            setting.profile_id = profile.Id;
+            setting.profile_id = profile.id;
             await this.settingService.create(setting);
         }
 
         if (!_.isEmpty(identity)) {
-            identity.profile_id = profile.Id;
+            identity.profile_id = profile.id;
             await this.identityService.create(identity);
         }
 
         // create default shoppingCart
         await this.shoppingCartService.create({
             name: 'DEFAULT',
-            profile_id: profile.Id
+            profile_id: profile.id
         } as ShoppingCartCreateRequest);
 
         // finally find and return the created profileId
-        const newProfile = await this.findOne(profile.Id);
-        return newProfile;
+        return await this.findOne(profile.id);
     }
 
     @validate()
