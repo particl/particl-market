@@ -120,7 +120,7 @@ import { BlacklistService } from './model/BlacklistService';
 import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
-import {ActionMessageTypes} from '../enums/ActionMessageTypes';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 
 export class TestDataService {
@@ -397,14 +397,17 @@ export class TestDataService {
     /**
      * Generates a new Proposal
      */
-    public async generateProposal(listingItemId: number, bidderMarket: resources.Market, generateOptions: boolean): Promise<resources.Proposal> {
+    public async generateProposal(listingItemId: number, bidderMarket: resources.Market,
+                                  generateOptions: boolean, generateResults: boolean,
+                                  voteCount: number = 0): Promise<resources.Proposal> {
         const generateProposalParams = new GenerateProposalParams([
             listingItemId,                              // listingItemId,
             false,                                      // generatePastProposal,
-            0,                                          // voteCount
+            voteCount,                                  // voteCount
             bidderMarket.Identity.address,              // submitter
             bidderMarket.receiveAddress,                // market
-            generateOptions
+            generateOptions,
+            generateResults
         ]).toParamsArray();
 
         const proposals: resources.Proposal[] = await this.generate({
@@ -872,15 +875,21 @@ export class TestDataService {
             this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
             let proposal: resources.Proposal = await this.proposalService.create(proposalCreateRequest).then(value => value.toJSON());
 
+            // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
+            if (ProposalCategory.ITEM_VOTE === proposal.category || ProposalCategory.MARKET_VOTE === proposal.category) {
+                await this.proposalAddActionService.createFlaggedItemForProposal(proposal);
+                this.log.debug('created FlaggedItem');
+            }
+
             this.log.debug('generating ' + generateParams.voteCount + ' votes...');
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
             }
 
-            // create and update ProposalResult
-            let proposalResult = await this.proposalService.createEmptyProposalResult(proposal);
-            proposalResult = await this.proposalService.recalculateProposalResult(proposal, true);
-            // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+            if (generateParams.generateResults) {
+                await this.proposalService.createEmptyProposalResult(proposal);
+                await this.proposalService.recalculateProposalResult(proposal, true);
+            }
 
             proposal = await this.proposalService.findOne(proposal.id).then(value => value.toJSON());
             items.push(proposal);

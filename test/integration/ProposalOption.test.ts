@@ -79,7 +79,7 @@ describe('ProposalOption', () => {
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
-        proposal = await testDataService.generateProposal(listingItem.id, bidderMarket, false);
+        proposal = await testDataService.generateProposal(listingItem.id, bidderMarket, false, false);
 
     });
 

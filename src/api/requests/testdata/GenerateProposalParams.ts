@@ -16,6 +16,7 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
     public submitter;
     public market;
     public generateOptions = true;
+    public generateResults = true;
 
     /**
      * generateParams[]:
@@ -30,6 +31,8 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
             this.submitter = generateParams[3] ? generateParams[3] : undefined;
             this.market = generateParams[4] ? generateParams[4] : undefined;
             this.generateOptions = generateParams[5] ? generateParams[5] : false;
+            this.generateResults = generateParams[6] ? generateParams[6] : false;
+
         }
     }
 
@@ -40,7 +43,8 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
             this.voteCount,
             this.submitter,
             this.market,
-            this.generateOptions
+            this.generateOptions,
+            this.generateResults
         ];
     }
 }
