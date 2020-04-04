@@ -66,15 +66,9 @@ export class SettingService {
 
     @validate()
     public async create( @request(SettingCreateRequest) data: SettingCreateRequest): Promise<Setting> {
-
         const body = JSON.parse(JSON.stringify(data));
-
-        // If the request body was valid we will create the setting
         const setting = await this.settingRepo.create(body);
-
-        // finally find and return the created setting
-        const newSetting = await this.findOne(setting.id);
-        return newSetting;
+        return await this.findOne(setting.id);
     }
 
     // TODO: createOrUpdateProfileMarketSetting

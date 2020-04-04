@@ -98,9 +98,6 @@ describe('ProposalOption', () => {
     });
 
     test('Should create a new ProposalOption', async () => {
-
-        log.debug('proposal: ', JSON.stringify(proposal, null, 2));
-
         testData.proposal_id = proposal.id;
 
         proposalOption = await proposalOptionService.create(testData).then(value => value.toJSON());
