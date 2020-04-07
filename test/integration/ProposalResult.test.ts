@@ -65,13 +65,10 @@ describe('ProposalResult', () => {
 
         bidderProfile = await profileService.getDefault().then(value => value.toJSON());
         bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
-
         sellerProfile = await testDataService.generateProfile();
         sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
-
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
-
         proposal = await testDataService.generateProposal(listingItem.id, bidderMarket, true, false);
 
     });
