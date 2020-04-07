@@ -35,8 +35,8 @@ describe('ProposalResult', () => {
     let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
 
-    let bidderMarket: resources.Market;
     let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
     let sellerProfile: resources.Profile;
     let sellerMarket: resources.Market;
     let listingItem: resources.ListingItem;
