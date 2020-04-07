@@ -395,6 +395,33 @@ export class TestDataService {
     }
 
     /**
+     * Generates a new Order
+     */
+    public async generateOrder(bidderBid: resources.Bid, sellerBid: resources.Bid, bidderMarket: resources.Market,
+                               sellerMarket: resources.Market, generateOrderItems: boolean): Promise<resources.Order[]> {
+
+        const orderGenerateParams = new GenerateOrderParams([
+            generateOrderItems,             // generateOrderItems
+            bidderBid.id,                   // bidderBidId
+            sellerBid.id,                   // sellerBidId
+            bidderMarket.id,                // bidderMarketId
+            sellerMarket.id                 // sellerMarketId
+        ]);
+
+        const orders: resources.Order[] = await this.generate({
+            model: CreatableModel.ORDER,
+            amount: 1,
+            withRelated: true,
+            generateParams: orderGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        this.log.debug('orders: ', JSON.stringify(orders, null, 2));
+
+        return orders;
+    }
+
+
+    /**
      * Generates a new Proposal
      */
     public async generateProposal(listingItemId: number, bidderMarket: resources.Market,
@@ -789,75 +816,48 @@ export class TestDataService {
 
     // -------------------
     // orders
-    private async generateOrders(
-        amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams):
-    Promise<resources.Order[]> {
-
-        // this.log.debug('generateOrders, generateParams: ', generateParams);
-
-        let bid: resources.Bid;
-
-        // generate bid
-        if (generateParams.generateBid) {
-            this.log.debug('generating Bid...');
-
-            const bidGenerateParams = new GenerateBidParams([
-                generateParams.generateListingItemTemplate,
-                generateParams.generateListingItem,
-                generateParams.listingItemHash,
-                MPAction.MPA_BID,
-                generateParams.bidder,
-                generateParams.seller
-            ]);
-
-            const bids = await this.generateBids(1, true, bidGenerateParams);
-            bid = bids[0];
-
-            this.log.debug('bids generated:', bids.length);
-            this.log.debug('bid.id:', bid.id);
-
-            // set the bid_id for order generation
-            generateParams.bidId = bid.id;
-
-        } else {
-            bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
-        }
-
-        const items: resources.Order[] = [];
+    private async generateOrders(amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams): Promise<resources.Order[]> {
+        const orders: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
-            const orderCreateRequest = await this.generateOrderData(generateParams);
+            const orderCreateRequests: OrderCreateRequest[] = await this.generateOrderData(generateParams);
 
-            this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
-            const result: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
-            items.push(result);
+            this.log.debug('orderCreateRequests:', JSON.stringify(orderCreateRequests, null, 2));
+            const bidderOrder: resources.Order = await this.orderService.create(orderCreateRequests[0]).then(value => value.toJSON());
+            const sellerOrder: resources.Order = await this.orderService.create(orderCreateRequests[1]).then(value => value.toJSON());
+            orders.push(bidderOrder, sellerOrder);
         }
 
-        return this.generateResponse(items, withRelated);
+        return this.generateResponse(orders, withRelated);
     }
 
-    private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
+    private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest[]> {
 
-        // this.log.debug('generateOrderData, generateParams: ', generateParams);
+        // this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
+        const bidderBid: resources.Bid = await this.bidService.findOne(generateParams.bidderBidId).then(value => value.toJSON());
+        const sellerBid: resources.Bid = await this.bidService.findOne(generateParams.sellerBidId).then(value => value.toJSON());
 
-        // get the bid
-        const bid: resources.Bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
-
-        // then generate ordercreaterequest with some orderitems
-        const orderCreateParams = {
-            bids: [bid],
-            addressId: bid.ShippingAddress.id,
+        const orderCreateParamsForBidder = {
+            bids: [bidderBid],
+            addressId: bidderBid.ShippingAddress.id,
             status: OrderStatus.PROCESSING,
-            buyer: bid.bidder,
-            seller: bid.ListingItem.seller,
+            buyer: bidderBid.bidder,
+            seller: bidderBid.ListingItem.seller,
             generatedAt: +Date.now()
         } as OrderCreateParams;
 
-        const orderCreateRequest = await this.orderFactory.get(orderCreateParams);
+        const orderCreateRequestForBidder: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForBidder);
+
+        const orderCreateParamsForSeller: OrderCreateParams = JSON.parse(JSON.stringify(orderCreateParamsForBidder));
+        orderCreateParamsForSeller.bids = [sellerBid];
+        orderCreateParamsForSeller.addressId = sellerBid.ShippingAddress.id;
+        const orderCreateRequestForSeller: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForSeller);
 
         if (!generateParams.generateOrderItem) {
-            orderCreateRequest.orderItems = [];
+            orderCreateRequestForBidder.orderItems = [];
+            orderCreateRequestForSeller.orderItems = [];
         }
-        return orderCreateRequest;
+
+        return [orderCreateRequestForBidder, orderCreateRequestForSeller];
     }
 
     // -------------------

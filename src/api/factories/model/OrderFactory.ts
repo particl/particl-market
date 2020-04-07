@@ -30,7 +30,7 @@ export class OrderFactory implements ModelFactoryInterface {
      *
      * @param params
      */
-    public async get(params: OrderCreateParams/*, bidMessage?: BidMessage, smsgMessage?: resources.SmsgMessage*/): Promise<OrderCreateRequest> {
+    public async get(params: OrderCreateParams): Promise<OrderCreateRequest> {
 
         const orderItemCreateRequests: OrderItemCreateRequest[] = this.getOrderItems(params.bids);
 

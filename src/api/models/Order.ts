@@ -24,7 +24,8 @@ export class Order extends Bookshelf.Model<Order> {
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow',
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow.Ratio',
         'OrderItems.Bid.ShippingAddress',
-        'ShippingAddress'
+        'ShippingAddress',
+        'ShippingAddress.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Order> {
