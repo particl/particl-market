@@ -87,6 +87,13 @@ describe('ShoppingCartItem', () => {
         //
     });
 
+    test('Should throw ValidationException because we want to create a empty ShoppingCartItem', async () => {
+        expect.assertions(1);
+        await shoppingCartItemService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new ShoppingCartItem', async () => {
 
         testData.shopping_cart_id = shoppingCart.id;
@@ -97,13 +104,6 @@ describe('ShoppingCartItem', () => {
         expect(shoppingCartItem.id).not.toBeUndefined();
         expect(shoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
         expect(shoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
-    });
-
-    test('Should throw ValidationException because we want to create a empty ShoppingCartItem', async () => {
-        expect.assertions(1);
-        await shoppingCartItemService.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
     });
 
     test('Should list ShoppingCartItem with our new create one', async () => {
