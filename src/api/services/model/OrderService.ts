@@ -82,16 +82,14 @@ export class OrderService {
         // then create the OrderItems
         for (const orderItemCreateRequest of orderItemCreateRequests) {
             orderItemCreateRequest.order_id = order.id;
-            const orderItemModel = await this.orderItemService.create(orderItemCreateRequest);
-            const orderItem = orderItemModel.toJSON();
+            const orderItem: resources.OrderItem = await this.orderItemService.create(orderItemCreateRequest).then(value => value.toJSON());
             // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
         }
 
         this.log.debug('orderService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         // finally find and return the created order
-        const newOrder = await this.findOne(order.id);
-        return newOrder;
+        return await this.findOne(order.id);
     }
 
     @validate()

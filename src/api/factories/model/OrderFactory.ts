@@ -47,7 +47,7 @@ export class OrderFactory implements ModelFactoryInterface {
         // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
 
         // if we're the seller, we should have received the order hash from the buyer
-        if (!createRequest.hash) {
+        if (!params.hash) {
             createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableOrderCreateRequestConfig());
         }
 
