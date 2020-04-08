@@ -100,7 +100,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             }
             data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
         } else {
-            data.params[3] = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+            data.params[3] = await this.itemCategoryService.findRoot(itemCategory.market).then(value => value.toJSON());
         }
 
         return data;

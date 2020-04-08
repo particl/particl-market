@@ -148,7 +148,7 @@ export class ListingItemAddActionService extends BaseActionService {
         // todo: custom categories not supported yet, this propably needs to be refactored
         const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
             smsgMessage.to, listingItemAddMessage.item.information.category);
-        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
         const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
                 msgid: smsgMessage.msgid,

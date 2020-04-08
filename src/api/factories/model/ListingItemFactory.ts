@@ -13,8 +13,6 @@ import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';

@@ -65,8 +65,6 @@ export class ItemInformationService {
 
     @validate()
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
-        const startTime = new Date().getTime();
-
         const body: ItemInformationCreateRequest = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
@@ -199,10 +197,11 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        if (createRequest.key) {
-            result = await this.itemCategoryService.findOneByKey(createRequest.key);
-        } else if (createRequest.id) {
+        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        if (createRequest.id) {
             result = await this.itemCategoryService.findOne(createRequest.id);
+        } else if (createRequest.key && createRequest.market) {
+            result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }

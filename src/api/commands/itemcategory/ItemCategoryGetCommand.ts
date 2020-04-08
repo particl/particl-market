@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -36,47 +37,39 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        if (typeof data.params[0] === 'number') {
-            return await this.itemCategoryService.findOne(data.params[0]);
-        } else {
-            return await this.itemCategoryService.findOneByKey(data.params[0]);
-        }
+        return await this.itemCategoryService.findOne(data.params[0]);
     }
 
     /**
      * data.params[]:
-     *  [0]: id or key
-     *
-     * when data.params[0] is number then findById, else findOneByKey
+     *  [1]: id
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MissingParamException('categoryId|categoryKey');
+            throw new MissingParamException('categoryId');
         }
 
-        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('categoryId/categoryKey', 'number|string');
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
         }
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' (<categoryId>|<categoryKey>) ';
+        return this.getName() + ' <categoryId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID belonging to the ItemCategory we \n'
-            + '                                     want to retrive. \n'
-            + '    <categoryKey>                 - String - The key that identifies the ItemCategory \n'
-            + '                                     we want to retrieve. ';
+            + '    <categoryId>                  - Numeric - The ID belonging to the ItemCategory we want to retrive. \n';
     }
 
     public description(): string {
-        return 'Command for getting an ItemCategory associated with id or key';
+        return 'Command for getting an ItemCategory.';
     }
 
     public example(): string {

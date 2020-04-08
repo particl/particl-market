@@ -30,12 +30,12 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchById(id, withRelated);
     }
 
-    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchByKey(key, withRelated);
+    public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchByKeyAndMarket(key, market, withRelated);
     }
 
-    public async findRoot(): Promise<ItemCategory> {
-        return await this.ItemCategoryModel.fetchRoot();
+    public async findRoot(market: string): Promise<ItemCategory> {
+        return await this.ItemCategoryModel.fetchRootByMarket(market);
     }
 
     public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {

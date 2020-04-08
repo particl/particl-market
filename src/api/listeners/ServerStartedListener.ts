@@ -240,7 +240,7 @@ export class ServerStartedListener implements interfaces.Listener {
     private async isUpgradingFromSingleMarketWallet(): Promise<boolean> {
 
         const hasMarketWallet = await this.coreRpcService.walletExists('market');
-        this.log.debug('isUpdatingFromSingleMarketWallet(), hasMarketWallet: ', hasMarketWallet);
+        this.log.debug('isUpgradingFromSingleMarketWallet(), hasMarketWallet: ', hasMarketWallet);
 
         if (!hasMarketWallet) {
             // if we dont have the market wallet, we can't be upgrading it

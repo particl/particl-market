@@ -32,8 +32,8 @@ export class ItemCategoryService {
         return this.itemCategoryRepo.findAll();
     }
 
-    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
-        const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
+    public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
+        const itemCategory = await this.itemCategoryRepo.findOneByKeyAndMarket(key, market, withRelated);
         if (itemCategory === null) {
             this.log.warn(`ItemCategory with the key=${key} was not found!`);
             throw new NotFoundException(key);
@@ -50,8 +50,8 @@ export class ItemCategoryService {
         return itemCategory;
     }
 
-    public async findRoot(): Promise<ItemCategory> {
-        return await this.itemCategoryRepo.findRoot();
+    public async findRoot(market: string): Promise<ItemCategory> {
+        return await this.itemCategoryRepo.findRoot(market);
     }
 
     public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
@@ -100,7 +100,7 @@ export class ItemCategoryService {
      */
     public async createCustomCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
 
-        let rootCategoryToSearchFrom: resources.ItemCategory = await this.findRoot().then(value => value.toJSON());
+        let rootCategoryToSearchFrom: resources.ItemCategory = await this.findRoot(market).then(value => value.toJSON());
 
         // this.log.debug('categoryArray', categoryArray);
         for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
@@ -123,7 +123,7 @@ export class ItemCategoryService {
 
             } else {
                 // category exists, fetch it
-                existingCategory = await this.findOneByKey(categoryKeyOrName).then(value => value.toJSON());
+                existingCategory = await this.findOneByKeyAndMarket(categoryKeyOrName, market).then(value => value.toJSON());
             }
             rootCategoryToSearchFrom = existingCategory;
         }

@@ -8,6 +8,7 @@ declare module 'resources' {
         id: number;
         key: string;
         name: string;
+        market: string;
         description: string;
         createdAt: Date;
         updatedAt: Date;

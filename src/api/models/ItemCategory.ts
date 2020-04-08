@@ -7,46 +7,38 @@ import { Collection, Model } from 'bookshelf';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
+    public static RELATIONS = [
+        'ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ChildItemCategories'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemCategory> {
         if (withRelated) {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch();
         }
     }
 
-    public static async fetchByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+    public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
         if (withRelated) {
-            return await ItemCategory.where<ItemCategory>({ key }).fetch({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
+            return await ItemCategory.where<ItemCategory>({ key, market }).fetch({
+                withRelated: this.RELATIONS
             });
         } else {
-            return await ItemCategory.where<ItemCategory>({ key }).fetch();
+            return await ItemCategory.where<ItemCategory>({ key, market }).fetch();
         }
     }
 
-    public static async fetchRoot(): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ key: 'cat_ROOT' }).fetch({
-            withRelated: [
-                'ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories.ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories.ChildItemCategories.ChildItemCategories'
-            ]
+    public static async fetchRootByMarket(market: string): Promise<ItemCategory> {
+        // todo: fix this, find the real root for market
+        return await ItemCategory.where<ItemCategory>({ key: 'cat_ROOT', market }).fetch({
+            withRelated: this.RELATIONS
         });
     }
 
@@ -59,13 +51,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await listingCollection.fetchAll();

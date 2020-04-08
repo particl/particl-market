@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -12,6 +13,9 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MarketService } from '../../services/model/MarketService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -19,7 +23,8 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
         super(Commands.CATEGORY_LIST);
         this.log = new Logger(__filename);
@@ -27,15 +32,37 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
 
     /**
      *
+     * data.params[]:
+     *  [0]: market: resources.Market
+     *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        return await this.itemCategoryService.findRoot();
+        const market: resources.Market = data.params[0];
+        return await this.itemCategoryService.findRoot(market.receiveAddress);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: marketId
+     *
+     * @param data
+     * @returns {Promise<ItemCategory>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('marketId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('marketId', 'number');
+        }
+
+        data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+
         return data;
     }
 

@@ -65,7 +65,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         if (_.isEmpty(identity)) {
             identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
-        } else{
+        } else {
             // TODO: import key
         }
         return await this.marketService.create({

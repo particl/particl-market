@@ -18,8 +18,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import {HashableItemCategoryCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
+import { HashableItemCategoryCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 

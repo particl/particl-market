@@ -137,7 +137,7 @@ export class DefaultItemCategoryService {
     // tslint:enable:max-line-length
 
     public async insertOrUpdateCategory(categoryRequest: ItemCategoryCreateRequest | ItemCategoryUpdateRequest): Promise<ItemCategory> {
-        return await this.itemCategoryService.findOneByKey(categoryRequest.key)
+        return await this.itemCategoryService.findOneByKeyAndMarket(categoryRequest.key, categoryRequest.market)
             .then(async categoryModel => {
                 return await this.itemCategoryService.update(categoryModel.Id, categoryRequest);
             })

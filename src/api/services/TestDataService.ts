@@ -1453,7 +1453,7 @@ export class TestDataService {
         // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         if (generateParams.generateListingItem) {
-
+            //
         }
 
         if (generateParams.generateListingItem) {
@@ -1479,7 +1479,6 @@ export class TestDataService {
 
         return listingItemTemplateCreateRequest;
     }
-
 
     private randomCategoryKey(): string {
         const categoryKeys = [
