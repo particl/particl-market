@@ -74,14 +74,11 @@ export class IdentityService {
 
     @validate()
     public async create( @request(IdentityCreateRequest) data: IdentityCreateRequest): Promise<Identity> {
-
-        this.log.debug('create(), data: ', JSON.stringify(data, null, 2));
         const body = JSON.parse(JSON.stringify(data));
 
         const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
         const result = await this.findOne(identity.id);
-
-        this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
+        // this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
 
         return result;
     }
@@ -124,7 +121,7 @@ export class IdentityService {
         // TODO: PATH amountOfMarkets+1
         // ODO: path as param
         const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
-        this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
+        // this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
@@ -163,7 +160,7 @@ export class IdentityService {
 
         this.log.debug('createMarketIdentityForProfile(), walletName: ', walletName);
         const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
-        this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
+        // this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
 
         // create Identity for Market, using the created wallet
         return await this.create({

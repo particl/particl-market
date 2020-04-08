@@ -36,10 +36,6 @@ import { CryptocurrencyAddressService } from '../../src/api/services/model/Crypt
 import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
 import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
-import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
-import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 import { hash } from 'omp-lib/dist/hasher/hash';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';

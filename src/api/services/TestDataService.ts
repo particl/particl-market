@@ -330,6 +330,8 @@ export class TestDataService {
                 throw reason;
             });
 
+        this.log.debug('generateProfile(), Profile generated.');
+
         return await this.profileService.findOne(profiles[0].id).then(value => value.toJSON());
     }
 
@@ -1352,7 +1354,11 @@ export class TestDataService {
         if (generateParams.categoryId) {
             itemCategory.id = generateParams.categoryId;
         } else {
+            // itemCategory.market is now required, since Categories are Market specific now
+            // todo: fix, this isn't working without generateParams.soldOnMarketId
             itemCategory.key = this.randomCategoryKey();
+            const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON())
+            itemCategory.market = sellerMarket.receiveAddress;
         }
 
         const itemInformationCreateRequest = {
@@ -1451,11 +1457,6 @@ export class TestDataService {
         let profileId;
 
         // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
-
-        if (generateParams.generateListingItem) {
-            //
-        }
-
         if (generateParams.generateListingItem) {
             const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
             profileId = sellerMarket.Profile.id;

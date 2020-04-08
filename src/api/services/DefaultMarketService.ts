@@ -78,7 +78,8 @@ export class DefaultMarketService {
      */
     public async seedDefaultMarketForProfile(profile: resources.Profile): Promise<resources.Market> {
 
-        this.log.debug('seedDefaultMarketForProfile(), profile: ', JSON.stringify(profile, null, 2));
+        // this.log.debug('seedDefaultMarketForProfile(), profile: ', JSON.stringify(profile, null, 2));
+        this.log.debug('seedDefaultMarketForProfile(), profile: ', profile.name);
 
         // check whether the default Market for the Profile exists, throws if not found
         // if we're upgrading, the old market is not set as default, so it wont be found
@@ -96,10 +97,11 @@ export class DefaultMarketService {
 
                 // then create the Market
                 const newMarket = await this.createDefaultMarket(profile, marketIdentity);
+                // this.log.debug('seedDefaultMarketForProfile(), newMarket: ', JSON.stringify(newMarket, null, 2));
 
                 // then set the Market as default for the Profile
                 const setting: resources.Setting = await this.defaultSettingService.insertOrUpdateProfilesDefaultMarketSetting(profile.id, newMarket.id);
-                this.log.debug('seedDefaultMarketForProfile(), setting: ', JSON.stringify(setting, null, 2));
+                // this.log.debug('seedDefaultMarketForProfile(), setting: ', JSON.stringify(setting, null, 2));
 
                 return await this.marketService.findOne(newMarket.id);
             })
@@ -171,7 +173,7 @@ export class DefaultMarketService {
             publishAddress: marketAddressSetting.value
         } as MarketCreateRequest).then(value => value.toJSON());
 
-        this.log.debug('createDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
+        // this.log.debug('createDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
 
         // load the wallet unless already loaded
         await this.coreRpcService.walletLoaded(newMarket.Identity.wallet)
@@ -203,7 +205,7 @@ export class DefaultMarketService {
 
         // set smsg to use the default wallet. this is pretty unnecessary, should be set for each smsgsend call
         await this.coreRpcService.smsgSetWallet(newMarket.Identity.wallet);
-        this.log.info('createMarket(), CREATE MARKET DONE... ');
+        this.log.info('createMarket(), created: ' + newMarket.name + ', for: ' + profile.name);
 
         return await this.marketService.findOne(newMarket.id).then(value => value.toJSON());
     }
