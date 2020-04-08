@@ -68,6 +68,7 @@
     "dist/**/*"
   ],
   "dependencies": {
+    "@ronomon/queue": "^3.0.1",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.4",
