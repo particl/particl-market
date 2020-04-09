@@ -96,9 +96,10 @@ export class SmsgService {
                     return undefined;
                 });
             if (!lastSmsgMessage) {
-                return {
-                    numsent: 0
-                } as SmsgZmqPushResult;
+                const earliestDate = 60 * 60 * 24 * parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+                from = Math.trunc(Date.now() / 1000) - earliestDate;
+            } else {
+                from = Math.trunc(lastSmsgMessage.received / 1000);
             }
             from = Math.trunc(lastSmsgMessage.received / 1000);
         }
