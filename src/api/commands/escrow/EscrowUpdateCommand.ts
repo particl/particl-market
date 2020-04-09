@@ -20,7 +20,7 @@ import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdate
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
@@ -40,8 +40,11 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: escrowType
+     *  [1]: escrowType
      *  [2]: buyerRatio
      *  [3]: sellerRatio
+     *  [4]: escrowReleaseType
+     *
      * @param data
      * @returns {Promise<Escrow>}
      */
@@ -67,6 +70,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      *  [1]: escrowType
      *  [2]: buyerRatio
      *  [3]: sellerRatio
+     *  [4]: escrowReleaseType
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -80,6 +84,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('buyerRatio');
         } else if (data.params.length < 4) {
             throw new MissingParamException('sellerRatio');
+        } else if (data.params.length < 5) {
+            throw new MissingParamException('escrowReleaseType');
         }
 
         // this.log.debug('data.params: ' + data.params);
@@ -91,11 +97,18 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('buyerRatio', 'number');
         } else if (typeof data.params[3] !== 'number') {
             throw new InvalidParamException('sellerRatio', 'number');
+        } else if (typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('escrowReleaseType', 'string');
         }
 
         const validEscrowTypes = [EscrowType.MAD_CT/*, EscrowType.MULTISIG, EscrowType.MAD, EscrowType.FE*/];
         if (validEscrowTypes.indexOf(data.params[1]) === -1) {
             throw new InvalidParamException('escrowType');
+        }
+
+        const escrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
+        if (escrowReleaseTypes.indexOf(data.params[1]) === -1) {
+            throw new InvalidParamException('escrowReleaseType');
         }
 
         // make sure ListingItemTemplate with the id exists
@@ -127,17 +140,16 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> ';
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> <escrowReleaseType> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <listingItemTemplateId>  - Numeric - The ID of the ListingItemTemplate \n'
-            + '                                associated with the Escrow we want to modify. \n'
-            + '    <escrowType>             - EscrowType - The escrow type to give to the \n'
-            + '                                escrow we are modifying. \n'
-            + '    <buyerRatio>             - Numeric - The ratio of the buyer in the Escrow. \n'
-            + '    <sellerRatio>            - Numeric - The ratio of the seller in the Escrow. ';
+            + '    <listingItemTemplateId>  - Numeric - The ID of the ListingItemTemplate. \n'
+            + '    <escrowType>             - EscrowType - The escrow type. \n'
+            + '    <buyerRatio>             - Numeric - The ratio of the buyer. \n'
+            + '    <sellerRatio>            - Numeric - The ratio of the seller. \n'
+            + '    <escrowReleaseType>      - EscrowReleaseType - The type of funds to release. \\n\'';
     }
 
     public description(): string {

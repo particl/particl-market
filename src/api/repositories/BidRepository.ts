@@ -10,7 +10,6 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { BidSearchParams } from '../requests/search/BidSearchParams';
-import {ListingItem} from '../models/ListingItem';
 
 export class BidRepository {
 
@@ -24,8 +23,7 @@ export class BidRepository {
     }
 
     public async findAllByProfileId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        const list = await this.BidModel.fetchAllByProfileId(id, withRelated);
-        return list as Bookshelf.Collection<Bid>;
+        return await this.BidModel.fetchAllByProfileId(id, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Bid>> {

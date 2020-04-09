@@ -4,7 +4,7 @@
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioUpdateRequest } from './EscrowRatioUpdateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
@@ -16,6 +16,9 @@ export class EscrowUpdateRequest extends RequestBody implements ModelRequestInte
     public type: EscrowType;
 
     public secondsToLock: number;
+
+    @IsEnum(EscrowReleaseType)
+    public releaseType: EscrowReleaseType;
 
     public ratio: EscrowRatioUpdateRequest;
 

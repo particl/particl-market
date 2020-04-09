@@ -209,6 +209,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return {
             type: escrow.type,
             ratio,
+            releaseType: escrow.releaseType,
             secondsToLock: escrow.secondsToLock
         } as EscrowCreateRequest;
     }

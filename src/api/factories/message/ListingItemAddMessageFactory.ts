@@ -222,7 +222,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                 buyer: escrow.Ratio.buyer,
                 seller: escrow.Ratio.seller
             } as EscrowRatio,
-            secondsToLock: escrow.secondsToLock
+            secondsToLock: escrow.secondsToLock,
+            releaseType: escrow.releaseType // mp 0.3/omp-lib 0.1.129
         } as EscrowConfig;
     }
 

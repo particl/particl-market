@@ -74,6 +74,7 @@ export class EscrowService {
         // set new values
         escrow.Type = body.type;
         escrow.SecondsToLock = body.secondsToLock;
+        escrow.ReleaseType = body.releaseType;
 
         // update escrow record
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());

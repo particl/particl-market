@@ -1357,7 +1357,7 @@ export class TestDataService {
             // itemCategory.market is now required, since Categories are Market specific now
             // todo: fix, this isn't working without generateParams.soldOnMarketId
             itemCategory.key = this.randomCategoryKey();
-            const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON())
+            const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
             itemCategory.market = sellerMarket.receiveAddress;
         }
 

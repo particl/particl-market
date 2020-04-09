@@ -17,7 +17,7 @@ import { BaseCommand } from '../BaseCommand';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowReleaseType, EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
@@ -131,7 +131,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [10]: escrowType, (optional) default EscrowType.MAD_CT
      *  [11]: buyerRatio, (optional) default 100
      *  [12]: sellerRatio, (optional) default 100
-     *  [13]: parent_listing_item_template_id (optional)
+     *  [13]: escrowReleaseType, (optional) default 100
+     *  [14]: parent_listing_item_template_id (optional)
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -193,7 +194,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         }
 
         if (data.params[10] && typeof data.params[10] !== 'string') {
-            throw new InvalidParamException('escrowType', 'string');
+            throw new InvalidParamException('escrowType', 'EscrowType');
         } else if (data.params[11] && typeof data.params[11] !== 'number') {
             throw new InvalidParamException('buyerRatio', 'number');
         } else if (data.params[12] && typeof data.params[12] !== 'number') {
@@ -233,11 +234,23 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             throw new InvalidParamException('escrowType');
         }
 
-        if (data.params[13]) { // parentListingItemTemplateId was given, make sure its valid and exists
-            if (typeof data.params[13] !== 'number') {
+        if (data.params[13]) {
+            if (typeof data.params[13] !== 'string') {
+                throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
+            }
+            const validEscrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
+            if (validEscrowReleaseTypes.indexOf(data.params[13]) === -1) {
+                throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
+            }
+        } else { // set default
+            data.params[13] = EscrowReleaseType.ANON;
+        }
+
+        if (data.params[14]) { // parentListingItemTemplateId was given, make sure its valid and exists
+            if (typeof data.params[14] !== 'number') {
                 throw new InvalidParamException('parentListingItemTemplateId', 'number');
             }
-            data.params[13] = await this.listingItemTemplateService.findOne(data.params[13]).then(value => value.toJSON())
+            data.params[14] = await this.listingItemTemplateService.findOne(data.params[14]).then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('ListingItemTemplate');
                 });
@@ -261,7 +274,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public usage(): string {
         return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryId>'
             + ' <saleType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice>'
-            + ' [<escrowType> [<buyerRatio> <sellerRatio> [<parentListingItemTemplateId>]]] ';
+            + ' [escrowType] [buyerRatio] [sellerRatio] [escrowReleaseType] [parentListingItemTemplateId] ';
     }
 
     public help(): string {
@@ -279,6 +292,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '    <escrowType>                   - string - optional, default: MAD_CT. MAD_CT/MULTISIG \n'
             + '    <buyerRatio>                   - number - optional, default: 100 \n'
             + '    <sellerRatio>                  - number - optional, default: 100 \n'
+            + '    <escrowReleaseType>            - string - optional, default: ANON. ANON/BLIND \n'
             + '    <parentListingItemTemplateId>  - number - optional \n';
 
     }

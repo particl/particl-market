@@ -6,46 +6,59 @@ import * from 'jest';
 import * as resources from 'resources';
 import * as _ from 'lodash';
 import * as Faker from 'faker';
-import { app } from '../../src/app';
-import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
-import { TestUtil } from './lib/TestUtil';
-import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { MessageException } from '../../src/api/exceptions/MessageException';
-import { TestDataService } from '../../src/api/services/TestDataService';
-import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
-import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
-import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
-import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
-import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
-import { EscrowService } from '../../src/api/services/model/EscrowService';
-import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
-import { ItemPriceService } from '../../src/api/services/model/ItemPriceService';
-import { ShippingPriceService } from '../../src/api/services/model/ShippingPriceService';
-import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
-import { MessagingInformationService } from '../../src/api/services/model/MessagingInformationService';
-import { ListingItemService } from '../../src/api/services/model/ListingItemService';
-import { MarketService } from '../../src/api/services/model/MarketService';
-import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
-import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/model/ListingItemTemplateCreateRequest';
-import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
-import { MessagingInformationCreateRequest } from '../../src/api/requests/model/MessagingInformationCreateRequest';
-import { PaymentInformationCreateRequest } from '../../src/api/requests/model/PaymentInformationCreateRequest';
-import { ItemInformationCreateRequest } from '../../src/api/requests/model/ItemInformationCreateRequest';
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
-import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { ConfigurableHasher, hash } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../src/api/factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import {app} from '../../src/app';
+import {Logger as LoggerType} from '../../src/core/Logger';
+import {Targets, Types} from '../../src/constants';
+import {TestUtil} from './lib/TestUtil';
+import {ValidationException} from '../../src/api/exceptions/ValidationException';
+import {NotFoundException} from '../../src/api/exceptions/NotFoundException';
+import {TestDataService} from '../../src/api/services/TestDataService';
+import {ListingItemTemplateService} from '../../src/api/services/model/ListingItemTemplateService';
+import {ProfileService} from '../../src/api/services/model/ProfileService';
+import {ItemInformationService} from '../../src/api/services/model/ItemInformationService';
+import {ItemLocationService} from '../../src/api/services/model/ItemLocationService';
+import {LocationMarkerService} from '../../src/api/services/model/LocationMarkerService';
+import {ShippingDestinationService} from '../../src/api/services/model/ShippingDestinationService';
+import {ItemImageService} from '../../src/api/services/model/ItemImageService';
+import {PaymentInformationService} from '../../src/api/services/model/PaymentInformationService';
+import {EscrowService} from '../../src/api/services/model/EscrowService';
+import {EscrowRatioService} from '../../src/api/services/model/EscrowRatioService';
+import {ItemPriceService} from '../../src/api/services/model/ItemPriceService';
+import {ShippingPriceService} from '../../src/api/services/model/ShippingPriceService';
+import {CryptocurrencyAddressService} from '../../src/api/services/model/CryptocurrencyAddressService';
+import {MessagingInformationService} from '../../src/api/services/model/MessagingInformationService';
+import {ListingItemService} from '../../src/api/services/model/ListingItemService';
+import {MarketService} from '../../src/api/services/model/MarketService';
+import {ListingItemObjectService} from '../../src/api/services/model/ListingItemObjectService';
+import {ListingItemObjectDataService} from '../../src/api/services/model/ListingItemObjectDataService';
+import {ListingItemTemplateCreateRequest} from '../../src/api/requests/model/ListingItemTemplateCreateRequest';
+import {ListingItemObjectCreateRequest} from '../../src/api/requests/model/ListingItemObjectCreateRequest';
+import {MessagingInformationCreateRequest} from '../../src/api/requests/model/MessagingInformationCreateRequest';
+import {PaymentInformationCreateRequest} from '../../src/api/requests/model/PaymentInformationCreateRequest';
+import {ItemInformationCreateRequest} from '../../src/api/requests/model/ItemInformationCreateRequest';
+import {GenerateListingItemTemplateParams} from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import {TestDataGenerateRequest} from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import {ShippingCountries} from '../../src/core/helpers/ShippingCountries';
+import {LocationMarkerCreateRequest} from '../../src/api/requests/model/LocationMarkerCreateRequest';
+import {ItemLocationCreateRequest} from '../../src/api/requests/model/ItemLocationCreateRequest';
+import {ShippingAvailability} from '../../src/api/enums/ShippingAvailability';
+import {ShippingDestinationCreateRequest} from '../../src/api/requests/model/ShippingDestinationCreateRequest';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import {ImageVersions} from '../../src/core/helpers/ImageVersionEnumType';
+import {ItemImageDataCreateRequest} from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import {ItemImageCreateRequest} from '../../src/api/requests/model/ItemImageCreateRequest';
+import {EscrowReleaseType, EscrowType, MessagingProtocol, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowRatioCreateRequest} from '../../src/api/requests/model/EscrowRatioCreateRequest';
+import {EscrowCreateRequest} from '../../src/api/requests/model/EscrowCreateRequest';
+import {CryptoAddressType, Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {toSatoshis} from 'omp-lib/dist/util';
+import {ShippingPriceCreateRequest} from '../../src/api/requests/model/ShippingPriceCreateRequest';
+import {CryptocurrencyAddressCreateRequest} from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
+import {ItemPriceCreateRequest} from '../../src/api/requests/model/ItemPriceCreateRequest';
+import {MessageException} from '../../src/api/exceptions/MessageException';
+import {ListingItemObjectType} from '../../src/api/enums/ListingItemObjectType';
+import {ListingItemObjectDataCreateRequest} from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -60,14 +73,12 @@ describe('ListingItemTemplate', async () => {
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
     let itemImageService: ItemImageService;
-
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
     let itemPriceService: ItemPriceService;
     let shippingPriceService: ShippingPriceService;
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
-
     let messagingInformationService: MessagingInformationService;
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
@@ -75,17 +86,10 @@ describe('ListingItemTemplate', async () => {
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
-    let createdListingItemTemplate1: resources.ListingItemTemplate;
-    let createdListingItemTemplate2: resources.ListingItemTemplate;
-    let createdListingItemTemplate3: resources.ListingItemTemplate;
-    let createdListingItem1: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
-    let updatedListingItemTemplate1: resources.ListingItemTemplate;
-
-    let generatedListingItemTemplates: resources.ListingItemTemplate[]; // for searchBy tests
-
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
 
@@ -114,17 +118,14 @@ describe('ListingItemTemplate', async () => {
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
 
     const expectListingItemTemplateFromCreateRequest = (result: resources.ListingItemTemplate, createRequest: ListingItemTemplateCreateRequest) => {
         // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.id).not.toBeNull();
-        // expect(result.hash).not.toBeNull();
-        // todo: fix, UpdateRequest doesnt have profile_id
-        // expect(result.Profile.id).toBe(createRequest.profile_id);
 
         if (!_.isEmpty(createRequest.itemInformation)) {
             expectItemInformationFromCreateRequest(result.ItemInformation, createRequest.itemInformation);
@@ -184,8 +185,6 @@ describe('ListingItemTemplate', async () => {
         expect(result.title).toBe(createRequest.title);
         expect(result.shortDescription).toBe(createRequest.shortDescription);
         expect(result.longDescription).toBe(createRequest.longDescription);
-        expect(result.ItemCategory.name).toBe(createRequest.itemCategory.name);
-        expect(result.ItemCategory.description).toBe(createRequest.itemCategory.description);
         expect(result.ItemLocation.country).toBe(createRequest.itemLocation.country);
         expect(result.ItemLocation.address).toBe(createRequest.itemLocation.address);
         expect(result.ItemLocation.LocationMarker.title).toBe(createRequest.itemLocation.locationMarker.title);
@@ -194,12 +193,15 @@ describe('ListingItemTemplate', async () => {
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
         expect(result.ItemImages).toHaveLength(createRequest.itemImages.length);
-        expect(result.ItemImages[0].ItemImageDatas).toHaveLength(4); // 4 sizes
+        if (createRequest.itemImages.length > 0) {
+            expect(result.ItemImages[0].ItemImageDatas).toHaveLength(4); // 4 sizes
+        }
     };
 
     const expectPaymentInformationFromCreateRequest = (result: resources.PaymentInformation, createRequest: PaymentInformationCreateRequest) => {
         expect(result.type).toBe(createRequest.type);
         expect(result.Escrow.type).toBe(createRequest.escrow.type);
+        expect(result.Escrow.releaseType).toBe(createRequest.escrow.releaseType);
         expect(result.Escrow.Ratio.buyer).toBe(createRequest.escrow.ratio.buyer);
         expect(result.Escrow.Ratio.seller).toBe(createRequest.escrow.ratio.seller);
         expect(result.ItemPrice.currency).toBe(createRequest.itemPrice.currency);
@@ -228,11 +230,35 @@ describe('ListingItemTemplate', async () => {
     };
 
     const expectListingItemTemplateWasDeleted = async (item: resources.ListingItemTemplate) => {
-        await listingItemTemplateService.findOne(item.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(item.id))
-        );
 
-        // ItemInformation
+        log.debug('item to delete: ', JSON.stringify(item, null, 2));
+        log.debug('expect deleted, item.id:', item.id);
+
+        await listingItemTemplateService.findOne(item.id)
+            .then(value => {
+                throw new MessageException('ListingItemTemplate still found.');
+            })
+            .catch(e =>
+                expect(e).toEqual(new NotFoundException(item.id))
+            );
+
+        // ListingItemTemplate                                          14 expects
+        // ListingItemTemplate.ItemInformation                              4 expects
+        // ListingItemTemplate.ItemInformation.ItemLocation,                    2 expects
+        // ListingItemTemplate.ItemInformation.ItemLocation.LocationMarker,         1 expect
+        // ListingItemTemplate.ItemInformation.ShippingDestinations             1 expect
+        // ListingItemTemplate.ItemInformation.ItemImages                       1 expect
+        // ListingItemTemplate.PaymentInformation                           6 expects
+        // ListingItemTemplate.PaymentInformation.Escrow                        2 expects
+        // ListingItemTemplate.PaymentInformation.Escrow.Ratio                      1 expect
+        // ListingItemTemplate.PaymentInformation.ItemPrice                     3 expects
+        // ListingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice           1 expect
+        // ListingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress   1 expect
+        // ListingItemTemplate.MessagingInformation                         1 expect
+        // ListingItemTemplate.ListingItemObjects                           2 expects
+        // ListingItemTemplate.ListingItemObjects.ListingItemObjectDatas        1 expect
+
+
         if (!_.isEmpty(item.ItemInformation)) {
             await itemInformationService.findOne(item.ItemInformation.id, false).catch(e =>
                 expect(e).toEqual(new NotFoundException(item.ItemInformation.id))
@@ -320,30 +346,28 @@ describe('ListingItemTemplate', async () => {
 
         // MessagingInformation
         if (!_.isEmpty(item.MessagingInformation)) {
-            for (const messagingInformation of item.MessagingInformation) {
-                const messagingInformationId = messagingInformation.id;
-                await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(messagingInformationId))
-                );
-            }
+            const messagingInformationId = item.MessagingInformation[0].id;
+            await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+                expect(e).toEqual(new NotFoundException(messagingInformationId))
+            );
         }
 
         // ListingItemObjects
         if (!_.isEmpty(item.ListingItemObjects)) {
-            for (const listingItemObject of item.ListingItemObjects) {
-                const listintItemObjectId = listingItemObject.id;
-                // ListingItemObjectDatas
-                const listintItemObjectDatas = listingItemObject.ListingItemObjectDatas;
-                if (!_.isEmpty(listintItemObjectDatas)) {
-                    for (const listintItemObjectData of listintItemObjectDatas) {
-                        await listingItemObjectDataService.findOne(listintItemObjectData.id, false).catch(e =>
-                            expect(e).toEqual(new NotFoundException(listintItemObjectData.id))
-                        );
-                    }
-                }
-                await listingItemObjectService.findOne(listintItemObjectId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(listintItemObjectId))
+
+            const listingItemObjectId = item.ListingItemObjects[0].id;
+            await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
+                expect(e).toEqual(new NotFoundException(listingItemObjectId))
+            );
+
+            // ListingItemObjectDatas
+            if (!_.isEmpty(item.ListingItemObjects[0].ListingItemObjectDatas)) {
+                const listingItemObjectData = item.ListingItemObjects[0].ListingItemObjectDatas[0];
+
+                await listingItemObjectDataService.findOne(listingItemObjectData.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(listingItemObjectData.id))
                 );
+
             }
         }
     };
@@ -364,9 +388,9 @@ describe('ListingItemTemplate', async () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             true,   // generateListingItem
-            defaultMarket.id  // marketId
+            market.id  // marketId
         ]);
 
         if (withListingItemAmount > 0) {
@@ -400,7 +424,7 @@ describe('ListingItemTemplate', async () => {
         for (const generatedListingItemTemplate of generatedTemplates) {
 
             // expect the template to be related to correct profile
-            expect(generatedListingItemTemplate.Profile.id).toBe(defaultProfile.id);
+            expect(generatedListingItemTemplate.Profile.id).toBe(profile.id);
 
             if (generatedListingItemTemplate.ListingItems && generatedListingItemTemplate.ListingItems.length > 0 ) {
                 // expect to find the listingItem with relation to the template
@@ -409,7 +433,7 @@ describe('ListingItemTemplate', async () => {
                 expect(generatedListingItemTemplate.id).toBe(generatedListingItem.ListingItemTemplate.id);
 
                 // expect the listingitem to be posted to the correct market
-                expect(generatedListingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
+                expect(generatedListingItemTemplate.ListingItems[0].market).toBe(market.receiveAddress);
 
                 // expect the item hash generated at the same time as template, matches with the templates one
                 // log.debug('generatedListingItemTemplate.hash:', generatedListingItemTemplate.hash);
@@ -430,6 +454,89 @@ describe('ListingItemTemplate', async () => {
         return generatedTemplates;
     };
 
+    const generateListingItemTemplateCreateRequest = async (withImage: boolean = false): Promise<ListingItemTemplateCreateRequest> => {
+        const now = Date.now();
+        const randomImageData1 = await testDataService.generateRandomImage(20, 20);
+        const itemImages = withImage ? [{
+            data: [{
+                // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
+                // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
+                protocol: ProtocolDSN.LOCAL,
+                encoding: 'BASE64',
+                dataId: 'https://particl.io/images/' + Faker.random.uuid(),
+                imageVersion: ImageVersions.ORIGINAL.propName,
+                data: randomImageData1
+            }] as ItemImageDataCreateRequest[],
+            featured: false,
+            hash: 'TEST-IMAGEHASH1'
+        }] as ItemImageCreateRequest[] : [] as ItemImageCreateRequest[];
+
+        const createRequest = {
+            profile_id: profile.id,
+            generatedAt: now,
+            itemInformation: {
+                title: Faker.random.words(4),
+                shortDescription: Faker.random.words(10),
+                longDescription: Faker.random.words(30),
+                itemLocation: {
+                    country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                    address: Faker.address.streetAddress(),
+                    description: Faker.lorem.paragraph(),
+                    locationMarker: {
+                        lat: _.random(-50, 50),
+                        lng: _.random(-50, 50),
+                        title: Faker.lorem.word(),
+                        description: Faker.lorem.sentence()
+                    } as LocationMarkerCreateRequest
+                } as ItemLocationCreateRequest,
+                shippingDestinations: [{
+                    country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                    shippingAvailability: ShippingAvailability.SHIPS
+                }] as ShippingDestinationCreateRequest[],
+                itemImages
+            } as ItemInformationCreateRequest,
+            paymentInformation: {
+                type: SaleType.SALE,
+                escrow: {
+                    type: EscrowType.MAD_CT,
+                    releaseType: EscrowReleaseType.ANON,
+                    secondsToLock: 4,
+                    ratio: {
+                        buyer: 100,
+                        seller: 100
+                    } as EscrowRatioCreateRequest
+                } as EscrowCreateRequest,
+                itemPrice: {
+                    currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
+                    basePrice: toSatoshis(+_.random(0.1, 1.00).toFixed(8)),
+                    shippingPrice: {
+                        domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
+                        international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
+                    } as ShippingPriceCreateRequest,
+                    cryptocurrencyAddress: {
+                        type: CryptoAddressType.STEALTH,
+                        address: Faker.finance.bitcoinAddress()
+                    } as CryptocurrencyAddressCreateRequest
+                } as ItemPriceCreateRequest
+            } as PaymentInformationCreateRequest,
+            messagingInformation: [{
+                protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocol)),
+                publicKey: Faker.random.uuid()
+            }] as MessagingInformationCreateRequest[],
+            listingItemObjects: [{
+                type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
+                description: Faker.lorem.paragraph(),
+                order: 0,
+                listingItemObjectDatas: [{
+                    key: Faker.lorem.slug(),
+                    value: Faker.lorem.word()
+                }] as ListingItemObjectDataCreateRequest[]
+            }] as ListingItemObjectCreateRequest[]
+        } as ListingItemTemplateCreateRequest;
+
+        return createRequest;
+    };
+
 
     // -------------------------------
     // TESTS
@@ -442,71 +549,117 @@ describe('ListingItemTemplate', async () => {
     });
 
     test('Should create a new ListingItemTemplate', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +Date.now();
 
-        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
-        createdListingItemTemplate1 = await listingItemTemplateService.create(testDataToSave)
-            .then(value => value.toJSON());
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest(true);
+        // log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
+        listingItemTemplate = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate1, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
     }, 600000); // timeout to 600s
 
     test('Should findAll ListingItemTemplates containing the previously created one', async () => {
-        const listingItemTemplates: resources.ListingItemTemplate = await listingItemTemplateService.findAll()
-            .then(value => value.toJSON());
+        const listingItemTemplates: resources.ListingItemTemplate = await listingItemTemplateService.findAll().then(value => value.toJSON());
         const result = listingItemTemplates[0];
 
         expect(listingItemTemplates).toHaveLength(1);
-        expect(result.hash).toBe(createdListingItemTemplate1.hash);
+        expect(result.hash).toBe(listingItemTemplate.hash);
     });
 
     test('Should findOne ListingItemTemplate using id', async () => {
-        const result: resources.ListingItemTemplate = await listingItemTemplateService.findOne(createdListingItemTemplate1.id)
+        const result: resources.ListingItemTemplate = await listingItemTemplateService.findOne(listingItemTemplate.id)
             .then(value => value.toJSON());
 
-        expect(result.hash).toBe(createdListingItemTemplate1.hash);
+        expect(result.hash).toBe(listingItemTemplate.hash);
+    });
+
+    test('Should delete the created ListingItemTemplate', async () => {
+        expect.assertions(14);
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
     });
 
     test('Should create a new ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
 
         // remove the stuff that we dont need in this test
         delete testDataToSave.itemInformation;
         delete testDataToSave.paymentInformation;
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
-
-        testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.generatedAt = +Date.now();
 
-        createdListingItemTemplate2 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
+        listingItemTemplate = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
     }, 600000); // timeout to 600s
 
-    test('Should create a third ListingItemTemplate without ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
+    test('Should delete the created ListingItemTemplate', async () => {
+        expect.assertions(1);
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
+    });
+
+    test('Should create a new ListingItemTemplate without Images, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
 
         // remove the stuff that we dont need in this test
-        delete testDataToSave.itemInformation;
         delete testDataToSave.paymentInformation;
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
-
-        testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.generatedAt = +Date.now();
 
-        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
+        listingItemTemplate = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
 
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
     }, 600000); // timeout to 600s
 
+    test('Should delete the created ListingItemTemplate', async () => {
+        expect.assertions(5);
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
+    });
+
+    test('Should create a new ListingItemTemplate without Images, MessagingInformation and ListingItemObjects', async () => {
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
+
+        // remove the stuff that we dont need in this test
+        delete testDataToSave.messagingInformation;
+        delete testDataToSave.listingItemObjects;
+        testDataToSave.generatedAt = +Date.now();
+
+        listingItemTemplate = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
+
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
+    }, 600000); // timeout to 600s
+
+    test('Should delete the created ListingItemTemplate', async () => {
+        expect.assertions(10);
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
+    });
+
+    test('Should create a new ListingItemTemplate without Images, ListingItemObjects', async () => {
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
+
+        // remove the stuff that we dont need in this test
+        delete testDataToSave.listingItemObjects;
+        testDataToSave.generatedAt = +Date.now();
+
+        listingItemTemplate = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
+
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
+    }, 600000); // timeout to 600s
+
+    test('Should delete the created ListingItemTemplate', async () => {
+        expect.assertions(11);
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
+    });
+
+// TODO: updates, searchby tests, etc
+/*
     test('Should update previously created ListingItemTemplate', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        // testDataToSave.profile_id = defaultProfile.id;
-        // testDataToSave.generatedAt = +Date.now();
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
 
         updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave)
             .then(value => value.toJSON());
@@ -516,47 +669,12 @@ describe('ListingItemTemplate', async () => {
 
     test('Should delete the previously updated ListingItemTemplate', async () => {
         expect.assertions(21);
-        await listingItemTemplateService.destroy(updatedListingItemTemplate1.id);
-        await expectListingItemTemplateWasDeleted(updatedListingItemTemplate1);
-    });
-
-    test('Should create a new ListingItemTemplate without PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
-
-        // remove the stuff that we dont need in this test
-        delete testDataToSave.paymentInformation;
-        delete testDataToSave.messagingInformation;
-        delete testDataToSave.listingItemObjects;
-
-        testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +Date.now();
-
-        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
-
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
-    }, 600000); // timeout to 600s
-
-    test('Should delete the ListingItemTemplate with ItemInformation', async () => {
-        expect.assertions(6);
         await listingItemTemplateService.destroy(createdListingItemTemplate3.id);
         await expectListingItemTemplateWasDeleted(createdListingItemTemplate3);
     });
+    */
 
-    test('Should create a new ListingItemTemplate without MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic2));
-
-        // remove the stuff that we dont need in this test
-        delete testDataToSave.messagingInformation;
-        delete testDataToSave.listingItemObjects;
-
-        testDataToSave.profile_id = defaultProfile.id;
-        testDataToSave.generatedAt = +Date.now();
-
-        createdListingItemTemplate3 = await listingItemTemplateService.create(testDataToSave).then(value => value.toJSON());
-
-        expectListingItemTemplateFromCreateRequest(createdListingItemTemplate3, testDataToSave);
-    }, 600000); // timeout to 600s
-
+    /*
     test('Should update ListingItemTemplate correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
@@ -589,63 +707,16 @@ describe('ListingItemTemplate', async () => {
         expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
 
     }, 600000); // timeout to 600s
+*/
 
-    test('Should delete the ListingItemTemplate with ItemInformation and PaymentInformation', async () => {
-        expect.assertions(1);
-        await listingItemTemplateService.destroy(updatedListingItemTemplate1.id);
-        await expectListingItemTemplateWasDeleted(updatedListingItemTemplate1);
-    });
-
-    test('Should create ListingItemTemplate with relation to ListingItem', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic3));
-
-        log.debug('Should create ListingItemTemplate with relation to ListingItem');
-
-        // create ListingItemTemplate
-        const listingItemTemplateCreateRequest = {
-            profile_id: defaultProfile.id,
-            itemInformation: testDataToSave.itemInformation,
-            paymentInformation: testDataToSave.paymentInformation,
-            messagingInformation: testDataToSave.messagingInformation,
-            listingItemObjects: testDataToSave.listingItemObjects,
-            generatedAt: +Date.now()
-        } as ListingItemTemplateCreateRequest;
-
-        // log.debug('listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
-        createdListingItemTemplate3 = await listingItemTemplateService.create(listingItemTemplateCreateRequest)
-            .then(value => value.toJSON());
-
-        // create ListingItem with relation to ListingItemTemplate
-        testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
-        testDataToSave.market = defaultMarket.receiveAddress;
-        testDataToSave.seller = defaultProfile.address;
-        testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = Date.now();
-        testDataToSave.expiredAt = Date.now();
-        testDataToSave.receivedAt = Date.now();
-        testDataToSave.generatedAt = Date.now();
-        testDataToSave.msgid = Faker.random.uuid();
-
-        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
-        const templateHash = ConfigurableHasher.hash(createdListingItemTemplate3, new HashableListingItemTemplateConfig());
-        createdListingItemTemplate3 = await listingItemTemplateService.updateHash(createdListingItemTemplate3.id, templateHash)
-            .then(value => value.toJSON());
-
-        testDataToSave.hash = templateHash;
-        log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
-
-        createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
-
-        expectListingItemFromCreateRequest(createdListingItem1, testDataToSave as ListingItemTemplateCreateRequest);
-        expect(createdListingItem1.ListingItemTemplate.id).toBe(createdListingItemTemplate3.id);
-    }, 600000); // timeout to 600s
-
+/*
     test('Should not delete ListingItemTemplate having relation to ListingItem', async () => {
         expect.assertions(1);
         await listingItemTemplateService.destroy(createdListingItemTemplate3.id).catch(e =>
             expect(e).toEqual(new MessageException('ListingItemTemplate has ListingItems.'))
         );
     });
+*/
 
     // TODO: rewrite this..
 /*

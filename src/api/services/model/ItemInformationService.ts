@@ -85,7 +85,10 @@ export class ItemInformationService {
         delete body.shippingDestinations;
         delete body.itemImages;
 
-        if (!body.item_category_id) {
+        // todo: fix this
+
+        // ListingItemTemplates dont have ItemCategory
+        if (!_.isEmpty(itemCategory)) {
             // get existing ItemCategory or create new one
             const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(itemCategory).then(value => value.toJSON());
             body.item_category_id = existingItemCategory.id;
@@ -141,9 +144,12 @@ export class ItemInformationService {
         itemInformation.LongDescription = body.longDescription;
         const itemInfoToSave = itemInformation.toJSON();
 
-        // get existing item category or create new one
-        const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
-        itemInfoToSave.item_category_id = existingItemCategory.Id;
+        // ListingItemTemplates dont have ItemCategory
+        if (body.itemCategory) {
+            // get existing item category or create new one
+            const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
+            itemInfoToSave.item_category_id = existingItemCategory.Id;
+        }
 
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
