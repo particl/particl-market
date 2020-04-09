@@ -124,13 +124,13 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('profileId', 'number');
         } else if (typeof name !== 'string') {
             throw new InvalidParamException('name', 'string');
-        } else if (type !== undefined && typeof type !== 'string') {
+        } else if (type && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (receiveKey !== undefined && typeof receiveKey !== 'string') {
+        } else if (receiveKey && typeof receiveKey !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
         // } else if (receiveAddress !== undefined && typeof receiveAddress !== 'string') {
         //     throw new InvalidParamException('receiveAddress', 'string');
-        } else if (publishKey !== undefined && typeof publishKey !== 'string') {
+        } else if (publishKey && typeof publishKey !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
         // } else if (publishAddress !== undefined && typeof publishAddress !== 'string') {
         //     throw new InvalidParamException('publishAddress', 'string');
@@ -224,7 +224,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         let identity: resources.Identity;
-        if (!_.isEmpty(identityId)) {
+        if (identityId) {
             // make sure Identity with the id exists
             identity = await this.identityService.findOne(identityId)
                 .then(value => value.toJSON())
