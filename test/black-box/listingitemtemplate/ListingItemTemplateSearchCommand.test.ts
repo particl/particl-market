@@ -10,7 +10,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { SearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { SearchOrderField_REMOVE_THIS } from '../../../src/api/enums/SearchOrderField';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
@@ -100,7 +100,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             10,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -116,7 +116,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             1,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -136,7 +136,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             1,
             1,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -156,7 +156,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             2,
             2,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id
         ]);
         res.expectJson();
@@ -172,7 +172,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id,
             undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.key
@@ -191,7 +191,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id,
             undefined,
             listingItemTemplate1.ItemInformation.ItemCategory.id
@@ -210,7 +210,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id,
             listingItemTemplate1.ItemInformation.title
         ]);
@@ -251,7 +251,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             10,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id,
             undefined,
             undefined,
@@ -272,7 +272,7 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             10,
             SearchOrder.ASC,
-            SearchOrderField.DATE,
+            SearchOrderField_REMOVE_THIS.DATE,
             defaultProfile.id,
             undefined,
             undefined,

@@ -5,24 +5,24 @@
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
+import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { BidService } from '../../services/model/BidService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/search/BidSearchParams';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { MessageException } from '../../exceptions/MessageException';
-import { OrderItemStatus} from '../../enums/OrderItemStatus';
+import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BidSearchOrderField } from '../../enums/SearchOrderField';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {MPActionExtended} from '../../enums/MPActionExtended';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -79,15 +79,16 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             data.params = [];
         }
 
-        const bidSearchParams = {
+        const searchParams = {
             page, pageLimit, order, orderField,
             listingItemId,
             type,
             searchString,
-            bidders: data.params
+            bidders: data.params,
+            market
         } as BidSearchParams;
 
-        return await this.bidService.search(bidSearchParams);
+        return await this.bidService.search(searchParams);
     }
 
     /**
@@ -112,9 +113,9 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         const listingItemId = data.params[4];       // optional
         const type = data.params[5];                // optional
         const searchString = data.params[6];        // optional
-        const market = data.params[6];              // optional
+        const market = data.params[7];              // optional
 
-        if (listingItemId && typeof listingItemId !== 'number') {
+        if (listingItemId && listingItemId !== '*' && typeof listingItemId !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
         } else if (type && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
@@ -124,6 +125,15 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             throw new InvalidParamException('market', 'string');
         }
 
+        // type: MPAction | MPActionExtended
+        const validTypeFields = [MPAction.MPA_BID, MPAction.MPA_LOCK, MPAction.MPA_REJECT, MPAction.MPA_CANCEL, MPAction.MPA_ACCEPT, MPAction.MPA_LISTING_ADD,
+            MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND, MPActionExtended.MPA_COMPLETE, MPActionExtended.MPA_SHIP];
+        if (!_.includes(validTypeFields, type)) {
+            throw new InvalidParamException('type');
+        }
+
+        // todo: validate that market exists
+        // todo: do we really need the searchString?
 
         // * -> undefined
         data.params[4] = listingItemId !== '*' ? listingItemId : undefined;

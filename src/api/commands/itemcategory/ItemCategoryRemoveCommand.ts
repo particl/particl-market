@@ -21,7 +21,7 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { SearchOrderField } from '../../enums/SearchOrderField';
+import {ListingItemTemplateSearchOrderField, SearchOrderField_REMOVE_THIS} from '../../enums/SearchOrderField';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -88,7 +88,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
             page: 0,
             pageLimit: 10,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.DATE,
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
             category: categoryId
         } as ListingItemTemplateSearchParams;
 
@@ -103,9 +103,9 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
                 }
             });
 
-        const defaultListingItemSearchParams = new ListingItemSearchParams();
-        defaultListingItemSearchParams.profileId = '*';
-        defaultListingItemSearchParams.category = categoryId;
+        const defaultListingItemSearchParams = {
+            categories: [categoryId]
+        } as ListingItemSearchParams;
 
         this.log.debug('ListingItemSearchParams: ', JSON.stringify(defaultListingItemSearchParams, null, 2));
 

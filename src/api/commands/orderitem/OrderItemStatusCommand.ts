@@ -52,7 +52,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
 
         // searchBy for listingitem(s) with certain seller and having bids from certain buyer
         const listingItems: resources.ListingItem[] = await this.listingItemService.search({
-            itemHash,
+            listingItemHash: itemHash,
             buyer,
             seller,
             order: SearchOrder.ASC.toString(),

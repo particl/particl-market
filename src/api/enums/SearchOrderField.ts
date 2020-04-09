@@ -7,8 +7,8 @@
  *
  */
 
-// deprecated
-export enum SearchOrderField {
+// TODO: deprecated, remove
+export enum SearchOrderField_REMOVE_THIS {
     STATE = 'STATE',
     TITLE = 'TITLE',
     DATE = 'DATE'
@@ -47,4 +47,16 @@ export enum SmsgMessageSearchOrderField {
     ID = 'id',
     RECEIVED = 'received',
     SENT = 'sent'
+}
+
+export enum ListingItemTemplateSearchOrderField {
+    TITLE = 'item_informations.title',
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
+export enum ListingItemSearchOrderField {
+    TITLE = 'item_informations.title',
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
 }

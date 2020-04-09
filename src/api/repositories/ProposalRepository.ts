@@ -26,7 +26,7 @@ export class ProposalRepository {
 
     /**
      *
-     * @param {ListingItemSearchParams} options
+     * @param {ProposalSearchParams} options
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */

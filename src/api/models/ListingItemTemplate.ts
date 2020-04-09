@@ -3,7 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { SearchOrderField } from '../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../enums/SearchOrderField';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
@@ -13,6 +13,7 @@ import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
 import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
 import { Logger as LoggerType } from '../../core/Logger';
+import { SearchOrder } from '../enums/SearchOrder';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -82,26 +83,26 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
 
-        let sortingField = 'updated_at';
-        if (SearchOrderField.TITLE === options.orderField) {
-            sortingField = 'item_informations.title';
-        } else if (SearchOrderField.STATE === options.orderField) {
-            sortingField = 'listing_items.listing_item_template_id';
-        } else if (SearchOrderField.DATE === options.orderField) {
-            sortingField = 'listing_item_templates.updated_at';
-        }
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || ListingItemTemplateSearchOrderField.UPDATED_AT;
 
-        ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+        ListingItemTemplate.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
 
-                if (typeof options.category === 'number') {
-                    qb.where('item_informations.item_category_id', '=', options.category);
-                } else if (options.category && typeof options.category === 'string') {
-                    qb.where('item_categories.key', '=', options.category);
-                    qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                // searchBy categories
+                if (options.categories && options.categories.length > 0) {
+                    if (typeof options.categories[0] === 'number') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.id', options.categories);
+                    } else if (typeof options.categories[0] === 'string') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.key', options.categories);
+                    }
                 }
 
                 if (options.profileId) {
@@ -111,23 +112,22 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
-                    if (options.hasItems) {
-                        // ListingItem.log.debug('hasItems true');
+                if (options.hasListingItems !== undefined && typeof options.hasListingItems === 'boolean') {
+                    // ListingItemTemplate.log.debug('hasListingItems', hasListingItems);
+                    if (options.hasListingItems) {
                         qb.innerJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     } else {
-                        // ListingItem.log.debug('hasItems false');
                         qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                         qb.whereNull('listing_items.listing_item_template_id');
                     }
                 } else {
-                    // ListingItem.log.debug('hasItems undefined');
+                    // ListingItemTemplate.log.debug('hasItems undefined');
                     qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
 
-                qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
+                // qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
             })
-            // .orderBy(sortingField, options.order)
+            .orderBy('listing_item_templates.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

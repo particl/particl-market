@@ -5,9 +5,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { SearchOrderField } from '../../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
 
-// tslint:disable:variable-name
 export class ListingItemTemplateSearchParams extends RequestBody {
 
     @IsNotEmpty()
@@ -20,16 +19,15 @@ export class ListingItemTemplateSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder;
 
-    @IsEnum(SearchOrderField)
-    public orderField: SearchOrderField;
+    @IsEnum(ListingItemTemplateSearchOrderField)
+    public orderField: ListingItemTemplateSearchOrderField;
 
     // @IsNotEmpty()
     public profileId: number;
 
     public searchString: string;
 
-    public category: string | number;
+    public categories: string[] | number[];
 
-    public hasItems: boolean;
+    public hasListingItems: boolean;
 }
-// tslint:enable:variable-name
