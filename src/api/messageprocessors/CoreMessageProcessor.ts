@@ -24,7 +24,7 @@ import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queu
 import { MessageQueuePriority } from '../enums/MessageQueuePriority';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { MarketplaceMessageProcessor } from './MarketplaceMessageProcessor';
-import {hasActionMessageType} from '../enums/ActionMessageTypes';
+import { hasActionMessageType } from '../enums/ActionMessageTypes';
 
 export class CoreMessageProcessor implements MessageProcessorInterface {
 

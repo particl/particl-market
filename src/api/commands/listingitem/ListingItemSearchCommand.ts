@@ -135,13 +135,16 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
                 throw new InvalidParamException('categories', 'number[] | string[]');
             } else {
                 // validate types, since we could have any[]...
-                const foundDiffenent = _.find(categories, value => {
+                const foundDifferent = _.find(categories, value => {
                     return typeof value !== typeof categories[0];
                 });
-                if (foundDiffenent) {
+                if (foundDifferent) {
                     throw new InvalidParamException('categories', 'number[] | string[]');
                 }
             }
+
+            // don't need an empty category array
+            data.params[5] = categories.length > 0 ? categories : undefined;
         }
 
         // check valid profile profileId searchBy params

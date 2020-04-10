@@ -115,6 +115,8 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
                     throw new InvalidParamException('categories', 'number[] | string[]');
                 }
             }
+            // don't need an empty category array
+            data.params[5] = categories.length > 0 ? categories : undefined;
         }
 
         data.params[5] = searchString !== '*' ? data.params[5] : undefined;
