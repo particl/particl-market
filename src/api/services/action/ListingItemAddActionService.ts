@@ -184,18 +184,22 @@ export class ListingItemAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
 
-            const notification: MarketplaceNotification = {
-                event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
-                payload: {
-                    id: listingItem.id,
-                    hash: listingItem.hash,
-                    seller: listingItem.seller,
-                    market: listingItem.market
-                } as ListingItemNotification
-            };
-            return notification;
+            if (listingItem) {
+                const notification: MarketplaceNotification = {
+                    event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    payload: {
+                        id: listingItem.id,
+                        hash: listingItem.hash,
+                        seller: listingItem.seller,
+                        market: listingItem.market
+                    } as ListingItemNotification
+                };
+                return notification;
+            }
         }
         return undefined;
     }

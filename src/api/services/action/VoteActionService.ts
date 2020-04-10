@@ -328,7 +328,7 @@ export class VoteActionService extends BaseActionService {
     public async createNotification(marketplaceMessage: MarketplaceMessage,
                                     actionDirection: ActionDirection,
                                     smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
-        // undefined -> don't send notifications about Proposals
+        // undefined -> don't send notifications
         return undefined;
     }
 

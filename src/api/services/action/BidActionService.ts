@@ -249,19 +249,23 @@ export class BidActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
 
-            const notification: MarketplaceNotification = {
-                event: NotificationType.MPA_BID,    // TODO: NotificationType could be replaced with ActionMessageTypes
-                payload: {
-                    id: bid.id,
-                    hash: bid.hash,
-                    bidder: bid.bidder,
-                    listingItemHash: bid.ListingItem.hash,
-                    market: bid.ListingItem.market
-                } as BidNotification
-            };
-            return notification;
+            if (bid) {
+                const notification: MarketplaceNotification = {
+                    event: NotificationType.MPA_BID,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    payload: {
+                        id: bid.id,
+                        hash: bid.hash,
+                        bidder: bid.bidder,
+                        listingItemHash: bid.ListingItem.hash,
+                        market: bid.ListingItem.market
+                    } as BidNotification
+                };
+                return notification;
+            }
         }
         return undefined;
     }

@@ -205,40 +205,44 @@ export class CommentAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             // only notify if the Comment is not from you
-            const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
-            // TODO: this doesn't consider that there could be different Profiles!!!
-            const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
-                return true;
-            }).catch(reason => {
-                return false;
-            });
+            const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
 
-            // Dont need notifications about my own comments
-            if (isMyComment) {
-                return undefined;
+            if (comment) {
+                // TODO: this doesn't consider that there could be different Profiles!!!
+                const isMyComment = await this.identityService.findOneByAddress(comment.sender).then(value => {
+                    return true;
+                }).catch(reason => {
+                    return false;
+                });
+
+                // Dont need notifications about my own comments
+                if (isMyComment) {
+                    return undefined;
+                }
+
+                const notification: MarketplaceNotification = {
+                    event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    payload: {
+                        id: comment.id,
+                        hash: comment.hash,
+                        target: comment.target,
+                        sender: comment.sender,
+                        receiver: comment.receiver,
+                        commentType: comment.commentType
+                    } as CommentAddNotification
+                };
+
+                if (comment.ParentComment) {
+                    (notification.payload as CommentAddNotification).parent = {
+                        id: comment.ParentComment.id,
+                        hash: comment.ParentComment.hash
+                    } as CommentAddNotification;
+                }
+                return notification;
             }
-
-            const notification: MarketplaceNotification = {
-                event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
-                payload: {
-                    id: comment.id,
-                    hash: comment.hash,
-                    target: comment.target,
-                    sender: comment.sender,
-                    receiver: comment.receiver,
-                    commentType: comment.commentType
-                } as CommentAddNotification
-            };
-
-            if (comment.ParentComment) {
-                (notification.payload as CommentAddNotification).parent = {
-                    id: comment.ParentComment.id,
-                    hash: comment.ParentComment.hash
-                } as CommentAddNotification;
-            }
-            return notification;
         }
-
         return undefined;
     }
 

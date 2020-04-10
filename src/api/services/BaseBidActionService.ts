@@ -86,17 +86,22 @@ export abstract class BaseBidActionService extends BaseActionService {
     public async createBidNotification(marketplaceMessage: MarketplaceMessage,
                                        smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
 
-        const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
-        return {
-            event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
-            payload: {
-                id: bid.id,
-                hash: bid.hash,
-                bidder: bid.bidder,
-                listingItemHash: bid.ListingItem.hash,
-                market: bid.ListingItem.market
-            } as BidNotification
-        } as MarketplaceNotification;
+        const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
+            .then(value => value.toJSON())
+            .catch(err => undefined);
 
+        if (bid) {
+            return {
+                event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                payload: {
+                    id: bid.id,
+                    hash: bid.hash,
+                    bidder: bid.bidder,
+                    listingItemHash: bid.ListingItem.hash,
+                    market: bid.ListingItem.market
+                } as BidNotification
+            } as MarketplaceNotification;
+        }
+        return undefined;
     }
 }
