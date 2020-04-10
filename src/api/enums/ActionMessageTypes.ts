@@ -8,3 +8,10 @@ import { MPActionExtended } from './MPActionExtended';
 import { CommentAction } from './CommentAction';
 
 export type ActionMessageTypes = MPAction | MPActionExtended | GovernanceAction | CommentAction;
+
+export function hasActionMessageType(typedValue: string): boolean {
+    return  (Object as any).values(MPAction).includes(typedValue) ||
+        (Object as any).values(MPActionExtended).includes(typedValue) ||
+        (Object as any).values(GovernanceAction).includes(typedValue) ||
+        (Object as any).values(CommentAction).includes(typedValue);
+}

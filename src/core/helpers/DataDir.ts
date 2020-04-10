@@ -37,6 +37,7 @@ export class DataDir {
 
         let dir = '';
         const appName = 'particl-market';
+        const checkpoint = '03';
 
         switch (process.platform) {
             case 'linux': {
@@ -57,7 +58,7 @@ export class DataDir {
 
         // return path to datadir (mainnet vs testnet)
         // and set the main datadir variable.
-        const dataDir = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ));
+        const dataDir = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ), checkpoint);
         return dataDir;
     }
 
