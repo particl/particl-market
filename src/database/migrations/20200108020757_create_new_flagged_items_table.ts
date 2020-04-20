@@ -7,6 +7,8 @@ import * as Knex from 'knex';
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
 
+        db.schema.dropTableIfExists('flagged_items_old'),
+
         db.schema.createTable('flagged_items', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 

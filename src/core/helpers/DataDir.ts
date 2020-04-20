@@ -119,12 +119,19 @@ export class DataDir {
 
         // may also be the particl-market/testnet
         // so check if upper directory exists.
-        // TODO: what is this tesnet?!
-        if (this.datadir.endsWith('testnet') || this.datadir.endsWith('tesnet/') || this.datadir.endsWith('regtest')) {
-            const dir = path.dirname(this.datadir); // pop the 'testnet' folder name
-            if (!this.checkIfExists(dir, true)) {
-                fs.mkdirSync(dir);
-            }
+
+        const parentPath = path.dirname(this.datadir);
+        let baseDir = parentPath;
+        if (parentPath.endsWith('testnet') || parentPath.endsWith('regtest')) {
+            baseDir = path.dirname(parentPath); // pop the 'testnet' folder name
+        }
+        if (!this.checkIfExists(baseDir, true)) {
+            fs.mkdirSync(baseDir);
+        }
+
+        if (!this.checkIfExists(parentPath, true)) {
+            // the network path, eg: the 'testnet' sub-dir (should already exist for mainnet, as there is no network sub-dir)
+            fs.mkdirSync(parentPath);
         }
 
         if (!this.checkIfExists(this.datadir, true)) {
