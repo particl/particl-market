@@ -171,6 +171,11 @@ export class ServerStartedListener implements interfaces.Listener {
 
         await this.loadWalletsForProfile(defaultProfile);
 
+        // Seed the default ItemCategories (ItemCategory with no relation to a Market)
+        // - ListingItemTemplates are assigned an ItemCategory from the list of default ItemCategories
+        // - market ItemCategories are created for Markets as new ListingItems are received
+        await this.defaultItemCategoryService.seedDefaultCategories();
+
         // check whether we have the required default marketplace configuration to continue
         const hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
         this.log.debug('bootstrap(), hasMarketConfiguration: ', hasMarketConfiguration);
@@ -187,8 +192,8 @@ export class ServerStartedListener implements interfaces.Listener {
 
             this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
-            // seed the default categories to default market
-            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
+            // todo: Seed the default custom ItemCategories for a Market
+            // await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
 
             // this.log.debug('bootstrap(), process.env.NODE_ENV:', process.env.NODE_ENV);
 

@@ -26,7 +26,9 @@ export class DefaultItemCategoryService {
      *
      * @param market receiveAddress
      */
-    public async seedDefaultCategories(market: string): Promise<void> {
+    public async seedDefaultCategories(market?: string): Promise<void> {
+
+        this.log.debug('seedDefaultCategories(), market: ', market);
 
         const ROOT = await this.insertOrUpdateCategory({ key: 'cat_ROOT', name: 'ROOT', description: 'root item category', market } as ItemCategoryCreateRequest);
 

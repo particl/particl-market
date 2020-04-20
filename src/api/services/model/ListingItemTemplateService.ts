@@ -178,9 +178,9 @@ export class ListingItemTemplateService {
      * @param id
      * @param setAsParent
      */
-    public async clone(id: number, setAsParent: boolean = false): Promise<ListingItemTemplate> {
+    public async clone(id: number, setOriginalAsParent: boolean = false): Promise<ListingItemTemplate> {
         let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
-        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setAsParent);
+        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setOriginalAsParent);
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
         return await this.findOne(listingItemTemplate.id);
     }
@@ -487,9 +487,9 @@ export class ListingItemTemplateService {
     /**
      *
      * @param listingItemTemplate
-     * @param setAsParent
+     * @param setOriginalAsParent
      */
-    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setAsParent: boolean = false):
+    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false):
         Promise<ListingItemTemplateCreateRequest> {
 
         let shippingDestinations: ShippingDestinationCreateRequest[] = [];
@@ -565,9 +565,9 @@ export class ListingItemTemplateService {
         }
 
         return {
-            parent_listing_item_template_id: setAsParent ? listingItemTemplate.id : undefined,
+            parent_listing_item_template_id: setOriginalAsParent ? listingItemTemplate.id : undefined,
             profile_id: listingItemTemplate.Profile.id,
-            generatedAt: +new Date().getTime(),
+            generatedAt: +Date.now(),
 
             itemInformation: {
                 title: listingItemTemplate.ItemInformation.title,

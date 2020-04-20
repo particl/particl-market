@@ -43,14 +43,14 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ListingItemTemplate> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const setAsParent = data.params[1];
-        return await this.listingItemTemplateService.clone(listingItemTemplate.id, setAsParent);
+        const setOriginalAsParent = data.params[1];
+        return await this.listingItemTemplateService.clone(listingItemTemplate.id, setOriginalAsParent);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: setAsParent, optional
+     *  [1]: setOriginalAsParent, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -67,7 +67,7 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (data.params[1] && typeof data.params[1] !== 'boolean') {
-            throw new InvalidParamException('setAsParent', 'boolean');
+            throw new InvalidParamException('setOriginalAsParent', 'boolean');
         }
 
         // make sure required data exists and fetch it
@@ -77,12 +77,13 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId>';
+        return this.getName() + ' <listingItemTemplateId> [setOriginalAsParent]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>           - number - The ID of the ListingItemTemplate to be cloned.\n';
+            + '    <listingItemTemplateId>           - number - The ID of the ListingItemTemplate to be cloned.\n'
+            + '    <setOriginalAsParent>             - boolean - Whether to set the given ListingItemTemplate as parent for the clone.\n';
 
     }
 
