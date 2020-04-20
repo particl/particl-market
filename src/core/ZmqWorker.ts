@@ -8,9 +8,8 @@ import { EventEmitter } from './api/events';
 import { IoC } from './IoC';
 import * as ParticlZmq from 'particl-zmq';
 import { CoreMessageProcessor } from '../api/messageprocessors/CoreMessageProcessor';
-import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
+import PQueue, { Options } from 'pm-queue';
 import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
-import * as Queue from '@ronomon/queue';
 
 export class ZmqWorker {
 
