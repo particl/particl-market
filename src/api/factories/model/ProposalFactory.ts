@@ -3,20 +3,20 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Types} from '../../../constants';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
-import {ProposalCreateRequest} from '../../requests/model/ProposalCreateRequest';
-import {ProposalOptionCreateRequest} from '../../requests/model/ProposalOptionCreateRequest';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {ProposalCreateParams} from './ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
-import {HashableProposalCreateRequestConfig} from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
-import {HashableProposalOptionMessageConfig} from '../hashableconfig/message/HashableProposalOptionMessageConfig';
-import {ProposalCategory} from '../../enums/ProposalCategory';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Types } from '../../../constants';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { ProposalCreateParams } from './ModelCreateParams';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
+import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
+import { ProposalCategory } from '../../enums/ProposalCategory';
 
 export class ProposalFactory implements ModelFactoryInterface {
 

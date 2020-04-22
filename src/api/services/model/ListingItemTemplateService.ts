@@ -107,6 +107,29 @@ export class ListingItemTemplateService {
     }
 
     /**
+     * TODO: test
+     * @param templateId
+     * @param market
+     */
+    public async findLatestByParentTemplateAndMarket(templateId: number, market: string): Promise<ListingItemTemplate> {
+        const listingItemTemplate = await this.listingItemTemplateRepo.findLatestByParentTemplateAndMarket(templateId, market);
+        if (listingItemTemplate === null) {
+            this.log.warn(`ListingItemTemplate with the templateId=${templateId} and market=${market} was not found!`);
+            throw new NotFoundException(templateId);
+        }
+        return listingItemTemplate;
+    }
+
+    /**
+     * TODO: test
+     * @param templateId
+     * @param market
+     */
+    public async findAllVersionsByParentTemplateAndMarket(templateId: number, market: string): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+        return await this.listingItemTemplateRepo.findAllVersionsByParentTemplateAndMarket(templateId, market);
+    }
+
+    /**
      * searchBy ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
@@ -183,10 +206,11 @@ export class ListingItemTemplateService {
      *
      * @param id
      * @param setOriginalAsParent
+     * @param newMarket
      */
-    public async clone(id: number, setOriginalAsParent: boolean = false): Promise<ListingItemTemplate> {
+    public async clone(id: number, setOriginalAsParent: boolean = false, newMarket?: string): Promise<ListingItemTemplate> {
         let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
-        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setOriginalAsParent);
+        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setOriginalAsParent, newMarket);
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
         return await this.findOne(listingItemTemplate.id);
     }
@@ -493,9 +517,9 @@ export class ListingItemTemplateService {
      *
      * @param listingItemTemplate
      * @param setOriginalAsParent
-     * @param market
+     * @param newMarket
      */
-    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false, market?: string):
+    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false, newMarket?: string):
         Promise<ListingItemTemplateCreateRequest> {
 
         let shippingDestinations: ShippingDestinationCreateRequest[] = [];
@@ -577,7 +601,7 @@ export class ListingItemTemplateService {
                     : listingItemTemplate.ParentListingItemTemplate.id)         // we are cloning some other version x, so use the basetemplate.id
                 : undefined,                                                // this is supposed to be a new base template, no parent
             profile_id: listingItemTemplate.Profile.id,
-            market: !setOriginalAsParent ? undefined : (market ? market : listingItemTemplate.market),
+            market: !setOriginalAsParent ? undefined : (newMarket ? newMarket : listingItemTemplate.market),
             // if we are not setting original as parent:
             //  - it means this is a new base template
             //  - no market && no parent

@@ -3,28 +3,28 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {ItemCategoryService} from '../../services/model/ItemCategoryService';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {ItemCategory} from '../../models/ItemCategory';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {MarketService} from '../../services/model/MarketService';
-import {MarketType} from '../../enums/MarketType';
+import { inject, named } from 'inversify';
+import { request, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemCategory } from '../../models/ItemCategory';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MarketService } from '../../services/model/MarketService';
+import { MarketType } from '../../enums/MarketType';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.CATEGORY_LIST);
         this.log = new Logger(__filename);

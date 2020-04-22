@@ -80,24 +80,46 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         }
     }
 
-    // TODO:
+    /**
+     *
+     * @param templateId
+     * @param market
+     * @param allVersions
+     */
+    public static async fetchByTemplateAndMarket(templateId: number, market: string, allVersions: boolean): Promise<Collection<ListingItemTemplate>> {
+        const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
+            .query(qb => {
+                qb.where('market', '=', market);
+                qb.where('parent_listing_item_template_id', '=', templateId);
+
+                if (!allVersions) {
+                    qb.max('generated_at');
+                    qb.groupBy(['parent_listing_item_template_id', 'market']);
+                }
+            })
+            .orderBy('generated_at', SearchOrder.DESC);
+
+        return collection.fetchAll({
+            withRelated: this.RELATIONS
+        });
+    }
+
+
 /*
-
-find latest template versions for each market templates
-SELECT lit.id, lit.hash, lit.market, parent.id as parent_id, parent.hash as parent_hash, max(lit.generated_at)
+// find latest market template versions for each template
+SELECT lit.*, max(lit.generated_at)
     FROM listing_item_templates lit
-    INNER JOIN listing_item_templates parent ON (lit.parent_listing_item_template_id = parent.id)
-    WHERE lit.parent_listing_item_template_id IS NOT NULL
-GROUP BY parent.id, lit.market;
-
-find all versions of a market template
-SELECT lit.id, lit.hash, lit.market, parent.id as parent_id, parent.hash as parent_hash, lit.generated_at
-    FROM listing_item_templates lit
-    INNER JOIN listing_item_templates parent ON (lit.parent_listing_item_template_id = parent.id)
-    WHERE lit.parent_listing_item_template_id=32
-        AND lit.market='marketreceiveaddress'
+    WHERE lit.market='market1'
+      AND lit.parent_listing_item_template_id=32
+GROUP BY lit.parent_listing_item_template_id, lit.market
 ORDER BY lit.generated_at DESC;
 
+// find all versions of a market template
+SELECT lit.*
+    FROM listing_item_templates lit
+    WHERE lit.market='market1'
+      AND lit.parent_listing_item_template_id=32
+ORDER BY lit.generated_at DESC;
 */
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
@@ -109,7 +131,7 @@ ORDER BY lit.generated_at DESC;
 
         ListingItemTemplate.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
-        const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
+        const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
 
@@ -131,7 +153,7 @@ ORDER BY lit.generated_at DESC;
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (options.hasListingItems !== undefined && typeof options.hasListingItems === 'boolean') {
+                if (options.hasListingItems !== undefined) {
                     // ListingItemTemplate.log.debug('hasListingItems', hasListingItems);
                     if (options.hasListingItems) {
                         qb.innerJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
@@ -153,12 +175,11 @@ ORDER BY lit.generated_at DESC;
             });
 
         if (withRelated) {
-            return await listingCollection.fetchAll({
+            return await collection.fetchAll({
                 withRelated: this.RELATIONS
-
             });
         } else {
-            return await listingCollection.fetchAll();
+            return await collection.fetchAll();
         }
     }
 

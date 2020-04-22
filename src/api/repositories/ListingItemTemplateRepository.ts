@@ -43,6 +43,25 @@ export class ListingItemTemplateRepository {
 
     /**
      *
+     * @param parentTemplateId
+     * @param market
+     */
+    public async findLatestByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<ListingItemTemplate> {
+        const collection = await this.ListingItemTemplateModel.fetchByTemplateAndMarket(parentTemplateId, market, false);
+        return await collection.first();
+    }
+
+    /**
+     *
+     * @param parentTemplateId
+     * @param market
+     */
+    public async findAllVersionsByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+        return await this.ListingItemTemplateModel.fetchByTemplateAndMarket(parentTemplateId, market, true);
+    }
+
+    /**
+     *
      * @param options, ListingItemSearchParams
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
      */

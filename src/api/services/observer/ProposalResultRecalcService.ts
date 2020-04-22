@@ -3,21 +3,21 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {ProposalService} from '../model/ProposalService';
-import {ProposalSearchParams} from '../../requests/search/ProposalSearchParams';
-import {ProposalResultService} from '../model/ProposalResultService';
-import {ListingItemService} from '../model/ListingItemService';
-import {MarketService} from '../model/MarketService';
-import {FlaggedItemService} from '../model/FlaggedItemService';
-import {BaseObserverService} from './BaseObserverService';
-import {ObserverStatus} from '../../enums/ObserverStatus';
-import {ProposalCategory} from '../../enums/ProposalCategory';
-import {BlacklistService} from '../model/BlacklistService';
-import {BlacklistCreateRequest} from '../../requests/model/BlacklistCreateRequest';
-import {BlacklistType} from '../../enums/BlacklistType';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ProposalService } from '../model/ProposalService';
+import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams';
+import { ProposalResultService } from '../model/ProposalResultService';
+import { ListingItemService } from '../model/ListingItemService';
+import { MarketService } from '../model/MarketService';
+import { FlaggedItemService } from '../model/FlaggedItemService';
+import { BaseObserverService } from './BaseObserverService';
+import { ObserverStatus } from '../../enums/ObserverStatus';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+import { BlacklistService } from '../model/BlacklistService';
+import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
+import { BlacklistType } from '../../enums/BlacklistType';
 
 export class ProposalResultRecalcService extends BaseObserverService {
 

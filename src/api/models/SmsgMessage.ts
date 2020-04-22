@@ -2,15 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {Bookshelf as Database, Bookshelf} from '../../config/Database';
-import {Collection, Model} from 'bookshelf';
 import * as _ from 'lodash';
-import {Logger as LoggerType} from '../../core/Logger';
-import {ActionDirection} from '../enums/ActionDirection';
-import {SmsgMessageCreateRequest} from '../requests/model/SmsgMessageCreateRequest';
-import {SearchOrder} from '../enums/SearchOrder';
-import {SmsgMessageSearchOrderField} from '../enums/SearchOrderField';
-import {SmsgMessageSearchParams} from '../requests/search/SmsgMessageSearchParams';
+import { Bookshelf as Database, Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ActionDirection } from '../enums/ActionDirection';
+import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
+import { SearchOrder } from '../enums/SearchOrder';
+import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
+import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
