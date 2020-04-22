@@ -40,7 +40,8 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
     public static async fetchDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
         const collection: Collection<ItemCategory> = await this.searchBy({
-            key
+            key,
+            isDefault: true
         } as ItemCategorySearchParams, withRelated);
 
         return collection.first();
@@ -59,7 +60,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     public static async fetchDefaultRoot(): Promise<ItemCategory> {
         const collection: Collection<ItemCategory> = await this.searchBy({
             isRoot: true,
-            isDefault: true,
+            isDefault: true
         } as ItemCategorySearchParams, true);
 
         return collection.first();

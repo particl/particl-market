@@ -14,9 +14,9 @@ import { ItemCategoryRepository } from '../../repositories/ItemCategoryRepositor
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
-import {ConfigurableHasher, hash} from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { hash } from 'omp-lib/dist/hasher/hash';
 import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategorySearchParams } from '../../requests/search/ItemCategorySearchParams';
 
 export class ItemCategoryService {
 
@@ -44,6 +44,15 @@ export class ItemCategoryService {
     public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKeyAndMarket(key, market, withRelated);
         if (itemCategory === null) {
+            this.log.warn(`ItemCategory with the key=${key} and market=${market} was not found!`);
+            throw new NotFoundException(key);
+        }
+        return itemCategory;
+    }
+
+    public async findOneDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        const itemCategory = await this.itemCategoryRepo.findOneDefaultByKey(key, withRelated);
+        if (itemCategory === null) {
             this.log.warn(`ItemCategory with the key=${key} was not found!`);
             throw new NotFoundException(key);
         }
@@ -61,6 +70,12 @@ export class ItemCategoryService {
 
     public async findRoot(market?: string): Promise<ItemCategory> {
         return await this.itemCategoryRepo.findRoot(market);
+    }
+
+    @validate()
+    public async search(@request(ItemCategorySearchParams) options: ItemCategorySearchParams,
+                        withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
+        return await this.itemCategoryRepo.search(options, withRelated);
     }
 
     @validate()

@@ -9,6 +9,7 @@ import { ItemCategory } from '../models/ItemCategory';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ItemCategorySearchParams } from '../requests/search/ItemCategorySearchParams';
 
 export class ItemCategoryRepository {
 
@@ -34,12 +35,25 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchByKeyAndMarket(key, market, withRelated);
     }
 
+    public async findOneDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchDefaultByKey(key, withRelated);
+    }
+
     public async findRoot(market?: string): Promise<ItemCategory> {
         if (market) {
             return await this.ItemCategoryModel.fetchRoot(market);
         } else {
             return await this.ItemCategoryModel.fetchDefaultRoot();
         }
+    }
+
+    /**
+     *
+     * @param options
+     * @param withRelated
+     */
+    public async search(options: ItemCategorySearchParams, withRelated: boolean): Promise<Bookshelf.Collection<ItemCategory>> {
+        return this.ItemCategoryModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<ItemCategory> {

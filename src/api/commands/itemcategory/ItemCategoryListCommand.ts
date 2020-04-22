@@ -33,7 +33,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
     /**
      *
      * data.params[]:
-     *  [0]: market: resources.Market
+     *  [0]: market: resources.Market, optional
      *
      * @param data
      * @returns {Promise<ItemCategory>}
@@ -41,12 +41,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         const market: resources.Market = data.params[0];
-
-        if (market) {
-
-        } else {
-            return await this.itemCategoryService.findRoot(market.receiveAddress);
-        }
+        return await this.itemCategoryService.findRoot(market ? market.receiveAddress : undefined);
     }
 
     /**
