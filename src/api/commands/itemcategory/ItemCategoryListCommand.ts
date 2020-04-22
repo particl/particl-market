@@ -15,7 +15,6 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -53,7 +52,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params[0] === undefined && typeof data.params[0] !== 'number' && data.params[0] <= 0) {
+        if (data.params[0] === undefined || typeof data.params[0] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -68,7 +67,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <marketId>                    - number - Market ID. ';
+            + '    <marketId>                    - number - Market ID, optional. ';
     }
 
     public description(): string {
