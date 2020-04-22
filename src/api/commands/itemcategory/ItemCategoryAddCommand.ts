@@ -3,22 +3,24 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
-import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MarketService } from '../../services/model/MarketService';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableItemCategoryCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Core, Targets, Types} from '../../../constants';
+import {ItemCategoryService} from '../../services/model/ItemCategoryService';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {ItemCategoryCreateRequest} from '../../requests/model/ItemCategoryCreateRequest';
+import {ItemCategory} from '../../models/ItemCategory';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MarketService} from '../../services/model/MarketService';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableItemCategoryCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
+import {MarketType} from '../../enums/MarketType';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -96,7 +98,12 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         }
 
         data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
+        const market: resources.Market = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
+        data.params[3] = market;
+
+        if (market.type === MarketType.STOREFRONT) {
+            throw new MessageException()
+        }
 
         return data;
     }
