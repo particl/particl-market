@@ -571,12 +571,21 @@ export class ListingItemTemplateService {
         }
 
         return {
-            parent_listing_item_template_id: setOriginalAsParent ? listingItemTemplate.id : undefined,
+            parent_listing_item_template_id: setOriginalAsParent
+                ? (_.isEmpty(listingItemTemplate.ParentListingItemTemplate) // this is going to be a new version of an existing template
+                    ? listingItemTemplate.id                                    // we are cloning the base template
+                    : listingItemTemplate.ParentListingItemTemplate.id)         // we are cloning some other version x, so use the basetemplate.id
+                : undefined,                                                // this is supposed to be a new base template, no parent
             profile_id: listingItemTemplate.Profile.id,
             market: !setOriginalAsParent ? undefined : (market ? market : listingItemTemplate.market),
-            // if we are not setting original as parent -> new base template -> no market
-            // if we are setting original as parent, use given market if it exists, or else the one in the original
-            // hash should be null, since template hasnt been posted
+            // if we are not setting original as parent:
+            //  - it means this is a new base template
+            //  - no market && no parent
+            // if we are setting original as parent:
+            //  - parent should always be relation to the original base template
+            //  - use the listingItemTemplate.parent_template_id if it exists, and if not then use listingItemTemplate.id
+            //  - use given market if it exists, or else the one in the original
+            // hash should be null, until the template is posted
             generatedAt: +Date.now(),
 
             itemInformation: {

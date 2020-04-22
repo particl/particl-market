@@ -70,7 +70,6 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         }
     }
 
-
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
         if (withRelated) {
             return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch({
@@ -80,6 +79,26 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch();
         }
     }
+
+    // TODO:
+/*
+
+find latest template versions for each market templates
+SELECT lit.id, lit.hash, lit.market, parent.id as parent_id, parent.hash as parent_hash, max(lit.generated_at)
+    FROM listing_item_templates lit
+    INNER JOIN listing_item_templates parent ON (lit.parent_listing_item_template_id = parent.id)
+    WHERE lit.parent_listing_item_template_id IS NOT NULL
+GROUP BY parent.id, lit.market;
+
+find all versions of a market template
+SELECT lit.id, lit.hash, lit.market, parent.id as parent_id, parent.hash as parent_hash, lit.generated_at
+    FROM listing_item_templates lit
+    INNER JOIN listing_item_templates parent ON (lit.parent_listing_item_template_id = parent.id)
+    WHERE lit.parent_listing_item_template_id=32
+        AND lit.market='marketreceiveaddress'
+ORDER BY lit.generated_at DESC;
+
+*/
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
 

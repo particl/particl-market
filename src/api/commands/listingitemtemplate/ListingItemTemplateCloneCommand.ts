@@ -16,6 +16,7 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -50,7 +51,7 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: setOriginalAsParent, optional
+     *  [1]: setOriginalAsParent, optional, when creating new base template, set setOriginalAsParent to false
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -60,18 +61,24 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         } else if (data.params.length === 1) {
-            data.params[1] = false;
+            data.params[1] = false;             // default to false
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'boolean') {
+        } else if (typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('setOriginalAsParent', 'boolean');
         }
 
         // make sure required data exists and fetch it
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[0] = listingItemTemplate;
+
+        if (data.params[1] && listingItemTemplate.hash) {
+            // if setOriginalAsParent = true -> template must have been posted (has a hash) if a new version of it is being created
+            throw new MessageException('New version cannot be created until the ListingItemTemplate has been posted.');
+        }
 
         return data;
     }
