@@ -136,6 +136,12 @@ export class ListingItemTemplateService {
         // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
 
+        // TODO
+        // if there is no parent template -> this is the base template -> there should be no market
+        // if there is no parent template, but market was given -> create the base template and then create a new market version
+
+        // for now, we dont require templates to have markets and only allow default categories
+
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
@@ -176,7 +182,7 @@ export class ListingItemTemplateService {
      * clone a ListingItemTemplate
      *
      * @param id
-     * @param setAsParent
+     * @param setOriginalAsParent
      */
     public async clone(id: number, setOriginalAsParent: boolean = false): Promise<ListingItemTemplate> {
         let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
@@ -386,7 +392,6 @@ export class ListingItemTemplateService {
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
      * @param listingItemTemplate
-     * @param estimateFee
      */
     // TODO: move to actionservice?
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
@@ -488,8 +493,9 @@ export class ListingItemTemplateService {
      *
      * @param listingItemTemplate
      * @param setOriginalAsParent
+     * @param market
      */
-    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false):
+    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false, market?: string):
         Promise<ListingItemTemplateCreateRequest> {
 
         let shippingDestinations: ShippingDestinationCreateRequest[] = [];
@@ -567,6 +573,10 @@ export class ListingItemTemplateService {
         return {
             parent_listing_item_template_id: setOriginalAsParent ? listingItemTemplate.id : undefined,
             profile_id: listingItemTemplate.Profile.id,
+            market: !setOriginalAsParent ? undefined : (market ? market : listingItemTemplate.market),
+            // if we are not setting original as parent -> new base template -> no market
+            // if we are setting original as parent, use given market if it exists, or else the one in the original
+            // hash should be null, since template hasnt been posted
             generatedAt: +Date.now(),
 
             itemInformation: {

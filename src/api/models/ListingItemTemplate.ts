@@ -152,6 +152,9 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
+
     public get GeneratedAt(): number { return this.get('generatedAt'); }
     public set GeneratedAt(value: number) { this.set('generatedAt', value); }
 
@@ -188,10 +191,6 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     public ParentListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
-
-    // public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
-    //    return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
-    // }
 
     public ChildListingItemTemplate(): ListingItemTemplate {
         return this.hasOne(ListingItemTemplate, 'parent_listing_item_template_id', 'id');

@@ -7,6 +7,7 @@ declare module 'resources' {
     interface ListingItemTemplate {
         id: number;
         hash: string;
+        market: string;
         generatedAt: number;
         ItemInformation: ItemInformation;
         PaymentInformation: PaymentInformation;

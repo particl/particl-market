@@ -23,6 +23,9 @@ export class ListingItemTemplateCreateRequest extends RequestBody implements Mod
     // should be empty when created, as template with a hash should not be modified anymore
     // public hash: string;
 
+    // the base template should not have a market
+    public market: string;
+
     public itemInformation: ItemInformationCreateRequest;
     public paymentInformation: PaymentInformationCreateRequest;
     public messagingInformation: MessagingInformationCreateRequest[];
