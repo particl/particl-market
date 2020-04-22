@@ -22,6 +22,8 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
+import {ItemCategoryService} from '../../services/model/ItemCategoryService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -31,6 +33,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemTemplateFactory) public listingItemTemplateFactory: ListingItemTemplateFactory
     ) {
         super(Commands.TEMPLATE_ADD);
@@ -104,7 +107,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 escrowType: data.params[10],
                 buyerRatio: data.params[11],
                 sellerRatio: data.params[12],
-                parentListingItemTemplateId: data.params[13]
+                escrowReleaseType: data.params[13]
                 // paymentAddress: cryptoAddress.address,
                 // paymentAddressType: cryptoAddress.type
             } as ListingItemTemplateCreateParams);
@@ -131,8 +134,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [10]: escrowType, (optional) default EscrowType.MAD_CT
      *  [11]: buyerRatio, (optional) default 100
      *  [12]: sellerRatio, (optional) default 100
-     *  [13]: escrowReleaseType, (optional) default 100
-     *  [14]: parent_listing_item_template_id (optional)
+     *  [13]: escrowReleaseType, (optional) default EscrowReleaseType.ANON
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -199,11 +201,11 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             throw new InvalidParamException('buyerRatio', 'number');
         } else if (data.params[12] && typeof data.params[12] !== 'number') {
             throw new InvalidParamException('sellerRatio', 'number');
+        } else if (data.params[13] && typeof data.params[13] !== 'string') {
+            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
         }
 
         // override the needed params
-        // TODO: validate that category exists
-        // TODO: add support for custom categories
         // TODO: we only support SaleType.SALE for now
         // TODO: add support for multiple SaleTypes
         // TODO: missing support for STEALTH ADDRESS
@@ -246,6 +248,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             data.params[13] = EscrowReleaseType.ANON;
         }
 
+        /*
+        // todo: implement template clone for this
         if (data.params[14]) { // parentListingItemTemplateId was given, make sure its valid and exists
             if (typeof data.params[14] !== 'number') {
                 throw new InvalidParamException('parentListingItemTemplateId', 'number');
@@ -255,6 +259,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                     throw new ModelNotFoundException('ListingItemTemplate');
                 });
         }
+        */
 
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
@@ -266,7 +271,15 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             });
         data.params[0] = profile;
 
-        // TODO: make sure category exists
+        // validate that given category exists
+        // for now, when creating a template, its category can only be a default one
+        await this.itemCategoryService.findOne(data.params[4]).then(value => {
+            const category: resources.ItemCategory = value.toJSON();
+            // validate that given category is a default one -> market should not be defined
+            if (category.market) {
+                throw new MessageException('Not a default ItemCategory.');
+            }
+        });
 
         return data;
     }
@@ -292,8 +305,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '    <escrowType>                   - string - optional, default: MAD_CT. MAD_CT/MULTISIG \n'
             + '    <buyerRatio>                   - number - optional, default: 100 \n'
             + '    <sellerRatio>                  - number - optional, default: 100 \n'
-            + '    <escrowReleaseType>            - string - optional, default: ANON. ANON/BLIND \n'
-            + '    <parentListingItemTemplateId>  - number - optional \n';
+            + '    <escrowReleaseType>            - string - optional, default: ANON. ANON/BLIND \n';
 
     }
 
