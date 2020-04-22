@@ -4,8 +4,12 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ItemCategorySearchParams } from '../requests/search/ItemCategorySearchParams';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'ParentItemCategory',
@@ -26,40 +30,74 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
-        if (withRelated) {
-            return await ItemCategory.where<ItemCategory>({ key, market: market !== '' ? market : null }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ItemCategory.where<ItemCategory>({ key, market: market !== '' ? market : null }).fetch();
-        }
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            market,
+            key
+        } as ItemCategorySearchParams, withRelated);
+
+        return collection.first();
     }
 
-    public static async fetchRootByMarket(market: string): Promise<ItemCategory> {
-        // todo: fix this, find the real root for market
-        return await ItemCategory.where<ItemCategory>({ key: 'cat_ROOT', market }).fetch({
-            withRelated: this.RELATIONS
-        });
+    public static async fetchDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            key
+        } as ItemCategorySearchParams, withRelated);
+
+        return collection.first();
     }
 
-    public static async fetchAllByName(name: string, withRelated: boolean = true): Promise<Collection<ItemCategory>> {
-        const listingCollection = ItemCategory.forge<Model<ItemCategory>>()
+    public static async fetchRoot(market?: string): Promise<ItemCategory> {
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            market,
+            isRoot: true,
+            isDefault: !!market
+        } as ItemCategorySearchParams, true);
+
+        return collection.first();
+    }
+
+    public static async fetchDefaultRoot(): Promise<ItemCategory> {
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            isRoot: true,
+            isDefault: true,
+        } as ItemCategorySearchParams, true);
+
+        return collection.first();
+    }
+
+    public static async searchBy(options: ItemCategorySearchParams, withRelated: boolean = false): Promise<Collection<ItemCategory>> {
+        const collection = ItemCategory.forge<Model<ItemCategory>>()
             .query(qb => {
-                qb.where('name', 'LIKE', '%' + name + '%');
+                if (options.market) {
+                    qb.where('item_categories.market', '=', options.market);
+                } else if (!options.market && options.isDefault) {
+                    qb.whereNull('item_categories.market');
+                }
+
+                if (options.parentId) {
+                    qb.where('item_categories.parent_item_category_id', '=', options.parentId);
+                } else if (!options.parentId && options.isRoot) {
+                    qb.whereNull('item_categories.parent_item_category_id');
+                }
+
+                if (options.key) {
+                    qb.where('item_categories.key', '=', options.key);
+                }
+                if (options.name) {
+                    qb.where('item_categories.name', 'LIKE', '%' + options.name + '%');
+                }
+
             })
             .orderBy('id', 'ASC');
 
         if (withRelated) {
-            return await listingCollection.fetchAll({
+            return await collection.fetchAll({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await listingCollection.fetchAll();
+            return await collection.fetchAll();
         }
-    }
 
-    public static async fetchCategoryByNameAndParentID(categoryName: string, parentCategoryId: number | null): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name: categoryName, parent_item_category_id: parentCategoryId }).fetch();
     }
 
     public get tableName(): string { return 'item_categories'; }

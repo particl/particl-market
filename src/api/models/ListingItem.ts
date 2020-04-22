@@ -155,8 +155,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     // qb.where('listing_item_templates.hash', '=', options.listingItemHash);
 
                     qb.where('listing_items.hash', '=', options.listingItemHash);
-
-                    ListingItem.log.debug('...searchBy by itemHash: ', options.listingItemHash);
                 }
 
                 if (options.msgid && options.msgid !== '*') {
@@ -171,13 +169,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                         joinedBids = true;
                     }
                     qb.where('bids.bidder', '=', options.buyer);
-                    ListingItem.log.debug('...searchBy by buyer: ', options.buyer);
                 }
 
                 // searchBy by seller
                 if (options.seller && options.seller !== '*') {
                     qb.where('listing_items.seller', '=', options.seller);
-                    ListingItem.log.debug('...searchBy by seller: ', options.seller);
                 }
 
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
@@ -222,26 +218,22 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
-                    ListingItem.log.debug('...searchBy by price: ', [options.minPrice, options.maxPrice]);
                 }
 
                 // searchBy by item location (country)
                 if (options.country) {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
                     qb.where('item_locations.country', options.country);
-                    ListingItem.log.debug('...searchBy by location: ', options.country);
                 }
 
                 // searchBy by shipping destination
                 if (options.shippingDestination) {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
-                    ListingItem.log.debug('...searchBy by shippingDestination: ', options.shippingDestination);
                 }
 
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
-                    ListingItem.log.debug('...searchBy by searchString: ', options.searchString);
                 }
 
                 if (options.flagged) {

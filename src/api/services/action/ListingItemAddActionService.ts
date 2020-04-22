@@ -140,13 +140,9 @@ export class ListingItemAddActionService extends BaseActionService {
         const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
         // - if ListingItem contains a custom category, create them
-        // - fetch the root category with related to create the listingItemCreateRequest
-        // - create the ListingItem locally with the listingItemCreateRequest
-        // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
-        // - if there's a matching ListingItemTemplate, create a relation
-
         await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
 
+        // - fetch the root category used to create the listingItemCreateRequest
         const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
         const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
@@ -157,11 +153,15 @@ export class ListingItemAddActionService extends BaseActionService {
             listingItemAddMessage,
             smsgMessage);
 
+        // - create the ListingItem locally with the listingItemCreateRequest
         await this.listingItemService.create(listingItemCreateRequest)
             .then(async value => {
                 const listingItem: resources.ListingItem = value.toJSON();
 
+                // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
                 await this.createFlaggedItemIfNeeded(listingItem);
+
+                // - if there's a matching ListingItemTemplate, create a relation
                 await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
 
                 this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);

@@ -34,12 +34,12 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchByKeyAndMarket(key, market, withRelated);
     }
 
-    public async findRoot(market: string): Promise<ItemCategory> {
-        return await this.ItemCategoryModel.fetchRootByMarket(market);
-    }
-
-    public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
-        return this.ItemCategoryModel.fetchAllByName(name, withRelated);
+    public async findRoot(market?: string): Promise<ItemCategory> {
+        if (market) {
+            return await this.ItemCategoryModel.fetchRoot(market);
+        } else {
+            return await this.ItemCategoryModel.fetchDefaultRoot();
+        }
     }
 
     public async create(data: any): Promise<ItemCategory> {

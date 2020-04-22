@@ -41,23 +41,24 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         const market: resources.Market = data.params[0];
-        return await this.itemCategoryService.findRoot(market.receiveAddress);
+
+        if (market) {
+
+        } else {
+            return await this.itemCategoryService.findRoot(market.receiveAddress);
+        }
     }
 
     /**
      * data.params[]:
-     *  [0]: marketId
+     *  [0]: marketId, optional, if market isn't given, return the list of default categories
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
+        if (data.params[0] === undefined && typeof data.params[0] !== 'number' && data.params[0] <= 0) {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -67,18 +68,20 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' ';
+        return this.getName() + ' [marketId]';
     }
 
     public help(): string {
-        return this.usage() + '  -  ' + this.description() + ' \n';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <marketId>                    - number - Market ID. ';
     }
 
     public description(): string {
-        return 'List all the item categories.';
+        return 'List all the ItemCategories.';
     }
 
     public example(): string {
-        return 'category ' + this.getName() + ' ';
+        return 'category ' + this.getName() + ' 1 ';
     }
+
 }
