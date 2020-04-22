@@ -29,11 +29,11 @@ export class ListingItemRepository {
     }
 
     public async findAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        return await this.ListingItemModel.fetchByCategory(categoryId, withRelated);
+        return await this.ListingItemModel.fetchAllByCategory(categoryId, withRelated);
     }
 
     public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
-        return this.ListingItemModel.fetchExpired();
+        return this.ListingItemModel.fetchAllExpired();
     }
 
     /**

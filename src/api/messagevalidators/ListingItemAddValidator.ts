@@ -18,6 +18,11 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { SellerMessage } from '../services/action/ListingItemAddActionService';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
+import { MessageException } from '../exceptions/MessageException';
+import { MarketType } from '../enums/MarketType';
+import { ItemCategoryService } from '../services/model/ItemCategoryService';
+import {hash} from 'omp-lib/dist/hasher/hash';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
 
 /**
  *
@@ -30,13 +35,14 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super();
         this.log = new Logger(__filename);
     }
 
-    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
         if (message.action.type !== MPAction.MPA_LISTING_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LISTING_ADD]);
         }
@@ -56,11 +62,47 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             // throw new MessageException('Received seller signature failed validation.');
         }
 
+        if (ActionDirection.INCOMING === direction && smsgMessage) {
+
+            const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
+
+            // make sure the message was sent from a valid publish address
+            if (market.publishAddress !== smsgMessage.from) {
+                this.log.error('MPA_LISTING_ADD failed validation: Invalid message sender.');
+                throw new MessageException('Invalid message sender.');
+            }
+
+            // - receive/process listingitems:
+            //   - in case of MarketType.MARKETPLACE:
+            //     - only allow categories which have a matching default category, else ignore listingitem
+            //   - in case of MarketType.STOREFRONT/STOREFRONT_ADMIN:
+            //     - only storefront admins can post items, so we can add and allow any categories
+
+            switch (market.type) {
+                case MarketType.MARKETPLACE:
+                    const key: string = hash(actionMessage.item.information.category);
+                    const category: resources.ItemCategory = await this.itemCategoryService.findOneByKeyAndMarket(key, '')
+                        .then(value => value.toJSON())
+                        .catch(reason => {
+                            // no matching default category found
+                            throw new MessageException('ItemCategory not found.');
+                        });
+                    return true;
+                case MarketType.STOREFRONT:
+                case MarketType.STOREFRONT_ADMIN:
+                        // anything goes
+                    return true;
+                default:
+                    // we should never get here
+                    throw new NotImplementedException();
+            }
+        }
+
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
         return FV_MPA_LISTING.validate(message as MPM);
     }
 
-    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
         return true;
     }
 

@@ -10,6 +10,8 @@ import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import {hash} from 'omp-lib/dist/hasher/hash';
+import {MessageException} from '../exceptions/MessageException';
 
 export class ItemCategoryFactory {
 
@@ -22,11 +24,87 @@ export class ItemCategoryFactory {
     }
 
     /**
+     *
+     * @param fullCategoryPath
+     * @param rootCategory
+     * @returns ItemCategoryCreateRequest
+     */
+    public async getCreateRequest(fullCategoryPath: string[], rootCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
+        const parentCategoryPath = [...fullCategoryPath];
+        parentCategoryPath.pop(); // remove last
+
+        const parentCategory: resources.ItemCategory = await this.findChildCategoryByPath(parentCategoryPath, rootCategory);
+
+        const createRequest = {
+            parent_item_category_id: parentCategory.id,
+            market: rootCategory.market,
+            key: hash(fullCategoryPath),
+            name: _.last(fullCategoryPath),
+            description: _.join(fullCategoryPath, ' / ')
+        } as ItemCategoryCreateRequest;
+
+        return createRequest;
+    }
+
+
+    /**
+     * key is the hash of the path
+     * @param category : resources.ItemCategory
+     * @returns string
+     */
+    public async calculateKey(category: resources.ItemCategory): Promise<string> {
+        const path: string[] = await this.getArray(category);
+        return hash(path);
+    }
+
+    /**
+     * return the ChildCategory having the given key or name
+     *
+     * @param {"resources".ItemCategory} parentCategory
+     * @param name
+     * @returns {Promise<"resources".ItemCategory>}
+     */
+    public async findChildCategoryByName(parentCategory: resources.ItemCategory, name: string): Promise<resources.ItemCategory> {
+
+        if (parentCategory.name === name) {
+            // root case
+            return parentCategory;
+        } else {
+            const found = _.find(parentCategory.ChildItemCategories, (childCategory) => {
+                return childCategory.name === name;
+            });
+            if (found) {
+                return found;
+            } else {
+                throw new NotFoundException(name);
+            }
+        }
+    }
+
+    public async findChildCategoryByPath(path: string[], rootCategory: resources.ItemCategory): Promise<resources.ItemCategory> {
+
+        let parentCategory: resources.ItemCategory = JSON.parse(JSON.stringify(rootCategory));
+
+        for (const categoryName of path) { // [root, parentCategoryPath, newOne]
+            const found = _.find(parentCategory!.ChildItemCategories, (childCategory) => {
+                return childCategory.name === categoryName;
+            });
+
+            if (!found) {
+                throw new NotFoundException(categoryName);
+            }
+            parentCategory = found;
+
+        }
+
+        return parentCategory;
+    }
+
+    /**
      * Converts a category to an array of category keys
      * ['rootcatkey', 'subcatkey', ..., 'catkey']
      *
      * @param category : resources.ItemCategory
-     * @param rootCategoryWithRelated : resources.ItemCategory
      * @returns {Promise<string[]>}
      */
     public async getArray(category: resources.ItemCategory): Promise<string[]> {
@@ -34,50 +112,7 @@ export class ItemCategoryFactory {
     }
 
     /**
-     *
-     * @param {string[]} categoryArray
-     * @param {"resources".ItemCategory} rootCategory
-     * @returns {Promise<"resources".ItemCategory>}
-     */
-    public async getModel(categoryArray: string[], rootCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
-        for (const categoryKeyOrName of categoryArray) {
-            rootCategory = await this.findCategory(rootCategory, categoryKeyOrName);
-        }
-        return {
-            parent_item_category_id: rootCategory.parentItemCategoryId,
-            key: rootCategory.key,
-            name: rootCategory.name,
-            description: rootCategory.description
-        } as ItemCategoryCreateRequest;
-    }
-
-    /**
-     * return the ChildCategory having the given key or name
-     *
-     * @param {"resources".ItemCategory} rootCategory
-     * @param {string} keyOrName
-     * @returns {Promise<"resources".ItemCategory>}
-     */
-    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
-
-        if (rootCategory.key === keyOrName) {
-            // root case
-            return rootCategory;
-        } else {
-            // searchBy the children for a match
-            const childCategories = rootCategory.ChildItemCategories;
-            const found = _.find(childCategories, (childCategory) => {
-                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
-            });
-            if (found) {
-                return found;
-            } else {
-                throw new NotFoundException(keyOrName);
-            }
-        }
-    }
-
-    /**
+     * add the parent category name to the front of categoryArray until the root is reached
      *
      * @param {"resources".ItemCategory} category
      * @param {string[]} categoryArray
@@ -85,13 +120,15 @@ export class ItemCategoryFactory {
      */
     private async getArrayInner(category: resources.ItemCategory, categoryArray: string[] = []): Promise<string[]> {
 
-        // add category key to beginning of the array
-        categoryArray.unshift(category.key);
+        categoryArray.unshift(category.name);
 
         // if category has ParentItemCategory, add it's key to array
         if (!_.isEmpty(category.ParentItemCategory)) {
+            // note, only 4 levels of parents is returned
             return await this.getArrayInner(category.ParentItemCategory, categoryArray);
         }
         return categoryArray;
     }
+
+
 }

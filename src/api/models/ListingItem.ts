@@ -102,7 +102,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
-    public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
+    public static async fetchAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
@@ -123,7 +123,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
-    public static async fetchExpired(): Promise<Collection<ListingItem>> {
+    public static async fetchAllExpired(): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 qb.joinRaw(`LEFT JOIN (SELECT listing_item_id, COUNT(*) AS bid_totals FROM bids GROUP BY listing_item_id) bid_totals
@@ -150,7 +150,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.where('expired_at', '>', Date.now());
 
                 // searchBy by listingItemHash
-                if (options.listingItemHash && typeof options.listingItemHash === 'string' && options.listingItemHash !== '*') {
+                if (options.listingItemHash && options.listingItemHash !== '*') {
                     // qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     // qb.where('listing_item_templates.hash', '=', options.listingItemHash);
 
@@ -159,13 +159,13 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     ListingItem.log.debug('...searchBy by itemHash: ', options.listingItemHash);
                 }
 
-                if (options.msgid && typeof options.msgid === 'string' && options.msgid !== '*') {
+                if (options.msgid && options.msgid !== '*') {
                     qb.where('listing_items.msgid', '=', options.msgid);
                 }
 
                 // searchBy by buyer
                 let joinedBids = false;
-                if (options.buyer && typeof options.buyer === 'string' && options.buyer !== '*') {
+                if (options.buyer && options.buyer !== '*') {
                     if (!joinedBids) {
                         qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
                         joinedBids = true;
@@ -175,7 +175,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 // searchBy by seller
-                if (options.seller && typeof options.seller === 'string' && options.seller !== '*') {
+                if (options.seller && options.seller !== '*') {
                     qb.where('listing_items.seller', '=', options.seller);
                     ListingItem.log.debug('...searchBy by seller: ', options.seller);
                 }
@@ -218,7 +218,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 */
 
                 // searchBy by item price
-                if (typeof options.minPrice === 'number' && typeof options.maxPrice === 'number') {
+                if (options.minPrice !== undefined && options.minPrice > 0 && options.maxPrice !== undefined && options.maxPrice > 0) {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
@@ -226,14 +226,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 // searchBy by item location (country)
-                if (options.country && typeof options.country === 'string') {
+                if (options.country) {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
                     qb.where('item_locations.country', options.country);
                     ListingItem.log.debug('...searchBy by location: ', options.country);
                 }
 
                 // searchBy by shipping destination
-                if (options.shippingDestination && typeof options.shippingDestination === 'string') {
+                if (options.shippingDestination) {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
                     ListingItem.log.debug('...searchBy by shippingDestination: ', options.shippingDestination);

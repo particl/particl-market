@@ -64,10 +64,10 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public async process(event: MarketplaceMessageEvent): Promise<void> {
         this.log.info('Received event: ', event.smsgMessage.type);
 
-        const validContent = await this.validator.validateMessage(event.marketplaceMessage, ActionDirection.INCOMING)
+        const validContent = await this.validator.validateMessage(event.marketplaceMessage, ActionDirection.INCOMING, event.smsgMessage)
             .then(value => value)
             .catch(reason => false);
-        const validSequence = await this.validator.validateSequence(event.marketplaceMessage, ActionDirection.INCOMING)
+        const validSequence = await this.validator.validateSequence(event.marketplaceMessage, ActionDirection.INCOMING, event.smsgMessage)
             .then(value => value)
             .catch(reason => false);
 

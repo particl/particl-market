@@ -145,9 +145,8 @@ export class ListingItemAddActionService extends BaseActionService {
         // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
         // - if there's a matching ListingItemTemplate, create a relation
 
-        // todo: custom categories not supported yet, this propably needs to be refactored
-        const category: resources.ItemCategory = await this.itemCategoryService.createCustomCategoriesFromArray(
-            smsgMessage.to, listingItemAddMessage.item.information.category);
+        await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
+
         const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
         const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({

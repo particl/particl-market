@@ -12,7 +12,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('key').notNullable();
             table.string('name').notNullable();
-            table.string('market').notNullable();
+            table.string('market').nullable();          // .defaultTo('');
             table.text('description').nullable();
 
             table.integer('parent_item_category_id').unsigned().nullable();

@@ -38,7 +38,7 @@ import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingD
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import {ItemImageCreateParams, ListingItemCreateParams} from './ModelCreateParams';
+import { ItemImageCreateParams, ListingItemCreateParams } from './ModelCreateParams';
 import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -222,7 +222,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
     }
 
     private async getModelItemInformation(information: ItemInfo, rootCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
-        const itemCategory = await this.itemCategoryFactory.getModel(information.category, rootCategory);
+        const itemCategory = await this.itemCategoryFactory.getCreateRequest(information.category, rootCategory);
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;

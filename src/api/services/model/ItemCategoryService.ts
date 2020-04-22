@@ -14,8 +14,9 @@ import { ItemCategoryRepository } from '../../repositories/ItemCategoryRepositor
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import {ConfigurableHasher, hash} from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
 
 export class ItemCategoryService {
 
@@ -23,6 +24,7 @@ export class ItemCategoryService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ItemCategoryRepository) public itemCategoryRepo: ItemCategoryRepository,
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -32,6 +34,13 @@ export class ItemCategoryService {
         return this.itemCategoryRepo.findAll();
     }
 
+    /**
+     * to search for default categories, use ''
+     *
+     * @param key
+     * @param market
+     * @param withRelated
+     */
     public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKeyAndMarket(key, market, withRelated);
         if (itemCategory === null) {
@@ -92,70 +101,33 @@ export class ItemCategoryService {
     }
 
     /**
-     * create custom categories (if needed) from array and will return last category <ItemCategory> Model
+     * create custom market categories (if needed) from array and will return last category <ItemCategory> Model
      *
      * @param market receiveAddress
      * @param categoryArray : string[]
      * @returns {Promise<ItemCategory>}
      */
-    public async createCustomCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
+    public async createMarketCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
 
-        let rootCategoryToSearchFrom: resources.ItemCategory = await this.findRoot(market).then(value => value.toJSON());
+        const rootCategory: resources.ItemCategory = await this.findRoot(market).then(value => value.toJSON());
+        const currentCategoryPath: string[] = [];
 
         // this.log.debug('categoryArray', categoryArray);
-        for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
+        // loop through the name path, starting from the root, create each one that needs to be created
+        for (const categoryName of categoryArray) { // [root, cat0name, cat1name, cat2name, ...]
 
-            // todo: findChildCategoryByKeyOrName throws, propably doesnt work very well
-            let existingCategory = await this.findChildCategoryByKeyOrName(rootCategoryToSearchFrom, categoryKeyOrName);
+            currentCategoryPath.push(categoryName);
 
-            if (!existingCategory) {
-
-                // category did not exist, so we need to create it
-                const categoryCreateRequest = {
-                    name: categoryKeyOrName,
-                    market,
-                    parent_item_category_id: rootCategoryToSearchFrom.id
-                } as ItemCategoryCreateRequest;
-                categoryCreateRequest.key = ConfigurableHasher.hash(categoryCreateRequest, new HashableListingItemTemplateConfig());
-
-                // create and assign it as existingCategoru
-                existingCategory = await this.create(categoryCreateRequest).then(value => value.toJSON());
-
-            } else {
-                // category exists, fetch it
-                existingCategory = await this.findOneByKeyAndMarket(categoryKeyOrName, market).then(value => value.toJSON());
-            }
-            rootCategoryToSearchFrom = existingCategory;
-        }
-
-        // return the last category
-        return rootCategoryToSearchFrom;
-    }
-
-    /**
-     * return the ChildCategory having the given key or name
-     *
-     * @param {"resources".ItemCategory} rootCategory
-     * @param {string} keyOrName
-     * @returns {Promise<"resources".ItemCategory>}
-     */
-    public async findChildCategoryByKeyOrName(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
-
-        if (rootCategory.key === keyOrName) {
-            // root case
-            return rootCategory;
-        } else {
-            // searchBy the children for a match
-            const childCategories = rootCategory.ChildItemCategories;
-            const found = _.find(childCategories, (childCategory) => {
-                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
+            await this.itemCategoryFactory.findChildCategoryByPath(currentCategoryPath, rootCategory).catch(async reason => {
+                // if there was no child category, then create it
+                const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentCategoryPath, rootCategory);
+                await this.create(createRequest);
             });
-            if (found) {
-                return found;
-            } else {
-                throw new NotFoundException(keyOrName);
-            }
         }
+
+        return await this.findOneByKeyAndMarket(hash(categoryArray), market).then(value => value.toJSON());
     }
+
+
 
 }

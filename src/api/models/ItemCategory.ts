@@ -27,11 +27,11 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
     public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
         if (withRelated) {
-            return await ItemCategory.where<ItemCategory>({ key, market }).fetch({
+            return await ItemCategory.where<ItemCategory>({ key, market: market !== '' ? market : null }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ItemCategory.where<ItemCategory>({ key, market }).fetch();
+            return await ItemCategory.where<ItemCategory>({ key, market: market !== '' ? market : null }).fetch();
         }
     }
 

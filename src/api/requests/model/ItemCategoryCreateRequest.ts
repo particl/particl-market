@@ -11,17 +11,13 @@ export class ItemCategoryCreateRequest extends RequestBody implements ModelReque
 
     public parent_item_category_id: number;
 
-    public id: number;  // todo: what do we need this for in here?
-
     @IsNotEmpty()
     public key: string;
 
     @IsNotEmpty()
     public name: string;
 
-    @IsNotEmpty()
     public market: string;
-
     public description: string;
 }
 // tslint:enable:variable-name

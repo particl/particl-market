@@ -4,6 +4,7 @@
 
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ActionDirection } from '../enums/ActionDirection';
+import * as resources from "resources";
 
 export interface ActionMessageValidatorInterface {
 
@@ -13,8 +14,9 @@ export interface ActionMessageValidatorInterface {
      *
      * @param marketplaceMessage
      * @param direction
+     * @param smsgMessage, only passed when receiving a message
      */
-    validateMessage(marketplaceMessage: MarketplaceMessage, direction: ActionDirection): Promise<boolean>;
+    validateMessage(marketplaceMessage: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean>;
 
     /**
      * called after validateMessage and after receiving (BaseActionMessageProcessor.process) the message
@@ -22,6 +24,7 @@ export interface ActionMessageValidatorInterface {
      *
      * @param marketplaceMessage
      * @param direction
+     * @param smsgMessage, only passed when receiving a message
      */
-    validateSequence(marketplaceMessage: MarketplaceMessage, direction: ActionDirection): Promise<boolean>;
+    validateSequence(marketplaceMessage: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean>;
 }
