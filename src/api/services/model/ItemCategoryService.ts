@@ -72,6 +72,10 @@ export class ItemCategoryService {
         return await this.itemCategoryRepo.findRoot(market);
     }
 
+    public async findDefaultRoot(): Promise<ItemCategory> {
+        return await this.itemCategoryRepo.findDefaultRoot();
+    }
+
     @validate()
     public async search(@request(ItemCategorySearchParams) options: ItemCategorySearchParams,
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {

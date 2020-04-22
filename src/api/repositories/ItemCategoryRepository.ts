@@ -47,6 +47,10 @@ export class ItemCategoryRepository {
         }
     }
 
+    public async findDefaultRoot(): Promise<ItemCategory> {
+        return await this.ItemCategoryModel.fetchDefaultRoot();
+    }
+
     /**
      *
      * @param options

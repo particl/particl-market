@@ -64,11 +64,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      *  [0]: categoryId
      *  [1]: categoryName
      *  [2]: description
-     *  [3]: parentCategoryId
-     *
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
+     *  [3]: parentCategoryId, default: root
      *
      * @param {RpcRequest} data
      * @returns {Promise<void>}
@@ -100,6 +96,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             }
             data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
         } else {
+            // if parent wasnt given, use the root
             data.params[3] = await this.itemCategoryService.findRoot(itemCategory.market).then(value => value.toJSON());
         }
 
@@ -107,20 +104,15 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public usage(): string {
-        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>] ';
+        return this.getName() + ' <categoryId> <categoryName> <description> [parentItemCategoryId] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID of the category we want to \n'
-            + '                                     update. \n'
-            + '    <categoryName>                - String - The new name of the category we want \n'
-            + '                                     to update. \n'
-            + '    <description>                 - String - The new description of the category \n'
-            + '                                     we want to update. \n'
-            + '    <parentItemCategoryId>        - [optional] Numeric - The ID that identifies the \n'
-            + '                                     new parent category of the category we want to \n'
-            + '                                     update; default is the root category. ';
+            + '    <categoryId>                  - Numeric - The ID of the ItemCategory. \n'
+            + '    <categoryName>                - String - The new name for the ItemCategory. \n'
+            + '    <description>                 - String - The new description for the ItemCategory. \n'
+            + '    <parentItemCategoryId>        - [optional] Numeric - The ID of the new parent ItemCategory; default is the market root category. ';
     }
 
     public description(): string {
@@ -130,6 +122,5 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     public example(): string {
         return 'category ' + this.getName() + ' 81 updatedCategory \'Updated category description\' 80 ';
     }
-
 
 }

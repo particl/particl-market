@@ -73,6 +73,9 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      *  [2]: description
      *  [3]: parentItemCategoryId
      *
+     * parentItemCategoryId is not optional since creating root categories should not be allowed this way.
+     * root category should be created when market is created.
+     *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
@@ -84,7 +87,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         } else if (data.params.length < 3) {
             throw new MissingParamException('description');
         } else if (data.params.length < 4) {
-            throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
+            throw new MissingParamException('parentItemCategoryId');
         }
 
         if (typeof data.params[0] !== 'number') {
@@ -97,12 +100,17 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('parentItemCategoryId', 'number');
         }
 
-        data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
-        const market: resources.Market = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
-        data.params[3] = market;
+        const market: resources.Market = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+        const parentCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
 
-        if (market.type === MarketType.STOREFRONT) {
-            throw new MessageException()
+        data.params[0] = market;
+
+        if (market.type !== MarketType.STOREFRONT_ADMIN) {
+            throw new MessageException('You can only add ItemCategories on Storefronts if you have the publish rights.');
+        }
+
+        if (market.receiveAddress !== parentCategory.market) {
+            throw new MessageException('Parent ItemCategory belongs to different Market.');
         }
 
         return data;
@@ -117,15 +125,14 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             + '    <marketId>                    - number - Market ID. '
             + '    <categoryName>                - String - The name of the category to create. \n'
             + '    <description>                 - String - A description of the category to create. \n'
-            + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the \n'
-            + '                                     category we\'re creating. \n';
+            + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the category we\'re creating. \n';
     }
 
     public description(): string {
-        return 'Command for adding an item category.';
+        return 'Command for adding an ItemCategory. You can only add ItemCategories on Storefronts if you have the publish rights.';
     }
 
     public example(): string {
-        return 'category ' + this.getName() + ' newCategory \'description of the new category\' cat_wholesale_other ';
+        return 'category ' + this.getName() + ' 100 newCategory \'description of the new category\' 1 ';
     }
 }

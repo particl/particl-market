@@ -3,18 +3,19 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MarketService } from '../../services/model/MarketService';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ItemCategoryService} from '../../services/model/ItemCategoryService';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {ItemCategory} from '../../models/ItemCategory';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MarketService} from '../../services/model/MarketService';
+import {MarketType} from '../../enums/MarketType';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -40,7 +41,14 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         const market: resources.Market = data.params[0];
-        return await this.itemCategoryService.findRoot(market ? market.receiveAddress : undefined);
+        if (market && market.type !== MarketType.MARKETPLACE) {
+            // for storefronts its the list of market categories
+            return await this.itemCategoryService.findRoot(market.receiveAddress);
+        } else {
+            // category list for MarketType.MARKETPLACE is the list of default categories
+            // no market given? return default
+            return await this.itemCategoryService.findDefaultRoot();
+        }
     }
 
     /**
