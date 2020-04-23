@@ -4,20 +4,23 @@
 
 import * as resources from 'resources';
 import * as _ from 'lodash';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { ListingItemService } from '../../services/model/ListingItemService';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
-import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Core, Targets, Types} from '../../../constants';
+import {ItemCategoryService} from '../../services/model/ItemCategoryService';
+import {ListingItemService} from '../../services/model/ListingItemService';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {ItemCategoryUpdateRequest} from '../../requests/model/ItemCategoryUpdateRequest';
+import {ItemCategory} from '../../models/ItemCategory';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MessageException} from '../../exceptions/MessageException';
+import {MarketService} from '../../services/model/MarketService';
+import {MarketType} from '../../enums/MarketType';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -27,6 +30,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.CATEGORY_UPDATE);
@@ -98,6 +102,22 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         } else {
             // if parent wasnt given, use the root
             data.params[3] = await this.itemCategoryService.findRoot(itemCategory.market).then(value => value.toJSON());
+        }
+
+        // default categories cannot be edited
+        if (!itemCategory.market) {
+            throw new MessageException('Default ItemCategories cannot be modified.');
+        }
+
+        // custom categories can only be modified if market.type = MarketType.STOREFRONT_ADMIN
+        // todo: fix when auth is added
+        const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(itemCategory.market).then(value => value.toJSON());
+        const adminMarket = _.find(markets, market => {
+            return market.type === MarketType.STOREFRONT_ADMIN;
+        });
+
+        if (_.isEmpty(adminMarket)) {
+            throw new MessageException('You cannot modify this ItemCategory.');
         }
 
         return data;
