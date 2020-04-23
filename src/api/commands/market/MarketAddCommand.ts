@@ -27,6 +27,7 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
 import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import {ItemCategoryService} from '../../services/model/ItemCategoryService';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -37,6 +38,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
     ) {
         super(Commands.MARKET_ADD);
@@ -68,6 +70,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         } else {
             // TODO: import key
         }
+
+        // create root category for market
+        await this.itemCategoryService.createMarketCategoriesFromArray(data.params[4], ['root']);
+
         return await this.marketService.create({
             profile_id: profile.id,
             identity_id: identity.id,

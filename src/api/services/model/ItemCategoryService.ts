@@ -128,16 +128,18 @@ export class ItemCategoryService {
         const currentCategoryPath: string[] = [];
 
         // this.log.debug('categoryArray', categoryArray);
+
         // loop through the name path, starting from the root, create each one that needs to be created
         for (const categoryName of categoryArray) { // [root, cat0name, cat1name, cat2name, ...]
 
             currentCategoryPath.push(categoryName);
 
-            await this.itemCategoryFactory.findChildCategoryByPath(currentCategoryPath, rootCategory).catch(async reason => {
-                // if there was no child category, then create it
-                const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentCategoryPath, rootCategory);
-                await this.create(createRequest);
-            });
+            await this.itemCategoryFactory.findChildCategoryByPath(currentCategoryPath, rootCategory)
+                .catch(async reason => {
+                    // if there was no child category, then create it
+                    const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentCategoryPath, rootCategory);
+                    await this.create(createRequest);
+                });
         }
 
         return await this.findOneByKeyAndMarket(hash(categoryArray), market).then(value => value.toJSON());

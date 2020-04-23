@@ -33,6 +33,8 @@ import { CryptocurrencyAddressCreateRequest } from '../../requests/model/Cryptoc
 import { ItemPriceService } from '../../services/model/ItemPriceService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -47,7 +49,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ItemPriceService) public itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
         // tslint:enable:max-line-length
     ) {
         super(Commands.TEMPLATE_POST);
@@ -91,6 +95,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
             listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
+
+        // this is not yet strictly necessary...
+        // if ListingItem contains a category, create the market categories
+        const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
+        await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
 
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 

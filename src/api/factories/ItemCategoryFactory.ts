@@ -101,7 +101,7 @@ export class ItemCategoryFactory {
     }
 
     /**
-     * Converts a category to an array of category keys
+     * Converts a category to an array of category names
      * ['rootcatkey', 'subcatkey', ..., 'catkey']
      *
      * @param category : resources.ItemCategory
@@ -124,7 +124,7 @@ export class ItemCategoryFactory {
 
         // if category has ParentItemCategory, add it's key to array
         if (!_.isEmpty(category.ParentItemCategory)) {
-            // note, only 4 levels of parents is returned
+            // note, currently we only have 4 levels of parents in the model
             return await this.getArrayInner(category.ParentItemCategory, categoryArray);
         }
         return categoryArray;
