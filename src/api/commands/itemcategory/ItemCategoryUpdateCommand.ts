@@ -4,23 +4,23 @@
 
 import * as resources from 'resources';
 import * as _ from 'lodash';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {inject, named} from 'inversify';
-import {request, validate} from '../../../core/api/Validate';
-import {Core, Targets, Types} from '../../../constants';
-import {ItemCategoryService} from '../../services/model/ItemCategoryService';
-import {ListingItemService} from '../../services/model/ListingItemService';
-import {RpcRequest} from '../../requests/RpcRequest';
-import {ItemCategoryUpdateRequest} from '../../requests/model/ItemCategoryUpdateRequest';
-import {ItemCategory} from '../../models/ItemCategory';
-import {RpcCommandInterface} from '../RpcCommandInterface';
-import {Commands} from '../CommandEnumType';
-import {BaseCommand} from '../BaseCommand';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {MessageException} from '../../exceptions/MessageException';
-import {MarketService} from '../../services/model/MarketService';
-import {MarketType} from '../../enums/MarketType';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { inject, named } from 'inversify';
+import { request, validate } from '../../../core/api/Validate';
+import { Core, Targets, Types } from '../../../constants';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+import { ItemCategory } from '../../models/ItemCategory';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MessageException } from '../../exceptions/MessageException';
+import { MarketService } from '../../services/model/MarketService';
+import { MarketType } from '../../enums/MarketType';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
