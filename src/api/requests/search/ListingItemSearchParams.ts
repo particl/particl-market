@@ -2,22 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
-import { RequestBody } from '../../../core/api/RequestBody';
-import { SearchOrder } from '../../enums/SearchOrder';
-import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
+import { BaseSearchParams } from './BaseSearchParams';
 
-export class ListingItemSearchParams extends RequestBody {
-
-    @IsNotEmpty()
-    public page: number;
-    @IsNotEmpty()
-    public pageLimit: number;
-    @IsNotEmpty()
-    @IsEnum(SearchOrder)
-    public order: SearchOrder;
-    @IsEnum(ListingItemSearchOrderField)
-    public orderField: ListingItemSearchOrderField;
+export class ListingItemSearchParams extends BaseSearchParams {
 
     public market: string;
     public categories: string[] | number[];
