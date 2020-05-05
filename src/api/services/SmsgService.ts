@@ -95,24 +95,28 @@ export class SmsgService {
                     this.log.info('No new smsg messages waiting to be processed.');
                     return undefined;
                 });
-            if (!lastSmsgMessage) {
+
+            this.log.debug('pushUnreadCoreSmsgMessages(), lastSmsgMessage: ', JSON.stringify(lastSmsgMessage, null, 2));
+            if (_.isEmpty(lastSmsgMessage)) {
                 const earliestDate = 60 * 60 * 24 * parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
                 from = Math.trunc(Date.now() / 1000) - earliestDate;
             } else {
                 from = Math.trunc(lastSmsgMessage.received / 1000);
             }
-            from = Math.trunc(lastSmsgMessage.received / 1000);
         }
 
         if (!to) {
             to = Math.trunc(Date.now() / 1000);
         }
 
-        const result: SmsgZmqPushResult = await this.smsgZmqPush({
+        const pushOptions: SmsgZmqPushOptions = {
             timefrom: from,             // timefrom, the last SmsgMessage received time
             timeto: to,                 // timeto, now
             unreadonly: true
-        } as SmsgZmqPushOptions);
+        };
+        this.log.debug('pushUnreadCoreSmsgMessages(), pushOptions: ', JSON.stringify(pushOptions, null, 2));
+
+        const result: SmsgZmqPushResult = await this.smsgZmqPush(pushOptions);
 
         this.log.debug('requestUnreadCoreSmsgMessagesSinceShutdown(), numsent:', result.numsent);
         return result;
