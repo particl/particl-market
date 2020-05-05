@@ -89,13 +89,13 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
             pageLimit: 10,
             order: SearchOrder.ASC,
             orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
-            category: categoryId
-        };
+            categories: [categoryId]
+        } as ListingItemTemplateSearchParams;
 
         this.log.debug('ListingItemTemplateSearchParams: ', JSON.stringify(searchParams, null, 2));
 
         // check listingItemTemplate related with category
-        await this.listingItemTemplateService.search(searchParams as ListingItemTemplateSearchParams)
+        await this.listingItemTemplateService.search(searchParams)
             .then(values => {
                 const listingItemTemplates = values.toJSON();
                 if (listingItemTemplates.length > 0) {

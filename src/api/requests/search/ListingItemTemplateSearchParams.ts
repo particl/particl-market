@@ -5,12 +5,10 @@
 import { BaseSearchParams } from './BaseSearchParams';
 
 export class ListingItemTemplateSearchParams extends BaseSearchParams {
-    public profileId: number;
 
-    public searchString: string;
-
-    public categories: string[] | number[];
-
-    public hasListingItems: boolean;
+    public profileId?: number;
+    public searchString?: string;
+    public categories?: string[] | number[];
+    public hasListingItems?: boolean;
 
 }

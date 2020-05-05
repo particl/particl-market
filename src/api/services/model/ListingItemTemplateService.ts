@@ -135,9 +135,7 @@ export class ListingItemTemplateService {
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
      */
-    @validate(true)
-    public async search(
-        @request(ListingItemTemplateSearchParams) options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+    public async search(options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
         return await this.listingItemTemplateRepo.search(options);
     }
 

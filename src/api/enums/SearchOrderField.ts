@@ -7,6 +7,9 @@
  *
  */
 
+export type SearchOrderField = BidSearchOrderField | OrderSearchOrderField | OrderItemSearchOrderField | CommentSearchOrderField
+    | SmsgMessageSearchOrderField | ListingItemTemplateSearchOrderField | ListingItemSearchOrderField;
+
 // TODO: deprecated, remove
 export enum SearchOrderField_REMOVE_THIS {
     STATE = 'STATE',
