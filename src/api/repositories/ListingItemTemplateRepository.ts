@@ -48,7 +48,7 @@ export class ListingItemTemplateRepository {
      */
     public async findLatestByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<ListingItemTemplate> {
         const collection = await this.ListingItemTemplateModel.fetchByTemplateAndMarket(parentTemplateId, market, false);
-        return await collection.first();
+        return collection.first();
     }
 
     /**
