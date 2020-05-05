@@ -19,6 +19,7 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 
 export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatusResponse[]> {
 
@@ -47,25 +48,23 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         const buyer = data.params[1];
         const seller = data.params[2];
 
-        const type = 'ALL';         // todo: refactor to use * instead of ALL
-        const profileId = 'ALL';    // todo: refactor to use * instead of ALL
+        // const type = 'ALL';         // todo: refactor to use * instead of ALL
+        // const profileId = 'ALL';    // todo: refactor to use * instead of ALL
 
         // searchBy for listingitem(s) with certain seller and having bids from certain buyer
         const listingItems: resources.ListingItem[] = await this.listingItemService.search({
+            order: SearchOrder.ASC,
+            orderField: ListingItemSearchOrderField.UPDATED_AT,
+            page: 0,
+            pageLimit: 100,
             listingItemHash: itemHash,
             buyer,
             seller,
-            order: SearchOrder.ASC.toString(),
-            type,
-            profileId,
-            searchString: '',
-            page: 0,
-            pageLimit: 100,
             withBids: true
         } as ListingItemSearchParams, true).then(value => value.toJSON());
 
 
-        // Extract status details from the orderItems, since that's what we want to return to the userd
+        // Extract status details from the orderItems, since that's what we want to return to the user
         const orderItemStatuses: OrderItemStatusResponse[] = [];
         for (const listingItem of listingItems) {
             this.log.debug('listingItem.id:', listingItem.id);

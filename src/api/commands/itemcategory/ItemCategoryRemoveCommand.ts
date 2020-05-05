@@ -21,7 +21,7 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import {ListingItemTemplateSearchOrderField, SearchOrderField_REMOVE_THIS} from '../../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
