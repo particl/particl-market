@@ -86,7 +86,7 @@ export class ItemCategoryFactory {
         let parentCategory: resources.ItemCategory = JSON.parse(JSON.stringify(rootCategory));
 
         for (const categoryName of path) { // [root, parentCategoryPath, newOne]
-            const found = _.find(parentCategory!.ChildItemCategories, (childCategory) => {
+            const found = _.find(parentCategory.ChildItemCategories, (childCategory) => {
                 return childCategory.name === categoryName;
             });
 
