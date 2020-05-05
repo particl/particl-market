@@ -2,9 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ActionDirection } from '../enums/ActionDirection';
-import * as resources from "resources";
 
 export interface ActionMessageValidatorInterface {
 
