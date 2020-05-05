@@ -139,10 +139,10 @@ export class ListingItemAddActionService extends BaseActionService {
 
         const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // - if ListingItem contains a custom category, create them
+        // if ListingItem contains a custom category, create them
         await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
 
-        // - fetch the root category used to create the listingItemCreateRequest
+        // fetch the root category used to create the listingItemCreateRequest
         const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
         const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({

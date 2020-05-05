@@ -144,7 +144,4 @@ export class ItemCategoryService {
 
         return await this.findOneByKeyAndMarket(hash(categoryArray), market).then(value => value.toJSON());
     }
-
-
-
 }

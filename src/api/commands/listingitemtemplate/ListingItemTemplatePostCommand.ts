@@ -88,6 +88,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const fromAddress = market.publishAddress;
         const toAddress = market.receiveAddress;
 
+        // this is not yet strictly necessary...
+        // if ListingItem contains a category, create the market categories
+        const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
+        await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
+
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee) {
             // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
@@ -95,11 +100,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
             listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
-
-        // this is not yet strictly necessary...
-        // if ListingItem contains a category, create the market categories
-        const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
-        await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
 
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
