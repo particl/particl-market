@@ -21,10 +21,10 @@ import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
-import {ItemCategoryUpdateRequest} from '../../requests/model/ItemCategoryUpdateRequest';
-import {ItemLocationCreateRequest} from '../../requests/model/ItemLocationCreateRequest';
-import {ShippingDestinationCreateRequest} from '../../requests/model/ShippingDestinationCreateRequest';
-import {ItemImageCreateRequest} from '../../requests/model/ItemImageCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
+import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
 
 export class ItemInformationService {
 
@@ -85,9 +85,6 @@ export class ItemInformationService {
         delete body.shippingDestinations;
         delete body.itemImages;
 
-        // todo: fix this
-
-        // ListingItemTemplates dont have ItemCategory
         if (!_.isEmpty(itemCategory)) {
             // get existing ItemCategory or create new one
             const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(itemCategory).then(value => value.toJSON());
@@ -204,9 +201,11 @@ export class ItemInformationService {
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
         this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
-        if (createRequest.id) {
-            result = await this.itemCategoryService.findOne(createRequest.id);
-        } else if (createRequest.key && createRequest.market) {
+
+        // if (createRequest.id) {
+        //    result = await this.itemCategoryService.findOneDefaultByKey(createRequest.id);
+        // }
+        if (createRequest.key && createRequest.market) {
             result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
         } else {
             result = await this.itemCategoryService.create(createRequest);
