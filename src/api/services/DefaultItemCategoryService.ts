@@ -170,10 +170,10 @@ export class DefaultItemCategoryService {
         return await this.itemCategoryService.findOneByKeyAndMarket(categoryRequest.key, categoryRequest.market)
             .then(async categoryModel => {
                 const category: resources.ItemCategory = categoryModel.toJSON();
-                return await this.itemCategoryService.update(category.id, categoryRequest).then(value => value.toJSON());
+                return await this.itemCategoryService.update(category.id, categoryRequest as ItemCategoryUpdateRequest).then(value => value.toJSON());
             })
             .catch(async reason => {
-                return await this.itemCategoryService.create(categoryRequest).then(value => value.toJSON());
+                return await this.itemCategoryService.create(categoryRequest as ItemCategoryCreateRequest).then(value => value.toJSON());
             });
     }
 
