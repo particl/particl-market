@@ -22,11 +22,11 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
-                .inTable('profiles').onDelete('cascade');
+                .inTable('profiles').onDelete('CASCADE');
 
-            table.integer('wallet_id').unsigned().notNullable();
-            table.foreign('wallet_id').references('id')
-                .inTable('wallets').onDelete('CASCADE');
+            table.integer('identity_id').unsigned().notNullable();
+            table.foreign('identity_id').references('id')
+                .inTable('identities').onDelete('CASCADE');
 
             table.unique(['receive_address', 'profile_id']);
             table.unique(['name', 'profile_id']);
