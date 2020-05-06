@@ -67,7 +67,7 @@ export class ItemInformationService {
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
         const body: ItemInformationCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -207,6 +207,8 @@ export class ItemInformationService {
         // }
         if (createRequest.key && createRequest.market) {
             result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
+        } else if (createRequest.key) {
+            result = await this.itemCategoryService.findOneDefaultByKey(createRequest.key);
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }

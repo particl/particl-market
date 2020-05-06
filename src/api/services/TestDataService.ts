@@ -631,6 +631,8 @@ export class TestDataService {
 
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
 
+            this.log.debug('savedListingItem: ', JSON.stringify(savedListingItem, null, 2));
+
             // TODO: make this optional/configurable
             if (generateParams.generatePaymentInformation && generateParams.generateEscrow && generateParams.generateItemPrice)  {
                 await this.createListingItemSmsgMessage(savedListingItem);
@@ -1248,10 +1250,10 @@ export class TestDataService {
 
         const seller = generateParams.seller ? generateParams.seller : market.Identity.address;
 
-        this.log.debug('seller: ', seller);
-        this.log.debug('market: ', JSON.stringify(market, null, 2));
+        // this.log.debug('seller: ', seller);
+        // this.log.debug('market: ', JSON.stringify(market, null, 2));
 
-        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1365,8 +1367,9 @@ export class TestDataService {
             const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
             this.log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
-            itemCategory.market = sellerMarket.receiveAddress;
-            const randomCategory: resources.ItemCategory = await this.getRandomCategory(sellerMarket.receiveAddress);
+            // use a default category
+            // itemCategory.market = sellerMarket.receiveAddress;
+            const randomCategory: resources.ItemCategory = await this.getRandomCategory();
             this.log.debug('randomCategory: ', JSON.stringify(randomCategory, null, 2));
             itemCategory.key = randomCategory.key;
         }

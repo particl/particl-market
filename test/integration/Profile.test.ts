@@ -113,14 +113,14 @@ describe('Profile', () => {
     afterAll(async () => {
         //
     });
-/*
+
     test('Should throw ValidationException because we want to create a empty Profile', async () => {
         expect.assertions(1);
         await profileService.create({} as ProfileCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-*/
+
     test('Should create a new Profile with just delivery addresses', async () => {
         const result: resources.Profile = await profileService.create(testData).then(value => value.toJSON());
 
@@ -131,7 +131,7 @@ describe('Profile', () => {
 
         profile = result;
     });
-/*
+
     test('Should list Profiles with our new create one', async () => {
         const profiles: resources.Profile[] = await profileService.findAll().then(value => value.toJSON());
         expect(profiles.length).toBe(2); // including default one
@@ -187,5 +187,5 @@ describe('Profile', () => {
             expect(e).toEqual(new NotFoundException(result.ShoppingCart[0].id));
         });
     });
-*/
+
 });
