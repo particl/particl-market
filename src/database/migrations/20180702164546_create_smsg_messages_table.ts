@@ -31,6 +31,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('to').notNullable();
             table.text('text').nullable();
 
+            table.integer('processed_count').notNullable().defaultTo(0);
+            table.integer('processed_at').notNullable().defaultTo(0);
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
 

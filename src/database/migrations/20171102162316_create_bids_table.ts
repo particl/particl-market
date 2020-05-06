@@ -16,6 +16,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('hash').notNullable();
             table.integer('generated_at').notNullable();
 
+            table.integer('profile_id').unsigned().nullable()/*.notNullable()*/;
+            table.foreign('profile_id').references('id')
+                .inTable('profiles').onDelete('cascade');
+
             table.integer('listing_item_id').unsigned().notNullable();
             table.foreign('listing_item_id').references('id')
                 .inTable('listing_items').onDelete('cascade');

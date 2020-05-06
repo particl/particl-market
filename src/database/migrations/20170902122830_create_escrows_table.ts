@@ -12,6 +12,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('type').notNullable();
             table.integer('seconds_to_lock').unsigned().nullable();
+            table.string('release_type').nullable();
 
             table.integer('payment_information_id').unsigned();
             table.foreign('payment_information_id').references('id')

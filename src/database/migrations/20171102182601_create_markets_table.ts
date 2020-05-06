@@ -15,6 +15,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('receive_address').notNullable();
             table.string('publish_key').nullable();
             table.string('publish_address').nullable();
+            table.boolean('removed').notNullable().defaultTo(false);
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
