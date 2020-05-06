@@ -4,9 +4,9 @@
 
 import * as Knex from 'knex';
 
-
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
+
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
             table.string('name').notNullable();
@@ -25,10 +25,12 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('profiles').onDelete('cascade');
 
             table.integer('wallet_id').unsigned().notNullable();
-            table.foreign('wallet_id').references('id').inTable('wallets').onDelete('CASCADE');
+            table.foreign('wallet_id').references('id')
+                .inTable('wallets').onDelete('CASCADE');
 
-            // table.unique(['name', 'profile_id']);
             table.unique(['receive_address', 'profile_id']);
+            table.unique(['name', 'profile_id']);
+
         })
     ]);
 };
