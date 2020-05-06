@@ -48,21 +48,24 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchRoot(market?: string): Promise<ItemCategory> {
-        const collection: Collection<ItemCategory> = await this.searchBy({
+        const params = {
             market,
             isRoot: true,
             isDefault: !!market
-        } as ItemCategorySearchParams, true);
-
+        } as ItemCategorySearchParams;
+        this.log.debug('fetchRoot, params:', JSON.stringify(params, null, 2));
+        const collection: Collection<ItemCategory> = await this.searchBy(params, true);
         return collection.first();
     }
 
     public static async fetchDefaultRoot(): Promise<ItemCategory> {
-        const collection: Collection<ItemCategory> = await this.searchBy({
+        const params = {
             isRoot: true,
             isDefault: true
-        } as ItemCategorySearchParams, true);
+        } as ItemCategorySearchParams;
+        this.log.debug('fetchDefaultRoot, params:', JSON.stringify(params, null, 2));
 
+        const collection: Collection<ItemCategory> = await this.searchBy(params, true);
         return collection.first();
     }
 

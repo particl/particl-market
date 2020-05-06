@@ -152,6 +152,7 @@ export class DefaultItemCategoryService {
         const path: string[] = [];
 
         if (parents) {
+            // this.log.debug('insertOrUpdateCategory(), parents: ', parents);
             const parent = _.last(parents);
             if (parent) {
                 categoryRequest.parent_item_category_id = parent.id;
@@ -164,15 +165,21 @@ export class DefaultItemCategoryService {
         }
         path.push(categoryRequest.name);
 
-        // key is a hash of the path array
-        categoryRequest.key = hash(path);
+        this.log.debug('insertOrUpdateCategory(), path: ', path.toString());
 
+        // key is a hash of the path array
+        categoryRequest.key = hash(path.toString());
+        // this.log.debug('insertOrUpdateCategory(), path.hash: ', categoryRequest.key);
+
+        this.log.debug('insertOrUpdateCategory(), categoryRequest: ', categoryRequest);
         return await this.itemCategoryService.findOneByKeyAndMarket(categoryRequest.key, categoryRequest.market)
             .then(async categoryModel => {
                 const category: resources.ItemCategory = categoryModel.toJSON();
+                this.log.debug('insertOrUpdateCategory(), FOUND: ', category.id);
                 return await this.itemCategoryService.update(category.id, categoryRequest as ItemCategoryUpdateRequest).then(value => value.toJSON());
             })
             .catch(async reason => {
+                this.log.debug('insertOrUpdateCategory(), NOT FOUND: ', reason);
                 return await this.itemCategoryService.create(categoryRequest as ItemCategoryCreateRequest).then(value => value.toJSON());
             });
     }

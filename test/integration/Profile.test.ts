@@ -19,16 +19,13 @@ import { FavoriteItemService } from '../../src/api/services/model/FavoriteItemSe
 import { ShoppingCartService } from '../../src/api/services/model/ShoppingCartService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { Profile } from '../../src/api/models/Profile';
 import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/model/FavoriteItemCreateRequest';
 import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
-import {GenerateProfileParams} from '../../src/api/requests/testdata/GenerateProfileParams';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -91,7 +88,6 @@ describe('Profile', () => {
         favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
         shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
 
-        // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -117,14 +113,14 @@ describe('Profile', () => {
     afterAll(async () => {
         //
     });
-
+/*
     test('Should throw ValidationException because we want to create a empty Profile', async () => {
         expect.assertions(1);
         await profileService.create({} as ProfileCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-
+*/
     test('Should create a new Profile with just delivery addresses', async () => {
         const result: resources.Profile = await profileService.create(testData).then(value => value.toJSON());
 
@@ -135,7 +131,7 @@ describe('Profile', () => {
 
         profile = result;
     });
-
+/*
     test('Should list Profiles with our new create one', async () => {
         const profiles: resources.Profile[] = await profileService.findAll().then(value => value.toJSON());
         expect(profiles.length).toBe(2); // including default one
@@ -191,5 +187,5 @@ describe('Profile', () => {
             expect(e).toEqual(new NotFoundException(result.ShoppingCart[0].id));
         });
     });
-
+*/
 });

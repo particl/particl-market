@@ -40,9 +40,6 @@ export class MarketService {
      * @param withRelated
      */
     public async getDefaultForProfile(profileId: number, withRelated: boolean = true): Promise<Market> {
-
-        this.log.debug('getDefaultForProfile(), profileId: ', profileId);
-
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
         const marketIdSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID;
@@ -52,10 +49,7 @@ export class MarketService {
             this.log.error(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
             throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.');
         }
-        const result = await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
-        // this.log.debug('getDefaultForProfile(), result: ', JSON.stringify(result.toJSON(), null, 2));
-        this.log.debug('getDefaultForProfile(), result: ', JSON.stringify(result.toJSON(), null, 2));
-        return result;
+        return await this.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {

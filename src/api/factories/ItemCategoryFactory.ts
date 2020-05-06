@@ -54,7 +54,7 @@ export class ItemCategoryFactory {
      */
     public async calculateKey(category: resources.ItemCategory): Promise<string> {
         const path: string[] = await this.getArray(category);
-        return hash(path);
+        return hash(path.toString());
     }
 
     /**

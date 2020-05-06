@@ -1236,7 +1236,6 @@ export class TestDataService {
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
         // TODO: refactor this GenerateListingItemParams mess
-
         const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         let market: resources.Market;
@@ -1248,6 +1247,11 @@ export class TestDataService {
         }
 
         const seller = generateParams.seller ? generateParams.seller : market.Identity.address;
+
+        this.log.debug('seller: ', seller);
+        this.log.debug('market: ', JSON.stringify(market, null, 2));
+
+        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1350,15 +1354,21 @@ export class TestDataService {
             ? this.generateItemLocationData()
             : undefined;
 
+        this.log.debug('generateParams.categoryId: ', JSON.stringify(generateParams.categoryId, null, 2));
+
         const itemCategory = {} as ItemCategoryUpdateRequest;
         if (generateParams.categoryId) {
             itemCategory.id = generateParams.categoryId;
         } else {
             // itemCategory.market is now required, since Categories are Market specific now
             // todo: fix, this isn't working without generateParams.soldOnMarketId
-            itemCategory.key = this.randomCategoryKey();
             const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
+            this.log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+
             itemCategory.market = sellerMarket.receiveAddress;
+            const randomCategory: resources.ItemCategory = await this.getRandomCategory(sellerMarket.receiveAddress);
+            this.log.debug('randomCategory: ', JSON.stringify(randomCategory, null, 2));
+            itemCategory.key = randomCategory.key;
         }
 
         const itemInformationCreateRequest = {
@@ -1481,28 +1491,11 @@ export class TestDataService {
         return listingItemTemplateCreateRequest;
     }
 
-    private randomCategoryKey(): string {
-        const categoryKeys = [
-            'cat_high_business_corporate', 'cat_high_vehicles_aircraft_yachts', 'cat_high_real_estate', 'cat_high_luxyry_items',
-            'cat_high_services', 'cat_housing_vacation_rentals', 'cat_housing_travel_services', 'cat_housing_apartments_rental_housing',
-            'cat_apparel_adult', 'cat_apparel_children', 'cat_apparel_bags_luggage', 'cat_apparel_other', 'cat_app_android',
-            'cat_app_ios', 'cat_app_windows', 'cat_app_mac', 'cat_app_web_development', 'cat_app_other', 'cat_auto_cars_truck_parts',
-            'cat_auto_motorcycle', 'cat_auto_rv_boating', 'cat_auto_other', 'cat_media_books_art_print', 'cat_media_music_physical',
-            'cat_media_music_digital', 'cat_media_movies_entertainment', 'cat_media_other', 'cat_mobile_accessories',
-            'cat_mobile_cell_phones', 'cat_mobile_tablets', 'cat_mobile_other', 'cat_electronics_home_audio', 'cat_electronics_music_instruments',
-            'cat_electronics_automation_security', 'cat_electronics_video_camera', 'cat_electronics_television_monitors',
-            'cat_electronics_computers_parts', 'cat_electronics_gaming_esports', 'cat_electronics_other', 'cat_health_diet_nutrition',
-            'cat_health_personal_care', 'cat_health_household_supplies', 'cat_health_beauty_products_jewelry', 'cat_health_baby_infant_care',
-            'cat_health_other', 'cat_home_furniture', 'cat_home_appliances_kitchenware', 'cat_home_textiles_rugs_bedding',
-            'cat_home_hardware_tools', 'cat_home_pet_supplies', 'cat_home_home_office', 'cat_home_sporting_outdoors', 'cat_home_specialty_items',
-            'cat_home_other', 'cat_services_commercial', 'cat_services_freelance', 'cat_services_labor_talent', 'cat_services_transport_logistics',
-            'cat_services_escrow', 'cat_services_endoflife_estate_inheritance', 'cat_services_legal_admin', 'cat_services_other',
-            'cat_wholesale_consumer_goods', 'cat_wholesale_commercial_industrial', 'cat_wholesale_scientific_equipment_supplies',
-            'cat_wholesale_scientific_lab_services', 'cat_wholesale_other'
-        ];
+    private async getRandomCategory(): Promise<resources.ItemCategory> {
+        // findRoot should be called only if were not fetching a default category
+        const defaultRoot: resources.ItemCategory = await this.itemCategoryService.findDefaultRoot().then(value => value.toJSON());
 
-        const rand = Math.floor(Math.random() * categoryKeys.length);
-        return categoryKeys[rand];
+        return Faker.random.arrayElement(defaultRoot.ChildItemCategories);
     }
 
     // -------------------
