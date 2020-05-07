@@ -10,9 +10,10 @@ export class HashableListingItemTemplateCreateRequestConfig extends BaseHashable
         from: 'generatedAt',
         to: HashableCommonField.GENERATED
     }, {
-        from: 'seller',
-        to: HashableItemField.SELLER
-    }, {
+// we can't use seller for the template right now as it would be the selected market identity and theres no relation to that
+//        from: 'seller',
+//        to: HashableItemField.SELLER
+//    }, {
         from: 'itemInformation.title',
         to: HashableItemField.TITLE
     }, {

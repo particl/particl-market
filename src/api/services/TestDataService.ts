@@ -121,6 +121,7 @@ import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest
 import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
+import {HashableListingItemTemplateConfig} from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 
 export class TestDataService {
@@ -549,9 +550,7 @@ export class TestDataService {
 
         const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
-            const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
-
-            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+            const listingItemTemplateCreateRequest: ListingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
@@ -563,7 +562,10 @@ export class TestDataService {
             // generate a ListingItem with the same data
             if (generateParams.generateListingItem) {
 
-                this.log.debug('listingItemTemplate.Profile.id: ', listingItemTemplate.Profile.id);
+                // there's a listingItem, so template is posted and should have a hash
+                const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+                this.log.debug('template.hash:', hash);
+                listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
 
                 const soldOnMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
                 const sellersMarketIdentityAddress: string = await this.profileService.findOne(generateParams.profileId)
@@ -599,8 +601,12 @@ export class TestDataService {
                 } as ListingItemCreateRequest;
 
                 listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
-                // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+                this.log.debug('listingItem.hash:', listingItemCreateRequest.hash);
 
+                // make sure the hashes match
+                if (listingItemCreateRequest.hash !== listingItemTemplate.hash) {
+                    throw new MessageException('ListingItemTemplate and ListingItem hashes dont match.');
+                }
                 const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
                 // this.log.debug('created listingItem, hash: ', listingItem.hash);
