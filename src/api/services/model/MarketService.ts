@@ -82,16 +82,6 @@ export class MarketService {
         return market;
     }
 
-    // TODO: time to add a search function
-    public async findOneByProfileIdAndReceiveAddressAndName(profileId: number, address: string, name: string, withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.findOneByProfileIdAndReceiveAddressAndName(profileId, address, name, withRelated);
-        if (market === null) {
-            this.log.warn(`Market with the address=${address} was not found!`);
-            throw new NotFoundException(address);
-        }
-        return market;
-    }
-
     public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOneByProfileIdAndName(profileId, name, withRelated);
         if (market === null) {

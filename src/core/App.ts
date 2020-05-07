@@ -3,6 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as express from 'express';
+import * as dotenv from 'dotenv';
+import * as databaseMigrate from '../database/migrate';
+import { app } from '../app';
 import { Container } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { Logger } from './Logger';
@@ -11,20 +14,17 @@ import { Bootstrap } from './Bootstrap';
 import { Server } from './Server';
 import { IoC } from './IoC';
 import { AppConfig } from '../config/AppConfig';
-import {Types, Core, Targets} from '../constants';
+import { Types, Core, Targets } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { DataDir } from './helpers/DataDir';
-import * as databaseMigrate from '../database/migrate';
 import { Environment } from './helpers/Environment';
 import { MessageException } from '../api/exceptions/MessageException';
 import { envConfig } from '../config/EnvironmentConfig';
-import * as dotenv from 'dotenv';
 import { ZmqWorker } from './ZmqWorker';
-import {app} from '../app';
-import {TestDataService} from '../api/services/TestDataService';
+import { TestDataService } from '../api/services/TestDataService';
 
 export interface Configurable {
     configure(app: App): void;
