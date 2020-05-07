@@ -22,6 +22,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/testdata/Gener
 import { GenerateOrderParams } from '../../src/api/requests/testdata/GenerateOrderParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -34,10 +35,17 @@ describe('TestDataService', () => {
     let addressService: AddressService;
     let profileService: ProfileService;
     let marketService: MarketService;
+    let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+
+    let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -46,14 +54,214 @@ describe('TestDataService', () => {
         itemCategoryService = app.IoC.getNamed<ItemCategoryService>(Types.Service, Targets.Service.model.ItemCategoryService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
-        // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        sellerProfile = await profileService.getDefault().then(value => value.toJSON());
+        sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+
+        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        log.debug('bidderProfile: ', JSON.stringify(bidderProfile, null, 2));
+        log.debug('bidderMarket: ', JSON.stringify(bidderMarket, null, 2));
 
     });
+
+    test('Should generate three Profiles', async () => {
+
+        await testDataService.generate({
+            model: CreatableModel.PROFILE,
+            amount: 3,
+            withRelated: true
+        } as TestDataGenerateRequest);
+
+        const result: resources.Profile[]  = await profileService.findAll().then(value => value.toJSON());
+        expect(result).toHaveLength(1 + 3);
+
+        bidderProfile = result[0];
+        bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+
+    }, 600000); // timeout to 600s
+
+    test('Should generate ListingItemTemplate', async () => {
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            true,               // generateListingItemObjects
+            true,               // generateObjectDatas
+            sellerProfile.id,   // profileId
+            false,              // generateListingItem
+            sellerMarket.id,    // marketId
+            null                // categoryId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemTemplateParams
+        } as TestDataGenerateRequest);
+
+        expect(listingItemTemplates).toHaveLength(1);
+
+        listingItemTemplate = listingItemTemplates[0];
+    }, 600000); // timeout to 600s
+
+    test('Should generate ListingItem', async () => {
+
+        const result = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket, false);
+        listingItem = await listingItemService.findOne(result.id).then(value => value.toJSON());
+        expect(listingItem).toBeDefined();
+        expect(listingItem.id).toBe(result.id);
+        expect(listingItem.market).toBe(result.market);
+        expect(listingItem.seller).toBe(sellerMarket.Identity.address);
+
+    }, 600000); // timeout to 600s
+
+    test('Should generate Bid for ListingItem', async () => {
+
+        const bidGenerateParams = new GenerateBidParams([
+            false,                              // generateListingItemTemplate
+            false,                              // generateListingItem
+            listingItem.id,                     // listingItemId
+            MPAction.MPA_BID,                   // type
+            bidderMarket.Identity.address,      // bidder
+            sellerMarket.Identity.address       // seller
+        ]);
+/*
+        const generatedBids: resources.Bid[] = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const bid = generatedBids[0];
+
+        expectGenerateBid(bidGenerateParams, bid, true, true);
+*/
+    }, 600000); // timeout to 600s
+
+/*
+    test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
+
+        // create ListingItems
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            true,                               // generateItemLocation
+            true,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
+            true,                               // generateMessagingInformation
+            true,                               // generateListingItemObjects
+            false,                              // generateObjectDatas
+            null,                               // listingItemTemplateHash
+            sellerProfile.address              // bidder
+        ]).toParamsArray();
+
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemParams
+        } as TestDataGenerateRequest);
+
+        const bidGenerateParams = new GenerateBidParams([
+            false,                          // generateListingItemTemplate
+            false,                          // generateListingItem
+            listingItems[0].hash,           // listingItemHash
+            MPAction.MPA_BID,               // type
+            sellerProfile.address          // bidder
+        ]);
+
+        const generatedBids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const bid = generatedBids[0];
+        expectGenerateBid(bidGenerateParams, bid, true, true);
+
+        expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
+        // expect(bid.ListingItem.seller).toBe(sellerProfile.address);
+
+    }, 600000); // timeout to 600s
+*/
+    // TODO: listingitem and template generation not implemented
+
+/*
+    test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
+
+        // [0]: generateListingItemTemplate, generate a ListingItemTemplate
+        // [1]: generateListingItem, generate a ListingItem
+        // [2]: generateBid, generate a Bid
+        // [3]: generateOrderItem, generate OrderItem
+        // [4]: listingItemhash, attach bid to existing ListingItem
+        // [5]: bidId, attach Order to existing Bid
+        // [6]: bidder, bidders address
+        // [7]: seller, ListingItem sellers address
+
+        const orderGenerateParams = new GenerateOrderParams([
+            true,                       // generateListingItemTemplate
+            true,                       // generateListingItem
+            true,                       // generateBid
+            true,                       // generateOrderItem
+            null,                       // listingItemhash
+            null,                       // bidId
+            null,                       // bidder
+            sellerProfile.address      // seller
+        ]);
+
+        const generatedOrders: resources.Order[] = await testDataService.generate({
+            model: CreatableModel.ORDER,
+            amount: 1,
+            withRelated: true,
+            generateParams: orderGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const order = generatedOrders[0];
+
+        expectGenerateOrder(orderGenerateParams, order);
+
+    }, 600000); // timeout to 600s
+*/
+/*
+    test('Should cleanup all tables', async () => {
+
+        // TODO: needs to be updated, should check that all tables are cleaned
+
+        expect.assertions(4);
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
+
+        const categories = await itemCategoryService.findAll();
+        expect(categories).toHaveLength(82);
+
+        // default profile should not contain addresses
+        const addresses = await addressService.findAll();
+        expect(addresses).toHaveLength(0);
+
+        // listingitemTemplates should have been be removed
+        const listingItems = await listingItemTemplateService.findAll();
+        expect(listingItems).toHaveLength(0);
+
+        // only default profile
+        const profiles = await profileService.findAll();
+        expect(profiles).toHaveLength(1);
+    });
+*/
 
     const expectGenerateProfile = (result: resources.Profile,
                                    shouldHaveCryptocurrencyAddresses: boolean = true,
@@ -158,213 +366,35 @@ describe('TestDataService', () => {
         expect(result.hash).toBeDefined();
 
         // TODO: fix
-/*
-        if (orderGenerateParams.generateListingItem) {
-            expect(result.OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
-            expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
-            expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
+        /*
+                if (orderGenerateParams.generateListingItem) {
+                    expect(result.OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
+                    expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
+                    expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
 
-            if (orderGenerateParams.generateListingItemTemplate) {
-                // TODO: if both are generated, same data should be used
-                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).toBeDefined();
-                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).not.toBeNull();
-            } else {
-                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
-            }
+                    if (orderGenerateParams.generateListingItemTemplate) {
+                        // TODO: if both are generated, same data should be used
+                        expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).toBeDefined();
+                        expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).not.toBeNull();
+                    } else {
+                        expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
+                    }
 
-            if (orderGenerateParams.listingItemHash) {
-                expect(result.OrderItems[0].Bid.ListingItem.hash).toBe(orderGenerateParams.listingItemHash);
-                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).toBe(orderGenerateParams.listingItemHash);
-            }
+                    if (orderGenerateParams.listingItemHash) {
+                        expect(result.OrderItems[0].Bid.ListingItem.hash).toBe(orderGenerateParams.listingItemHash);
+                        expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).toBe(orderGenerateParams.listingItemHash);
+                    }
 
-        } else {
-            expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
-        }
+                } else {
+                    expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
+                }
 
-        if (orderGenerateParams.generateBid) {
-            expect(result.OrderItems[0].Bid).toBeDefined();
-        } else {
-            expect(result.OrderItems[0].Bid).not.toBeDefined();
-        }
-*/
+                if (orderGenerateParams.generateBid) {
+                    expect(result.OrderItems[0].Bid).toBeDefined();
+                } else {
+                    expect(result.OrderItems[0].Bid).not.toBeDefined();
+                }
+        */
     };
 
-    test('Should generate three Profiles', async () => {
-
-        let profiles: resources.Profile[] = await testDataService.generate({
-            model: CreatableModel.PROFILE,
-            amount: 3,
-            withRelated: true
-        } as TestDataGenerateRequest);
-
-        profiles = await profileService.findAll().then(value => value.toJSON());
-        expect(profiles).toHaveLength(4);
-    }, 600000); // timeout to 600s
-
-    test('Should generate ListingItemTemplate', async () => {
-
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            false,              // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            true,               // generateListingItemObjects
-            true,               // generateObjectDatas
-            defaultProfile.id,  // profileId
-            false,              // generateListingItem
-            defaultMarket.id,   // marketId
-            null                // categoryId
-        ]).toParamsArray();
-
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,
-            amount: 1,
-            withRelated: true,
-            generateParams: generateListingItemTemplateParams
-        } as TestDataGenerateRequest);
-
-        expect(listingItemTemplates).toHaveLength(1);
-
-    }, 600000); // timeout to 600s
-
-    // TODO: listingitem and template generation not implemented
-/*
-    test('Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem', async () => {
-
-        const bidGenerateParams = new GenerateBidParams([
-            true,                       // generateListingItemTemplate
-            true,                       // generateListingItem
-            null,                       // listingItemhash
-            MPAction.MPA_BID,           // type
-            defaultProfile.address      // bidder
-        ]);
-
-        const generatedBids: resources.Bid[] = await testDataService.generate({
-            model: CreatableModel.BID,
-            amount: 1,
-            withRelated: true,
-            generateParams: bidGenerateParams.toParamsArray()
-        } as TestDataGenerateRequest);
-
-        const bid = generatedBids[0];
-
-        expectGenerateBid(bidGenerateParams, bid, true, true);
-    }, 600000); // timeout to 600s
-*/
-/*
-    test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
-
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                               // generateItemInformation
-            true,                               // generateItemLocation
-            true,                               // generateShippingDestinations
-            false,                              // generateItemImages
-            true,                               // generatePaymentInformation
-            true,                               // generateEscrow
-            true,                               // generateItemPrice
-            true,                               // generateMessagingInformation
-            true,                               // generateListingItemObjects
-            false,                              // generateObjectDatas
-            null,                               // listingItemTemplateHash
-            defaultProfile.address              // bidder
-        ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,
-            amount: 1,
-            withRelated: true,
-            generateParams: generateListingItemParams
-        } as TestDataGenerateRequest);
-
-        const bidGenerateParams = new GenerateBidParams([
-            false,                          // generateListingItemTemplate
-            false,                          // generateListingItem
-            listingItems[0].hash,           // listingItemHash
-            MPAction.MPA_BID,               // type
-            defaultProfile.address          // bidder
-        ]);
-
-        const generatedBids = await testDataService.generate({
-            model: CreatableModel.BID,
-            amount: 1,
-            withRelated: true,
-            generateParams: bidGenerateParams.toParamsArray()
-        } as TestDataGenerateRequest);
-
-        const bid = generatedBids[0];
-        expectGenerateBid(bidGenerateParams, bid, true, true);
-
-        expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
-        // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
-
-    }, 600000); // timeout to 600s
-*/
-    // TODO: listingitem and template generation not implemented
-
-/*
-    test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
-
-        // [0]: generateListingItemTemplate, generate a ListingItemTemplate
-        // [1]: generateListingItem, generate a ListingItem
-        // [2]: generateBid, generate a Bid
-        // [3]: generateOrderItem, generate OrderItem
-        // [4]: listingItemhash, attach bid to existing ListingItem
-        // [5]: bidId, attach Order to existing Bid
-        // [6]: bidder, bidders address
-        // [7]: seller, ListingItem sellers address
-
-        const orderGenerateParams = new GenerateOrderParams([
-            true,                       // generateListingItemTemplate
-            true,                       // generateListingItem
-            true,                       // generateBid
-            true,                       // generateOrderItem
-            null,                       // listingItemhash
-            null,                       // bidId
-            null,                       // bidder
-            defaultProfile.address      // seller
-        ]);
-
-        const generatedOrders: resources.Order[] = await testDataService.generate({
-            model: CreatableModel.ORDER,
-            amount: 1,
-            withRelated: true,
-            generateParams: orderGenerateParams.toParamsArray()
-        } as TestDataGenerateRequest);
-
-        const order = generatedOrders[0];
-
-        expectGenerateOrder(orderGenerateParams, order);
-
-    }, 600000); // timeout to 600s
-*/
-/*
-    test('Should cleanup all tables', async () => {
-
-        // TODO: needs to be updated, should check that all tables are cleaned
-
-        expect.assertions(4);
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
-        const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(82);
-
-        // default profile should not contain addresses
-        const addresses = await addressService.findAll();
-        expect(addresses).toHaveLength(0);
-
-        // listingitemTemplates should have been be removed
-        const listingItems = await listingItemTemplateService.findAll();
-        expect(listingItems).toHaveLength(0);
-
-        // only default profile
-        const profiles = await profileService.findAll();
-        expect(profiles).toHaveLength(1);
-    });
-*/
 });
