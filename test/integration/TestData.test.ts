@@ -201,19 +201,23 @@ describe('TestDataService', () => {
         expect(profiles).toHaveLength(4);
     }, 600000); // timeout to 600s
 
-    test('Should generate ListingItemTemplate using GenerateListingItemTemplateParams', async () => {
+    test('Should generate ListingItemTemplate', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true,   // generateListingItemObjects
-            true    // generateObjectDatas
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            true,               // generateListingItemObjects
+            true,               // generateObjectDatas
+            defaultProfile.id,  // profileId
+            false,              // generateListingItem
+            defaultMarket.id,   // marketId
+            null                // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({

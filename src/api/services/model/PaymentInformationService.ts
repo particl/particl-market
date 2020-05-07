@@ -45,9 +45,9 @@ export class PaymentInformationService {
 
     @validate()
     public async create( @request(PaymentInformationCreateRequest) data: PaymentInformationCreateRequest): Promise<PaymentInformation> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('paymentInformation: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -76,11 +76,8 @@ export class PaymentInformationService {
         }
 
         // finally find and return the created paymentInformation
-        const result = await this.findOne(paymentInformation.Id);
+        return await this.findOne(paymentInformation.Id);
 
-        // this.log.debug('paymentInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return result;
     }
 
     @validate()

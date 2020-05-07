@@ -94,20 +94,24 @@ export class ItemInformationService {
         // ready to save, if the request body was valid, create the itemInformation
         const itemInformation: resources.ItemInformation = await this.itemInformationRepo.create(body).then(value => value.toJSON());
 
+        // this.log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
+
         // create related models
         if (!_.isEmpty(itemLocation)) {
             itemLocation.item_information_id = itemInformation.id;
+            // this.log.debug('itemLocation: ', JSON.stringify(itemLocation, null, 2));
             await this.itemLocationService.create(itemLocation);
         }
 
-        if (shippingDestinations) {
+        if (!_.isEmpty(shippingDestinations)) {
             for (const shippingDestination of shippingDestinations) {
                 shippingDestination.item_information_id = itemInformation.id;
+                // this.log.debug('shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
                 await this.shippingDestinationService.create(shippingDestination);
             }
         }
 
-        if (itemImages) {
+        if (!_.isEmpty(itemImages)) {
             for (const itemImage of itemImages) {
                 itemImage.item_information_id = itemInformation.id;
                 // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
@@ -116,10 +120,7 @@ export class ItemInformationService {
         }
 
         // finally find and return the created itemInformation
-        const result = await this.findOne(itemInformation.id);
-        // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return result;
+        return await this.findOne(itemInformation.id);
     }
 
     @validate()
@@ -209,6 +210,7 @@ export class ItemInformationService {
             result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
         } else if (createRequest.key) {
             result = await this.itemCategoryService.findOneDefaultByKey(createRequest.key);
+
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }

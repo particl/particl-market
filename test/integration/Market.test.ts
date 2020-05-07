@@ -53,7 +53,7 @@ describe('Market', () => {
         );
     });
 
-    it('Should get default default Market for Profile', async () => {
+    test('Should get default default Market for Profile', async () => {
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         expect(defaultMarket.name).toBe('DEFAULT');
@@ -63,7 +63,7 @@ describe('Market', () => {
         expect(defaultMarket.publishAddress).toBeDefined();
     });
 
-    it('Should create a new Market', async () => {
+    test('Should create a new Market', async () => {
         const key = 'TEST-PRIVATE-KEY';
         const address = Faker.random.uuid();
 

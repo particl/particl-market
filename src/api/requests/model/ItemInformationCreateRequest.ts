@@ -22,8 +22,6 @@ export class ItemInformationCreateRequest extends RequestBody implements ModelRe
 
     @IsNotEmpty()
     public shortDescription: string;
-
-    @IsNotEmpty()
     public longDescription: string;
 
     public itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest;
