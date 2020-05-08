@@ -160,21 +160,20 @@ describe('TestDataService', () => {
         const bidderOrder: resources.Order = orders[0];
         const sellerOrder: resources.Order = orders[1];
 
+        expect(bidderOrder.buyer).not.toBe(bidderOrder.seller)
         expect(bidderOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(bidderOrder.seller).toBe(sellerMarket.Identity.address);
         expect(bidderOrder.status).toBe(OrderStatus.PROCESSING);
-        expect(bidderOrder.OrderItem[0].itemHash).toBe(bidderBid.ListingItem.hash);
+        expect(bidderOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
 
+        expect(sellerOrder.buyer).not.toBe(sellerOrder.seller)
         expect(sellerOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(sellerOrder.seller).toBe(sellerMarket.Identity.address);
         expect(sellerOrder.status).toBe(OrderStatus.PROCESSING);
-        expect(sellerOrder.OrderItem[0].itemHash).toBe(bidderBid.ListingItem.hash);
-
-
+        expect(sellerOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
 
     }, 600000); // timeout to 600s
 
-/*
     test('Should cleanup all tables', async () => {
 
         // TODO: needs to be updated, should check that all tables are cleaned
@@ -184,7 +183,7 @@ describe('TestDataService', () => {
         await testDataService.clean();
 
         const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(82);
+        expect(categories).toHaveLength(0);
 
         // default profile should not contain addresses
         const addresses = await addressService.findAll();
@@ -196,57 +195,8 @@ describe('TestDataService', () => {
 
         // only default profile
         const profiles = await profileService.findAll();
-        expect(profiles).toHaveLength(1);
+        expect(profiles).toHaveLength(0);
     });
-*/
-
-    const expectGenerateProfile = (result: resources.Profile,
-                                   shouldHaveCryptocurrencyAddresses: boolean = true,
-                                   shouldHaveFavoriteItems: boolean = true,
-                                   shouldHaveShippingAddresses: boolean = true,
-                                   shouldHaveShoppingCart: boolean = true) => {
-
-        expect(result.address).not.toBeNull();
-        expect(result.name).not.toBeNull();
-
-        if (shouldHaveCryptocurrencyAddresses) {
-            expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
-            expect(result.CryptocurrencyAddresses[0].profileId).toBe(result.id);
-            expect(result.CryptocurrencyAddresses[0].address).not.toBeNull();
-            expect(result.CryptocurrencyAddresses[0].type).not.toBeNull();
-        } else {
-            expect(result.CryptocurrencyAddresses).toHaveLength(0);
-        }
-
-        if (shouldHaveFavoriteItems) {
-            // TODO
-            expect(result.FavoriteItems).not.toHaveLength(0);
-        } else {
-            expect(result.FavoriteItems).toHaveLength(0);
-        }
-
-        if (shouldHaveShippingAddresses) {
-            expect(result.ShippingAddresses).not.toHaveLength(0);
-            expect(result.ShippingAddresses[0].profileId).toBe(result.id);
-            expect(result.ShippingAddresses[0].firstName).not.toBeNull();
-            expect(result.ShippingAddresses[0].lastName).not.toBeNull();
-            expect(result.ShippingAddresses[0].addressLine1).not.toBeNull();
-            expect(result.ShippingAddresses[0].addressLine2).not.toBeNull();
-            expect(result.ShippingAddresses[0].city).not.toBeNull();
-            expect(result.ShippingAddresses[0].country).not.toBeNull();
-            expect(result.ShippingAddresses[0].title).not.toBeNull();
-            expect(result.ShippingAddresses[0].zipCode).not.toBeNull();
-        } else {
-            expect(result.ShippingAddresses).toHaveLength(0);
-        }
-
-        if (shouldHaveShoppingCart) {
-            expect(result.ShoppingCart).toHaveLength(1);
-            expect(result.ShoppingCart[0].name).toBe('DEFAULT');
-        } else {
-            expect(result.ShoppingCart).toHaveLength(0);
-        }
-    };
 
 
 });
