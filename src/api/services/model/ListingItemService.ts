@@ -195,12 +195,13 @@ export class ListingItemService {
         listingItem.hash = body.hash;
         listingItem.seller = body.seller;
         listingItem.market = body.market;
-        listingItem.expiryTime = body.expiryTime;
-        listingItem.postedAt = body.postedAt;
-        listingItem.expiredAt = body.expiredAt;
-        listingItem.receivedAt = body.receivedAt;
         listingItem.removed = body.removed;
-        listingItem.generatedAt = body.generatedAt;
+
+        // listingItem.expiryTime = body.expiryTime;
+        // listingItem.postedAt = body.postedAt;
+        // listingItem.expiredAt = body.expiredAt;
+        // listingItem.receivedAt = body.receivedAt;
+        // listingItem.generatedAt = body.generatedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem);

@@ -475,6 +475,15 @@ export class TestDataService {
     }
 
     /**
+     * return a random default ItemCategory
+     */
+    public async getRandomCategory(): Promise<resources.ItemCategory> {
+        // findRoot should be called only if were not fetching a default category
+        const defaultRoot: resources.ItemCategory = await this.itemCategoryService.findDefaultRoot().then(value => value.toJSON());
+        return Faker.random.arrayElement(defaultRoot.ChildItemCategories);
+    }
+
+    /**
      * clean up the db
      *
      * @returns {Promise<void>}
@@ -1500,13 +1509,6 @@ export class TestDataService {
         } as ListingItemTemplateCreateRequest;
 
         return listingItemTemplateCreateRequest;
-    }
-
-    private async getRandomCategory(): Promise<resources.ItemCategory> {
-        // findRoot should be called only if were not fetching a default category
-        const defaultRoot: resources.ItemCategory = await this.itemCategoryService.findDefaultRoot().then(value => value.toJSON());
-
-        return Faker.random.arrayElement(defaultRoot.ChildItemCategories);
     }
 
     // -------------------

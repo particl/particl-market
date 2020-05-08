@@ -101,7 +101,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             return await ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch();
         }
     }
-
+/*
+    TODO: remove?
     public static async fetchAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
@@ -122,6 +123,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             return await listingCollection.fetchAll();
         }
     }
+*/
 
     public static async fetchAllExpired(): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Model<ListingItem>>()

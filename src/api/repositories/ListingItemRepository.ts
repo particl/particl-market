@@ -27,11 +27,11 @@ export class ListingItemRepository {
         const list = await this.ListingItemModel.fetchAll();
         return list as Bookshelf.Collection<ListingItem>;
     }
-
+/*
     public async findAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         return await this.ListingItemModel.fetchAllByCategory(categoryId, withRelated);
     }
-
+*/
     public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
         return this.ListingItemModel.fetchAllExpired();
     }

@@ -14,6 +14,7 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ListingItemCreateRequest extends RequestBody implements ModelRequestInterface {
 
     public hash: string;
+    public removed: boolean;
 
     @IsNotEmpty()
     public msgid: string;
