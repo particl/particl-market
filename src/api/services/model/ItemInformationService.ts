@@ -201,7 +201,7 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
 
         // if (createRequest.id) {
         //    result = await this.itemCategoryService.findOneDefaultByKey(createRequest.id);
