@@ -285,7 +285,7 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the expired ListingItem', async () => {
-        expect.assertions(12);
+        expect.assertions(1);
         await listingItemService.destroy(createdListingItem1.id);
         await expectListingItemWasDeleted(createdListingItem1);
         createdListingItem1 = undefined;
