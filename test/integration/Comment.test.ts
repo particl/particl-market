@@ -21,6 +21,7 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 
 describe('Comment', () => {
@@ -30,6 +31,7 @@ describe('Comment', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let commentService: CommentService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -50,16 +52,17 @@ describe('Comment', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         commentService = app.IoC.getNamed<CommentService>(Types.Service, Targets.Service.model.CommentService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         senderProfile = await profileService.getDefault().then(value => value.toJSON());
-        senderMarket = await marketService.getDefaultForProfile(senderProfile.id).then(value => value.toJSON());
+        senderMarket = await defaultMarketService.getDefaultForProfile(senderProfile.id).then(value => value.toJSON());
 
         receiverProfile = await testDataService.generateProfile();
-        receiverMarket = await marketService.getDefaultForProfile(receiverProfile.id).then(value => value.toJSON());
+        receiverMarket = await defaultMarketService.getDefaultForProfile(receiverProfile.id).then(value => value.toJSON());
 
         listingItem = await testDataService.generateListingItemWithTemplate(receiverProfile, senderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());

@@ -121,7 +121,7 @@ import { BlacklistCreateRequest } from '../requests/model/BlacklistCreateRequest
 import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import {HashableListingItemTemplateConfig} from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 
 export class TestDataService {
@@ -840,7 +840,8 @@ export class TestDataService {
 
     private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest[]> {
 
-        // this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
+        this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
+
         const bidderBid: resources.Bid = await this.bidService.findOne(generateParams.bidderBidId).then(value => value.toJSON());
         const sellerBid: resources.Bid = await this.bidService.findOne(generateParams.sellerBidId).then(value => value.toJSON());
 
@@ -859,6 +860,9 @@ export class TestDataService {
         orderCreateParamsForSeller.bids = [sellerBid];
         orderCreateParamsForSeller.addressId = sellerBid.ShippingAddress.id;
         const orderCreateRequestForSeller: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForSeller);
+
+        this.log.debug('orderCreateRequestForBidder:', JSON.stringify(orderCreateRequestForBidder, null, 2));
+        this.log.debug('orderCreateParamsForSeller:', JSON.stringify(orderCreateParamsForSeller, null, 2));
 
         if (!generateParams.generateOrderItem) {
             orderCreateRequestForBidder.orderItems = [];
@@ -937,7 +941,7 @@ export class TestDataService {
         let submitter;
         if (!generateParams.submitter) {
             const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
-            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            const defaultMarket = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
             submitter = defaultMarket.Identity.address;
         } else {
             submitter = generateParams.submitter;
@@ -1077,7 +1081,7 @@ export class TestDataService {
 
         let receiver;
         if (!generateParams.receiver) {
-            const defaultMarket = await this.marketService.getDefaultForProfile(defaultProfile.id);
+            const defaultMarket = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id);
             const market = defaultMarket.toJSON();
             receiver = market.receiveAddress;
         } else {
@@ -1248,7 +1252,7 @@ export class TestDataService {
         if (generateParams.soldOnMarketId) {
             market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
         } else {
-            market = await this.marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+            market = await this.defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
             generateParams.soldOnMarketId = market.id;
         }
 
@@ -1538,7 +1542,7 @@ export class TestDataService {
 
         let to;
         if (!generateParams.to) {
-            const market: resources.Market = await this.marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            const market: resources.Market = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
             to = market.receiveAddress;
         } else {
             to = generateParams.to;

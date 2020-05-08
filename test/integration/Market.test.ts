@@ -18,6 +18,7 @@ import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketType } from '../../src/api/enums/MarketType';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -26,6 +27,7 @@ describe('Market', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let profileService: ProfileService;
 
@@ -38,6 +40,7 @@ describe('Market', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
@@ -54,7 +57,7 @@ describe('Market', () => {
     });
 
     test('Should get default default Market for Profile', async () => {
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        defaultMarket = await defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         expect(defaultMarket.name).toBe('DEFAULT');
         expect(defaultMarket.receiveKey).toBeDefined();

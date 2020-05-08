@@ -56,6 +56,7 @@ import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model
 import { ItemPriceCreateRequest } from '../../src/api/requests/model/ItemPriceCreateRequest';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -64,6 +65,7 @@ describe('ListingItem', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
@@ -96,6 +98,7 @@ describe('ListingItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
@@ -118,7 +121,7 @@ describe('ListingItem', () => {
 
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {

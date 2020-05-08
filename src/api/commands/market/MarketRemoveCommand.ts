@@ -17,12 +17,14 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProfileService } from '../../services/model/ProfileService';
+import { DefaultMarketService } from '../../services/DefaultMarketService';
 
 export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) private defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -86,7 +88,7 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
                 throw new ModelNotFoundException('Market');
             });
 
-        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(data.params[0], true)
+        const defaultMarket: resources.Market = await this.defaultMarketService.getDefaultForProfile(data.params[0], true)
             .then(value => value.toJSON());
 
         if (market.id === defaultMarket.id) {

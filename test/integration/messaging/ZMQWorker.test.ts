@@ -13,6 +13,7 @@ import { MarketService } from '../../../src/api/services/model/MarketService';
 import { ProfileService } from '../../../src/api/services/model/ProfileService';
 import { SmsgMessageService } from '../../../src/api/services/model/SmsgMessageService';
 import { socket, Socket } from 'zeromq';
+import { DefaultMarketService } from '../../../src/api/services/DefaultMarketService';
 
 describe('ZMQWorker', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -21,6 +22,7 @@ describe('ZMQWorker', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let smsgMessageService: SmsgMessageService;
@@ -33,13 +35,14 @@ describe('ZMQWorker', () => {
         await testUtil.bootstrapAppContainer(app); // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.model.SmsgMessageService);
 
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length

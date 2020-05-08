@@ -37,6 +37,7 @@ import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCate
 import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
 import { LocationMarkerUpdateRequest } from '../../src/api/requests/model/LocationMarkerUpdateRequest';
 import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ItemInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -45,6 +46,7 @@ describe('ItemInformation', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let itemInformationService: ItemInformationService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -147,6 +149,7 @@ describe('ItemInformation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
@@ -157,7 +160,7 @@ describe('ItemInformation', () => {
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        defaultMarket = await defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             false,               // generateItemInformation

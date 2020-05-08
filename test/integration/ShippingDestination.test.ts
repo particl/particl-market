@@ -20,6 +20,7 @@ import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/S
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/model/ShippingDestinationUpdateRequest';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ShippingDestination', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -28,6 +29,7 @@ describe('ShippingDestination', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let shippingDestinationService: ShippingDestinationService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -57,6 +59,7 @@ describe('ShippingDestination', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
@@ -64,9 +67,9 @@ describe('ShippingDestination', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         bidderProfile = await profileService.getDefault().then(value => value.toJSON());
-        bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
         sellerProfile = await testDataService.generateProfile();
-        sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 

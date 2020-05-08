@@ -15,7 +15,6 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { LocationMarker } from '../../src/api/models/LocationMarker';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { LocationMarkerUpdateRequest } from '../../src/api/requests/model/LocationMarkerUpdateRequest';
@@ -23,6 +22,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/testda
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('LocationMarker', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,6 +31,7 @@ describe('LocationMarker', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let locationMarkerService: LocationMarkerService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -61,6 +62,7 @@ describe('LocationMarker', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
@@ -69,7 +71,7 @@ describe('LocationMarker', () => {
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
 
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        defaultMarket = await defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation

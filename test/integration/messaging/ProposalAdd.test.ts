@@ -34,7 +34,7 @@ import { GenerateListingItemParams } from '../../../src/api/requests/testdata/Ge
 import { ItemVote } from '../../../src/api/enums/ItemVote';
 import { VoteService } from '../../../src/api/services/model/VoteService';
 import { VoteActionMessageProcessor } from '../../../src/api/messageprocessors/action/VoteActionMessageProcessor';
-
+import { DefaultMarketService } from '../../../src/api/services/DefaultMarketService';
 
 describe('ProposalAddActionListener', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -43,6 +43,7 @@ describe('ProposalAddActionListener', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let smsgMessageService: SmsgMessageService;
@@ -68,22 +69,21 @@ describe('ProposalAddActionListener', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         smsgMessageService = app.IoC.getNamed<SmsgMessageService>(Types.Service, Targets.Service.model.SmsgMessageService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
         voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.model.VoteService);
-
         proposalAddActionService = app.IoC.getNamed<ProposalAddActionService>(Types.Service, Targets.Service.action.ProposalAddActionService);
         coreMessageProcessor = app.IoC.getNamed<CoreMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CoreMessageProcessor);
-
         proposalAddActionListener = app.IoC.getNamed<ProposalAddActionMessageProcessor>(Types.Listener, Targets.Listener.action.ProposalAddActionListener);
         voteActionListener = app.IoC.getNamed<VoteActionMessageProcessor>(Types.Listener, Targets.Listener.action.VoteActionListener);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
 
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length

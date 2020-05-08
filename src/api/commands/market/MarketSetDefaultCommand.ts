@@ -53,7 +53,8 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
         await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
-        return await this.marketService.getDefaultForProfile(profile.id);
+
+        return await this.defaultMarketService.getDefaultForProfile(profile.id);
     }
 
     /**

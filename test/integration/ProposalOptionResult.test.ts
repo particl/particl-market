@@ -24,6 +24,7 @@ import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/model/
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { FlaggedItemService } from '../../src/api/services/model/FlaggedItemService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ProposalOptionResult', () => {
 
@@ -33,6 +34,7 @@ describe('ProposalOptionResult', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let proposalService: ProposalService;
     let proposalResultService: ProposalResultService;
     let proposalOptionService: ProposalOptionService;
@@ -61,6 +63,7 @@ describe('ProposalOptionResult', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
         proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.model.ProposalResultService);
         proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.model.ProposalOptionService);
@@ -72,10 +75,10 @@ describe('ProposalOptionResult', () => {
         flaggedItemService = app.IoC.getNamed<FlaggedItemService>(Types.Service, Targets.Service.model.FlaggedItemService);
 
         bidderProfile = await profileService.getDefault().then(value => value.toJSON());
-        bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
         sellerProfile = await testDataService.generateProfile();
-        sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());

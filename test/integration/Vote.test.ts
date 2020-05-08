@@ -19,12 +19,9 @@ import { VoteUpdateRequest } from '../../src/api/requests/model/VoteUpdateReques
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import {ListingItemService} from '../../src/api/services/model/ListingItemService';
-import {ListingItemTemplateService} from '../../src/api/services/model/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('Vote', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -33,6 +30,7 @@ describe('Vote', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let voteService: VoteService;
     let proposalService: ProposalService;
     let profileService: ProfileService;
@@ -56,6 +54,7 @@ describe('Vote', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.model.VoteService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
@@ -64,10 +63,10 @@ describe('Vote', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         bidderProfile = await profileService.getDefault().then(value => value.toJSON());
-        bidderMarket = await marketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
         sellerProfile = await testDataService.generateProfile();
-        sellerMarket = await marketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());

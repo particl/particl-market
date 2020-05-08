@@ -18,6 +18,7 @@ import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { SettingCreateRequest } from '../../src/api/requests/model/SettingCreateRequest';
 import { SettingUpdateRequest } from '../../src/api/requests/model/SettingUpdateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('Setting', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -26,6 +27,7 @@ describe('Setting', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let settingService: SettingService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -49,12 +51,13 @@ describe('Setting', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         settingService = app.IoC.getNamed<SettingService>(Types.Service, Targets.Service.model.SettingService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
 

@@ -20,6 +20,7 @@ import { IdentityService } from './model/IdentityService';
 import { MessageException } from '../exceptions/MessageException';
 import { SettingValue } from '../enums/SettingValue';
 import { DefaultSettingService } from './DefaultSettingService';
+import {Market} from '../models/Market';
 
 export class DefaultMarketService {
 
@@ -61,6 +62,32 @@ export class DefaultMarketService {
     }
 
     /**
+     * get the default Market for Profile, if it exists
+     * @param profileId
+     * @param shouldCreateIfNot
+     * @param withRelated
+     */
+    public async getDefaultForProfile(profileId: number, shouldCreateIfNot: boolean = true, withRelated: boolean = true): Promise<Market> {
+        const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
+        const marketIdSetting = _.find(profileSettings, value => {
+            return value.key === SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID;
+        });
+
+        if (_.isEmpty(marketIdSetting) && shouldCreateIfNot) {
+            this.log.warn(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
+            // Profile has no default Market, so create it
+            const profile: resources.Profile = await this.profileService.findOne(profileId).then(value => value.toJSON());
+            const market: resources.Market = await this.seedDefaultMarketForProfile(profile);
+            return await this.marketService.findOne(market.id, withRelated);
+        } else if (_.isEmpty(marketIdSetting) && !shouldCreateIfNot) {
+            this.log.error(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
+            throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.')
+        } else {
+            return await this.marketService.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
+        }
+    }
+
+    /**
      * create the default Market for the default Profile
      *
      * - get default Market for default Profile (SettingValue.DEFAULT_MARKETPLACE_ID)
@@ -83,7 +110,7 @@ export class DefaultMarketService {
 
         // check whether the default Market for the Profile exists, throws if not found
         // if we're upgrading, the old market is not set as default, so it wont be found
-        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(profile.id)
+        const defaultMarket: resources.Market = await this.getDefaultForProfile(profile.id, false)
             .catch(async reason => {
 
                 this.log.debug('seedDefaultMarketForProfile(), ...catching that and setting it');
@@ -112,13 +139,13 @@ export class DefaultMarketService {
         return await this.marketService.findOne(defaultMarket.id, true).then(value => value.toJSON());
     }
 
-    public async importMarketPrivateKey(wallet: string, privateKey: string, address: string): Promise<void> {
+    private async importMarketPrivateKey(wallet: string, privateKey: string, address: string): Promise<void> {
         if (await this.smsgService.smsgImportPrivKey(wallet, privateKey)) {
             // get market public key
             const publicKey = await this.getPublicKeyForAddress(address);
             // add market address
             if (publicKey) {
-                await this.importMarketPublicKey(wallet, publicKey, address);
+                await this.importMarketPublicKey(/*wallet, */publicKey, address);
             } else {
                 throw new InternalServerException('Error while adding public key to db.');
             }
@@ -130,7 +157,7 @@ export class DefaultMarketService {
         this.log.debug('importMarketPrivateKey(), private key imported: ', privateKey);
     }
 
-    public async importMarketPublicKey(wallet: string, publicKey: string, address: string): Promise<void> {
+    private async importMarketPublicKey(/*wallet: string, */publicKey: string, address: string): Promise<void> {
         if (publicKey) {
             await this.smsgService.smsgAddAddress(address, publicKey);
         } else {
@@ -139,7 +166,7 @@ export class DefaultMarketService {
     }
 
     /**
-     * create a Market
+     * create a default Market for Profile
      *
      * @param profile
      * @param marketIdentity
@@ -157,6 +184,7 @@ export class DefaultMarketService {
         const marketAddressSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
+
         if (marketNameSetting === undefined || marketPKSetting === undefined || marketAddressSetting === undefined) {
             throw new MessageException('Default Market settings not found!');
         }
@@ -197,7 +225,7 @@ export class DefaultMarketService {
         // if publish key exists and is different from receive key (STOREFRONT)
         if (newMarket.publishKey && newMarket.publishAddress && (newMarket.receiveKey !== newMarket.publishKey)) {
             if (MarketType.STOREFRONT === newMarket.type) {
-                await this.importMarketPublicKey(newMarket.Identity.wallet, newMarket.publishKey, newMarket.publishAddress);
+                await this.importMarketPublicKey(/*newMarket.Identity.wallet, */newMarket.publishKey, newMarket.publishAddress);
             } else {
                 await this.importMarketPrivateKey(newMarket.Identity.wallet, newMarket.publishKey, newMarket.publishAddress);
             }
