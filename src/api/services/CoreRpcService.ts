@@ -628,7 +628,7 @@ export class CoreRpcService extends CtRpc {
     public async sendRawTransaction(hex: string, allowHighFees: boolean = false): Promise<string> {
         const params: any[] = [];
         params.push(hex);
-        params.push(allowHighFees);
+        // params.push(allowHighFees);
         return await this.call('sendrawtransaction', params);
     }
 
