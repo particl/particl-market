@@ -114,7 +114,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public static async fetchExpired(): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
+                qb.joinRaw(`LEFT JOIN (SELECT listing_item_id, COUNT(*) AS bid_totals FROM bids GROUP BY listing_item_id) bid_totals
+                    ON bid_totals.listing_item_id = listing_items.id`);
                 qb.where('expired_at', '<=', Date.now());
+                qb.andWhereRaw('bid_totals.bid_totals IS NULL');
                 qb.groupBy('listing_items.id');
             });
         return await listingCollection.fetchAll();

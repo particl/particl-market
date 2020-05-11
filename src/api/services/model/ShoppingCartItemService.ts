@@ -46,6 +46,10 @@ export class ShoppingCartItemService {
         return await this.shoppingCartItemRepo.findAllByCartId(cartId);
     }
 
+    public async findAllByListingItem(listingItemId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return await this.shoppingCartItemRepo.findAllByListingItem(listingItemId);
+    }
+
     @validate()
     public async create( @request(ShoppingCartItemCreateRequest) body: any): Promise<ShoppingCartItem> {
 

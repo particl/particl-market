@@ -68,6 +68,22 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         }
     }
 
+    public static async fetchAllByListingItem(listingItemId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
+        const ShoppingCartItemCollection = ShoppingCartItem.forge<Model<ShoppingCartItem>>()
+            .query(qb => {
+                qb.where('listing_item_id', '=', listingItemId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await ShoppingCartItemCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ShoppingCartItemCollection.fetchAll();
+        }
+    }
+
     public static async clearCart(cartId: number): Promise<void> {
         const ShoppingCartItemCollection = ShoppingCartItem.forge<ShoppingCartItem>()
             .query(qb => {
