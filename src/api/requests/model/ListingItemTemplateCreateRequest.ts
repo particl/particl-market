@@ -21,7 +21,8 @@ export class ListingItemTemplateCreateRequest extends RequestBody implements Mod
     public generatedAt: number;
 
     // should be empty when created, as template with a hash should not be modified anymore
-    // public hash: string;
+    // used just for testing
+    public hash: string;
 
     // the base template should not have a market
     public market: string;

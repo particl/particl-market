@@ -47,7 +47,7 @@ import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLoca
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
 import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
-import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowReleaseType, EscrowType, MessagingProtocol, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
@@ -59,6 +59,8 @@ import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemIma
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
+import {ListingItemObjectType} from '../../src/api/enums/ListingItemObjectType';
+import {ListingItemObjectDataCreateRequest} from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
 // tslint:enable:max-line-length
 
 describe('ListingItem', () => {
@@ -188,7 +190,7 @@ describe('ListingItem', () => {
     });
 
     test('Should delete ListingItem1', async () => {
-        expect.assertions(12);
+        expect.assertions(15);
         await listingItemService.destroy(createdListingItem1.id);
         await expectListingItemWasDeleted(createdListingItem1);
 
@@ -633,8 +635,19 @@ describe('ListingItem', () => {
                     } as CryptocurrencyAddressCreateRequest
                 } as ItemPriceCreateRequest
             } as PaymentInformationCreateRequest,
-            messagingInformation: [] as MessagingInformationCreateRequest[],
-            listingItemObjects: [] as ListingItemObjectCreateRequest[]
+            messagingInformation: [{
+                protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocol)),
+                publicKey: Faker.random.uuid()
+            }] as MessagingInformationCreateRequest[],
+            listingItemObjects: [{
+                type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
+                description: Faker.lorem.paragraph(),
+                order: 0,
+                listingItemObjectDatas: [{
+                    key: Faker.lorem.slug(),
+                    value: Faker.lorem.word()
+                }] as ListingItemObjectDataCreateRequest[]
+            }] as ListingItemObjectCreateRequest[]
         } as ListingItemCreateRequest;
 
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
