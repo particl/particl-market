@@ -47,7 +47,7 @@ export class ListingItemTemplateRepository {
      * @param market
      */
     public async findLatestByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<ListingItemTemplate> {
-        const collection = await this.ListingItemTemplateModel.fetchByTemplateAndMarket(parentTemplateId, market, false);
+        const collection = await this.ListingItemTemplateModel.fetchByParentTemplateAndMarket(parentTemplateId, market, false);
         return collection.first();
     }
 
@@ -57,7 +57,7 @@ export class ListingItemTemplateRepository {
      * @param market
      */
     public async findAllVersionsByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<Bookshelf.Collection<ListingItemTemplate>> {
-        return await this.ListingItemTemplateModel.fetchByTemplateAndMarket(parentTemplateId, market, true);
+        return await this.ListingItemTemplateModel.fetchByParentTemplateAndMarket(parentTemplateId, market, true);
     }
 
     /**

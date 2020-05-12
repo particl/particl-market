@@ -1373,7 +1373,7 @@ export class TestDataService {
             ? this.generateItemLocationData()
             : undefined;
 
-        this.log.debug('generateParams.categoryId: ', JSON.stringify(generateParams.categoryId, null, 2));
+        // this.log.debug('generateParams.categoryId: ', JSON.stringify(generateParams.categoryId, null, 2));
 
         const itemCategory = {} as ItemCategoryUpdateRequest;
         if (generateParams.categoryId) {
@@ -1381,12 +1381,12 @@ export class TestDataService {
         } else {
             // todo: fix, this isn't working without generateParams.soldOnMarketId
             const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
-            this.log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+            // this.log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
             // use a default category
             // itemCategory.market = sellerMarket.receiveAddress;
             const randomCategory: resources.ItemCategory = await this.getRandomCategory();
-            this.log.debug('randomCategory: ', JSON.stringify(randomCategory, null, 2));
+            // this.log.debug('randomCategory: ', JSON.stringify(randomCategory, null, 2));
             itemCategory.key = randomCategory.key;
         }
 
@@ -1486,7 +1486,7 @@ export class TestDataService {
 
         let profileId;
 
-        this.log.debug('generateListingItemTemplateData(), generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateListingItemTemplateData(), generateParams: ', JSON.stringify(generateParams, null, 2));
         if (generateParams.generateListingItem) {
             const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
             profileId = sellerMarket.Profile.id;

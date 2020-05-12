@@ -57,10 +57,8 @@ export class ListingItemObjectService {
 
     @validate()
     public async create( @request(ListingItemObjectCreateRequest) data: ListingItemObjectCreateRequest): Promise<ListingItemObject> {
-        const startTime = new Date().getTime();
-
         const body: ListingItemObjectCreateRequest = JSON.parse(JSON.stringify(data));
-        // todo: could this be annotated in ListingItemObjectCreateRequest?
+
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
@@ -70,34 +68,19 @@ export class ListingItemObjectService {
         delete body.listingItemObjectDatas;
 
         // If the request body was valid we will create the listingItemObject
-        const listingItemObject: resources.ListingItemObject = await this.listingItemObjectRepo.create(body)
-            .then(value => value.toJSON());
+        const listingItemObject: resources.ListingItemObject = await this.listingItemObjectRepo.create(body).then(value => value.toJSON());
 
         for (const objectData of listingItemObjectDatas) {
             objectData.listing_item_object_id = listingItemObject.id;
-            // this.log.debug('objectData: ', JSON.stringify(objectData, null, 2));
-
             await this.listingItemObjectDataService.create(objectData);
         }
-
-        this.log.debug('objectDatas saved');
-
-        // finally find and return the created listingItemObject
-        const newListingItemObject = await this.findOne(listingItemObject.id);
-
-        this.log.debug('listingItemObjectService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        return newListingItemObject;
+        return await this.findOne(listingItemObject.id);
     }
 
     @validate()
     public async update(id: number, @request(ListingItemObjectUpdateRequest) data: ListingItemObjectUpdateRequest): Promise<ListingItemObject> {
 
         const body = JSON.parse(JSON.stringify(data));
-
-        // todo: messy
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
-            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
-        }
 
         // find the existing one without relatedb
         const listingItemObject = await this.findOne(id, false);
@@ -127,10 +110,7 @@ export class ListingItemObjectService {
             await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
         }
 
-        // update listingItemObject record
-        const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
-
-        return updatedListingItemObject;
+        return await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

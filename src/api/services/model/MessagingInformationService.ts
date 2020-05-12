@@ -45,29 +45,16 @@ export class MessagingInformationService {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
-        // If the request body was valid we will create the messagingInformation
         const messagingInformation = await this.messagingInformationRepo.create(body);
-
-        // finally find and return the created messagingInformation
-        const newMessagingInformation = await this.findOne(messagingInformation.Id);
-
-        // this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        return newMessagingInformation;
+        return await this.findOne(messagingInformation.Id);
     }
 
     @validate()
     public async update(id: number, @request(MessagingInformationUpdateRequest) body: MessagingInformationUpdateRequest): Promise<MessagingInformation> {
-
-        // find the existing one without related
         const messagingInformation = await this.findOne(id, false);
-
-        // set new values
         messagingInformation.Protocol = body.protocol;
         messagingInformation.PublicKey = body.publicKey;
-
-        // update messagingInformation record
-        const updatedMessagingInformation = await this.messagingInformationRepo.update(id, messagingInformation.toJSON());
-        return updatedMessagingInformation;
+        return await this.messagingInformationRepo.update(id, messagingInformation.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

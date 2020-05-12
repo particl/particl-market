@@ -127,11 +127,7 @@ export class ItemInformationService {
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('updating ItemInformation, body: ', JSON.stringify(body, null, 2));
-
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
-            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
-        }
+        // this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
@@ -142,17 +138,20 @@ export class ItemInformationService {
         itemInformation.LongDescription = body.longDescription;
         const itemInfoToSave = itemInformation.toJSON();
 
-        // ListingItemTemplates dont have ItemCategory
-        if (body.itemCategory) {
-            // get existing item category or create new one
+        if (!itemInfoToSave.item_category_id && !_.isEmpty(body.itemCategory)) {
+            // get existing ItemCategory or create new one
             const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
             itemInfoToSave.item_category_id = existingItemCategory.Id;
         }
+
+        // this.log.debug('update(), itemInfoToSave: ', JSON.stringify(itemInfoToSave, null, 2));
 
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
 
         if (body.itemLocation) {
+            // this.log.debug('update(), body.itemLocation: ', JSON.stringify(body.itemLocation, null, 2));
+
             // find related record and delete it
             let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
             await this.itemLocationService.destroy(itemLocation.id);
@@ -174,12 +173,13 @@ export class ItemInformationService {
         shippingDestinations = body.shippingDestinations || [];
         for (const shippingDestination of shippingDestinations) {
             shippingDestination.item_information_id = id;
+            this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
+
             await this.shippingDestinationService.create(shippingDestination);
         }
 
         // finally find and return the updated itemInformation
-        const newItemInformation = await this.findOne(id);
-        return newItemInformation;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {
@@ -201,7 +201,7 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
 
         // if (createRequest.id) {
         //    result = await this.itemCategoryService.findOneDefaultByKey(createRequest.id);

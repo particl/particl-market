@@ -64,6 +64,16 @@ import { DefaultMarketService } from '../../src/api/services/DefaultMarketServic
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashableItemImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/model/ListingItemTemplateUpdateRequest';
+import { ItemInformationUpdateRequest } from '../../src/api/requests/model/ItemInformationUpdateRequest';
+import { PaymentInformationUpdateRequest } from '../../src/api/requests/model/PaymentInformationUpdateRequest';
+import { MessagingInformationUpdateRequest } from '../../src/api/requests/model/MessagingInformationUpdateRequest';
+import { ListingItemObjectUpdateRequest } from '../../src/api/requests/model/ListingItemObjectUpdateRequest';
+import { ModelNotModifiableException } from '../../src/api/exceptions/ModelNotModifiableException';
+import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
+import { ListingItemTemplateSearchParams } from '../../src/api/requests/search/ListingItemTemplateSearchParams';
+import { ListingItemTemplateSearchOrderField } from '../../src/api/enums/SearchOrderField';
+import { SearchOrder } from '../../src/api/enums/SearchOrder';
 // tslint:enable:max-line-length
 
 describe('ListingItemTemplate', async () => {
@@ -93,6 +103,7 @@ describe('ListingItemTemplate', async () => {
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
+    let generatedListingItemTemplates: resources.ListingItemTemplate[];
     let listingItemTemplate: resources.ListingItemTemplate;
     let randomImageData: string;
 
@@ -161,7 +172,12 @@ describe('ListingItemTemplate', async () => {
     test('Should findOne ListingItemTemplate using id', async () => {
         const result: resources.ListingItemTemplate = await listingItemTemplateService.findOne(listingItemTemplate.id)
             .then(value => value.toJSON());
+        expect(result.hash).toBe(listingItemTemplate.hash);
+    });
 
+    test('Should findOne ListingItemTemplate using hash', async () => {
+        const result: resources.ListingItemTemplate = await listingItemTemplateService.findOneByHash(listingItemTemplate.hash)
+            .then(value => value.toJSON());
         expect(result.hash).toBe(listingItemTemplate.hash);
     });
 
@@ -243,95 +259,70 @@ describe('ListingItemTemplate', async () => {
         expectListingItemTemplateFromCreateRequest(listingItemTemplate, testDataToSave);
     }, 600000); // timeout to 600s
 
+    test('Should throw ModelNotModifiableException because ListingItemTemplate has a hash', async () => {
+        expect.assertions(1);
+        await listingItemTemplateService.update(listingItemTemplate.id, {} as ListingItemTemplateUpdateRequest)
+            .catch(e =>
+                expect(e).toEqual(new ModelNotModifiableException('ListingItemTemplate'))
+            );
+
+    }, 600000); // timeout to 600s
+
     test('Should delete the created ListingItemTemplate', async () => {
         expect.assertions(11);
         await listingItemTemplateService.destroy(listingItemTemplate.id);
         await expectListingItemTemplateWasDeleted(listingItemTemplate);
     });
 
-/*
-    TODO: skipping update because I'm not sure we even need this...
-    test('Should update previously created ListingItemTemplate', async () => {
-        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest();
-
-        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToSave)
-            .then(value => value.toJSON());
-
-        expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToSave);
-    }, 600000); // timeout to 600s
-*/
-// TODO: updates, searchby tests, etc
-
-    test('Should delete the previously updated ListingItemTemplate', async () => {
-        expect.assertions(21);
-        await listingItemTemplateService.destroy(createdListingItemTemplate3.id);
-        await expectListingItemTemplateWasDeleted(createdListingItemTemplate3);
-    });
-    */
-
-    /*
     test('Should update ListingItemTemplate correctly when removing data', async () => {
 
-        const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
+        const createRequest = await generateListingItemTemplateCreateRequest(false, false);
+        listingItemTemplate = await listingItemTemplateService.create(createRequest).then(value => value.toJSON());
 
-        testDataToUpdate.profile_id = defaultProfile.id;
-        testDataToUpdate.generatedAt = +Date.now();
+        const testDataToUpdate = {
+            itemInformation: createRequest.itemInformation as ItemInformationUpdateRequest,
+            paymentInformation: createRequest.paymentInformation as PaymentInformationUpdateRequest,
+            messagingInformation: createRequest.messagingInformation as MessagingInformationUpdateRequest[],
+            listingItemObjects: createRequest.listingItemObjects as ListingItemObjectUpdateRequest[]
+        } as ListingItemTemplateUpdateRequest;
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
-        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
-            .then(value => value.toJSON());
-        expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
+        delete createRequest.listingItemObjects;
+        listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
 
         // remove some more data
         delete testDataToUpdate.messagingInformation;
-        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
-            .then(value => value.toJSON());
-        expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
+        delete createRequest.messagingInformation;
+        listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
 
         // and even more
         delete testDataToUpdate.paymentInformation;
-        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
-            .then(value => value.toJSON());
-        expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
+        delete createRequest.paymentInformation;
+        listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
 
         // and more
         delete testDataToUpdate.itemInformation;
-        updatedListingItemTemplate1 = await listingItemTemplateService.update(createdListingItemTemplate3.id, testDataToUpdate)
-            .then(value => value.toJSON());
-        expectListingItemTemplateFromCreateRequest(updatedListingItemTemplate1, testDataToUpdate);
+        delete createRequest.itemInformation;
+        listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
+        expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
 
     }, 600000); // timeout to 600s
-*/
 
-/*
-    test('Should not delete ListingItemTemplate having relation to ListingItem', async () => {
+    test('Should delete the updated ListingItemTemplate', async () => {
         expect.assertions(1);
-        await listingItemTemplateService.destroy(createdListingItemTemplate3.id).catch(e =>
-            expect(e).toEqual(new MessageException('ListingItemTemplate has ListingItems.'))
-        );
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await expectListingItemTemplateWasDeleted(listingItemTemplate);
     });
-*/
 
-    // TODO: rewrite this..
-/*
     // searchBy tests
     test('Should generate 10 templates for searchBy tests', async () => {
 
-        log.debug('createdListingItemTemplate2: ', createdListingItemTemplate2.id);
-        log.debug('createdListingItemTemplate3: ', createdListingItemTemplate3.id);
-
-        await listingItemTemplateService.destroy(createdListingItemTemplate2.id);
-        await expectListingItemTemplateWasDeleted(createdListingItemTemplate2);
-
-        log.debug('createdListingItem1: ', createdListingItemTemplate3.id);
-        await listingItemService.destroy(createdListingItem1.id);
-        await listingItemTemplateService.destroy(createdListingItemTemplate3.id);
-        await expectListingItemTemplateWasDeleted(createdListingItemTemplate3);
-
         // expect to have no templates at this point
-        const listingItemTemplates: resources.ListingItemTemplate[] = await listingItemTemplateService.findAll()
-            .then(value => value.toJSON());
+        const listingItemTemplates: resources.ListingItemTemplate[] = await listingItemTemplateService.findAll().then(value => value.toJSON());
         expect(listingItemTemplates).toHaveLength(0);
 
         // then generate some
@@ -340,21 +331,19 @@ describe('ListingItemTemplate', async () => {
 
     }, 600000); // timeout to 600s
 
-
     test('Should return ListingItemTemplates having relation to ListingItem', async () => {
         const searchParams = {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.DATE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
+            profileId: profile.id,
             // searchString: '*',
             // category: '*',
-            hasItems: true
+            hasListingItems: true
         } as ListingItemTemplateSearchParams;
 
-        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
-            .then(value => value.toJSON());
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(6);
         // log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
         expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
@@ -365,15 +354,14 @@ describe('ListingItemTemplate', async () => {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.DATE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
+            profileId: profile.id,
             // searchString: '*',
             // category: '*',
-            hasItems: false
+            hasListingItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
-            .then(value => value.toJSON());
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeLessThan(templates[3].updatedAt);
     });
@@ -383,15 +371,14 @@ describe('ListingItemTemplate', async () => {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.DESC,
-            orderField: SearchOrderField.DATE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
+            profileId: profile.id,
             // searchString: '*',
             // category: '*',
-            hasItems: false
+            hasListingItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
-            .then(value => value.toJSON());
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(4);
         expect(templates[0].updatedAt).toBeGreaterThan(templates[3].updatedAt);
     });
@@ -401,15 +388,14 @@ describe('ListingItemTemplate', async () => {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.DATE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
+            profileId: profile.id,
             searchString: generatedListingItemTemplates[0].ItemInformation.title
             // category: '*',
             // hasItems: false
         } as ListingItemTemplateSearchParams;
 
-        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams)
-            .then(value => value.toJSON());
+        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(1);
 
     });
@@ -417,24 +403,19 @@ describe('ListingItemTemplate', async () => {
     test('Should return ListingItemTemplates using searchString ordered correctly', async () => {
         const titleToSearchFor = 'titleToSearchFor';
 
-        let testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.profile_id = defaultProfile.id;
+        const testDataToSave: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest(false,  false);
         testDataToSave.itemInformation.title = titleToSearchFor + ' 1';
-        testDataToSave.generatedAt = +Date.now();
         await listingItemTemplateService.create(testDataToSave);
 
-        testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.profile_id = defaultProfile.id;
         testDataToSave.itemInformation.title = titleToSearchFor + ' 2';
-        testDataToSave.generatedAt = +Date.now();
         await listingItemTemplateService.create(testDataToSave);
 
         let searchParams = {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.TITLE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.TITLE,
+            profileId: profile.id,
             searchString: titleToSearchFor
             // category: '*',
             // hasItems: false
@@ -449,8 +430,8 @@ describe('ListingItemTemplate', async () => {
             page: 0,
             pageLimit: 100,
             order: SearchOrder.DESC,
-            orderField: SearchOrderField.TITLE,
-            profileId: defaultProfile.id,
+            orderField: ListingItemTemplateSearchOrderField.TITLE,
+            profileId: profile.id,
             searchString: titleToSearchFor
             // category: '*',
             // hasItems: false
@@ -462,7 +443,6 @@ describe('ListingItemTemplate', async () => {
         expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 1');
 
     });
-*/
 
     const generateTemplatesAndListingItems = async (withListingItemAmount: number = 0, withoutListingItemAmount: number = 0):
         Promise<resources.ListingItemTemplate[]> => {
@@ -546,26 +526,28 @@ describe('ListingItemTemplate', async () => {
         return generatedTemplates;
     };
 
-    const generateListingItemTemplateCreateRequest = async (withImage: boolean = false): Promise<ListingItemTemplateCreateRequest> => {
+    const generateListingItemTemplateCreateRequest = async (withImage: boolean = false,
+                                                            withHash: boolean = true): Promise<ListingItemTemplateCreateRequest> => {
         const now = Date.now();
-
-        const imageHash =  + Faker.random.uuid() + '';
-        const itemImages = withImage ? [{
-            data: [{
-                // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-                // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
-                protocol: ProtocolDSN.LOCAL,
-                encoding: 'BASE64',
-                dataId: 'https://particl.io/images/' + imageHash,
-                imageVersion: ImageVersions.ORIGINAL.propName,
-                data: randomImageData
-            }] as ItemImageDataCreateRequest[],
-            featured: false,
-            hash: imageHash
-        }] as ItemImageCreateRequest[] : [] as ItemImageCreateRequest[];
+        const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
+        let itemImages: ItemImageCreateRequest[] = [];
 
         if (withImage) {
-            itemImages[0].hash =  ConfigurableHasher.hash(itemImages[0], new HashableItemImageCreateRequestConfig());
+            itemImages = [{
+                data: [{
+                    // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
+                    // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
+                    protocol: ProtocolDSN.LOCAL,
+                    encoding: 'BASE64',
+                    imageVersion: ImageVersions.ORIGINAL.propName,
+                    data: randomImageData
+                }] as ItemImageDataCreateRequest[],
+                featured: false
+            }] as ItemImageCreateRequest[];
+
+            const hash = ConfigurableHasher.hash(itemImages[0], new HashableItemImageCreateRequestConfig());
+            itemImages[0].hash = hash;
+            itemImages[0].data[0].dataId = 'https://particl.io/images/' + hash;
         }
 
         const createRequest = {
@@ -575,6 +557,9 @@ describe('ListingItemTemplate', async () => {
                 title: Faker.random.words(4),
                 shortDescription: Faker.random.words(10),
                 longDescription: Faker.random.words(30),
+                itemCategory: {
+                    key: randomCategory.key
+                } as ItemCategoryCreateRequest,
                 itemLocation: {
                     country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                     address: Faker.address.streetAddress(),
@@ -631,7 +616,9 @@ describe('ListingItemTemplate', async () => {
             }] as ListingItemObjectCreateRequest[]
         } as ListingItemTemplateCreateRequest;
 
-        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
+        if (withHash) {
+            createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
+        }
 
         return createRequest;
     };

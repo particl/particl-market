@@ -119,23 +119,23 @@ export class IdentityService {
         }
 
         // TODO: PATH amountOfMarkets+1
-        // ODO: path as param
+        // TODO: path as param
         const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
-        // this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
+        this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
-        const walletName = 'profiles/' + profile.name + '/' + marketName;
-        const walletExists = await this.coreRpcService.walletExists(walletName);
+        const marketWalletName = 'profiles/' + profile.name + '/' + marketName;
+        const marketWalletExists = await this.coreRpcService.walletExists(marketWalletName);
 
-        if (walletExists) {
+        if (marketWalletExists) {
             this.log.warn('Wallet already exists!');
-            const isLoaded = await this.coreRpcService.walletLoaded(walletName);
+            const isLoaded = await this.coreRpcService.walletLoaded(marketWalletName);
             if (!isLoaded) {
-                await this.coreRpcService.loadWallet(walletName);
+                await this.coreRpcService.loadWallet(marketWalletName);
             }
         } else {
-            await this.coreRpcService.createAndLoadWallet(walletName, false, true)
+            await this.coreRpcService.createAndLoadWallet(marketWalletName, false, true)
                 .catch(async reason => {
                     this.log.error('reason:', JSON.stringify(reason.body.error.message, null, 2));
                     throw new MessageException(reason.body.error.message);
@@ -146,26 +146,36 @@ export class IdentityService {
         const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);
         this.log.debug('createMarketIdentityForProfile(), extKeyAlt: ', extKeyAlt);
 
-        const extKeyImported: RpcExtKeyResult = await this.coreRpcService.extKeyImport(walletName, extKeyAlt/*masterKey.evkey*/, 'master key', true);
-        this.log.debug('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
+        await this.coreRpcService.extKeyImport(marketWalletName, extKeyAlt/*masterKey.evkey*/, 'master key', true)
+            .then(async extKeyImported => {
+                this.log.debug('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
+                await this.coreRpcService.extKeySetMaster(marketWalletName, extKeyImported.id);
+            })
+            .catch(reason => {
+                this.log.debug('reason:', reason);
+                if (reason.message !== 'ExtKeyImportLoose failed, Derived key already exists in wallet') {
+                    this.log.error(reason);
+                } else {
+                    throw reason;
+                }
+            });
 
-        await this.coreRpcService.extKeySetMaster(walletName, extKeyImported.id);
-        const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(walletName, 'market account');
+        const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(marketWalletName, 'market account');
         this.log.debug('createMarketIdentityForProfile(), marketAccount: ', JSON.stringify(marketAccount, null, 2));
 
-        await this.coreRpcService.extKeySetDefaultAccount(walletName, marketAccount.account);
+        await this.coreRpcService.extKeySetDefaultAccount(marketWalletName, marketAccount.account);
 
-        const address = await this.coreRpcService.getNewAddress(walletName);
+        const address = await this.coreRpcService.getNewAddress(marketWalletName);
         this.log.debug('createMarketIdentityForProfile(), address: ', address);
 
-        this.log.debug('createMarketIdentityForProfile(), walletName: ', walletName);
-        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
+        this.log.debug('createMarketIdentityForProfile(), walletName: ', marketWalletName);
+        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(marketWalletName);
         // this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
 
         // create Identity for Market, using the created wallet
         return await this.create({
             profile_id: profile.id,
-            wallet: walletName,
+            wallet: marketWalletName,
             address,
             hdseedid: walletInfo.hdseedid,
             path: keyInfo.key_info.path,

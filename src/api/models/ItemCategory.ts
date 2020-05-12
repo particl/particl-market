@@ -53,7 +53,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
             isRoot: true,
             isDefault: !!market
         } as ItemCategorySearchParams;
-        this.log.debug('fetchRoot, params:', JSON.stringify(params, null, 2));
+        // this.log.debug('fetchRoot, params:', JSON.stringify(params, null, 2));
         const collection: Collection<ItemCategory> = await this.searchBy(params, true);
         return collection.first();
     }
@@ -63,7 +63,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
             isRoot: true,
             isDefault: true
         } as ItemCategorySearchParams;
-        this.log.debug('fetchDefaultRoot, params:', JSON.stringify(params, null, 2));
+        // this.log.debug('fetchDefaultRoot, params:', JSON.stringify(params, null, 2));
 
         const collection: Collection<ItemCategory> = await this.searchBy(params, true);
         return collection.first();

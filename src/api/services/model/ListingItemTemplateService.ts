@@ -51,6 +51,7 @@ import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequ
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
+import {MessagingInformation} from '../../models/MessagingInformation';
 
 export class ListingItemTemplateService {
 
@@ -220,102 +221,115 @@ export class ListingItemTemplateService {
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
-        // ListingItemTemplates with a hash are not supposed to be modified anymore
+        // ListingItemTemplates with a hash or ListingItems are not supposed to be modified anymore
         if (!_.isEmpty(listingItemTemplate.Hash) || !_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         // update listingItemTemplate record
+        // todo: ListingItemTemplate has no changeable data?
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
         // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
-        let itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON() || {};
+        const itemInformation: resources.ItemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON()
+            || {} as resources.ItemInformation;
 
         if (!_.isEmpty(body.itemInformation)) {
+            // we want to add/update
             if (!_.isEmpty(itemInformation)) {
-                const itemInformationId = itemInformation.id;
-                itemInformation = body.itemInformation;
-                itemInformation.listing_item_template_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+                // already exists
+                const updateRequest: ItemInformationUpdateRequest = body.itemInformation;
+                //  updateRequest.listing_item_template_id = id;
+                this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
+                await this.itemInformationService.update(itemInformation.id, updateRequest);
             } else {
-                itemInformation = body.itemInformation;
-                itemInformation.listing_item_template_id = id;
-                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+                // doesnt exist
+                const createRequest: ItemInformationCreateRequest = body.itemInformation;
+                createRequest.listing_item_template_id = id;
+                this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+                await this.itemInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(itemInformation)) {
+            // we want to remove
+            // already exists
             await this.itemInformationService.destroy(itemInformation.id);
         }
 
-        // payment-information
-        let paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON() || {};
+        // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
+        const paymentInformation: resources.PaymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON()
+            || {} as resources.PaymentInformation;
 
         if (!_.isEmpty(body.paymentInformation)) {
+            // we want to add/update
             if (!_.isEmpty(paymentInformation)) {
-                const paymentInformationId = paymentInformation.id;
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_template_id = id;
-                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+                // already exists
+                const updateRequest: PaymentInformationUpdateRequest = body.paymentInformation;
+                await this.paymentInformationService.update(paymentInformation.id, updateRequest);
             } else {
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_template_id = id;
-                await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+                // doesnt exist
+                const createRequest: PaymentInformationCreateRequest = body.paymentInformation;
+                createRequest.listing_item_template_id = id;
+                await this.paymentInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(paymentInformation)) {
+            // we want to remove
+            // already exists
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // find related record and delete it and recreate related data
-        const existintMessagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
+        // ---
+        const existingMessagingInformations: resources.MessagingInformation[] = updatedListingItemTemplate.related('MessagingInformation').toJSON()
+            || [] as resources.MessagingInformation[];
+        const newMessagingInformations = body.messagingInformation || [];
 
-        const newMessagingInformation = body.messagingInformation || [];
-
-        // delete MessagingInformation if not exist with new params
-        for (const msgInfo of existintMessagingInformation) {
-            if (!await this.checkExistingObject(newMessagingInformation, 'id', msgInfo.id)) {
+        // delete existing MessagingInformation if its not included in the newMessagingInformations
+        for (const msgInfo of existingMessagingInformations) {
+            // is existing part of new ones?
+            const found = await this.checkExistingObjectFieldValueExistsInArray<MessagingInformationUpdateRequest>(
+                newMessagingInformations, 'id', msgInfo.id);
+            if (_.isEmpty(found)) {
+                // not found -> delete
                 await this.messagingInformationService.destroy(msgInfo.id);
             }
         }
 
-        // update or create messaging itemInformation
-        for (const msgInfo of newMessagingInformation) {
-            msgInfo.listing_item_template_id = id;
-            const message = await this.checkExistingObject(existintMessagingInformation, 'id', msgInfo.id);
-            delete msgInfo.id;
-            if (message) {
-                message.protocol = msgInfo.protocol;
-                message.publicKey = msgInfo.publicKey;
-                await this.messagingInformationService.update(message.id, msgInfo as MessagingInformationUpdateRequest);
+        // create new or update existing MessagingInformations
+        for (const newMsgInfo of newMessagingInformations) {
+
+            if (newMsgInfo.id !== undefined) {
+                // id exists -> update
+                newMsgInfo.listing_item_template_id = id;
+                await this.messagingInformationService.update(newMsgInfo.id, newMsgInfo);
             } else {
-                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+                newMsgInfo.listing_item_template_id = id;
+                await this.messagingInformationService.create(newMsgInfo);
             }
         }
 
+        // ---
+        const existingListingItemObjects: resources.ListingItemObject[] = updatedListingItemTemplate.related('ListingItemObjects').toJSON()
+            || [] as resources.ListingItemObject[];
         const newListingItemObjects = body.listingItemObjects || [];
-        // find related listingItemObjects
-        const existingListingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON() || [];
 
-        // find highestOrderNumber
-        const highestOrderNumber = await this.findHighestOrderNumber(newListingItemObjects);
-
-        const objectsToBeUpdated = [] as any;
-        for (const object of existingListingItemObjects) {
-            // check if order number is greter than highestOrderNumber then delete
-            if (object.order > highestOrderNumber) {
-                await this.listingItemObjectService.destroy(object.id);
-            } else {
-                objectsToBeUpdated.push(object);
+        // delete existing ListingItemObject if its not included in the newListingItemObjects
+        for (const liObject of existingListingItemObjects) {
+            // is existing part of new ones?
+            const found = await this.checkExistingObjectFieldValueExistsInArray<ListingItemObjectUpdateRequest>(
+                newListingItemObjects, 'id', liObject.id);
+            if (_.isEmpty(found)) {
+                // not found -> delete
+                await this.listingItemObjectService.destroy(liObject.id);
             }
         }
 
         // create or update listingItemObjects
-        for (const object of newListingItemObjects) {
-            object.listing_item_template_id = id;
-            const itemObject = await this.checkExistingObject(objectsToBeUpdated, 'order', object.order);
-
-            if (itemObject) {
-                await this.listingItemObjectService.update(itemObject.id, object as ListingItemObjectUpdateRequest);
+        for (const newLiObject of newListingItemObjects) {
+            if (newLiObject.id !== undefined) {
+                newLiObject.listing_item_template_id = id;
+                await this.listingItemObjectService.update(newLiObject.id, newLiObject);
             } else {
-                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+                newLiObject.listing_item_template_id = id;
+                await this.listingItemObjectService.create(newLiObject as ListingItemObjectCreateRequest);
             }
         }
 
@@ -470,15 +484,14 @@ export class ListingItemTemplateService {
         }
     }
 
-    // check if object is exist in a array
-    private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
-        return _.find(objectArray, (object) => {
+    private async checkExistingObjectFieldValueExistsInArray<T>(objectArray: T[], fieldName: string, value: string | number): Promise<T | undefined> {
+        return _.find<T>(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }
 
     // find highest order number from listingItemObjects
-    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: resources.ListingItemObject[]): Promise<number> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
             return itemObject['order'];
         });

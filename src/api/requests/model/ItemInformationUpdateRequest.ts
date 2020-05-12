@@ -13,10 +13,9 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ItemInformationUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    public id: number;
-
-    public listing_item_id: number;
-    public listing_item_template_id: number;
+    // we should not be updating relations
+    // public listing_item_id: number;
+    // public listing_item_template_id: number;
 
     @IsNotEmpty()
     public title: string;
@@ -27,8 +26,8 @@ export class ItemInformationUpdateRequest extends RequestBody implements ModelRe
     @IsNotEmpty()
     public longDescription: string;
 
-    public itemCategory: ItemCategoryUpdateRequest;
     public item_category_id: number;
+    public itemCategory: ItemCategoryUpdateRequest;
 
     public itemLocation: ItemLocationCreateRequest;
     public shippingDestinations: ShippingDestinationCreateRequest[];
