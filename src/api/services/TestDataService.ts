@@ -122,6 +122,7 @@ import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import {CoreMessageVersion} from '../enums/CoreMessageVersion';
 
 
 export class TestDataService {
@@ -337,7 +338,39 @@ export class TestDataService {
     }
 
     /**
-     * Generates a new ListingItemTemplate with ListingItem
+     * Generates a new ListingItemTemplate without ListingItem
+     */
+    public async generateListingItemTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
+                                             generateItemImages: boolean = false): Promise<resources.ListingItemTemplate> {
+        const generateParams = new GenerateListingItemTemplateParams([
+            true,                   // generateItemInformation
+            true,                   // generateItemLocation
+            true,                   // generateShippingDestinations
+            generateItemImages,     // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            false,                  // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            sellerProfile.id,       // profileId
+            false,                  // generateListingItem
+            bidderMarket.id         // soldOnMarketId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await this.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams
+        } as TestDataGenerateRequest);
+
+        // this.log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
+        return listingItemTemplates[0];
+    }
+
+    /**
+     * Generates a new ListingItem with ListingItemTemplate
      */
     public async generateListingItemWithTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
                                                  generateItemImages: boolean = false): Promise<resources.ListingItem> {
@@ -442,6 +475,35 @@ export class TestDataService {
         // this.log.debug('proposals: ', JSON.stringify(proposals, null, 2));
 
         return proposals[0];
+    }
+
+    /**
+     * Generates CoreSmsgMessage
+     */
+    public async generateCoreSmsgMessage(actionMessage: ActionMessageInterface, from: string, to: string): Promise<CoreSmsgMessage> {
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: ompVersion(),
+            action: actionMessage
+        };
+        const now = Date.now();
+        const message = {
+            msgid: 'TESTMESSAGE-' + Faker.random.uuid(),
+            version: '0300',
+            location: 'inbox',
+            read: true,
+            paid: true,
+            payloadsize: 320,
+            received: now,
+            sent: now - 10000,
+            expiration: now + (1000 * 60 * 60 * 24 * 2),
+            daysretention: 2,
+            from,
+            to,
+            text: JSON.stringify(marketplaceMessage)
+        } as CoreSmsgMessage;
+
+        return message;
     }
 
     /**
@@ -927,8 +989,7 @@ export class TestDataService {
                 expiredAt: Date.now() + 100000000
             } as VoteCreateRequest;
 
-            const voteModel = await this.voteService.create(voteCreateRequest);
-            const vote: resources.Vote = voteModel.toJSON();
+            const vote: resources.Vote = await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
             this.log.debug('proposal.id : ' + proposal.id + ' : created vote: ' + vote.voter + ' : '
                 + vote.ProposalOption.optionId + ' : ' + vote.ProposalOption.description);
             items.push(vote);
