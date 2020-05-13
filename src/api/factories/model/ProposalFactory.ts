@@ -17,6 +17,7 @@ import { HashableProposalCreateRequestConfig } from '../hashableconfig/createreq
 import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 import { ProposalCategory } from '../../enums/ProposalCategory';
+import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 
 export class ProposalFactory implements ModelFactoryInterface {
 
@@ -48,6 +49,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             smsgData.expiredAt = smsgMessage.expiration;
             smsgData.timeStart = smsgMessage.sent;
             smsgData.msgid = smsgMessage.msgid;
+            smsgData.market = smsgMessage.to;
         }
 
         const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
@@ -73,11 +75,13 @@ export class ProposalFactory implements ModelFactoryInterface {
         for (const option of createRequest.options) {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
-
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableProposalCreateRequestConfig([{
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS
-        }]));
+        }, {
+            value: smsgData.market,
+            to: HashableProposalAddField.PROPOSAL_MARKET
+        }] as HashableFieldValueConfig[]));
 
         // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
         if (proposalMessage.hash !== createRequest.hash) {
@@ -87,12 +91,14 @@ export class ProposalFactory implements ModelFactoryInterface {
         }
 
         // add hashes for the options too
-        for (const option of optionsList) {
+        for (const option of createRequest.options) {
             option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
                 value: createRequest.hash,
                 to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
             }]));
         }
+        // createRequest.options = optionsList;
+        this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         return createRequest;
     }

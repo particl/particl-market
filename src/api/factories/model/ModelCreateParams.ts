@@ -64,7 +64,9 @@ export interface OrderCreateParams extends ModelCreateParams {
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {
-    // msgid: string;           // the Proposal havent been posted yet, so there is no msgid
+    // we get these from the SmsgMessage...
+    // msgid: string;
+    // market: string;
 }
 
 export interface VoteCreateParams extends ModelCreateParams {

@@ -35,6 +35,8 @@ import { ItemVote } from '../../../src/api/enums/ItemVote';
 import { VoteService } from '../../../src/api/services/model/VoteService';
 import { VoteActionMessageProcessor } from '../../../src/api/messageprocessors/action/VoteActionMessageProcessor';
 import { DefaultMarketService } from '../../../src/api/services/DefaultMarketService';
+import { ListingItemTemplateService } from '../../../src/api/services/model/ListingItemTemplateService';
+import { MarketplaceMessageProcessor } from '../../../src/api/messageprocessors/MarketplaceMessageProcessor';
 
 describe('ProposalAddActionListener', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -50,19 +52,25 @@ describe('ProposalAddActionListener', () => {
     let proposalService: ProposalService;
     let voteService: VoteService;
     let proposalAddActionService: ProposalAddActionService;
-    let proposalAddActionListener: ProposalAddActionMessageProcessor;
-    let voteActionListener: VoteActionMessageProcessor;
+    let proposalAddActionMessageProcessor: ProposalAddActionMessageProcessor;
+    let voteActionMessageProcessor: VoteActionMessageProcessor;
     let smsgMessageFactory: SmsgMessageFactory;
     let coreMessageProcessor: CoreMessageProcessor;
+    let marketplaceMessageProcessor: MarketplaceMessageProcessor;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let market: resources.Market;
-    let profile: resources.Profile;
+    let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     let smsgMessage: resources.SmsgMessage;
     let smsgMessageVotes: resources.SmsgMessage[] = [];
 
     let proposal: resources.Proposal;
-    let listingItem: resources.ListingItem;
 
     // tslint:disable:max-line-length
     beforeAll(async () => {
@@ -77,34 +85,42 @@ describe('ProposalAddActionListener', () => {
         voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.model.VoteService);
         proposalAddActionService = app.IoC.getNamed<ProposalAddActionService>(Types.Service, Targets.Service.action.ProposalAddActionService);
         coreMessageProcessor = app.IoC.getNamed<CoreMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CoreMessageProcessor);
-        proposalAddActionListener = app.IoC.getNamed<ProposalAddActionMessageProcessor>(Types.Listener, Targets.Listener.action.ProposalAddActionListener);
-        voteActionListener = app.IoC.getNamed<VoteActionMessageProcessor>(Types.Listener, Targets.Listener.action.VoteActionListener);
+        marketplaceMessageProcessor = app.IoC.getNamed<MarketplaceMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.MarketplaceMessageProcessor);
+        proposalAddActionMessageProcessor = app.IoC.getNamed<ProposalAddActionMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.action.ProposalAddActionMessageProcessor);
+        voteActionMessageProcessor = app.IoC.getNamed<VoteActionMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.action.VoteActionMessageProcessor);
         smsgMessageFactory = app.IoC.getNamed<SmsgMessageFactory>(Types.Factory, Targets.Factory.model.SmsgMessageFactory);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         // get default profile + market
-        profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+
+        sellerProfile = await testDataService.generateProfile();
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
     });
     // tslint:enable:max-line-length
 
-/*
     test('Should create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE)', async () => {
         log.debug('===================================================================================');
         log.debug('create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE), create Proposal');
         log.debug('===================================================================================');
 
-        const fromAddress = profile.address;            // send from the default profile address
-        const toAddress = market.receiveAddress;        // send to the default market address
+        const wallet = bidderMarket.Identity.wallet;
+        const fromAddress = bidderMarket.Identity.address;  // send from the default profile address
+        const toAddress = bidderMarket.receiveAddress;      // send to the default market address
         const paid = true;                              // paid message
         const daysRetention = 1;                        // days retention
         const estimateFee = false;                      // estimate fee
 
         // create a ProposalAddRequest, sendParams skipping the actual send
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, paid, daysRetention, estimateFee),
-            sender: profile,
-            market,
+            sendParams: new SmsgSendParams(wallet, fromAddress, toAddress, paid, daysRetention, estimateFee),
+            sender: bidderMarket.Identity,
+            market: bidderMarket,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
             title: Faker.lorem.words(),
             description: Faker.lorem.paragraph(),
@@ -142,7 +158,7 @@ describe('ProposalAddActionListener', () => {
         expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
         expect(proposal.FlaggedItem).toEqual({});
     });
-
+/*
     test('Should process the previous MPA_PROPOSAL_ADD (PUBLIC_VOTE) and create SmsgMessage', async () => {
 
         log.debug('===================================================================================');
@@ -265,46 +281,22 @@ describe('ProposalAddActionListener', () => {
         log.debug('create and post MPA_PROPOSAL_ADD (ITEM_VOTE), create Proposal');
         log.debug('===================================================================================');
 
-        // first create the listingitem to flag
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                                       // generateItemInformation
-            true,                                       // generateItemLocation
-            true,                                       // generateShippingDestinations
-            false,                                      // generateItemImages
-            true,                                       // generatePaymentInformation
-            true,                                       // generateEscrow
-            true,                                       // generateItemPrice
-            true,                                       // generateMessagingInformation
-            true,                                       // generateListingItemObjects
-            false,                                      // generateObjectDatas
-            null,                                       // listingItemTemplateHash
-            profile.address                      // seller
-        ]).toParamsArray();
+        // we have the listingitem, we can post the msg to flag it
 
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,          // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-        listingItem = listingItems[0];
-
-        // now we have the listingitem, we can post the msg to flag it
-
-        const fromAddress = profile.address;            // send from the default profile address
-        const toAddress = market.receiveAddress;        // send to the default market address
-        const paid = false;                             // paid message
-        const daysRetention = 1;                        // days retention
-        const estimateFee = false;                      // estimate fee
+        const wallet = bidderMarket.Identity.wallet;
+        const fromAddress = bidderMarket.Identity.address;  // send from the default profile address
+        const toAddress = bidderMarket.receiveAddress;      // send to the default market address
+        const paid = false;                                 // paid message
+        const daysRetention = 1;                            // days retention
+        const estimateFee = false;                          // estimate fee
 
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // create a ProposalAddRequest, sendParams skipping the actual send
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, paid, daysRetention, estimateFee),
-            sender: profile,
-            market,
+            sendParams: new SmsgSendParams(wallet, fromAddress, toAddress, paid, daysRetention, estimateFee),
+            sender: bidderMarket.Identity,
+            market: bidderMarket,
             category: ProposalCategory.ITEM_VOTE,
             title: listingItem.hash,
             description: 'I WANT THIS GONE',
@@ -316,26 +308,31 @@ describe('ProposalAddActionListener', () => {
         log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
         expect(smsgSendResponse.result).toBe('Sent.');
         expect(smsgSendResponse.msgid).toBeDefined();
-        expect(smsgSendResponse.msgids).toBeDefined();
-        expect(smsgSendResponse.msgids!.length).toBeGreaterThan(0);
+        // expect(smsgSendResponse.msgids).toBeDefined();
+        // expect(smsgSendResponse.msgids!.length).toBeGreaterThan(0);
 
         // at this point:
         // - outgoing SmsgMessage (MPA_PROPOSAL_ADD) should have been saved and sent
         // - outgoing SmsgMessages (MPA_VOTE) should have been saved and sent
+        //   - actually, no, sending MPA_VOTE is done on the Flagging command
         // - Proposal updated with the msgid should exist
-        // - Proposal should have a relation to FlaggedItem since ProposalCategory is PUBLIC_VOTE
+        // - Proposal should have a relation to FlaggedItem since ProposalCategory is ITEM_VOTE
         // - first ProposalResult should exist having weight 0
         // - second ProposalResult should exist having weight larger than 0
+        //   - nope...
         // - Votes updated with the msgid should exist
+        //   - no...
         // - Votes should have a relation to Proposal
+        //   - no...
 
         smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
-        // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
         expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
         expect(smsgMessage.direction).toBe(ActionDirection.OUTGOING);
         expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
         expect(smsgMessage.status).toBe(SmsgMessageStatus.SENT);
 
+        /*
         for (const voteMsgid of smsgSendResponse.msgids!) {
             const smsgMessageVote: resources.SmsgMessage = await smsgMessageService.findOneByMsgId(voteMsgid, ActionDirection.OUTGOING)
                 .then(value => value.toJSON());
@@ -346,19 +343,18 @@ describe('ProposalAddActionListener', () => {
 
             smsgMessageVotes.push(smsgMessageVote);
         }
-
+        */
         proposal = await proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
         log.debug('proposal: ', JSON.stringify(proposal, null, 2));
         expect(proposal.msgid).toBe(smsgSendResponse.msgid);
-        expect(proposal.ProposalResults.length).toBeGreaterThan(2);
+        expect(proposal.ProposalResults.length).toBe(1);
         expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(2);
         expect(proposal.ProposalResults[0].ProposalOptionResults[0].weight).toBe(0);
         expect(proposal.ProposalResults[0].ProposalOptionResults[1].weight).toBe(0);
-        expect(proposal.ProposalResults[1].ProposalOptionResults[0].weight).toBe(0);
-        expect(proposal.ProposalResults[1].ProposalOptionResults[1].weight).toBeGreaterThan(0);
-        expect(proposal.FlaggedItem.listingItemId).toEqual(listingItem.id);
+        expect(proposal.FlaggedItem.ListingItem.id).toEqual(listingItem.id);
         expect(proposal.FlaggedItem.reason).toEqual(postRequest.description);
 
+        /*
         for (const voteMsgid of smsgSendResponse.msgids!) {
             const vote: resources.Vote = await voteService.findOneByMsgId(voteMsgid).then(value => value.toJSON());
             log.debug('vote: ', JSON.stringify(vote, null, 2));
@@ -367,9 +363,10 @@ describe('ProposalAddActionListener', () => {
             expect(vote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
             expect(vote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
         }
-
+        */
     });
 
+    /*
     test('Should process the previous MPA_PROPOSAL_ADD (ITEM_VOTE) and create SmsgMessage', async () => {
 
         log.debug('===================================================================================');
@@ -392,7 +389,7 @@ describe('ProposalAddActionListener', () => {
             text: smsgMessage.text
         } as CoreSmsgMessage;
 
-        await coreMessageProcessor.process([coreSmsgMessage]);
+        await marketplaceMessageProcessor.process(smsgMessage.msgid);
 
         // once the coremessage is processed:
         // - SmsgMessage status and direction should have been updated (actually a new message is created with direction === INCOMING)
@@ -556,7 +553,7 @@ describe('ProposalAddActionListener', () => {
         expect(proposal.ProposalResults[proposal.ProposalResults.length - 1].ProposalOptionResults[1].weight).toBe(removeWeight);
 
     });
-
+*/
     // TODO: remove proposal and votes and then process incoming proposal and votes
     // TODO: process votes coming from external addresses
 
