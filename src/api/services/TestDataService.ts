@@ -341,7 +341,6 @@ export class TestDataService {
      */
     public async generateListingItemWithTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
                                                  generateItemImages: boolean = false): Promise<resources.ListingItem> {
-
         const generateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
             true,                   // generateItemLocation
@@ -358,7 +357,6 @@ export class TestDataService {
             bidderMarket.id         // soldOnMarketId
         ]).toParamsArray();
 
-
         const listingItemTemplates: resources.ListingItemTemplate[] = await this.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
             amount: 1,
@@ -367,7 +365,6 @@ export class TestDataService {
         } as TestDataGenerateRequest);
 
         // this.log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
-
         return await this.listingItemService.findOne(listingItemTemplates[0].ListingItems[0].id).then(value => value.toJSON());
     }
 
@@ -376,7 +373,6 @@ export class TestDataService {
      */
     public async generateBid(type: ActionMessageTypes, listingItemId: number, bidderMarket: resources.Market, sellerMarket: resources.Market,
                              parentBidId?: number): Promise<resources.Bid[]> {
-
         const bidParams = new GenerateBidParams([
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
@@ -402,7 +398,6 @@ export class TestDataService {
      */
     public async generateOrder(bidderBid: resources.Bid, sellerBid: resources.Bid, bidderMarket: resources.Market,
                                sellerMarket: resources.Market, generateOrderItems: boolean): Promise<resources.Order[]> {
-
         const orderGenerateParams = new GenerateOrderParams([
             generateOrderItems,             // generateOrderItems
             bidderBid.id,                   // bidderBidId
@@ -419,10 +414,8 @@ export class TestDataService {
         } as TestDataGenerateRequest);
 
         this.log.debug('orders: ', JSON.stringify(orders, null, 2));
-
         return orders;
     }
-
 
     /**
      * Generates a new Proposal
@@ -451,7 +444,6 @@ export class TestDataService {
         return proposals[0];
     }
 
-
     /**
      * Generates an random colored image with specified width, height and quality
      * @param width width of the image
@@ -471,7 +463,6 @@ export class TestDataService {
         };
         const image: jpeg.RawImageData<Buffer> = jpeg.encode(rawImageData, quality);
         return image.data.toString('base64');
-
     }
 
     /**

@@ -67,7 +67,7 @@ export class ItemInformationService {
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
         const body: ItemInformationCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -127,7 +127,7 @@ export class ItemInformationService {
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
+        this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
@@ -143,8 +143,6 @@ export class ItemInformationService {
             const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
             itemInfoToSave.item_category_id = existingItemCategory.Id;
         }
-
-        // this.log.debug('update(), itemInfoToSave: ', JSON.stringify(itemInfoToSave, null, 2));
 
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
@@ -163,7 +161,7 @@ export class ItemInformationService {
 
         // todo: instead of delete and create, update
 
-        // find related record and delete it
+        // find related records and delete
         let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
         for (const shippingDestination of shippingDestinations) {
             await this.shippingDestinationService.destroy(shippingDestination.id);
@@ -171,11 +169,28 @@ export class ItemInformationService {
 
         // recreate related data
         shippingDestinations = body.shippingDestinations || [];
-        for (const shippingDestination of shippingDestinations) {
-            shippingDestination.item_information_id = id;
-            this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
+        if (!_.isEmpty(shippingDestinations)) {
+            for (const shippingDestination of shippingDestinations) {
+                shippingDestination.item_information_id = id;
+                // this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
+                await this.shippingDestinationService.create(shippingDestination);
+            }
+        }
 
-            await this.shippingDestinationService.create(shippingDestination);
+        // find related records and delete
+        let itemImages = updatedItemInformation.related('ItemImages').toJSON();
+        for (const itemImage of itemImages) {
+            await this.itemImageService.destroy(itemImage.id);
+        }
+
+        // recreate related data
+        itemImages = body.itemImages || [];
+        if (!_.isEmpty(itemImages)) {
+            for (const itemImage of itemImages) {
+                itemImage.item_information_id = itemInformation.id;
+                // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
+                await this.itemImageService.create(itemImage);
+            }
         }
 
         // finally find and return the updated itemInformation
@@ -183,12 +198,9 @@ export class ItemInformationService {
     }
 
     public async destroy(id: number): Promise<void> {
-        const itemImage: resources.ItemImage = await this.findOne(id, true).then(value => value.toJSON());
-        // find the existing one without related
         const itemInformation: resources.ItemInformation = await this.findOne(id, true).then(value => value.toJSON());
-
-        // manually remove images
         for (const image of itemInformation.ItemImages) {
+            // this.log.debug('image: ', JSON.stringify(image, null,  2));
             await this.itemImageService.destroy(image.id);
         }
         await this.itemInformationRepo.destroy(id);
