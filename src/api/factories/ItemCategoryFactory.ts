@@ -10,8 +10,7 @@ import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import {hash} from 'omp-lib/dist/hasher/hash';
-import {MessageException} from '../exceptions/MessageException';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
 export class ItemCategoryFactory {
 

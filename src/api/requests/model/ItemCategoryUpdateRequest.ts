@@ -12,7 +12,9 @@ export class ItemCategoryUpdateRequest extends RequestBody implements ModelReque
     public parent_item_category_id: number;
 
     public id: number;
+    @IsNotEmpty()
     public key: string;
+    @IsNotEmpty()
     public name: string;
     public market: string;
     public description: string;

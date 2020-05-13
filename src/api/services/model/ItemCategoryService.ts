@@ -84,31 +84,23 @@ export class ItemCategoryService {
 
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
-
-        // If the request body was valid we will create the itemCategory
         const itemCategory: resources.ItemCategory = await this.itemCategoryRepo.create(body).then(value => value.toJSON());
-
-        // finally find and return the created itemCategory
-        const newItemCategory = await this.findOne(itemCategory.id);
-        return newItemCategory;
+        return await this.findOne(itemCategory.id);
     }
 
     @validate()
     public async update(id: number, @request(ItemCategoryUpdateRequest) body: ItemCategoryUpdateRequest, patching: boolean = true): Promise<ItemCategory> {
-        // find the existing one without related
-        const itemCategory = await this.findOne(id, false);
 
-        // set new values
+        const itemCategory = await this.findOne(id, false);
         itemCategory.Name = body.name;
+        itemCategory.Key = body.key;
         itemCategory.Description = body.description;
 
         if (body.parent_item_category_id) {
             itemCategory.set('parentItemCategoryId', body.parent_item_category_id);
         }
 
-        // update itemCategory record
-        const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
-        return updatedItemCategory;
+        return await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
     }
 
     public async destroy(id: number): Promise<void> {
