@@ -165,21 +165,19 @@ export class DefaultItemCategoryService {
         }
         path.push(categoryRequest.name);
 
-        this.log.debug('insertOrUpdateCategory(), path: ', path.toString());
+        this.log.debug('insertOrUpdateCategory(), category path: ', path.toString());
 
         // key is a hash of the path array
         categoryRequest.key = hash(path.toString());
-        // this.log.debug('insertOrUpdateCategory(), path.hash: ', categoryRequest.key);
 
-        this.log.debug('insertOrUpdateCategory(), categoryRequest: ', categoryRequest);
         return await this.itemCategoryService.findOneByKeyAndMarket(categoryRequest.key, categoryRequest.market)
             .then(async categoryModel => {
                 const category: resources.ItemCategory = categoryModel.toJSON();
-                this.log.debug('insertOrUpdateCategory(), FOUND: ', category.id);
+                // this.log.debug('insertOrUpdateCategory(), FOUND: ', category.id);
                 return await this.itemCategoryService.update(category.id, categoryRequest as ItemCategoryUpdateRequest).then(value => value.toJSON());
             })
             .catch(async reason => {
-                this.log.debug('insertOrUpdateCategory(), NOT FOUND: ', reason);
+                // this.log.debug('insertOrUpdateCategory(), NOT FOUND: ', reason);
                 return await this.itemCategoryService.create(categoryRequest as ItemCategoryCreateRequest).then(value => value.toJSON());
             });
     }

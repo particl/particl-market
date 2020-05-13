@@ -75,9 +75,10 @@ export class IdentityService {
     @validate()
     public async create( @request(IdentityCreateRequest) data: IdentityCreateRequest): Promise<Identity> {
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
         const result = await this.findOne(identity.id);
-        // this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
+        this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
 
