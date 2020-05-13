@@ -10,9 +10,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class EscrowRatioUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public escrow_id: number;
-
-    @IsNotEmpty()
     public buyer: number;
 
     @IsNotEmpty()
