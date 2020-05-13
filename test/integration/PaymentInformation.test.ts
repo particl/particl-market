@@ -4,9 +4,11 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as _ from 'lodash';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
+import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
@@ -18,8 +20,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/model/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../../src/api/requests/model/PaymentInformationUpdateRequest';
-import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ItemPriceCreateRequest } from '../../src/api/requests/model/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
@@ -31,6 +33,9 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { toSatoshis } from 'omp-lib/dist/util';
+import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
 
 describe('PaymentInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -49,8 +54,8 @@ describe('PaymentInformation', () => {
 
     let paymentInformation: resources.PaymentInformation;
     let listingItemTemplate: resources.ListingItemTemplate;
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     const testData = {
         type: SaleType.SALE,
@@ -60,11 +65,20 @@ describe('PaymentInformation', () => {
                 buyer: 100,
                 seller: 100
             } as EscrowRatioCreateRequest,
-            secondsToLock: 30
+            secondsToLock: 30,
+            releaseType: EscrowReleaseType.ANON
         } as EscrowCreateRequest,
         itemPrice: {
-            currency: Cryptocurrency.BTC,
-            basePrice: 1
+            currency: Cryptocurrency.PART,
+            basePrice: toSatoshis(+_.random(0.1, 1.00).toFixed(8)),
+            shippingPrice: {
+                domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
+                international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
+            } as ShippingPriceCreateRequest,
+            cryptocurrencyAddress: {
+                type: CryptoAddressType.STEALTH,
+                address: Faker.finance.bitcoinAddress()
+            } as CryptocurrencyAddressCreateRequest
         } as ItemPriceCreateRequest
     } as PaymentInformationCreateRequest;
 
@@ -76,11 +90,20 @@ describe('PaymentInformation', () => {
                 buyer: 0,
                 seller: 0
             } as EscrowRatioUpdateRequest,
-            secondsToLock: 30
+            secondsToLock: 30,
+            releaseType: EscrowReleaseType.ANON
         } as EscrowUpdateRequest,
         itemPrice: {
-            currency: Cryptocurrency.PART,
-            basePrice: 2
+            currency: Cryptocurrency.BTC,
+            basePrice: toSatoshis(+_.random(0.1, 1.00).toFixed(8)),
+            shippingPrice: {
+                domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
+                international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
+            } as ShippingPriceCreateRequest,
+            cryptocurrencyAddress: {
+                type: CryptoAddressType.STEALTH,
+                address: Faker.finance.bitcoinAddress()
+            } as CryptocurrencyAddressCreateRequest
         } as ItemPriceUpdateRequest
     } as PaymentInformationUpdateRequest;
 
@@ -96,26 +119,25 @@ describe('PaymentInformation', () => {
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
             false,              // generateItemImages
-            false,               // generatePaymentInformation
-            false,               // generateEscrow
-            false,               // generateItemPrice
-            false,               // generateMessagingInformation
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            defaultProfile.id,  // profileId
-            false,               // generateListingItem
-            defaultMarket.id    // marketId
+            profile.id,         // profileId
+            false,              // generateListingItem
+            market.id           // soldOnMarketId
         ]).toParamsArray();
 
-        // generate two ListingItemTemplates with ListingItems
         const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
             amount: 1,                                          // how many to generate
@@ -130,6 +152,13 @@ describe('PaymentInformation', () => {
         //
     });
 
+    test('Should throw ValidationException because we want to create a empty PaymentInformation', async () => {
+        expect.assertions(1);
+        await paymentInformationService.create({} as PaymentInformationCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
         expect.assertions(1);
         await paymentInformationService.create({
@@ -141,23 +170,16 @@ describe('PaymentInformation', () => {
 
     test('Should create a new PaymentInformation', async () => {
         testData.listing_item_template_id = listingItemTemplate.id;
+        const result: resources.PaymentInformation = await paymentInformationService.create(testData).then(value => value.toJSON());
 
-        paymentInformation = await paymentInformationService.create(testData).then(value => value.toJSON());
-
-        const result: resources.PaymentInformation = paymentInformation;
         expect(result.type).toBe(testData.type);
         expect(result.Escrow.type).toBe(testData.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
         expect(result.Escrow.Ratio.seller).toBe(testData.escrow.ratio.seller);
         expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
         expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
-    });
 
-    test('Should throw ValidationException because we want to create a empty PaymentInformation', async () => {
-        expect.assertions(1);
-        await paymentInformationService.create({} as PaymentInformationCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        paymentInformation = result;
     });
 
     test('Should list PaymentInformations with our new create one', async () => {
