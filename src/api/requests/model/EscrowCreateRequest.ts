@@ -21,6 +21,7 @@ export class EscrowCreateRequest extends RequestBody implements ModelRequestInte
     public secondsToLock: number;
 
     @IsEnum(EscrowReleaseType)
+    @IsNotEmpty()
     public releaseType: EscrowReleaseType;
 
     public ratio: EscrowRatioCreateRequest;

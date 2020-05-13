@@ -6,7 +6,7 @@ import * from 'jest';
 import * as resources from 'resources';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
+import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
@@ -21,10 +21,11 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/testda
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowRatioUpdateRequest } from '../../src/api/requests/model/EscrowRatioUpdateRequest';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,6 +37,7 @@ describe('Escrow', () => {
     let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let escrowService: EscrowService;
+    let escrowRatioService: EscrowRatioService;
     let profileService: ProfileService;
     let listingItemTemplateService: ListingItemTemplateService;
     let paymentInformationService: PaymentInformationService;
@@ -52,7 +54,8 @@ describe('Escrow', () => {
             buyer: 50,
             seller: 50
         } as EscrowRatioCreateRequest,
-        secondsToLock: 2
+        secondsToLock: 2,
+        releaseType: EscrowReleaseType.ANON
     } as EscrowCreateRequest;
 
     const testDataUpdated = {
@@ -61,7 +64,8 @@ describe('Escrow', () => {
             buyer: 100,
             seller: 100
         } as EscrowRatioUpdateRequest,
-        secondsToLock: 5
+        secondsToLock: 5,
+        releaseType: EscrowReleaseType.ANON
     } as EscrowUpdateRequest;
 
     beforeAll(async () => {
@@ -70,6 +74,7 @@ describe('Escrow', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
+        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
@@ -94,6 +99,7 @@ describe('Escrow', () => {
             false,      // generateListingItem
             market.id   // marketId
         ]).toParamsArray();
+
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
             amount: 1,
@@ -108,6 +114,13 @@ describe('Escrow', () => {
         //
     });
 
+    test('Should throw ValidationException because we want to create a empty Escrow', async () => {
+        expect.assertions(1);
+        await escrowService.create({} as EscrowCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should throw ValidationException because there is no payment_information_id', async () => {
         expect.assertions(1);
         await escrowService.create(testData).catch(e =>
@@ -117,22 +130,13 @@ describe('Escrow', () => {
 
     test('Should create a new Escrow', async () => {
         testData.payment_information_id = listingItemTemplate.PaymentInformation.id;
-
-        escrow = await escrowService.create(testData).then(value => value.toJSON());
-        const result: resources.Escrow = escrow;
+        const result: resources.Escrow = await escrowService.create(testData).then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.secondsToLock).toBe(testData.secondsToLock);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
-
-    });
-
-    test('Should throw ValidationException because we want to create a empty Escrow', async () => {
-        expect.assertions(1);
-        await escrowService.create({} as EscrowCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        escrow = result;
     });
 
     test('Should list Escrows with our new create one', async () => {
@@ -165,7 +169,7 @@ describe('Escrow', () => {
     });
 
     test('Should delete the Escrow', async () => {
-        expect.assertions(3);
+        expect.assertions(2);
 
         // delete Escrow
         await escrowService.destroy(escrow.id);
@@ -174,17 +178,9 @@ describe('Escrow', () => {
                 expect(e).toEqual(new NotFoundException(escrow.id))
             );
 
-        // delete ListingItemTemplate
-        await listingItemTemplateService.destroy(listingItemTemplate.id);
-        await listingItemTemplateService.findOne(listingItemTemplate.id)
+        await escrowRatioService.findOne(escrow.Ratio.id)
             .catch(e =>
-                expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
-            );
-
-        // PaymentInformation should have been removed too
-        await paymentInformationService.findOne(listingItemTemplate.PaymentInformation.id)
-            .catch(e =>
-                expect(e).toEqual(new NotFoundException(listingItemTemplate.PaymentInformation.id))
+                expect(e).toEqual(new NotFoundException(escrow.Ratio.id))
             );
     });
 
