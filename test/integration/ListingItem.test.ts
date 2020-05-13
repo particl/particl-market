@@ -47,7 +47,7 @@ import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLoca
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
 import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
-import {EscrowReleaseType, EscrowType, MessagingProtocol, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType, MessagingProtocol, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
@@ -59,8 +59,8 @@ import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemIma
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
-import {ListingItemObjectType} from '../../src/api/enums/ListingItemObjectType';
-import {ListingItemObjectDataCreateRequest} from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
+import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
 // tslint:enable:max-line-length
 
 describe('ListingItem', () => {
@@ -292,44 +292,6 @@ describe('ListingItem', () => {
         await expectListingItemWasDeleted(createdListingItem1);
         createdListingItem1 = undefined;
     });
-
-    /*
-    // TODO: not sure we need this
-    test('Should update ListingItem correctly when removing data', async () => {
-
-        const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.market_id = market.id;
-        testDataToSave.seller = profile.address;
-
-        // remove some data
-        delete testDataToUpdate.listingItemObjects;
-        let listingItemModel: ListingItem = await listingItemService.update(createdListingItem1.id, testDataToUpdate);
-        updatedListingItem1 = listingItemModel.toJSON();
-        expectListingItemFromCreateRequest(updatedListingItem1, testDataToUpdate);
-
-        // remove some more data
-        delete testDataToUpdate.messagingInformation;
-        listingItemModel = await listingItemService.update(createdListingItem1.id, testDataToUpdate);
-        const updatedListingItem2 = listingItemModel.toJSON();
-        expectListingItemFromCreateRequest(updatedListingItem1, testDataToUpdate);
-        expect(updatedListingItem1.hash).not.toBe(updatedListingItem2.hash);
-
-        // and even more
-        delete testDataToUpdate.paymentInformation;
-        listingItemModel = await listingItemService.update(createdListingItem1.id, testDataToUpdate);
-        const updatedListingItem3 = listingItemModel.toJSON();
-        expectListingItemFromCreateRequest(updatedListingItem1, testDataToUpdate);
-        expect(updatedListingItem2.hash).not.toBe(updatedListingItem3.hash);
-
-        // and more
-        delete testDataToUpdate.itemInformation;
-        listingItemModel = await listingItemService.update(createdListingItem1.id, testDataToUpdate);
-        const updatedListingItem4 = listingItemModel.toJSON();
-        expectListingItemFromCreateRequest(updatedListingItem1, testDataToUpdate);
-        expect(updatedListingItem3.hash).not.toBe(updatedListingItem4.hash);
-
-    });
-    */
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
 
