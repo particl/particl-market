@@ -36,7 +36,6 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
      * create a ListingItemTemplateCreateRequest
      *
      * @param params
-     * @param createHash
      */
     public async get(params: ListingItemTemplateCreateParams): Promise<ListingItemTemplateCreateRequest> {
 
@@ -47,9 +46,9 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
                 title: params.title,
                 shortDescription: params.shortDescription,
                 longDescription: params.longDescription,
-                itemCategory: {
+                itemCategory: params.categoryId ? {
                     id: params.categoryId
-                } as ItemCategoryUpdateRequest
+                } as ItemCategoryUpdateRequest : undefined
             } as ItemInformationCreateRequest,
             paymentInformation: {
                 type: params.saleType,

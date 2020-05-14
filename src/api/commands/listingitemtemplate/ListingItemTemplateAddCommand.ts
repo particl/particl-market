@@ -66,15 +66,14 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-        // TODO: support for custom categories
 
         const profile: resources.Profile = data.params[0];
 
-        // depending on escrowType, create the address for the payment
-        const escrowType: EscrowType = data.params[10];
 /*
     TODO: omp-lib will generate cryptoAddress for now as this will require unlocked wallet
 
+        // depending on escrowType, create the address for the payment
+        const escrowType: EscrowType = data.params[10];
         let cryptoAddress: CryptoAddress;
         switch (escrowType) {
             case EscrowType.MULTISIG:
@@ -123,14 +122,14 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: categoryId
+     *  [4]: categoryId, (optional)
      *
      *  paymentInformation
-     *  [5]: saleType
-     *  [6]: currency
-     *  [7]: basePrice
-     *  [8]: domesticShippingPrice
-     *  [9]: internationalShippingPrice
+     *  [5]: saleType, (optional) default SaleType.SALE
+     *  [6]: currency, (optional) default Cryptocurrency.PART
+     *  [7]: basePrice, (optional) default 0
+     *  [8]: domesticShippingPrice, (optional) default 0
+     *  [9]: internationalShippingPrice, (optional) default 0
      *  [10]: escrowType, (optional) default EscrowType.MAD_CT
      *  [11]: buyerRatio, (optional) default 100
      *  [12]: sellerRatio, (optional) default 100
@@ -141,125 +140,9 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('title');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('shortDescription');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('longDescription');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('categoryId');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('saleType');
-        } else if (data.params.length < 7) {
-            throw new MissingParamException('currency');
-        } else if (data.params.length < 8) {
-            throw new MissingParamException('basePrice');
-        } else if (data.params.length < 9) {
-            throw new MissingParamException('domesticShippingPrice');
-        } else if (data.params.length < 10) {
-            throw new MissingParamException('internationalShippingPrice');
-        }
-/*
-        else if (data.params.length < 11) {
-            throw new MissingParamException('escrowType');
-        } else if (data.params.length < 12) {
-            throw new MissingParamException('buyerRatio');
-        } else if (data.params.length < 13) {
-            throw new MissingParamException('sellerRatio');
-        }
-*/
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('title', 'string');
-        } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('shortDescription', 'string');
-        } else if (typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('longDescription', 'string');
-        } else if (typeof data.params[4] !== 'number') {
-            throw new InvalidParamException('categoryId', 'number');
-        } else if (typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('saleType', 'string');
-        } else if (typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('currency', 'string');
-        } else if (typeof data.params[7] !== 'number') {
-            throw new InvalidParamException('basePrice', 'number');
-        } else if (typeof data.params[8] !== 'number') {
-            throw new InvalidParamException('domesticShippingPrice', 'number');
-        } else if (typeof data.params[9] !== 'number') {
-            throw new InvalidParamException('internationalShippingPrice', 'number');
-        }
-
-        if (data.params[10] && typeof data.params[10] !== 'string') {
-            throw new InvalidParamException('escrowType', 'EscrowType');
-        } else if (data.params[11] && typeof data.params[11] !== 'number') {
-            throw new InvalidParamException('buyerRatio', 'number');
-        } else if (data.params[12] && typeof data.params[12] !== 'number') {
-            throw new InvalidParamException('sellerRatio', 'number');
-        } else if (data.params[13] && typeof data.params[13] !== 'string') {
-            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-        }
-
-        // override the needed params
-        // TODO: we only support SaleType.SALE for now
-        // TODO: add support for multiple SaleTypes
-        // TODO: missing support for STEALTH ADDRESS
-
-        // TODO: forced values for now, remove later
-        data.params[5] = SaleType.SALE;
-        data.params[6] = Cryptocurrency.PART;
-        data.params[10] = EscrowType.MAD_CT;
-        data.params[11] = 100;
-        data.params[12] = 100;
-
-        const validSaleTypeTypes = [SaleType.SALE];
-        if (validSaleTypeTypes.indexOf(data.params[5]) === -1) {
-            throw new InvalidParamException('saleType');
-        }
-
-        const validCryptocurrencyTypes = [Cryptocurrency.PART];
-        if (validCryptocurrencyTypes.indexOf(data.params[6]) === -1) {
-            throw new InvalidParamException('currency');
-        }
-
-        if (!data.params[10]) {
-            data.params[10] = EscrowType.MAD_CT;
-        }
-
-        const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];
-        if (validEscrowTypes.indexOf(data.params[10]) === -1) {
-            throw new InvalidParamException('escrowType');
-        }
-
-        if (data.params[13]) {
-            if (typeof data.params[13] !== 'string') {
-                throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-            }
-            const validEscrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
-            if (validEscrowReleaseTypes.indexOf(data.params[13]) === -1) {
-                throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-            }
-        } else { // set default
-            data.params[13] = EscrowReleaseType.ANON;
-        }
-
-        /*
-        // todo: implement template clone for this
-        if (data.params[14]) { // parentListingItemTemplateId was given, make sure its valid and exists
-            if (typeof data.params[14] !== 'number') {
-                throw new InvalidParamException('parentListingItemTemplateId', 'number');
-            }
-            data.params[14] = await this.listingItemTemplateService.findOne(data.params[14]).then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItemTemplate');
-                });
-        }
-        */
+        this.validateRequiredParamsExist(data.params);
+        data.params = this.setDefaultsForMissingParams(data.params);
+        this.validateParamTypes(data.params);
 
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
@@ -285,8 +168,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryId>'
-            + ' <saleType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice>'
+        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> [categoryId]'
+            + ' [saleType] [currency] [basePrice] [domesticShippingPrice] [internationalShippingPrice]'
             + ' [escrowType] [buyerRatio] [sellerRatio] [escrowReleaseType] [parentListingItemTemplateId] ';
     }
 
@@ -296,12 +179,12 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '    <title>                        - string - The title. \n'
             + '    <shortDescription>             - string - A short description. \n'
             + '    <longDescription>              - string - A longer description. \n'
-            + '    <categoryId>                   - number - The id of the category. \n'
-            + '    <saleType>                     - string - SaleType enum. \n'
-            + '    <currency>                     - string - The currency used for price. \n'
-            + '    <basePrice>                    - number - The price for the item. \n'
-            + '    <domesticShippingPrice>        - number - The domestic shipping price. \n'
-            + '    <internationalShippingPrice>   - number - The international shipping price. \n'
+            + '    <categoryId>                   - number - optional, The id of the category. \n'
+            + '    <saleType>                     - string - optional, SaleType enum. \n'
+            + '    <currency>                     - string - optional, The currency used for price. \n'
+            + '    <basePrice>                    - number - optional, The price for the item. \n'
+            + '    <domesticShippingPrice>        - number - optional, The domestic shipping price. \n'
+            + '    <internationalShippingPrice>   - number - optional, The international shipping price. \n'
             + '    <escrowType>                   - string - optional, default: MAD_CT. MAD_CT/MULTISIG \n'
             + '    <buyerRatio>                   - number - optional, default: 100 \n'
             + '    <sellerRatio>                  - number - optional, default: 100 \n'
@@ -320,5 +203,118 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         + ' \'Impress all your hippest comrades by attending your next communist revolutionary Starbucks meeting with the original'
         + ' and best book on destroying your economy!\''
         + ' 16 SALE PART 0.1848 0.1922 0.1945 ';
+    }
+
+    private validateParamTypes(params: any[]): void {
+        // make sure the params are of correct type
+        if (typeof params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        } else if (typeof params[1] !== 'string') {
+            throw new InvalidParamException('title', 'string');
+        } else if (typeof params[2] !== 'string') {
+            throw new InvalidParamException('shortDescription', 'string');
+        } else if (typeof params[3] !== 'string') {
+            throw new InvalidParamException('longDescription', 'string');
+        } else if (params[4] && typeof params[4] !== 'number') {
+            throw new InvalidParamException('categoryId', 'number');
+        } else if (params[5] && typeof params[5] !== 'string') {
+            throw new InvalidParamException('saleType', 'string');
+        } else if (params[6] && typeof params[6] !== 'string') {
+            throw new InvalidParamException('currency', 'string');
+        } else if (params[7] && typeof params[7] !== 'number') {
+            throw new InvalidParamException('basePrice', 'number');
+        } else if (params[8] && typeof params[8] !== 'number') {
+            throw new InvalidParamException('domesticShippingPrice', 'number');
+        } else if (params[9] && typeof params[9] !== 'number') {
+            throw new InvalidParamException('internationalShippingPrice', 'number');
+        } else if (params[10] && typeof params[10] !== 'string') {
+            throw new InvalidParamException('escrowType', 'EscrowType');
+        } else if (params[11] && typeof params[11] !== 'number') {
+            throw new InvalidParamException('buyerRatio', 'number');
+        } else if (params[12] && typeof params[12] !== 'number') {
+            throw new InvalidParamException('sellerRatio', 'number');
+        } else if (params[13] && typeof params[13] !== 'string') {
+            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
+        }
+
+
+        const validSaleTypeTypes = [SaleType.SALE];
+        if (validSaleTypeTypes.indexOf(params[5]) === -1) {
+            throw new InvalidParamException('saleType', 'SaleType');
+        }
+
+        const validCryptocurrencyTypes = [Cryptocurrency.PART];
+        if (validCryptocurrencyTypes.indexOf(params[6]) === -1) {
+            throw new InvalidParamException('currency', 'Cryptocurrency');
+        }
+
+        const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];
+        if (validEscrowTypes.indexOf(params[10]) === -1) {
+            throw new InvalidParamException('escrowType', 'EscrowType');
+        }
+
+        const validEscrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
+        if (validEscrowReleaseTypes.indexOf(params[13]) === -1) {
+            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
+        }
+
+    }
+
+    private validateRequiredParamsExist(params: any[]): void {
+        // make sure the required params exist
+        if (params.length < 1) {
+            throw new MissingParamException('profileId');
+        } else if (params.length < 2) {
+            throw new MissingParamException('title');
+        } else if (params.length < 3) {
+            throw new MissingParamException('shortDescription');
+        } else if (params.length < 4) {
+            throw new MissingParamException('longDescription');
+        }
+        /*
+        else if (data.params.length < 5) {
+            throw new MissingParamException('categoryId');
+        } else if (data.params.length < 6) {
+            throw new MissingParamException('saleType');
+        } else if (data.params.length < 7) {
+            throw new MissingParamException('currency');
+        } else if (data.params.length < 8) {
+            throw new MissingParamException('basePrice');
+        } else if (data.params.length < 9) {
+            throw new MissingParamException('domesticShippingPrice');
+        } else if (data.params.length < 10) {
+            throw new MissingParamException('internationalShippingPrice');
+        }
+
+        else if (data.params.length < 11) {
+            throw new MissingParamException('escrowType');
+        } else if (data.params.length < 12) {
+            throw new MissingParamException('buyerRatio');
+        } else if (data.params.length < 13) {
+            throw new MissingParamException('sellerRatio');
+        }
+        */
+
+    }
+
+    /**
+     * set default values for the optional params
+     * set the values which are not yet optional
+     *
+     * @param params
+     */
+    private setDefaultsForMissingParams(params: any[]): any[] {
+
+        params[5] = SaleType.SALE;
+        params[6] = Cryptocurrency.PART;
+        params[7] = 0;                          // basePrice
+        params[8] = 0;                          // domesticShippingPrice
+        params[9] = 0;                          // internationalShippingPrice
+        params[10] = params[10] ? params[10] : EscrowType.MAD_CT;
+        params[11] = 100;                       // buyerRatio
+        params[12] = 100;                       // sellerRatio
+        params[13] = params[13] ? params[13] : EscrowReleaseType.ANON;
+
+        return params;
     }
 }
