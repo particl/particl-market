@@ -55,12 +55,11 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         const itemCategory: resources.ItemCategory = data.params[4];
 
         return this.itemInformationService.update(listingItemTemplate.ItemInformation.id, {
-            listing_item_template_id: data.params[0].id,
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
             itemCategory: {
-                id: itemCategory.id
+                key: itemCategory.key
             } as ItemCategoryUpdateRequest
         } as ItemInformationUpdateRequest);
     }

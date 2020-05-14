@@ -140,8 +140,8 @@ export class ItemInformationService {
 
         if (!itemInfoToSave.item_category_id && !_.isEmpty(body.itemCategory)) {
             // get existing ItemCategory or create new one
-            const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
-            itemInfoToSave.item_category_id = existingItemCategory.Id;
+            const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory).then(value => value.toJSON());
+            itemInfoToSave.item_category_id = existingItemCategory.id;
         }
 
         // update itemInformation record

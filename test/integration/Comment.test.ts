@@ -23,7 +23,6 @@ import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hash
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
-
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
