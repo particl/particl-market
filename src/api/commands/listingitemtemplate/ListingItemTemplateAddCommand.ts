@@ -298,7 +298,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     }
 
     /**
-     * set default values for the optional params
+     * set default values for the optional params which dont exist
      * set the values which are not yet optional
      *
      * @param params
@@ -307,12 +307,12 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         params[5] = SaleType.SALE;
         params[6] = Cryptocurrency.PART;
-        params[7] = 0;                          // basePrice
-        params[8] = 0;                          // domesticShippingPrice
-        params[9] = 0;                          // internationalShippingPrice
+        params[7] = params[7] ? params[7] : 0;      // basePrice
+        params[8] = params[8] ? params[8] : 0;      // domesticShippingPrice
+        params[9] = params[9] ? params[9] : 0;      // internationalShippingPrice
         params[10] = params[10] ? params[10] : EscrowType.MAD_CT;
-        params[11] = 100;                       // buyerRatio
-        params[12] = 100;                       // sellerRatio
+        params[11] = 100;                           // buyerRatio
+        params[12] = 100;                           // sellerRatio
         params[13] = params[13] ? params[13] : EscrowReleaseType.ANON;
 
         return params;
