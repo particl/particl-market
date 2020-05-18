@@ -4,6 +4,8 @@
 
 import * as resources from 'resources';
 import * as _ from 'lodash';
+import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
+import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
@@ -19,8 +21,6 @@ import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
-import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
-import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
 import { MessageQueuePriority } from '../enums/MessageQueuePriority';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { MarketplaceMessageProcessor } from './MarketplaceMessageProcessor';

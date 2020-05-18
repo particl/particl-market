@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
-import * from 'jest';
 import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';

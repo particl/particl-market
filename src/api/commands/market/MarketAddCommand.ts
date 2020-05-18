@@ -134,13 +134,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('type', 'string');
         } else if (receiveKey && typeof receiveKey !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        // } else if (receiveAddress !== undefined && typeof receiveAddress !== 'string') {
-        //     throw new InvalidParamException('receiveAddress', 'string');
         } else if (publishKey && typeof publishKey !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
-        // } else if (publishAddress !== undefined && typeof publishAddress !== 'string') {
-        //     throw new InvalidParamException('publishAddress', 'string');
-        } else if (identityId !== undefined && typeof identityId !== 'number') {
+        } else if (identityId && typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
         }
 
@@ -151,7 +147,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 throw new ModelNotFoundException('Profile');
             });
 
-        // make sure Market with the same name doesnt exists for the Profile
+        // make sure Market with the same name doesn't exists for the Profile
         await this.marketService.findOneByProfileIdAndName(profile.id, name)
             .then(value => {
                 throw new MessageException('Market with the name: ' + name + ' already exists.');

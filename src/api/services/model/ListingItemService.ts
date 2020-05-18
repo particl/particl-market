@@ -209,18 +209,17 @@ export class ListingItemService {
         // update related ItemInformation
         // if the related one exists already, then update. if it doesnt exist, create.
         // and if the related one is missing, then remove.
-        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
+        let itemInformation = updatedListingItem.related('ItemInformation').toJSON();
 
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
-                const itemInformationId = itemInformation.id;
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation);
+                await this.itemInformationService.update(itemInformation.id, itemInformation);
             } else {
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+                await this.itemInformationService.create(itemInformation);
             }
         } else if (!_.isEmpty(itemInformation)) {
             await this.itemInformationService.destroy(itemInformation.id);
