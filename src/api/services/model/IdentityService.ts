@@ -130,10 +130,7 @@ export class IdentityService {
 
         if (marketWalletExists) {
             this.log.warn('Wallet already exists!');
-            const isLoaded = await this.coreRpcService.walletLoaded(marketWalletName);
-            if (!isLoaded) {
-                await this.coreRpcService.loadWallet(marketWalletName);
-            }
+            await this.coreRpcService.loadWallet(marketWalletName);
         } else {
             await this.coreRpcService.createAndLoadWallet(marketWalletName, false, true)
                 .catch(async reason => {
@@ -210,10 +207,7 @@ export class IdentityService {
             // this should not really happen, and wouldn't recommended to use existing wallet
             // this actually happens when running tests, since we are reusing the same wallets for new test Profiles
             this.log.warn('Wallet already exists!');
-            const isLoaded = await this.coreRpcService.walletLoaded(walletName);
-            if (!isLoaded) {
-                await this.coreRpcService.loadWallet(walletName);
-            }
+            await this.coreRpcService.loadWallet(walletName);
         }
 
         // create a new mnemonic

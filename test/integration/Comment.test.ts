@@ -22,8 +22,7 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
-import {HashableFieldValueConfig} from 'omp-lib/dist/interfaces/configs';
-import {CommentSearchParams} from '../../src/api/requests/search/CommentSearchParams';
+import { CommentSearchParams} from '../../src/api/requests/search/CommentSearchParams';
 
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -228,9 +227,5 @@ describe('Comment', () => {
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
         } as CommentSearchParams);
         expect(count).toBe(2);
-
-
     });
-
-
 });

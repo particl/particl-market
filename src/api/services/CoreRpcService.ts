@@ -147,12 +147,16 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * Loads a wallet from a wallet file or directory.
+     * Loads a wallet from a wallet file or directory unless already loaded.
      *
      * @param walletName
      */
-    public async loadWallet(walletName: string): Promise<RpcWallet> {
-        return await this.call('loadwallet', [walletName]);
+    public async loadWallet(walletName: string): Promise<RpcWallet | boolean> {
+        const isLoaded = await this.walletLoaded(walletName);
+        if (!isLoaded) {
+            return await this.call('loadwallet', [walletName]);
+        }
+        return false;
     }
 
     /**
@@ -165,8 +169,10 @@ export class CoreRpcService extends CtRpc {
         for (const walletName of walletNames) {
             const isLoaded = await this.walletLoaded(walletName);
             if (!isLoaded) {
-                const loadedWallet: RpcWallet = await this.loadWallet( walletName);
-                loaded.push(loadedWallet.name);
+                const loadedWallet = await this.loadWallet(walletName);
+                if (loadedWallet) { // false if already loaded
+                    loaded.push((loadedWallet as RpcWallet).name);
+                }
             }
         }
         return loaded;

@@ -204,14 +204,9 @@ export class DefaultMarketService {
         // this.log.debug('createDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
 
         // load the wallet unless already loaded
-        await this.coreRpcService.walletLoaded(newMarket.Identity.wallet)
-            .then(async isLoaded => {
-                if (!isLoaded) {
-                    await this.coreRpcService.loadWallet(newMarket.Identity.wallet)
-                        .catch(reason => {
-                            this.log.debug('wallet: ' + newMarket.Identity.wallet + ' already loaded.');
-                        });
-                }
+        await this.coreRpcService.loadWallet(newMarket.Identity.wallet)
+            .catch(reason => {
+                this.log.debug('wallet: ' + newMarket.Identity.wallet + ' already loaded.');
             });
 
         // type === MARKETPLACE -> receive + publish keys are the same

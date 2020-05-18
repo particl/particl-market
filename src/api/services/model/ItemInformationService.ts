@@ -160,36 +160,42 @@ export class ItemInformationService {
         }
 
         // todo: instead of delete and create, update
+        // update only if new data was passed
+        if (!_.isEmpty(body.shippingDestinations)) {
 
-        // find related records and delete
-        let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
-        for (const shippingDestination of shippingDestinations) {
-            await this.shippingDestinationService.destroy(shippingDestination.id);
-        }
-
-        // recreate related data
-        shippingDestinations = body.shippingDestinations || [];
-        if (!_.isEmpty(shippingDestinations)) {
+            // find related records and delete
+            let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
             for (const shippingDestination of shippingDestinations) {
-                shippingDestination.item_information_id = id;
-                // this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
-                await this.shippingDestinationService.create(shippingDestination);
+                await this.shippingDestinationService.destroy(shippingDestination.id);
+            }
+
+            // recreate related data
+            shippingDestinations = body.shippingDestinations || [];
+            if (!_.isEmpty(shippingDestinations)) {
+                for (const shippingDestination of shippingDestinations) {
+                    shippingDestination.item_information_id = id;
+                    // this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
+                    await this.shippingDestinationService.create(shippingDestination);
+                }
             }
         }
 
-        // find related records and delete
-        let itemImages = updatedItemInformation.related('ItemImages').toJSON();
-        for (const itemImage of itemImages) {
-            await this.itemImageService.destroy(itemImage.id);
-        }
-
-        // recreate related data
-        itemImages = body.itemImages || [];
-        if (!_.isEmpty(itemImages)) {
+        // update only if new data was passed
+        if (!_.isEmpty(body.itemImages)) {
+            // find related records and delete
+            let itemImages = updatedItemInformation.related('ItemImages').toJSON();
             for (const itemImage of itemImages) {
-                itemImage.item_information_id = itemInformation.id;
-                // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                await this.itemImageService.create(itemImage);
+                await this.itemImageService.destroy(itemImage.id);
+            }
+
+            // recreate related data
+            itemImages = body.itemImages || [];
+            if (!_.isEmpty(itemImages)) {
+                for (const itemImage of itemImages) {
+                    itemImage.item_information_id = itemInformation.id;
+                    // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
+                    await this.itemImageService.create(itemImage);
+                }
             }
         }
 
