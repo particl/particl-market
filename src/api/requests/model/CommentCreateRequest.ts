@@ -5,12 +5,14 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import { CommentType } from '../../enums/CommentType';
 
+// tslint:disable:variable-name
 export class CommentCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    public msgid: string;
+    public parent_comment_id: number;
 
-    public parentCommentId: number;
+    public msgid: string;
 
     @IsNotEmpty()
     public hash: string;
@@ -22,7 +24,7 @@ export class CommentCreateRequest extends RequestBody implements ModelRequestInt
     public receiver: string;
 
     @IsNotEmpty()
-    public type: string;
+    public type: CommentType;
 
     @IsNotEmpty()
     public target: string;
@@ -40,3 +42,4 @@ export class CommentCreateRequest extends RequestBody implements ModelRequestInt
     public receivedAt: number;
 
 }
+// tslint:enable:variable-name

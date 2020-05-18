@@ -22,6 +22,8 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import {HashableFieldValueConfig} from 'omp-lib/dist/interfaces/configs';
+import {CommentSearchParams} from '../../src/api/requests/search/CommentSearchParams';
 
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -44,7 +46,7 @@ describe('Comment', () => {
     let listingItem: resources.ListingItem;
     let listingItemTemplate: resources.ListingItemTemplate;
 
-    let createdComment: resources.Comment;
+    let comment: resources.Comment;
 
 
     beforeAll(async () => {
@@ -83,22 +85,20 @@ describe('Comment', () => {
 
         const testData = {
             msgid: Faker.random.uuid(),
-            parentCommentId: 1,
-            hash: Faker.random.uuid(),
+            // parent_comment_id: 1,
             sender: senderMarket.Identity.address,
             receiver: receiverMarket.receiveAddress,
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
             target: listingItem.hash,
-            message: Faker.random.words(),
-            postedAt: new Date().getTime(),
-            receivedAt: new Date().getTime(),
-            expiredAt: new Date().getTime() + 1000000
+            message: Faker.lorem.paragraph(2),
+            postedAt: Date.now(),
+            receivedAt: Date.now(),
+            expiredAt: Date.now() + 1000000
         } as CommentCreateRequest;
 
         testData.hash = ConfigurableHasher.hash(testData, new HashableCommentCreateRequestConfig());
 
-        createdComment = await commentService.create(testData).then(value => value.toJSON());
-        const result: resources.Comment = createdComment;
+        const result: resources.Comment = await commentService.create(testData).then(value => value.toJSON());
 
         // todo: write tests for comments having parent comments
         expect(result.sender).toBe(testData.sender);
@@ -109,38 +109,62 @@ describe('Comment', () => {
         expect(result.postedAt).toBe(testData.postedAt);
         expect(result.receivedAt).toBe(testData.receivedAt);
         expect(result.expiredAt).toBe(testData.expiredAt);
+
+        comment = result;
     });
 
-    test('Should list Comments with our new create one', async () => {
+    test('Should create a Comment reply', async () => {
+
+        const testData = {
+            msgid: Faker.random.uuid(),
+            parent_comment_id: comment.id,
+            sender: senderMarket.Identity.address,
+            receiver: receiverMarket.receiveAddress,
+            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
+            target: listingItem.hash,
+            message: Faker.lorem.paragraph(2),
+            postedAt: Date.now(),
+            receivedAt: Date.now(),
+            expiredAt: Date.now() + 1000000
+        } as CommentCreateRequest;
+
+        testData.hash = ConfigurableHasher.hash({
+            ...testData,
+            parentCommentHash: comment.hash
+        }, new HashableCommentCreateRequestConfig());
+
+        const result: resources.Comment = await commentService.create(testData).then(value => value.toJSON());
+        expect(result.ParentComment.id).toBe(comment.id);
+    });
+
+    test('Should list all Comments with our new create one', async () => {
 
         const comments: resources.Comment[] = await commentService.findAll().then(value => value.toJSON());
-        expect(comments.length).toBe(1);
+        expect(comments.length).toBe(2);
 
         const result: resources.Comment = comments[0];
-        log.debug('result: ', JSON.stringify(result, null, 2));
-
-        expect(result.hash).toBe(createdComment.hash);
-        expect(result.sender).toBe(createdComment.sender);
-        expect(result.receiver).toBe(createdComment.receiver);
-        expect(result.target).toBe(createdComment.target);
-        expect(result.message).toBe(createdComment.message);
-        expect(result.type).toBe(createdComment.type);
-        expect(result.postedAt).toBe(createdComment.postedAt);
-        expect(result.receivedAt).toBe(createdComment.receivedAt);
-        expect(result.expiredAt).toBe(createdComment.expiredAt);
+        expect(result.hash).toBe(comment.hash);
+        expect(result.sender).toBe(comment.sender);
+        expect(result.receiver).toBe(comment.receiver);
+        expect(result.target).toBe(comment.target);
+        expect(result.message).toBe(comment.message);
+        expect(result.type).toBe(comment.type);
+        expect(result.postedAt).toBe(comment.postedAt);
+        expect(result.receivedAt).toBe(comment.receivedAt);
+        expect(result.expiredAt).toBe(comment.expiredAt);
     });
 
     test('Should return one Comment', async () => {
-        const result: resources.Comment = await commentService.findOne(createdComment.id).then(value => value.toJSON());
+        const result: resources.Comment = await commentService.findOne(comment.id).then(value => value.toJSON());
 
-        expect(result.sender).toBe(createdComment.sender);
-        expect(result.receiver).toBe(createdComment.receiver);
-        expect(result.target).toBe(createdComment.target);
-        expect(result.message).toBe(createdComment.message);
-        expect(result.type).toBe(createdComment.type);
-        expect(result.postedAt).toBe(createdComment.postedAt);
-        expect(result.receivedAt).toBe(createdComment.receivedAt);
-        expect(result.expiredAt).toBe(createdComment.expiredAt);
+        expect(result.sender).toBe(comment.sender);
+        expect(result.receiver).toBe(comment.receiver);
+        expect(result.target).toBe(comment.target);
+        expect(result.message).toBe(comment.message);
+        expect(result.type).toBe(comment.type);
+        expect(result.postedAt).toBe(comment.postedAt);
+        expect(result.receivedAt).toBe(comment.receivedAt);
+        expect(result.expiredAt).toBe(comment.expiredAt);
     });
 
     test('Should update the Comment', async () => {
@@ -151,24 +175,62 @@ describe('Comment', () => {
             message: 'update'
         } as CommentUpdateRequest;
 
-        const result: resources.Comment = await commentService.update(createdComment.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.Comment = await commentService.update(comment.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.sender).toBe(testDataUpdated.sender);
         expect(result.receiver).toBe(testDataUpdated.receiver);
         expect(result.target).toBe(testDataUpdated.target);
         expect(result.message).toBe(testDataUpdated.message);
-        expect(result.type).toBe(createdComment.type);
-        expect(result.postedAt).toBe(createdComment.postedAt);
-        expect(result.receivedAt).toBe(createdComment.receivedAt);
-        expect(result.expiredAt).toBe(createdComment.expiredAt);
+        expect(result.type).toBe(comment.type);
+        expect(result.postedAt).toBe(comment.postedAt);
+        expect(result.receivedAt).toBe(comment.receivedAt);
+        expect(result.expiredAt).toBe(comment.expiredAt);
     });
 
-    test('Should delete the Comment', async () => {
-        expect.assertions(1);
-        await commentService.destroy(createdComment.id);
-        await commentService.findOne(createdComment.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdComment.id))
+    test('Should delete (CASCADE) the Comments', async () => {
+        expect.assertions(2);
+
+        await commentService.destroy(comment.id);
+        await commentService.findOne(comment.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(comment.id))
         );
+        const comments: resources.Comment[] = await commentService.findAll().then(value => value.toJSON());
+        expect(comments.length).toBe(0);
     });
+
+    test('Should count the messages', async () => {
+
+        const testData = {
+            msgid: Faker.random.uuid(),
+            // parent_comment_id: 1,
+            sender: senderMarket.Identity.address,
+            receiver: receiverMarket.receiveAddress,
+            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            target: listingItem.hash,
+            message: Faker.lorem.paragraph(2),
+            postedAt: Date.now(),
+            receivedAt: Date.now(),
+            expiredAt: Date.now() + 1000000
+        } as CommentCreateRequest;
+        testData.hash = ConfigurableHasher.hash(testData, new HashableCommentCreateRequestConfig());
+        comment = await commentService.create(testData).then(value => value.toJSON());
+
+        // reply
+        testData.msgid = Faker.random.uuid();
+        testData.message = Faker.lorem.paragraph(2);
+        testData.hash = ConfigurableHasher.hash({
+            ...testData,
+            parentCommentHash: comment.hash
+        }, new HashableCommentCreateRequestConfig());
+        await commentService.create(testData).then(value => value.toJSON());
+
+        const count = await commentService.count({
+            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+        } as CommentSearchParams);
+        expect(count).toBe(2);
+
+
+    });
+
 
 });

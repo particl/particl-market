@@ -55,7 +55,7 @@ export class CommentFactory implements ModelFactoryInterface {
             type: params.type,
             target: params.target,
             message: params.message,
-            parentCommentId: params.parentCommentId,
+            parent_comment_id: params.parentCommentId,
             ...smsgData
         } as CommentCreateRequest || CommentUpdateRequest;
 

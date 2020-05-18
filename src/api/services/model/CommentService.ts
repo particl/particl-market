@@ -88,26 +88,14 @@ export class CommentService {
 
     @validate()
     public async create( @request(CommentCreateRequest) data: CommentCreateRequest): Promise<Comment> {
-
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create Comment, body: ', JSON.stringify(body, null, 2));
-
-        // If the request body was valid we will create the comment
         const comment = await this.commentRepo.create(body);
-
-        // finally find and return the created comment
-        const newComment = await this.findOne(comment.id);
-        return newComment;
+        return await this.findOne(comment.id);
     }
 
     @validate()
     public async update(id: number, @request(CommentUpdateRequest) body: CommentUpdateRequest): Promise<Comment> {
-
-        // find the existing one without related
         const comment = await this.findOne(id, false);
-
-        // set new values
-        // comment.ParentCommentId = body.parentCommentId;
         comment.Hash = body.hash;
         comment.Sender = body.sender;
         comment.Receiver = body.receiver;
@@ -117,11 +105,7 @@ export class CommentService {
         comment.PostedAt = body.postedAt;
         comment.ExpiredAt = body.expiredAt;
         comment.ReceivedAt = body.receivedAt;
-
-        // update comment record
-        const updatedComment = await this.commentRepo.update(id, comment.toJSON());
-
-        return updatedComment;
+        return await this.commentRepo.update(id, comment.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {
@@ -131,9 +115,7 @@ export class CommentService {
     public async updateMsgId(hash: string, msgid: string): Promise<Comment> {
         let comment = await this.findOneByHash(hash, false);
         comment.Msgid = msgid;
-        comment =  await this.commentRepo.update(comment.Id, comment.toJSON());
-
-        // finally find and return the created comment
+        comment = await this.commentRepo.update(comment.Id, comment.toJSON())
         return await this.findOne(comment.Id, true);
     }
 

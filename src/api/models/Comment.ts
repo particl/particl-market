@@ -74,15 +74,20 @@ export class Comment extends Bookshelf.Model<Comment> {
     public static async countBy(options: CommentSearchParams): Promise<number> {
         return Comment.forge<Model<Comment>>()
             .query( qb => {
-                qb.where('comments.type', '=', options.type);
-                qb.where('comments.target', '=', options.target);
+                if (options.type) {
+                    qb.where('type', '=', options.type);
+                }
+
+                if (options.target) {
+                    qb.where('target', '=', options.target);
+                }
 
                 if (options.parentCommentId === undefined) {
-                    qb.whereNull('comments.parent_comment_id');
+                    qb.whereNull('parent_comment_id');
                 }
 
                 if (options.parentCommentId) {
-                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
+                    qb.where('parent_comment_id', '=', options.parentCommentId);
                 }
             })
             .count();
