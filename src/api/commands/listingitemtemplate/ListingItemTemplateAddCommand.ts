@@ -156,13 +156,15 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
         // validate that given category exists
         // for now, when creating a template, its category can only be a default one
-        await this.itemCategoryService.findOne(data.params[4]).then(value => {
-            const category: resources.ItemCategory = value.toJSON();
-            // validate that given category is a default one -> market should not be defined
-            if (category.market) {
-                throw new MessageException('Not a default ItemCategory.');
-            }
-        });
+        if (+data.params[4]) {
+            await this.itemCategoryService.findOne(data.params[4]).then(value => {
+                const category: resources.ItemCategory = value.toJSON();
+                // validate that given category is a default one -> market should not be defined
+                if (category.market) {
+                    throw new MessageException('Not a default ItemCategory.');
+                }
+            });
+        }
 
         return data;
     }

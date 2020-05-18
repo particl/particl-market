@@ -81,7 +81,7 @@ export class DefaultMarketService {
             return await this.marketService.findOne(market.id, withRelated);
         } else if (_.isEmpty(marketIdSetting) && !shouldCreateIfNot) {
             this.log.error(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
-            throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.')
+            throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.');
         } else {
             return await this.marketService.findOne(parseInt(marketIdSetting!.value, 10), withRelated);
         }
