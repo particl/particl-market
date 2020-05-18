@@ -115,7 +115,7 @@ export class CommentService {
     public async updateMsgId(hash: string, msgid: string): Promise<Comment> {
         let comment = await this.findOneByHash(hash, false);
         comment.Msgid = msgid;
-        comment = await this.commentRepo.update(comment.Id, comment.toJSON())
+        comment = await this.commentRepo.update(comment.Id, comment.toJSON());
         return await this.findOne(comment.Id, true);
     }
 

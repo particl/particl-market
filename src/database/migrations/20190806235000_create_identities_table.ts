@@ -28,7 +28,7 @@ exports.up = (db: Knex): Promise<any> => {
         }),
 
         // drop the unique index
-        db.schema.raw('DROP INDEX markets_receive_address_profile_id_unique'),
+        db.schema.raw('DROP INDEX markets_receive_address_profile_id_unique')
 
         // rename old markets and wallets tables
     ]);

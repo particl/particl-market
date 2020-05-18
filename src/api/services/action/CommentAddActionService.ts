@@ -177,7 +177,7 @@ export class CommentAddActionService extends BaseActionService {
                         parentCommentId
                     } as CommentCreateParams,
                     commentAddMessage,
-                    smsgMessage);
+                    smsgMessage) as CommentCreateRequest;
 
                 this.log.debug('processMessage(), commentCreateRequest.hash: ', commentCreateRequest.hash);
 
