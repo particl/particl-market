@@ -75,10 +75,10 @@ export class IdentityService {
     @validate()
     public async create( @request(IdentityCreateRequest) data: IdentityCreateRequest): Promise<Identity> {
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
         const result = await this.findOne(identity.id);
-        this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
+        // this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
 
@@ -129,7 +129,7 @@ export class IdentityService {
         const marketWalletExists = await this.coreRpcService.walletExists(marketWalletName);
 
         if (marketWalletExists) {
-            this.log.warn('Wallet already exists!');
+            this.log.warn('Market wallet already exists, loading!');
             await this.coreRpcService.loadWallet(marketWalletName);
         } else {
             await this.coreRpcService.createAndLoadWallet(marketWalletName, false, true)
@@ -149,9 +149,8 @@ export class IdentityService {
                 await this.coreRpcService.extKeySetMaster(marketWalletName, extKeyImported.id);
             })
             .catch(reason => {
-                this.log.debug('reason:', reason);
-                if (reason.message !== 'ExtKeyImportLoose failed, Derived key already exists in wallet') {
-                    this.log.error(reason);
+                if (reason.message.error.message === 'ExtKeyImportLoose failed, Derived key already exists in wallet') {
+                    this.log.warn(JSON.stringify(reason.message.error.message, null, 2));
                 } else {
                     throw reason;
                 }
@@ -206,7 +205,7 @@ export class IdentityService {
         } else {
             // this should not really happen, and wouldn't recommended to use existing wallet
             // this actually happens when running tests, since we are reusing the same wallets for new test Profiles
-            this.log.warn('Wallet already exists!');
+            this.log.warn('Profile Wallet already exists, loading!');
             await this.coreRpcService.loadWallet(walletName);
         }
 

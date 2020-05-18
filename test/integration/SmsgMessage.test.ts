@@ -97,6 +97,17 @@ describe('SmsgMessage', () => {
         sellerProfile = await testDataService.generateProfile();
         sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
+    });
+
+    test('Should throw ValidationException because we want to create a empty SmsgMessage', async () => {
+        expect.assertions(1);
+        await smsgMessageService.create({} as SmsgMessageCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
+    test('Should create a new SmsgMessage from IncomingSmsgMessage (listingItemMessage)', async () => {
+
         listingItemTemplate = await testDataService.generateListingItemTemplate(sellerProfile, bidderMarket);
 
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
@@ -105,20 +116,6 @@ describe('SmsgMessage', () => {
             signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams);
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
-
-        const proposalAddMessage: ProposalAddMessage = await proposalAddMessageFactory.get({
-            title: Faker.random.words(5),
-            description: Faker.random.words(30),
-            options: ['OPTION1', 'OPTION2', 'OPTION3'],
-            sender: sellerMarket.Identity,
-            category: ProposalCategory.PUBLIC_VOTE,
-            market: bidderMarket.receiveAddress
-        } as ProposalAddMessageCreateParams);
-        proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
-
-    });
-
-    test('Should create a new SmsgMessage from IncomingSmsgMessage (listingItemMessage)', async () => {
 
         log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
 
@@ -136,6 +133,16 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (proposalMessage)', async () => {
 
+        const proposalAddMessage: ProposalAddMessage = await proposalAddMessageFactory.get({
+            title: Faker.random.words(5),
+            description: Faker.random.words(30),
+            options: ['OPTION1', 'OPTION2', 'OPTION3'],
+            sender: sellerMarket.Identity,
+            category: ProposalCategory.PUBLIC_VOTE,
+            market: bidderMarket.receiveAddress
+        } as ProposalAddMessageCreateParams);
+        proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
+
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
             direction: ActionDirection.INCOMING,
             message: proposalCoreMessage
@@ -148,7 +155,8 @@ describe('SmsgMessage', () => {
         log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
-/*
+
+    /*
     test('Should create a new SmsgMessage from IncomingSmsgMessage (voteMessage)', async () => {
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
@@ -163,12 +171,6 @@ describe('SmsgMessage', () => {
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 */
-    test('Should throw ValidationException because we want to create a empty SmsgMessage', async () => {
-        expect.assertions(1);
-        await smsgMessageService.create({} as SmsgMessageCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
 
     test('Should list all SmsgMessages', async () => {
         smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
@@ -255,7 +257,7 @@ describe('SmsgMessage', () => {
 
         expect(smsgMessages.length).toBe(2);
     });
-/*
+
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
@@ -267,10 +269,10 @@ describe('SmsgMessage', () => {
 
         smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
 
+        log.debug('smsgMessages:', JSON.stringify(smsgMessages, null, 2));
         expect(smsgMessages.length).toBe(2);
-        expect(smsgMessages[0].received).toBeGreaterThan(smsgMessages[2].received);
     });
-*/
+
     test('Should searchBy for SmsgMessages: empty types [] should find all', async () => {
         const types: any[] = [];
         const searchParams = {
@@ -359,7 +361,6 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(1);
     });
 
-
     const expectCreateRequestFromSmsgMessage = (
         result: SmsgMessageCreateRequest,
         type: ActionMessageTypes,
@@ -406,5 +407,4 @@ describe('SmsgMessage', () => {
         expect(result.createdAt).toBeGreaterThan(1530000000000);
         expect(result.updatedAt).toBeGreaterThan(1530000000000);
     };
-
 });

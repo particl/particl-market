@@ -64,22 +64,23 @@ export class DefaultMarketService {
     /**
      * get the default Market for Profile, if it exists
      * @param profileId
-     * @param shouldCreateIfNot
+     * @param shouldCreateIfNotSet
      * @param withRelated
      */
-    public async getDefaultForProfile(profileId: number, shouldCreateIfNot: boolean = true, withRelated: boolean = true): Promise<Market> {
+    public async getDefaultForProfile(profileId: number, shouldCreateIfNotSet: boolean = true, withRelated: boolean = true): Promise<Market> {
+        this.log.debug('getDefaultForProfile(): ', profileId);
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
         const marketIdSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID;
         });
 
-        if (_.isEmpty(marketIdSetting) && shouldCreateIfNot) {
+        if (_.isEmpty(marketIdSetting) && shouldCreateIfNotSet) {
             this.log.warn(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
             // Profile has no default Market, so create it
             const profile: resources.Profile = await this.profileService.findOne(profileId).then(value => value.toJSON());
             const market: resources.Market = await this.seedDefaultMarketForProfile(profile);
             return await this.marketService.findOne(market.id, withRelated);
-        } else if (_.isEmpty(marketIdSetting) && !shouldCreateIfNot) {
+        } else if (_.isEmpty(marketIdSetting) && !shouldCreateIfNotSet) {
             this.log.error(new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.').getMessage());
             throw new MessageException(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID + ' not set.');
         } else {
