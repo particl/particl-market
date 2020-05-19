@@ -156,13 +156,13 @@ describe('TestDataService', () => {
         const bidderOrder: resources.Order = orders[0];
         const sellerOrder: resources.Order = orders[1];
 
-        expect(bidderOrder.buyer).not.toBe(bidderOrder.seller)
+        expect(bidderOrder.buyer).not.toBe(bidderOrder.seller);
         expect(bidderOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(bidderOrder.seller).toBe(sellerMarket.Identity.address);
         expect(bidderOrder.status).toBe(OrderStatus.PROCESSING);
         expect(bidderOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
 
-        expect(sellerOrder.buyer).not.toBe(sellerOrder.seller)
+        expect(sellerOrder.buyer).not.toBe(sellerOrder.seller);
         expect(sellerOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(sellerOrder.seller).toBe(sellerMarket.Identity.address);
         expect(sellerOrder.status).toBe(OrderStatus.PROCESSING);
