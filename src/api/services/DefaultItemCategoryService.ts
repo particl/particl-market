@@ -136,7 +136,7 @@ export class DefaultItemCategoryService {
         await this.insertOrUpdateCategory({ name: 'Coins', description: '', market } as ItemCategoryCreateRequest, [ROOT, LEVEL1CHILD]);
         await this.insertOrUpdateCategory({ name: 'Other', description: '', market } as ItemCategoryCreateRequest, [ROOT, LEVEL1CHILD]);
 
-        this.log.debug('updated default categories');
+        this.log.debug('default categories update, DONE');
     }
     // tslint:enable:max-line-length
 
@@ -165,7 +165,7 @@ export class DefaultItemCategoryService {
         }
         path.push(categoryRequest.name);
 
-        this.log.debug('insertOrUpdateCategory(), category path: ', path.toString());
+        // this.log.debug('insertOrUpdateCategory(), category path: ', path.toString());
 
         // key is a hash of the path array
         categoryRequest.key = hash(path.toString());

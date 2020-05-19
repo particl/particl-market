@@ -129,7 +129,7 @@ ORDER BY lit.generated_at DESC;
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || ListingItemTemplateSearchOrderField.UPDATED_AT;
 
-        ListingItemTemplate.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+        // ListingItemTemplate.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {

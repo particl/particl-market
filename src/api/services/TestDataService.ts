@@ -446,7 +446,7 @@ export class TestDataService {
             generateParams: orderGenerateParams.toParamsArray()
         } as TestDataGenerateRequest);
 
-        this.log.debug('orders: ', JSON.stringify(orders, null, 2));
+        // this.log.debug('orders: ', JSON.stringify(orders, null, 2));
         return orders;
     }
 
@@ -697,7 +697,7 @@ export class TestDataService {
 
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
 
-            this.log.debug('savedListingItem: ', JSON.stringify(savedListingItem, null, 2));
+            // this.log.debug('savedListingItem: ', JSON.stringify(savedListingItem, null, 2));
 
             // TODO: make this optional/configurable
             if (generateParams.generatePaymentInformation && generateParams.generateEscrow && generateParams.generateItemPrice)  {
@@ -891,7 +891,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const orderCreateRequests: OrderCreateRequest[] = await this.generateOrderData(generateParams);
 
-            this.log.debug('orderCreateRequests:', JSON.stringify(orderCreateRequests, null, 2));
+            // this.log.debug('orderCreateRequests:', JSON.stringify(orderCreateRequests, null, 2));
             const bidderOrder: resources.Order = await this.orderService.create(orderCreateRequests[0]).then(value => value.toJSON());
             const sellerOrder: resources.Order = await this.orderService.create(orderCreateRequests[1]).then(value => value.toJSON());
             orders.push(bidderOrder, sellerOrder);
@@ -902,7 +902,7 @@ export class TestDataService {
 
     private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest[]> {
 
-        this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const bidderBid: resources.Bid = await this.bidService.findOne(generateParams.bidderBidId).then(value => value.toJSON());
         const sellerBid: resources.Bid = await this.bidService.findOne(generateParams.sellerBidId).then(value => value.toJSON());
@@ -923,8 +923,8 @@ export class TestDataService {
         orderCreateParamsForSeller.addressId = sellerBid.ShippingAddress.id;
         const orderCreateRequestForSeller: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForSeller);
 
-        this.log.debug('orderCreateRequestForBidder:', JSON.stringify(orderCreateRequestForBidder, null, 2));
-        this.log.debug('orderCreateParamsForSeller:', JSON.stringify(orderCreateParamsForSeller, null, 2));
+        // this.log.debug('orderCreateRequestForBidder:', JSON.stringify(orderCreateRequestForBidder, null, 2));
+        //  this.log.debug('orderCreateParamsForSeller:', JSON.stringify(orderCreateParamsForSeller, null, 2));
 
         if (!generateParams.generateOrderItem) {
             orderCreateRequestForBidder.orderItems = [];
@@ -938,14 +938,14 @@ export class TestDataService {
     // Proposals
     private async generateProposals(amount: number, withRelated: boolean = true, generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
 
-        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const items: resources.Proposal[] = [];
 
         for (let i = amount; i > 0; i--) {
             const proposalCreateRequest: ProposalCreateRequest = await this.generateProposalData(generateParams);
 
-            this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+            //  this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
             let proposal: resources.Proposal = await this.proposalService.create(proposalCreateRequest).then(value => value.toJSON());
 
             // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
@@ -1358,7 +1358,7 @@ export class TestDataService {
             this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
         }
 
-        this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+        // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
         return listingItemCreateRequest;
     }
 

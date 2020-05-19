@@ -115,7 +115,7 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        // this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.bidRepo.search(options, withRelated);
     }
 

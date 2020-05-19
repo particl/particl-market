@@ -340,7 +340,7 @@ export class SmsgService {
     public async smsgAddAddress(address: string, publicKey: string): Promise<boolean> {
         return await this.coreRpcService.call('smsgaddaddress', [address, publicKey])
             .then(response => {
-                this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
+                // this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
                 if (response.result === 'Public key added to db.'
                     || (response.result === 'Public key not added to db.' && response.reason === 'Public key exists in database')) {
                     return true;

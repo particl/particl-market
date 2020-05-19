@@ -195,7 +195,7 @@ export class CoreRpcService extends CtRpc {
      */
     public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
         const result: RpcWallet = await this.call('smsgsetwallet', [walletName]);
-        this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
+        // this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
 
@@ -457,7 +457,7 @@ export class CoreRpcService extends CtRpc {
 
         if (smsgAddress) {
             const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address], wallet);
-            this.log.debug('addLocalAddressResponse: ', JSON.stringify(addLocalAddressResponse, null, 2));
+            // this.log.debug('addLocalAddressResponse: ', JSON.stringify(addLocalAddressResponse, null, 2));
 
             // add address as receive address
             // const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);

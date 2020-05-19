@@ -112,9 +112,9 @@ describe('Bid', () => {
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
-        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
-        log.debug('bidderMarket.Identity: ', JSON.stringify(bidderMarket.Identity, null, 2));
-        log.debug('sellerMarket.Identity: ', JSON.stringify(sellerMarket.Identity, null, 2));
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('bidderMarket.Identity: ', JSON.stringify(bidderMarket.Identity, null, 2));
+        // log.debug('sellerMarket.Identity: ', JSON.stringify(sellerMarket.Identity, null, 2));
 
     });
 
@@ -135,7 +135,7 @@ describe('Bid', () => {
             bidders: [testData.bidder, bidderMarket.Identity.address, sellerMarket.Identity.address]
         } as BidSearchParams;
 
-        log.debug('bidSearchParams:', JSON.stringify(bidSearchParams, null, 2));
+        // log.debug('bidSearchParams:', JSON.stringify(bidSearchParams, null, 2));
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
         expect(bids.length).toBe(0);
@@ -149,9 +149,9 @@ describe('Bid', () => {
         testData.address.type = AddressType.SHIPPING_OWN;
         testData.bidder = bidderMarket.Identity.address;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
+        // log.debug('testData:', JSON.stringify(testData, null, 2));
         createdBid1 = await bidService.create(testData).then(value => value.toJSON());
-        log.debug('createdBid1:', JSON.stringify(createdBid1, null, 2));
+        // log.debug('createdBid1:', JSON.stringify(createdBid1, null, 2));
 
         const result: resources.Bid = createdBid1;
         expect(result.type).toBe(testData.type);
@@ -173,9 +173,9 @@ describe('Bid', () => {
         delete testData.address;
         delete testData.bidDatas;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
+        // log.debug('testData:', JSON.stringify(testData, null, 2));
         createdBid2 = await bidService.create(testData).then(value => value.toJSON());
-        log.debug('createdBid2:', JSON.stringify(createdBid2, null, 2));
+        // log.debug('createdBid2:', JSON.stringify(createdBid2, null, 2));
 
         const result: resources.Bid = createdBid2;
         // test the values
@@ -229,7 +229,7 @@ describe('Bid', () => {
             generatedAt: +new Date().getTime()
         } as OrderCreateRequest).then(value => value.toJSON());
 
-        log.debug('createdOrder1:', JSON.stringify(createdOrder1, null, 2));
+        // log.debug('createdOrder1:', JSON.stringify(createdOrder1, null, 2));
 
         const bidSearchParams = {
             listingItemId: listingItem.id,

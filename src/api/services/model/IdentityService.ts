@@ -113,7 +113,7 @@ export class IdentityService {
         const masterKey: RpcExtKey | undefined = _.find(extKeys, key => {
             return key.type === 'Loose' && key.key_type === 'Master' && key.label === 'Master Key - bip44 derived.' && key.current_master === 'true';
         });
-        this.log.debug('createMarketIdentityForProfile(), profile masterKey: ', JSON.stringify(masterKey, null, 2));
+        // this.log.debug('createMarketIdentityForProfile(), profile masterKey: ', JSON.stringify(masterKey, null, 2));
         if (!masterKey) {
             throw new MessageException('Could not find Profile wallets Master key.');
         }
@@ -121,7 +121,7 @@ export class IdentityService {
         // TODO: PATH amountOfMarkets+1
         // TODO: path as param
         const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(profileIdentity.wallet, masterKey.evkey, "4444446'/0'");
-        this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
+        // this.log.debug('createMarketIdentityForProfile(), keyInfo: ', JSON.stringify(keyInfo, null, 2));
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
@@ -141,11 +141,11 @@ export class IdentityService {
 
         // import the key and set up the market wallet
         const extKeyAlt: string = await this.coreRpcService.extKeyAltVersion(masterKey.evkey);
-        this.log.debug('createMarketIdentityForProfile(), extKeyAlt: ', extKeyAlt);
+        // this.log.debug('createMarketIdentityForProfile(), extKeyAlt: ', extKeyAlt);
 
         await this.coreRpcService.extKeyImport(marketWalletName, extKeyAlt/*masterKey.evkey*/, 'master key', true)
             .then(async extKeyImported => {
-                this.log.debug('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
+                // this.log.debug('createMarketIdentityForProfile(), extKeyImported: ', JSON.stringify(extKeyImported, null, 2));
                 await this.coreRpcService.extKeySetMaster(marketWalletName, extKeyImported.id);
             })
             .catch(reason => {
@@ -157,7 +157,7 @@ export class IdentityService {
             });
 
         const marketAccount: RpcExtKeyResult = await this.coreRpcService.extKeyDeriveAccount(marketWalletName, 'market account');
-        this.log.debug('createMarketIdentityForProfile(), marketAccount: ', JSON.stringify(marketAccount, null, 2));
+        // this.log.debug('createMarketIdentityForProfile(), marketAccount: ', JSON.stringify(marketAccount, null, 2));
 
         await this.coreRpcService.extKeySetDefaultAccount(marketWalletName, marketAccount.account);
 

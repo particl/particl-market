@@ -114,7 +114,7 @@ describe('Order', () => {
             generatedAt: +new Date().getTime()
         } as OrderCreateRequest;
 
-        log.debug('order testData: ', JSON.stringify(testData, null, 2));
+        // log.debug('order testData: ', JSON.stringify(testData, null, 2));
         bidderOrder = await orderService.create(testData).then(value => value.toJSON());
 
         expect(bidderOrder.hash).toBe(testData.hash);
@@ -135,7 +135,7 @@ describe('Order', () => {
             generatedAt: +new Date().getTime()
         } as OrderCreateRequest;
 
-        log.debug('order testData: ', JSON.stringify(testData, null, 2));
+        // log.debug('order testData: ', JSON.stringify(testData, null, 2));
         sellerOrder = await orderService.create(testData).then(value => value.toJSON());
 
         expect(sellerOrder.hash).toBe(testData.hash);

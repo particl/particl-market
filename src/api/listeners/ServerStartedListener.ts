@@ -190,7 +190,7 @@ export class ServerStartedListener implements interfaces.Listener {
                     throw reason;
                 });
 
-            this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
+            // this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
             // todo: Seed the default custom ItemCategories for a Market
             // await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);

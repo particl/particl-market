@@ -147,9 +147,9 @@ describe('ListingItem', () => {
     test('Should create a new ListingItem', async () => {
 
         const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
-        log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
+        // log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
         createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
-        log.debug('createdListingItem1: ', JSON.stringify(createdListingItem1, null, 2));
+        // log.debug('createdListingItem1: ', JSON.stringify(createdListingItem1, null, 2));
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s

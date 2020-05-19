@@ -121,7 +121,7 @@ export class DefaultMarketService {
                 const marketIdentity: resources.Identity = await this.identityService.createMarketIdentityForProfile(profile, marketName)
                     .then(value => value.toJSON());
 
-                this.log.debug('seedDefaultMarketForProfile(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
+                // this.log.debug('seedDefaultMarketForProfile(), marketIdentity: ', JSON.stringify(marketIdentity, null, 2));
 
                 // then create the Market
                 const newMarket = await this.createDefaultMarket(profile, marketIdentity);
@@ -135,7 +135,7 @@ export class DefaultMarketService {
             })
             .then(value => value.toJSON());
 
-        this.log.debug('seedDefaultMarketForProfile(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
+        // this.log.debug('seedDefaultMarketForProfile(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
         return await this.marketService.findOne(defaultMarket.id, true).then(value => value.toJSON());
     }

@@ -731,8 +731,8 @@ describe('ListingItemTemplate', async () => {
 
     const expectListingItemTemplateWasDeleted = async (item: resources.ListingItemTemplate) => {
 
-        log.debug('item to delete: ', JSON.stringify(item, null, 2));
-        log.debug('expect deleted, item.id:', item.id);
+        // log.debug('item to delete: ', JSON.stringify(item, null, 2));
+        // log.debug('expect deleted, item.id:', item.id);
 
         await listingItemTemplateService.findOne(item.id)
             .then(value => {
