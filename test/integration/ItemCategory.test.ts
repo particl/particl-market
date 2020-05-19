@@ -18,7 +18,7 @@ import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCate
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
-import {hash} from 'omp-lib/dist/hasher/hash';
+import { hash } from 'omp-lib/dist/hasher/hash';
 
 describe('ItemCategory', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -34,6 +34,8 @@ describe('ItemCategory', () => {
 
     let profile: resources.Profile;
     let market: resources.Market;
+
+    let defaultRootCategory: resources.ItemCategory;
 
     let rootCategory: resources.ItemCategory;
     let childCategory: resources.ItemCategory;
@@ -67,10 +69,17 @@ describe('ItemCategory', () => {
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
+        defaultRootCategory = await itemCategoryService.findRoot().then(value => value.toJSON());
+
+        // custom root hash/name should match the default root
+        rootData.name = defaultRootCategory.name;
+
+        // create correct keys
         rootData.key = hash([rootData.name].toString());
         childData.key = hash([rootData.name, childData.name].toString());
         childChildData.key = hash([rootData.name, childData.name, childChildData.name].toString());
 
+        // add correct market
         rootData.market = market.receiveAddress;
         childData.market = market.receiveAddress;
         childChildData.market = market.receiveAddress;
@@ -102,7 +111,7 @@ describe('ItemCategory', () => {
         );
     });
 
-    test('Should throw ValidationException because missing kry', async () => {
+    test('Should throw ValidationException because missing key', async () => {
         expect.assertions(1);
 
         const createRequest = {
@@ -153,6 +162,29 @@ describe('ItemCategory', () => {
         expect(result.description).toBe(childData.description);
         expect(result.key).toBe(childData.key);
         expect(result.market).toBe(childData.market);
+    });
+
+    test('Should find one by key and market', async () => {
+        const result: resources.ItemCategory = await itemCategoryService.findOneByKeyAndMarket(rootCategory.key, market.receiveAddress)
+            .then(value => value.toJSON());
+        expect(result.name).toBe(rootCategory.name);
+        expect(result.description).toBe(rootCategory.description);
+        expect(result.market).toBe(rootCategory.market);
+        expect(result.key).toBe(rootCategory.key);
+
+        rootCategory = result;
+    });
+
+    test('Should find one default by key', async () => {
+        const result: resources.ItemCategory = await itemCategoryService.findOneDefaultByKey(rootCategory.key).then(value => value.toJSON());
+        expect(result.name).toBe(defaultRootCategory.name);
+        expect(result.description).toBe(defaultRootCategory.description);
+        expect(result.market).toBe(defaultRootCategory.market);
+        expect(result.key).toBe(defaultRootCategory.key);
+
+        expect(rootCategory.key).toBe(defaultRootCategory.key);
+
+        defaultRootCategory = result;
     });
 
     test('Should update the ItemCategory', async () => {

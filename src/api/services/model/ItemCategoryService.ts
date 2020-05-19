@@ -35,7 +35,6 @@ export class ItemCategoryService {
     }
 
     /**
-     * to search for default categories, use ''
      *
      * @param key
      * @param market
