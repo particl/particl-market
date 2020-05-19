@@ -364,14 +364,16 @@ export class ListingItemTemplateService {
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true)
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
 
         // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
         // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
         // this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
 
-        const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+        // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+
+        // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash
+        const isModifiable = listingItemTemplate.hash === undefined;
 
         this.log.debug('isModifiable: ' + isModifiable);
         return isModifiable;

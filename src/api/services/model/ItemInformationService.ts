@@ -96,12 +96,10 @@ export class ItemInformationService {
 
         // this.log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
 
-        // create related models
-        if (!_.isEmpty(itemLocation)) {
-            itemLocation.item_information_id = itemInformation.id;
-            // this.log.debug('itemLocation: ', JSON.stringify(itemLocation, null, 2));
-            await this.itemLocationService.create(itemLocation);
-        }
+        // location will always be created, even if country wasn't given.
+        itemLocation.item_information_id = itemInformation.id;
+        // this.log.debug('itemLocation: ', JSON.stringify(itemLocation, null, 2));
+        await this.itemLocationService.create(itemLocation);
 
         if (!_.isEmpty(shippingDestinations)) {
             for (const shippingDestination of shippingDestinations) {

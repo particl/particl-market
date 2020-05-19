@@ -13,7 +13,6 @@ export class ItemLocationCreateRequest extends RequestBody implements ModelReque
     @IsNotEmpty()
     public item_information_id: number;
 
-    @IsNotEmpty()
     public country: string;
     public address: string;
     public description: string;

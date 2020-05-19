@@ -64,8 +64,6 @@ import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInfor
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
 
-import { ItemLocationRemoveCommand } from '../commands/itemlocation/ItemLocationRemoveCommand';
-import { ItemLocationAddCommand } from '../commands/itemlocation/ItemLocationAddCommand';
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRootCommand';
 
@@ -232,8 +230,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationAddCommand) private itemLocationAddCommand: ItemLocationAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationRemoveCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRootCommand) private itemLocationRootCommand: ItemLocationRootCommand,
 

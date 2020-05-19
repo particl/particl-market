@@ -14,7 +14,6 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocationUpdateRequest } from '../../requests/model/ItemLocationUpdateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -54,15 +53,13 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const countryCode = data.params[1];
+        const country = data.params[1];
         const address = data.params[2];
-
-        const itemInformation = await this.getItemInformation(listingItemTemplate.id);
 
         // TODO: its not possible to update the description
         const updateRequest = {
-            country: countryCode,
-            address: data.params[2]
+            country,
+            address
         } as ItemLocationUpdateRequest;
 
         if (data.params[5] && data.params[6]) {
@@ -74,7 +71,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             } as LocationMarkerUpdateRequest;
         }
 
-        return this.itemLocationService.update(itemInformation.ItemLocation.id, updateRequest);
+        return this.itemLocationService.update(listingItemTemplate.ItemInformation.ItemLocation.id, updateRequest);
     }
 
     /**
@@ -101,7 +98,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('country', 'string');
-        } else if (typeof data.params[2] !== 'string') {
+        } else if (data.params[2] && typeof data.params[2] !== 'string') {
             throw new InvalidParamException('address', 'string');
         }
 
@@ -138,12 +135,10 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
 
-        // make sure ItemInformation exists
         if (_.isEmpty(listingItemTemplate.ItemInformation)) {
             throw new ModelNotFoundException('ItemInformation');
         }
 
-        // make sure ItemLocation exists
         if (_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) {
             throw new ModelNotFoundException('ItemInformation');
         }
@@ -159,14 +154,14 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <country> <address> <gpsMarkerTitle>'
-            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude> ';
+        return this.getName() + ' <listingItemTemplateId> <country> [address] [gpsMarkerTitle]'
+            + ' [gpsMarkerDescription] [gpsMarkerLatitude] [gpsMarkerLongitude] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want. \n'
-            + '    <country>                 - String - Country, i.e. country or country code. \n'
+            + '    <listingItemTemplateId>  - Numeric - The ID of the ListingItemTemplate we want to update. \n'
+            + '    <country>                - String - Country, i.e. country or country code. \n'
             + '    <address>                - String - Address. \n'
             + '    <gpsMarkerTitle>         - String - Gps marker title. \n'
             + '    <gpsMarkerDescription>   - String - Gps marker text. \n'
@@ -175,29 +170,11 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public description(): string {
-        return 'Update the details of an item location given by listingItemTemplateId.';
+        return 'Update the ItemLocation.';
     }
 
     public example(): string {
         return '';
     }
 
-    /*
-     * TODO: NOTE: This function may be duplicated between commands.
-     */
-    private async getItemInformation(listingItemTemplateId: number): Promise<any> {
-        // find the existing listing item template
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-
-        // find the related ItemInformation
-        const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
-
-        // Through exception if ItemInformation or ItemLocation does not exist
-        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
-            this.log.warn(`Item Information or Item Location with the listing template id=${listingItemTemplateId} was not found!`);
-            throw new MessageException(`Item Information or Item Location with the listing template id=${listingItemTemplateId} was not found!`);
-        }
-
-        return ItemInformation;
-    }
 }

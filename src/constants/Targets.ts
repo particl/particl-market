@@ -268,8 +268,6 @@ export const Targets = {
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
         },
         itemlocation: {
-            ItemLocationAddCommand: 'ItemLocationAddCommand',
-            ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
             ItemLocationRootCommand: 'ItemLocationRootCommand',
             ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
