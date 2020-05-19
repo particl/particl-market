@@ -23,6 +23,8 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 describe('LocationMarker', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -35,14 +37,15 @@ describe('LocationMarker', () => {
     let locationMarkerService: LocationMarkerService;
     let profileService: ProfileService;
     let marketService: MarketService;
+    let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
     let itemInformationService: ItemInformationService;
     let itemLocationService: ItemLocationService;
 
-    let listingItemTemplate: resources.ListingItemTemplate;
-    let locationMarker: resources.LocationMarker;
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let locationMarker: resources.LocationMarker;
 
     const testData = {
         title: 'Helsinki',
@@ -67,6 +70,7 @@ describe('LocationMarker', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
 
@@ -76,20 +80,18 @@ describe('LocationMarker', () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
-            true,               // generateShippingDestinations
+            false,              // generateShippingDestinations
             false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
             false,              // generateItemPrice
-            true,               // generateMessagingInformation
+            false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             defaultProfile.id,  // profileId
             false,               // generateListingItem
             defaultMarket.id    // marketId
         ]).toParamsArray();
-
-        log.debug('generateListingItemTemplateParams: ', JSON.stringify(generateListingItemTemplateParams, null, 2));
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
@@ -104,6 +106,13 @@ describe('LocationMarker', () => {
 
     afterAll(async () => {
         //
+    });
+
+    test('Should throw ValidationException because we want to create a empty LocationMarker', async () => {
+        expect.assertions(1);
+        await locationMarkerService.create({} as LocationMarkerCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
     test('Should throw ValidationException because there is no item_location_id', async () => {
@@ -121,16 +130,8 @@ describe('LocationMarker', () => {
         expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
-        expect(result.itemLocationId).toBe(testData.item_location_id);
 
         locationMarker = result;
-    });
-/*
-    test('Should throw ValidationException because we want to create a empty LocationMarker', async () => {
-        expect.assertions(1);
-        await locationMarkerService.create({} as LocationMarkerCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
     });
 
     test('Should list LocationMarkers with our new create one', async () => {
@@ -143,30 +144,26 @@ describe('LocationMarker', () => {
         expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
-        expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
     test('Should return one LocationMarker', async () => {
-        const locationMarkerModel: LocationMarker = await locationMarkerService.findOne(locationMarker.id);
-        const result = locationMarkerModel.toJSON();
+        const result: resources.LocationMarker = await locationMarkerService.findOne(locationMarker.id).then(value => value.toJSON());
 
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
         expect(result.lat).toBe(testData.lat);
         expect(result.lng).toBe(testData.lng);
-        expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
     });
 
     test('Should update the LocationMarker', async () => {
-        testDataUpdated['item_location_id'] = listingItemTemplate.ItemInformation.ItemLocation.id;
-        const locationMarkerModel: LocationMarker = await locationMarkerService.update(locationMarker.id, testDataUpdated);
-        const result = locationMarkerModel.toJSON();
+        const result: resources.LocationMarker = await locationMarkerService.update(locationMarker.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
         expect(result.lat).toBe(testDataUpdated.lat);
         expect(result.lng).toBe(testDataUpdated.lng);
-        expect(result.itemLocationId).toBe(listingItemTemplate.ItemInformation.ItemLocation.id);
+
+        locationMarker = result;
     });
 
     test('Should delete the LocationMarker', async () => {
@@ -176,5 +173,5 @@ describe('LocationMarker', () => {
             expect(e).toEqual(new NotFoundException(locationMarker.id))
         );
     });
-*/
+
 });
