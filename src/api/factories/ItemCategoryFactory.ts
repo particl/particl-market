@@ -10,6 +10,7 @@ import { Types, Core } from '../../constants';
 import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { hash } from 'omp-lib/dist/hasher/hash';
+import { MessageException } from '../exceptions/MessageException';
 
 export class ItemCategoryFactory {
 
@@ -107,7 +108,7 @@ export class ItemCategoryFactory {
      */
     public async getArray(category: resources.ItemCategory): Promise<string[]> {
         if (!category) {
-            return [];
+            throw new MessageException('Missing category.');
         }
         return await this.getArrayInner(category);
     }

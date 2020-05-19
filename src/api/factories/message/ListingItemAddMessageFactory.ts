@@ -71,11 +71,17 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
-        const seller = _.isEmpty(params.seller) ? {} : { address: params.seller.address, signature: params.signature };
+
+        if (_.isEmpty(params.seller)) {
+            throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
+        }
 
         const item = {
             information,
-            seller,
+            seller: {
+                address: params.seller.address,
+                signature: params.signature
+            } as SellerInfo,
             payment,
             messaging,
             objects
