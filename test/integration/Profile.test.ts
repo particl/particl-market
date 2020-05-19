@@ -11,7 +11,6 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { AddressService } from '../../src/api/services/model/AddressService';
 import { CryptocurrencyAddressService } from '../../src/api/services/model/CryptocurrencyAddressService';
@@ -21,11 +20,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProfileCreateRequest } from '../../src/api/requests/model/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../../src/api/requests/model/ProfileUpdateRequest';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { AddressCreateRequest } from '../../src/api/requests/model/AddressCreateRequest';
 import { AddressType } from '../../src/api/enums/AddressType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -38,11 +34,9 @@ describe('Profile', () => {
     let addressService: AddressService;
     let cryptocurAddService: CryptocurrencyAddressService;
     let marketService: MarketService;
-    let listingItemService: ListingItemService;
     let favoriteItemService: FavoriteItemService;
     let shoppingCartService: ShoppingCartService;
 
-    let listingItem: resources.ListingItem;
     let profile: resources.Profile;
 
     const testData = {
@@ -84,29 +78,8 @@ describe('Profile', () => {
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.model.AddressService);
         cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.model.CryptocurrencyAddressService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.model.FavoriteItemService);
         shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.model.ShoppingCartService);
-
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
-        ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,  // what to generate
-            amount: 1,                          // how many to generate
-            withRelated: true,                  // return model
-            generateParams: generateListingItemParams // what kind of data to generate
-        } as TestDataGenerateRequest);
-        listingItem = listingItems[0];
 
     });
 
@@ -132,7 +105,7 @@ describe('Profile', () => {
         profile = result;
     });
 
-    test('Should list Profiles with our new create one', async () => {
+    test('Should list all Profiles with our new create one', async () => {
         const profiles: resources.Profile[] = await profileService.findAll().then(value => value.toJSON());
         expect(profiles.length).toBe(2); // including default one
 
