@@ -6,12 +6,10 @@ import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ListingItemObjectType } from '../../enums/ListingItemObjectType';
 import { ModelRequestInterface } from './ModelRequestInterface';
+import {ListingItemObjectDataUpdateRequest} from './ListingItemObjectDataUpdateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemObjectUpdateRequest extends RequestBody implements ModelRequestInterface {
-
-    public listing_item_id: number;
-    public listing_item_template_id: number;
 
     @IsEnum(ListingItemObjectType)
     @IsNotEmpty()
@@ -23,6 +21,6 @@ export class ListingItemObjectUpdateRequest extends RequestBody implements Model
     @IsNotEmpty()
     public order: number;
 
-    public listingItemObjectDatas;
+    public listingItemObjectDatas: ListingItemObjectDataUpdateRequest;
 }
 // tslint:enable:variable-name

@@ -9,7 +9,7 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ListingItemObjectDataUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    public listing_item_object_id: number;
+    // public listing_item_object_id: number;
 
     @IsNotEmpty()
     public key: string;

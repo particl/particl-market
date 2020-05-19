@@ -29,7 +29,6 @@ import { ActionDirection } from '../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../src/api/enums/SearchOrderField';
 import { ListingItemAddMessage } from '../../src/api/messages/action/ListingItemAddMessage';
 import { ListingItemAddMessageCreateParams } from '../../src/api/requests/message/ListingItemAddMessageCreateParams';
-import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';

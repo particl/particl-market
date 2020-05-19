@@ -4,6 +4,7 @@
 
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -13,7 +14,6 @@ import { ValidationException } from '../../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../../models/ListingItemObject';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
-import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ListingItemObjectSearchParams } from '../../requests/search/ListingItemObjectSearchParams';
 import { ListingItemObjectDataService } from './ListingItemObjectDataService';
@@ -63,11 +63,9 @@ export class ListingItemObjectService {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
-        // extract and remove related models from request
         const listingItemObjectDatas = body.listingItemObjectDatas || [];
         delete body.listingItemObjectDatas;
 
-        // If the request body was valid we will create the listingItemObject
         const listingItemObject: resources.ListingItemObject = await this.listingItemObjectRepo.create(body).then(value => value.toJSON());
 
         for (const objectData of listingItemObjectDatas) {
@@ -82,35 +80,36 @@ export class ListingItemObjectService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // find the existing one without relatedb
         const listingItemObject = await this.findOne(id, false);
 
-        // set new values
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
+        // todo: objectid?
+        // todo: forceinput?
 
-        // update listingItemObjectDatas
-        const listingItemObjectJSON = listingItemObject.toJSON();
-        const listingItemObjectDatasOld = listingItemObjectJSON.ListingItemObjectDatas || [];
-        const objectDataIds: number[] = [];
+        const listingItemObjectToSave = listingItemObject.toJSON();
+        const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObjectToSave);
 
-        for (const objectData of listingItemObjectDatasOld) {
-            objectDataIds.push(objectData.id);
+        // update only if new data was passed
+        if (!_.isEmpty(body.listingItemObjectDatas)) {
+
+            // find related records and delete
+            let listingItemObjectDatas = updatedListingItemObject.related('ListingItemObjectDatas').toJSON();
+            for (const objectData of listingItemObjectDatas) {
+                await this.listingItemObjectDataService.destroy(objectData.id);
+            }
+
+            // recreate related data
+            listingItemObjectDatas = body.listingItemObjectDatas || [];
+            if (!_.isEmpty(listingItemObjectDatas)) {
+                for (const objectData of listingItemObjectDatas) {
+                    objectData.listing_item_object_id = id;
+                    await this.listingItemObjectDataService.create(objectData);
+                }
+            }
         }
-
-        for (const objectDataId of objectDataIds) {
-            await this.listingItemObjectDataService.destroy(objectDataId);
-        }
-
-        const listingItemObjectDatas = body.listingItemObjectDatas || [];
-
-        for (const objectData of listingItemObjectDatas) {
-            objectData.listing_item_object_id = listingItemObject.Id;
-            await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
-        }
-
-        return await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {

@@ -11,14 +11,16 @@ import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
+    public static RELATIONS = [
+        'ListingItem',
+        'ListingItemTemplate',
+        'ListingItemObjectDatas'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemObject> {
         if (withRelated) {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
-                withRelated: [
-                    'ListingItem',
-                    'ListingItemTemplate',
-                    'ListingItemObjectDatas'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch();
