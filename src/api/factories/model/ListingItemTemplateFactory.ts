@@ -69,6 +69,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
                 escrow: {
                     type: params.escrowType,
                     secondsToLock: 0,
+                    releaseType: params.escrowReleaseType,
                     ratio: {
                         buyer: params.buyerRatio,
                         seller: params.sellerRatio
@@ -78,9 +79,9 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
         } as ListingItemTemplateCreateRequest;
 
         // optional
-        if (params[13]) {
-            createRequest.parent_listing_item_template_id = params[13];
-        }
+        // if (params[13]) {
+        //     createRequest.parent_listing_item_template_id = params[13];
+        // }
 
         // hash should not be saved until just before the ListingItemTemplate is posted,
         // since ListingItemTemplates with hash should not be modified anymore

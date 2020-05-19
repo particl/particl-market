@@ -6,8 +6,7 @@ import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { ItemCategory } from '../models/ItemCategory';
+import { Types, Core } from '../../constants';
 import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { hash } from 'omp-lib/dist/hasher/hash';
@@ -107,6 +106,9 @@ export class ItemCategoryFactory {
      * @returns {Promise<string[]>}
      */
     public async getArray(category: resources.ItemCategory): Promise<string[]> {
+        if (!category) {
+            return [];
+        }
         return await this.getArrayInner(category);
     }
 

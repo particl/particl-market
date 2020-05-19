@@ -444,20 +444,20 @@ export class ListingItemTemplateService {
 
         // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
-        let imageDataSize = 0;
-        if (action.item.information.images) {
-            for (const image of action.item.information.images) {
-                imageDataSize = imageDataSize + image.data[0].data.length;
-                this.log.debug('imageDataSize: ', image.data[0].data.length);
-            }
-        }
-        const messageDataSize = JSON.stringify(marketplaceMessage).length - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
+        // let imageDataSize = 0;
+        // if (action.item.information.images) {
+        //     for (const image of action.item.information.images) {
+        //         imageDataSize = imageDataSize + image.data[0].data.length;
+        //         this.log.debug('imageDataSize: ', image.data[0].data.length);
+        //     }
+        // }
+        const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
+        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize; // - imageDataSize;
         const fits = spaceLeft > 0;
 
         return {
             messageData: messageDataSize,
-            imageData: imageDataSize,
+            // imageData: imageDataSize,
             spaceLeft,
             fits
         } as MessageSize;

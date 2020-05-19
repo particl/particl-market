@@ -55,7 +55,6 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const countryCode = data.params[1];
-        const address = data.params[2];
 
         const itemInformation = await this.getItemInformation(listingItemTemplate.id);
 
@@ -101,7 +100,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('country', 'string');
-        } else if (typeof data.params[2] !== 'string') {
+        } else if (data.params[2] && typeof data.params[2] !== 'string') {
             throw new InvalidParamException('address', 'string');
         }
 
