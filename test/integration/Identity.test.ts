@@ -87,6 +87,8 @@ describe('Identity', () => {
         expect(result.wallet).toBe(testData.wallet);
     });
 
+    // todo: missing tests for findOneByXXX
+
     test('Should update the Identity', async () => {
         const result: resources.Identity = await identityService.update(wallet.id, testDataUpdated).then(value => value.toJSON());
         expect(result.wallet).toBe(testDataUpdated.wallet);

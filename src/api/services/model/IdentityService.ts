@@ -268,8 +268,7 @@ export class IdentityService {
         identity.Passphrase = body.passphrase;
         identity.Type = body.type;
 
-        const updatedIdentity = await this.identityRepository.update(id, identity.toJSON());
-        return updatedIdentity;
+        return await this.identityRepository.update(id, identity.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {
