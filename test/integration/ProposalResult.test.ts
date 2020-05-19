@@ -140,8 +140,7 @@ describe('ProposalResult', () => {
     });
 
     test('Should update the ProposalResult', async () => {
-        const result: resources.ProposalResult = await proposalResultService.update(proposalResult.id, testDataUpdated)
-            .then(value => value.toJSON());
+        const result: resources.ProposalResult = await proposalResultService.update(proposalResult.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(proposal.id);

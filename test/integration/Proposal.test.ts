@@ -336,7 +336,7 @@ describe('Proposal', () => {
             to: HashableProposalAddField.PROPOSAL_OPTIONS
         }]));
 
-        log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+        // log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
 
         return proposalCreateRequest;
     };

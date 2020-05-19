@@ -145,7 +145,9 @@ export class App {
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
 
-        this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
+        if (Environment.isProduction()) {
+            this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
+        }
 
         this.log.info('App is ready!');
 
