@@ -54,13 +54,18 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const itemCategory: resources.ItemCategory = data.params[4];
 
+        let category;
+        if (!_.isEmpty(itemCategory)) {
+            category = {
+                key: itemCategory.key
+            } as ItemCategoryUpdateRequest;
+        }
+
         return this.itemInformationService.update(listingItemTemplate.ItemInformation.id, {
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
-            itemCategory: {
-                key: itemCategory.key
-            } as ItemCategoryUpdateRequest
+            itemCategory: category
         } as ItemInformationUpdateRequest);
     }
 
@@ -70,7 +75,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: categoryId
+     *  [4]: categoryId (optional)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -84,8 +89,6 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             throw new MissingParamException('shortDescription');
         } else if (data.params.length < 4) {
             throw new MissingParamException('longDescription');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('categoryId');
         }
 
         if (typeof data.params[0] !== 'number') {
@@ -96,7 +99,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             throw new InvalidParamException('shortDescription', 'string');
         } else if (typeof data.params[3] !== 'string') {
             throw new InvalidParamException('longDescription', 'string');
-        } else if (typeof data.params[4] !== 'number') {
+        } else if (data.params[4] && typeof data.params[4] !== 'number') {
             throw new InvalidParamException('categoryId', 'number');
         }
 
@@ -115,13 +118,16 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         }
 
         // make sure ItemCategory with the id exists
-        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('ItemCategory');
-            });
+        if (+data.params[4]) {
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
+                .then(value => {
+                    return value.toJSON();
+                })
+                .catch(reason => {
+                    throw new ModelNotFoundException('ItemCategory');
+                });
+            data.params[4] = itemCategory;
+        }
 
         const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
         if (!isModifiable) {
@@ -129,7 +135,6 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         }
 
         data.params[0] = listingItemTemplate;
-        data.params[4] = itemCategory;
 
         return data;
     }
@@ -149,7 +154,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             + '                                     information we\'re updating. \n'
             + '    <longDescription>             - String - The new long description of the item \n'
             + '                                     information we\'re updating. \n'
-            + '    <categoryId>                  - String - The ID that identifies the new \n'
+            + '    <categoryId>                  - String - optional - The ID that identifies the new \n'
             + '                                     category we want to assign to the item \n'
             + '                                     information we\'re updating. ';
     }

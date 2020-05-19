@@ -88,7 +88,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const fromAddress = market.publishAddress;
         const toAddress = market.receiveAddress;
 
-        // this is not yet strictly necessary...
         // if ListingItem contains a category, create the market categories
         const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
         await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
@@ -178,6 +177,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new ModelNotFoundException('PaymentInformation');
         } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
             throw new ModelNotFoundException('ItemPrice');
+        } else if (_.isEmpty(listingItemTemplate.ItemInformation.ItemCategory)) {
+            // we cannot post without a category
+            throw new ModelNotFoundException('ItemCategory');
         }
 
         const market: resources.Market = await this.marketService.findOne(data.params[2])

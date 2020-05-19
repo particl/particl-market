@@ -72,6 +72,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
 
+        if (_.isEmpty(params.seller)) {
+            throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
+        }
+
         const item = {
             information,
             seller: {

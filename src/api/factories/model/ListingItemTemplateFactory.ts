@@ -41,7 +41,8 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
 
         const createRequest = {
             profile_id: params.profileId,
-            generatedAt: +new Date().getTime(),
+            parent_listing_item_template_id: params.parentListingItemTemplateId,
+            generatedAt: +Date.now(),
             itemInformation: {
                 title: params.title,
                 shortDescription: params.shortDescription,
@@ -69,6 +70,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
                 escrow: {
                     type: params.escrowType,
                     secondsToLock: 0,
+                    releaseType: params.escrowReleaseType,
                     ratio: {
                         buyer: params.buyerRatio,
                         seller: params.sellerRatio
@@ -76,15 +78,6 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
                 } as EscrowCreateRequest
             } as PaymentInformationCreateRequest
         } as ListingItemTemplateCreateRequest;
-
-        // optional
-        if (params[13]) {
-            createRequest.parent_listing_item_template_id = params[13];
-        }
-
-        // hash should not be saved until just before the ListingItemTemplate is posted,
-        // since ListingItemTemplates with hash should not be modified anymore
-        // createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         return createRequest;
     }
