@@ -80,14 +80,14 @@ export class CoreCookieService extends BaseObserverService {
         if (this.PATH_TO_COOKIE) {
             return this.PATH_TO_COOKIE;
         }
-        this.log.debug('PATH_TO_COOKIE: ', this.PATH_TO_COOKIE);
+        // this.log.debug('PATH_TO_COOKIE: ', this.PATH_TO_COOKIE);
 
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
         let dir = '';
         const appName = 'Particl';
 
-        this.log.debug('process.platform: ', process.platform);
+        // this.log.debug('process.platform: ', process.platform);
 
         switch (process.platform) {
           case 'linux': {
@@ -128,7 +128,8 @@ export class CoreCookieService extends BaseObserverService {
             this.log.debug('Found particl-core path', dir);
             return true;
         } catch (err) {
-            this.log.error('Could not find particl-core path!', dir);
+            // expected on docker
+            // this.log.error('Could not find particl-core path!', dir);
         }
         return false;
     }

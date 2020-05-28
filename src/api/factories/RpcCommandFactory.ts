@@ -8,45 +8,35 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 import { Environment, EnvironmentType } from '../../core/helpers/Environment';
 import { MessageException } from '../exceptions/MessageException';
-
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
 import { AddressAddCommand } from '../commands/address/AddressAddCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
-
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { BidAcceptCommand } from '../commands/bid/BidAcceptCommand';
 import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
 import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
 import { BidSendCommand } from '../commands/bid/BidSendCommand';
-
 import { Command } from '../commands/Command';
-
 import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
-
 import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
-
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
-
 import { AdminCommand } from '../commands/admin/AdminCommand';
-
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowCompleteCommand } from '../commands/escrow/EscrowCompleteCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
 import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
 import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
-
 import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteListCommand } from '../commands/favorite/FavoriteListCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
-
 import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
 import { ItemCategoryAddCommand } from '../commands/itemcategory/ItemCategoryAddCommand';
 import { ItemCategorySearchCommand } from '../commands/itemcategory/ItemCategorySearchCommand';
@@ -54,26 +44,20 @@ import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGet
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
-
 import { ItemImageRootCommand } from '../commands/itemimage/ItemImageRootCommand';
 import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand';
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
-
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
-
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRootCommand';
-
 import { HelpCommand } from '../commands/HelpCommand';
-
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { ListingItemFlagCommand } from '../commands/listingitem/ListingItemFlagCommand';
 import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
-
 import { ListingItemTemplateAddCommand } from '../commands/listingitemtemplate/ListingItemTemplateAddCommand';
 import { ListingItemTemplateRemoveCommand } from '../commands/listingitemtemplate/ListingItemTemplateRemoveCommand';
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
@@ -84,52 +68,41 @@ import { ListingItemTemplateCompressCommand } from '../commands/listingitemtempl
 import { ListingItemTemplateFeatureImageCommand } from '../commands/listingitemtemplate/ListingItemTemplateFeatureImageCommand';
 import { ListingItemTemplateCloneCommand } from '../commands/listingitemtemplate/ListingItemTemplateCloneCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
-
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketRemoveCommand } from '../commands/market/MarketRemoveCommand';
 import { MarketSetDefaultCommand } from '../commands/market/MarketSetDefaultCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { MarketFlagCommand } from '../commands/market/MarketFlagCommand';
-
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
-
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
-
 import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
 import { OrderItemHistoryCommand } from '../commands/orderitem/OrderItemHistoryCommand';
 import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
 import { OrderItemShipCommand } from '../commands/orderitem/OrderItemShipCommand';
 import { OrderItemSearchCommand } from '../commands/orderitem/OrderItemSearchCommand';
-
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
-
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
-
 import { ProposalGetCommand } from '../commands/proposal/ProposalGetCommand';
 import { ProposalPostCommand } from '../commands/proposal/ProposalPostCommand';
 import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
 import { ProposalResultCommand } from '../commands/proposal/ProposalResultCommand';
 import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
-
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
 import { ProfileRootCommand } from '../commands/profile/ProfileRootCommand';
-
 import { ShippingDestinationRootCommand } from '../commands/shippingdestination/ShippingDestinationRootCommand';
 import { ShippingDestinationListCommand } from '../commands/shippingdestination/ShippingDestinationListCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
-
 import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
 import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
-
 import { ShoppingCartAddCommand } from '../commands/shoppingcart/ShoppingCartAddCommand';
 import { ShoppingCartUpdateCommand } from '../commands/shoppingcart/ShoppingCartUpdateCommand';
 import { ShoppingCartRemoveCommand } from '../commands/shoppingcart/ShoppingCartRemoveCommand';
@@ -137,37 +110,30 @@ import { ShoppingCartListCommand } from '../commands/shoppingcart/ShoppingCartLi
 import { ShoppingCartGetCommand } from '../commands/shoppingcart/ShoppingCartGetCommand';
 import { ShoppingCartClearCommand } from '../commands/shoppingcart/ShoppingCartClearCommand';
 import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
-
 import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitem/ShoppingCartItemAddCommand';
 import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/ShoppingCartItemRemoveCommand';
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
-
 import { VotePostCommand } from '../commands/vote/VotePostCommand';
 import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
 import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
-
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
-
 import { IdentityListCommand } from '../commands/identity/IdentityListCommand';
 import { IdentityRootCommand } from '../commands/identity/IdentityRootCommand';
-
 import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
 import { SettingListCommand } from '../commands/setting/SettingListCommand';
 import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
 import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
-
 import { CommentRootCommand } from '../commands/comment/CommentRootCommand';
 import { CommentPostCommand } from '../commands/comment/CommentPostCommand';
 import { CommentSearchCommand } from '../commands/comment/CommentSearchCommand';
 import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
 import { CommentCountCommand } from '../commands/comment/CommentCountCommand';
-
 import { BlacklistListCommand } from '../commands/blacklist/BlacklistListCommand';
 import { BlacklistRootCommand } from '../commands/blacklist/BlacklistRootCommand';
 
@@ -398,8 +364,6 @@ export class RpcCommandFactory {
         this.commands.push(itemInformationUpdateCommand);
         this.commands.push(itemInformationRootCommand);
 
-        this.commands.push(itemLocationAddCommand);
-        this.commands.push(itemLocationRemoveCommand);
         this.commands.push(itemLocationUpdateCommand);
         this.commands.push(itemLocationRootCommand);
 

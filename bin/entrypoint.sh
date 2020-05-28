@@ -7,8 +7,8 @@ npm --version
 echo "YARN:"
 yarn --version
 ls -al /app
-yarn install --check-files
-# yarn install --force
+#yarn install --check-files
+yarn install --force
 # yarn remove omp-lib
 # yarn add omp-lib
 bin/create-build-version.sh
