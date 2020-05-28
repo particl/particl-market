@@ -57,7 +57,6 @@ describe('SmsgSearchCommand', () => {
         expect(market.id).toBeDefined();
         log.debug('market: ', JSON.stringify(market, null, 2));
 
-/*
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -111,7 +110,7 @@ describe('SmsgSearchCommand', () => {
             true,                       // return model
             generateSmsgMessageParams               // what kind of data to generate
         ) as resources.SmsgMessage[];
-*/
+
     });
 
 
