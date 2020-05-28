@@ -17,6 +17,7 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import {MessageException} from '../../../src/api/exceptions/MessageException';
 
 describe('SmsgSearchCommand', () => {
 
@@ -45,18 +46,18 @@ describe('SmsgSearchCommand', () => {
     const DAYS_RETENTION = 7;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtil.cleanDb(true);
 
         // get seller and buyer profiles
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
-        log.debug('profile: ', profile.address);
 
         // get seller and buyer markets
         market = await testUtil.getDefaultMarket();
         expect(market.id).toBeDefined();
         log.debug('market: ', JSON.stringify(market, null, 2));
 
+/*
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -110,8 +111,9 @@ describe('SmsgSearchCommand', () => {
             true,                       // return model
             generateSmsgMessageParams               // what kind of data to generate
         ) as resources.SmsgMessage[];
-
+*/
     });
+
 
     test('Should search SmsgMessages without any params', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -124,6 +126,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+/*
     test('Should fail to search SmsgMessages because invalid type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -322,5 +325,6 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(1);
 
     });
+*/
 
 });

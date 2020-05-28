@@ -122,7 +122,7 @@ import { BlacklistType } from '../enums/BlacklistType';
 import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import {CoreMessageVersion} from '../enums/CoreMessageVersion';
+import { ServerStartedListener } from '../listeners/ServerStartedListener';
 
 
 export class TestDataService {
@@ -160,6 +160,7 @@ export class TestDataService {
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Listener) @named(Targets.Listener.ServerStartedListener) private serverStartedListener: ServerStartedListener,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -179,35 +180,19 @@ export class TestDataService {
                 this.log.debug('failed cleaning the db: ' + reason);
             });
 
-        /*
+
         if (seed) {
             this.log.debug('seeding default data after cleaning');
-            // seed the default Profile
-            const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
-                .catch( reason => {
-                    this.log.debug('failed seeding default profile: ' + reason);
-                    throw reason;
-                });
 
-            await this.defaultSettingService.saveDefaultSettings(defaultProfile);
-
-            // seed the default market
-            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarketForProfile(defaultProfile)
-                .catch( reason => {
-                    this.log.debug('failed seeding default market: ' + reason);
-                    throw reason;
-                });
-
-            // seed the default categories
-            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress)
-                .catch( reason => {
-                    this.log.debug('failed seeding default categories: ' + reason);
+            await this.serverStartedListener.bootstrap()
+                .catch(reason => {
+                    this.log.error('ERROR: marketplace bootstrap failed: ', reason);
                 });
 
         }
-        */
 
         this.log.info('cleanup & default seeds done.');
+
         return;
     }
 
@@ -545,7 +530,6 @@ export class TestDataService {
 
         // by default ignore these
         this.log.info('cleaning up the db, ignoring tables: ', this.ignoreTables);
-        this.log.debug('ignoreTables: ', this.ignoreTables);
 
         const tablesToClean = [
             'order_items',

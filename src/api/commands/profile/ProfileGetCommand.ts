@@ -45,25 +45,26 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('profileId|profileName', 'number|string');
+        if (data.params[0] && typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('id|name', 'number|string');
         }
 
         if (data.params.length === 0) {
             data.params[0] = 'DEFAULT';
         }
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [<profileId>|<profileName>] ';
+        return this.getName() + ' [id|name] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - [optional] Numeric - The ID of the Profile we want to \n'
+            + '    <id>              - [optional] Numeric - The ID of the Profile we want to \n'
             + '                                retrieve. \n'
-            + '    <profileName>            - [optional] String - The name of the Profile we want to \n'
+            + '    <name>            - [optional] String - The name of the Profile we want to \n'
             + '                                retrieve. ';
     }
 

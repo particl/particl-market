@@ -31,13 +31,14 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(seed: boolean = true): Promise<any> {
+    public async cleanDb(seed: boolean = true): Promise<boolean> {
 
         this.log.debug('cleanDb, this.node', this.node);
         const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, seed]);
         res.expectJson();
         res.expectStatusCode(200);
-        return { result: 'success' };
+
+        return res.getBody()['result'];
 
     }
 
@@ -81,12 +82,14 @@ export class BlackBoxTestUtil {
      * @returns {Promise<"resources".Profile>}
      */
     public async getDefaultProfile(generateShippingAddress: boolean = true): Promise<resources.Profile> {
-        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
+        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName]);
 
         res.expectJson();
         res.expectStatusCode(200);
 
-        const defaultProfile = res.getBody()['result'];
+        const defaultProfile: resources.Profile = res.getBody()['result'];
+
+        this.log.debug('defaultProfile', JSON.stringify(defaultProfile, null, 2));
 
         if (_.isEmpty(defaultProfile.ShippingAddresses
             || _.find(defaultProfile.ShippingAddresses, (address: resources.Address) => {
@@ -94,7 +97,7 @@ export class BlackBoxTestUtil {
         }) === undefined )) {
 
             if (generateShippingAddress) {
-                this.log.debug('Adding a missing ShippingAddress for the default Profile.');
+                // this.log.debug('Adding a missing ShippingAddress for the default Profile.');
 
                 // if default profile doesnt have a shipping address, add it
                 // TODO: generate a random address

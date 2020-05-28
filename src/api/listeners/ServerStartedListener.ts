@@ -31,7 +31,7 @@ import { ProfileService } from '../services/model/ProfileService';
 import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatusServiceStatus';
 import pForever from 'pm-forever';
 import delay from 'pm-delay';
-import {ExpiredProposalService} from '../services/observer/ExpiredProposalService';
+import { ExpiredProposalService } from '../services/observer/ExpiredProposalService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -141,7 +141,7 @@ export class ServerStartedListener implements interfaces.Listener {
      *    - create Market with new Identity (+wallet)
      *    - set the new Market as the default one
      */
-    private async bootstrap(): Promise<boolean> {
+    public async bootstrap(): Promise<boolean> {
         // all is now ready for bootstrapping the app
 
         // are we updating from previous installation (a market wallet already exists+no profile identity)

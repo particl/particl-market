@@ -59,14 +59,12 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[8];
         countryCode = ShippingCountries.convertAndValidate(countryCode);
-        this.log.debug('countryCode:', countryCode);
 
         // Validate ZIP code
         const zipCodeStr = data.params[9];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
             throw new ZipCodeNotFoundException(zipCodeStr);
         }
-        this.log.debug('zipCodeStr:', zipCodeStr);
 
         const newAddress = {
             profile_id: data.params[0],
@@ -81,8 +79,6 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
             zipCode: zipCodeStr,
             type: data.params[10] ? data.params[10] : AddressType.SHIPPING_OWN
         } as AddressCreateRequest;
-
-        this.log.debug('newAddress:', newAddress);
 
         return await this.addressService.create(newAddress);
     }
