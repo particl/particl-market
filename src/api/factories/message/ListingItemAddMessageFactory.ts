@@ -94,6 +94,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             hash: 'recalculateandvalidate'
         } as ListingItemAddMessage;
 
+        // this.log.debug('messageToHash:', JSON.stringify(message, null, 2));
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
         // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash

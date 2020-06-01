@@ -23,8 +23,9 @@ import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { SettingService } from '../../services/model/SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
+import { MessageException } from '../../exceptions/MessageException';
 
-export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
+export class MarketDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
     public log: LoggerType;
 
@@ -36,7 +37,7 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
-        super(Commands.MARKET_SETDEFAULT);
+        super(Commands.MARKET_DEFAULT);
         this.log = new Logger(__filename);
     }
 
@@ -52,7 +53,11 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
-        await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
+
+        if (market) {
+            // if market was given, we are setting...
+            await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
+        }
 
         return await this.defaultMarketService.getDefaultForProfile(profile.id);
     }
@@ -60,7 +65,9 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
     /**
      * data.params[]:
      *  [0]: profileId
-     *  [1]: marketId
+     *  [1]: marketId, optional
+     *
+     * Get the default Market for Profile, set the default Market if marketId is given.
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -69,8 +76,6 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
 
         if (data.params.length < 1) {
             throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('marketId');
         }
 
         if (data.params[0] && typeof data.params[0] !== 'number') {
@@ -86,18 +91,27 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
                 throw new ModelNotFoundException('Profile');
             });
 
-        // make sure Market with the id exists
-        data.params[1] = await this.marketService.findOne(data.params[1])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
+        if (data.params[1]) {
+            // make sure Market with the id exists
+            const market: resources.Market = await this.marketService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+
+            // Market should also belong to the given Profile
+            if (market.Profile.id !== data.params[0]) {
+                throw new MessageException('Given Market does not belong to the Profile.');
+            }
+
+            data.params[1] = market;
+        }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <marketId>';
+        return this.getName() + ' <profileId> [marketId]';
     }
 
     public help(): string {
@@ -107,7 +121,7 @@ export class MarketSetDefaultCommand extends BaseCommand implements RpcCommandIn
     }
 
     public description(): string {
-        return 'Set the default Market for Profile.';
+        return 'Get or set the default Market for Profile.';
     }
 
     public example(): string {

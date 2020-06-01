@@ -52,6 +52,7 @@ describe('ListingItemFlagCommand', () => {
             true,                       // generateListingItemObjects
             false,                      // generateObjectDatas
             null,                       // listingItemTemplateHash
+            // TODO: there is no profile.address anymore, use identity.adress
             profile.address,            // seller
             null                        // categoryId
         ]).toParamsArray();

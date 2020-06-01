@@ -9,7 +9,7 @@ import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 export interface ListingItemAddMessageCreateParams extends MessageCreateParamsInterface {
     listingItem: resources.ListingItem | resources.ListingItemTemplate;
     seller: resources.Identity;
-    cryptoAddress: CryptoAddress;
+    cryptoAddress: CryptoAddress;   // optional, cryptoAddress can be used to override the one set on the template
     signature: string;
 }
 

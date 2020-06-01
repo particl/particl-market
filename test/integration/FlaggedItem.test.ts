@@ -91,6 +91,7 @@ describe('FlaggedItem', () => {
             listingItem.hash,                    // listingItemHash,
             false,                                      // generatePastProposal,
             0,                                          // voteCount
+            // TODO: there is no profile.address anymore, use identity.adress
             profile.address                      // submitter
         ]).toParamsArray();
 

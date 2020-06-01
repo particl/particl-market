@@ -17,7 +17,8 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 
 describe('SmsgSearchCommand', () => {
 
@@ -48,12 +49,10 @@ describe('SmsgSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb(true);
 
-        // get seller and buyer profiles
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
 
-        // get seller and buyer markets
-        market = await testUtil.getDefaultMarket();
+        market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
         log.debug('market: ', JSON.stringify(market, null, 2));
 
@@ -70,7 +69,7 @@ describe('SmsgSearchCommand', () => {
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             profile.id,         // profileId
-            false,              // generateListingItem
+            true,               // generateListingItem
             market.id           // marketId
         ]).toParamsArray();
 
@@ -84,7 +83,11 @@ describe('SmsgSearchCommand', () => {
         expect(listingItemTemplate.id).toBeDefined();
 
         const messageParams = {
-            listingItem: listingItemTemplate
+            listingItem: listingItemTemplate,
+            seller: {
+                address: market.Identity.address
+            } as resources.Identity,
+            signature: 'fake-signature'
         } as ListingItemAddMessageCreateParams;
 
         // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
@@ -98,7 +101,7 @@ describe('SmsgSearchCommand', () => {
             Date.now() - (24 * 60 * 60 * 1000),     // sent
             Date.now() + (5 * 24 * 60 * 60 * 1000), // expiration
             DAYS_RETENTION,                         // daysretention
-            profile.address,                        // from
+            market.Identity.address,                // from
             market.address,                         // to
             messageParams                           // messageParams
             // text
@@ -110,6 +113,8 @@ describe('SmsgSearchCommand', () => {
             true,                       // return model
             generateSmsgMessageParams               // what kind of data to generate
         ) as resources.SmsgMessage[];
+
+        log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
 
     });
 

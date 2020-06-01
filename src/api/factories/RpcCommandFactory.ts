@@ -71,7 +71,7 @@ import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketRemoveCommand } from '../commands/market/MarketRemoveCommand';
-import { MarketSetDefaultCommand } from '../commands/market/MarketSetDefaultCommand';
+import { MarketDefaultCommand } from '../commands/market/MarketDefaultCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { MarketFlagCommand } from '../commands/market/MarketFlagCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
@@ -219,7 +219,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketFlagCommand) private marketFlagCommand: MarketFlagCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRemoveCommand) private marketRemoveCommand: MarketRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.market.MarketSetDefaultCommand) private marketSetDefaultCommand: MarketSetDefaultCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketDefaultCommand) private marketDefaultCommand: MarketDefaultCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
@@ -386,7 +386,7 @@ export class RpcCommandFactory {
         this.commands.push(marketFlagCommand);
         this.commands.push(marketListCommand);
         this.commands.push(marketRemoveCommand);
-        this.commands.push(marketSetDefaultCommand);
+        this.commands.push(marketDefaultCommand);
         this.commands.push(marketRootCommand);
 
         this.commands.push(messagingInformationUpdateCommand);

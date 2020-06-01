@@ -158,13 +158,11 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultMarket(): Promise<resources.Market> {
-        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
+    public async getDefaultMarket(profileId: number): Promise<resources.Market> {
+        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_DEFAULT.commandName, profileId]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: resources.Market[] = res.getBody()['result'];
-        // get the commandType for the method name
-        return _.find(result, o => o.name === 'DEFAULT');
+        return res.getBody()['result'];
     }
 
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {

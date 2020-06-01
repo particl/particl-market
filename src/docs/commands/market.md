@@ -191,7 +191,7 @@ market default <profileId> <marketId>
 since: 0.1.0
 </aside>
 
-[MarketSetDefaultCommand.ts](https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketSetDefaultCommand.ts)
+[MarketDefaultCommand.ts](https://github.com/particl/particl-market/tree/develop/src/api/commands/market/MarketDefaultCommand.ts)
 
 Sets the given Market as the default marketplace for given Profile.
 

@@ -299,7 +299,7 @@ export const Targets = {
             MarketListCommand: 'MarketListCommand',
             MarketRemoveCommand: 'MarketRemoveCommand',
             MarketRootCommand: 'MarketRootCommand',
-            MarketSetDefaultCommand: 'MarketSetDefaultCommand'
+            MarketDefaultCommand: 'MarketDefaultCommand'
         },
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',

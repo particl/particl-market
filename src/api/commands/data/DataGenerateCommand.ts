@@ -42,8 +42,8 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        this.log.info('data.params[0]: ', data.params[0]);
-        this.log.info('data.params[1]: ', data.params[1]);
+        // this.log.info('data.params[0]: ', data.params[0]);
+        // this.log.info('data.params[1]: ', data.params[1]);
         const generateParams = data.params.length > 3 ? _.slice(data.params, 3) : [];
 
         return await this.testDataService.generate({
@@ -55,7 +55,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        this.log.info('data.params[]: ', JSON.stringify(data.params, null, 2));
+        // this.log.info('data.params[]: ', JSON.stringify(data.params, null, 2));
 
         if (data.params.length < 1) {
             throw new MissingParamException('model');

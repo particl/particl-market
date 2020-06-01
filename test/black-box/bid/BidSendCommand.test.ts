@@ -238,6 +238,7 @@ describe('BidSendCommand', () => {
             listingItem.hash,
             MPAction.MPA_BID,
             '*',
+            // TODO: there is no profile.address anymore, use identity.adress
             profile.address
         ];
 
@@ -249,6 +250,7 @@ describe('BidSendCommand', () => {
         log.debug('bid searchBy result:', JSON.stringify(result, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItem.hash);
         expect(result[0].type).toBe(MPAction.MPA_BID);
+        // TODO: there is no profile.address anymore, use identity.adress
         expect(result[0].bidder).toBe(profile.address);
     });
 */

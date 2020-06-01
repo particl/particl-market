@@ -9,7 +9,7 @@ yarn --version
 ls -al /app
 #yarn install --check-files
 yarn install --force
-# yarn remove omp-lib
-# yarn add omp-lib
+#yarn remove omp-lib
+#yarn add omp-lib
 bin/create-build-version.sh
 yarn serve

@@ -646,6 +646,8 @@ export class TestDataService {
                     generatedAt: listingItemTemplateCreateRequest.generatedAt
                 } as ListingItemCreateRequest;
 
+                // this.log.debug('listingItemCreateRequestToHash:', JSON.stringify(listingItemCreateRequest, null, 2));
+
                 listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
                 this.log.debug('listingItem.hash:', listingItemCreateRequest.hash);
 
@@ -1119,6 +1121,7 @@ export class TestDataService {
         let sender;
         if (!generateParams.sender) {
             const profile = defaultProfile.toJSON();
+            // TODO: there is no profile.address anymore, use identity.adress
             sender = profile.address;
         } else {
             sender = generateParams.sender;
@@ -1568,23 +1571,8 @@ export class TestDataService {
 
     private async generateSmsgMessageData(generateParams: GenerateSmsgMessageParams): Promise<SmsgMessageCreateRequest> {
 
-        const defaultProfile = await this.profileService.getDefault();
-
-        let from: string;
-        if (!generateParams.from) {
-            const profile = defaultProfile.toJSON();
-            from = profile.address;
-        } else {
-            from = generateParams.from;
-        }
-
-        let to;
-        if (!generateParams.to) {
-            const market: resources.Market = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
-            to = market.receiveAddress;
-        } else {
-            to = generateParams.to;
-        }
+        const from = generateParams.from;
+        const to = generateParams.to;
 
         const target = Faker.finance.bitcoinAddress();
         const msgid = Faker.random.uuid();

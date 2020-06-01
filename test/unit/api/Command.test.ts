@@ -46,7 +46,7 @@ describe('Command', () => {
             Commands.MARKET_ADD,
             Commands.MARKET_LIST,
             Commands.MARKET_REMOVE,
-            Commands.MARKET_SETDEFAULT
+            Commands.MARKET_DEFAULT
         ].sort());
     });
 
