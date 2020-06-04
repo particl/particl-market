@@ -92,6 +92,7 @@ import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
 import { ProposalResultCommand } from '../commands/proposal/ProposalResultCommand';
 import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
+import { ProfileDefaultCommand } from '../commands/profile/ProfileDefaultCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
@@ -244,6 +245,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.profile.ProfileAddCommand) private profileAddCommand: ProfileAddCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileDefaultCommand) private profileDefaultCommand: ProfileDefaultCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileRemoveCommand) private profileRemoveCommand: ProfileRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,

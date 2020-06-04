@@ -128,11 +128,12 @@ export class CommandEnumType extends Enum<Command> {
     public PROFILE_ADD: Command         = new Command('profileadd', 'add', false);
     public PROFILE_UPDATE: Command      = new Command('profileupdate', 'update', false);
     public PROFILE_REMOVE: Command      = new Command('profileremove', 'remove', false);
+    public PROFILE_DEFAULT: Command     = new Command('profiledefault', 'default', false);
     // public PROFILE_ADDRESS: Command     = new Command('profileaddress', 'address', true);      // link to root
     // public PROFILE_FAVORITE: Command    = new Command('profilefavorite', 'favorite', true);    // link to root
     public PROFILE_ROOT: Command        = new Command('profile', 'profile', true,
         [this.PROFILE_LIST, this.PROFILE_GET, this.PROFILE_ADD, this.PROFILE_UPDATE, this.PROFILE_REMOVE,
-            this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
+            this.PROFILE_DEFAULT, this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
 
     public PROPOSAL_GET: Command         = new Command('proposalget', 'get', false);
     public PROPOSAL_POST: Command        = new Command('proposalpost', 'post', false);

@@ -325,6 +325,7 @@ export const Targets = {
         },
         profile: {
             ProfileAddCommand: 'ProfileAddCommand',
+            ProfileDefaultCommand: 'ProfileDefaultCommand',
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileListCommand: 'ProfileListCommand',
             ProfileRemoveCommand: 'ProfileRemoveCommand',

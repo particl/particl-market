@@ -17,8 +17,6 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
-import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 
 describe('SmsgSearchCommand', () => {
 
