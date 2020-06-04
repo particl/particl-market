@@ -413,6 +413,7 @@ export class RpcCommandFactory {
         this.commands.push(addressRemoveCommand);
 
         this.commands.push(profileAddCommand);
+        this.commands.push(profileDefaultCommand);
         this.commands.push(profileRemoveCommand);
         this.commands.push(profileGetCommand);
         this.commands.push(profileUpdateCommand);

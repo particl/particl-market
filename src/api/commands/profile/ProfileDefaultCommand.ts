@@ -16,6 +16,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { DefaultSettingService } from '../../services/DefaultSettingService';
+import { DefaultProfileService } from '../../services/DefaultProfileService';
 
 export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -26,7 +27,7 @@ export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInte
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) private defaultSettingService: DefaultSettingService
     ) {
-        super(Commands.PROFILE_ADD);
+        super(Commands.PROFILE_DEFAULT);
         this.log = new Logger(__filename);
     }
 
@@ -40,13 +41,14 @@ export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInte
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
 
+        this.log.debug('data.params: ', data.params);
         if (data.params[0]) {
             // set
             const setting: resources.Setting = await this.defaultSettingService.insertOrUpdateDefaultProfileSetting(data.params[0]);
             return await this.profileService.findOne(parseInt(setting.value, 10));
         } else {
             // get
-            return await this.profileService.findOne(data.params[0]);
+            return await this.profileService.getDefault();
         }
     }
 

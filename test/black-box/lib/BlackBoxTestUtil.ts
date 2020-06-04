@@ -82,7 +82,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<"resources".Profile>}
      */
     public async getDefaultProfile(generateShippingAddress: boolean = true): Promise<resources.Profile> {
-        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName]);
+        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_DEFAULT.commandName]);
 
         res.expectJson();
         res.expectStatusCode(200);
