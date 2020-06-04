@@ -1561,7 +1561,8 @@ export class TestDataService {
         const items: resources.SmsgMessage[] = [];
 
         for (let i = amount; i > 0; i--) {
-            const smsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
+            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
+            this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
             const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
             items.push(smsgMessage);
         }
@@ -1628,7 +1629,7 @@ export class TestDataService {
             target,
             msgid,
             version: '0201',
-            payloadsize: 500
+            payloadsize: Faker.random.number(1000)
         } as SmsgMessageCreateRequest;
 
         return smsgMessageCreateRequest;

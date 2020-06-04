@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { SearchOrderField_REMOVE_THIS } from '../../../src/api/enums/SearchOrderField';
@@ -36,7 +36,9 @@ describe('ListingItemTemplateSearchCommand', () => {
         await testUtil.cleanDb();
 
         defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        expect(defaultProfile.id).toBeDefined();
+        defaultMarket = await testUtil.getDefaultMarket(defaultProfile.id);
+        expect(defaultMarket.id).toBeDefined();
 
         // create templates without listingitems
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([

@@ -84,6 +84,8 @@ export class Market extends Bookshelf.Model<Market> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
+    // todo: add description
+    // todo: add image
     public get ReceiveKey(): string { return this.get('receiveKey'); }
     public set ReceiveKey(value: string) { this.set('receiveKey', value); }
 

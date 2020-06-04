@@ -54,7 +54,7 @@ describe('SmsgSearchCommand', () => {
 
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
-        log.debug('market: ', JSON.stringify(market, null, 2));
+        // log.debug('market: ', JSON.stringify(market, null, 2));
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -101,8 +101,8 @@ describe('SmsgSearchCommand', () => {
             Date.now() - (24 * 60 * 60 * 1000),     // sent
             Date.now() + (5 * 24 * 60 * 60 * 1000), // expiration
             DAYS_RETENTION,                         // daysretention
-            market.Identity.address,                // from
-            market.address,                         // to
+            market.publishAddress,                  // from
+            market.receiveAddress,                  // to
             messageParams                           // messageParams
             // text
         ]).toParamsArray();
@@ -130,7 +130,6 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
-/*
     test('Should fail to search SmsgMessages because invalid type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -329,6 +328,6 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(1);
 
     });
-*/
+
 
 });
