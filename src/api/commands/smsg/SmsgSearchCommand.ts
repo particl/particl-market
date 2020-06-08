@@ -94,7 +94,7 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         // types, ActionMessageTypes[]
         if (data.params.length >= 5) {

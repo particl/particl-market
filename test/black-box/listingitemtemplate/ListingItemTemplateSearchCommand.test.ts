@@ -97,8 +97,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get all ListingItemTemplates for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             10,
             SearchOrder.ASC,
@@ -113,8 +112,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get only first ListingItemTemplate using pagination (page 0) for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             1,
             SearchOrder.ASC,
@@ -133,8 +131,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get second ListingItemTemplate using pagination (page 1) for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             1,
             1,
             SearchOrder.ASC,
@@ -153,8 +150,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should return empty ListingItemTemplates array if invalid pagination', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             2,
             2,
             SearchOrder.ASC,
@@ -169,14 +165,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should searchBy ListingItemTemplates by ItemCategory key', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
             SearchOrder.ASC,
             ListingItemTemplateSearchOrderField.UPDATED_AT,
             defaultProfile.id,
-            undefined,
+            '*',
             [listingItemTemplate1.ItemInformation.ItemCategory.key]
         ]);
         res.expectJson();
@@ -188,14 +183,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should searchBy ListingItemTemplates by ItemCategory id', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
             SearchOrder.ASC,
             ListingItemTemplateSearchOrderField.UPDATED_AT,
             defaultProfile.id,
-            undefined,
+            '*',
             [listingItemTemplate1.ItemInformation.ItemCategory.id]
         ]);
         res.expectJson();
@@ -207,8 +201,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should searchBy ListingItemTemplates by ItemInformation title', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
             SearchOrder.ASC,
@@ -223,10 +216,9 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
     });
-/*
+
     test('Should fail because we searchBy without order', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2
         ]);
@@ -236,8 +228,7 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should fail because we searchBy without orderField', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
             SearchOrder.ASC
@@ -248,12 +239,11 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should return ListingItemTemplates NOT having published ListingItems', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             10,
             SearchOrder.ASC,
-            SearchOrderField_REMOVE_THIS.DATE,
+            ListingItemTemplateSearchOrderField.UPDATED_AT,
             defaultProfile.id,
             undefined,
             undefined,
@@ -269,12 +259,11 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should return ListingItemTemplates having published ListingItems', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [
-            templateSearchCommand,
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             10,
             SearchOrder.ASC,
-            SearchOrderField_REMOVE_THIS.DATE,
+            ListingItemTemplateSearchOrderField.UPDATED_AT,
             defaultProfile.id,
             undefined,
             undefined,
@@ -288,6 +277,6 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(2);
         expect(result[0].ListingItems.length).toBe(1);
     });
-*/
+
 
 });

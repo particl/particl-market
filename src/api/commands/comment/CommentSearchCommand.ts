@@ -96,7 +96,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         // type && receiver is not optional
         if (data.params.length < 5) {

@@ -93,7 +93,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const listingItemId = data.params[4];       // optional
         const status = data.params[5];              // optional

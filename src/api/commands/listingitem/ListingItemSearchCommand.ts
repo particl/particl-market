@@ -106,7 +106,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
      * @returns {Promise<ListingItemTemplate>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         if (data.params.length < 5) {
             throw new MissingParamException('market');

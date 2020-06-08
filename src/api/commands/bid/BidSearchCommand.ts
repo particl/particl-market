@@ -108,7 +108,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const listingItemId = data.params[4];       // optional
         const type = data.params[5];                // optional

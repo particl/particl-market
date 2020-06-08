@@ -83,7 +83,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         if (data.params.length < 5) {
             throw new MissingParamException('profileId');
@@ -134,10 +134,9 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
             + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
             + '    <orderField>             - ENUM{ListingItemTemplateSearchOrderField} - The field to use to sort results.\n'
-            + '    <profileId>              - Numeric - The ID of the profile linked to the listing item \n'
-            + '                                templates we want to searchBy for. \n'
+            + '    <profileId>              - Numeric - The ID of the profile linked to the ListingItemTemplates we want to searchBy for. \n'
             + '    <searchString>           - [optional] String - A string that is used to searchBy for \n'
-            + '                                listing item templats via title. \n'
+            + '                                ListingItemTemplates via title. \n'
             + '    <categories>             - [optional] Array - ItemCategory Ids or keys. \n'
             + '    <hasItems>               - [optional] Boolean - if true then filter ListingItemTemplates \n'
             + '                                by having or not having ListingItems. \n';
