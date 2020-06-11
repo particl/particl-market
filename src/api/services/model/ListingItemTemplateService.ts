@@ -52,6 +52,7 @@ import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCrea
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import {MessagingInformation} from '../../models/MessagingInformation';
+import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
 
 export class ListingItemTemplateService {
 
@@ -423,46 +424,6 @@ export class ListingItemTemplateService {
         this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
 
         return await this.findOne(listingItemTemplate.id);
-    }
-
-    /**
-     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
-     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
-     *
-     * @param listingItemTemplate
-     */
-    // TODO: move to actionservice?
-    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
-
-        // convert the template to message
-        const action = await this.listingItemAddMessageFactory.get({
-            listingItem: listingItemTemplate
-        } as ListingItemAddMessageCreateParams);
-
-        const marketplaceMessage = {
-            version: ompVersion(),
-            action
-        } as MarketplaceMessage;
-
-        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-
-        // let imageDataSize = 0;
-        // if (action.item.information.images) {
-        //     for (const image of action.item.information.images) {
-        //         imageDataSize = imageDataSize + image.data[0].data.length;
-        //         this.log.debug('imageDataSize: ', image.data[0].data.length);
-        //     }
-        // }
-        const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize; // - imageDataSize;
-        const fits = spaceLeft > 0;
-
-        return {
-            messageData: messageDataSize,
-            // imageData: imageDataSize,
-            spaceLeft,
-            fits
-        } as MessageSize;
     }
 
     /**

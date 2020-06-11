@@ -10,8 +10,8 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ItemCategoryUpdateRequest extends RequestBody implements ModelRequestInterface {
 
     public parent_item_category_id: number;
-
     public id: number;
+
     @IsNotEmpty()
     public key: string;
     @IsNotEmpty()

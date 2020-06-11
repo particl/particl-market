@@ -117,7 +117,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             category,
             location,
             shippingDestinations,
-            images
+            images: images.length > 0 ? images : undefined
         } as ItemInfo;
     }
 

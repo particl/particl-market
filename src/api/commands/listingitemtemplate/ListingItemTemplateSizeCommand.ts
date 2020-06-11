@@ -18,6 +18,10 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MarketService } from '../../services/model/MarketService';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -25,7 +29,9 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService
     ) {
         super(Commands.TEMPLATE_SIZE);
         this.log = new Logger(__filename);
@@ -42,6 +48,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<MessageSize> {
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const market: resources.Market = data.params[1];
 
         // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
         // add some data to get a more realistic result
@@ -58,8 +65,8 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
                 listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
             }
         }
+        return await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
 
-        return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
     }
 
     /**
@@ -82,8 +89,35 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         }
 
         // make sure required data exists and fetch it
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
 
+        // todo: pretty much the same validations as in template post
+        // ListingItemTemplate should be a market template
+        if (_.isEmpty(listingItemTemplate.market)) {
+            throw new MessageException('ListingItemTemplate has no market.');
+        }
+
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
+            throw new ModelNotFoundException('ItemPrice');
+        } else if (_.isEmpty(listingItemTemplate.ItemInformation.ItemCategory)) {
+            // we cannot post without a category
+            throw new ModelNotFoundException('ItemCategory');
+        }
+
+        // make sure the Market exists for the Profile
+        const profileId = listingItemTemplate.Profile.id;
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, listingItemTemplate.market)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
+
+        this.log.debug('market:', JSON.stringify(market, null, 2));
+
+        data.params[0] = listingItemTemplate;
+        data.params[1] = market;
         return data;
     }
 

@@ -38,6 +38,8 @@ import { MarketplaceNotification } from '../../messages/MarketplaceNotification'
 import { NotificationType } from '../../enums/NotificationType';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
+import { MessageSize } from '../../responses/MessageSize';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 
 export interface SellerMessage {
     hash: string;               // item hash being added
@@ -75,15 +77,68 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
+     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
+     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
+     *
+     * @param listingItemTemplate
+     * @param seller
+     * @param market
+     */
+    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
+
+        const marketplaceMessage = await this.createMarketplaceMessage({
+            sendParams: {
+                wallet: market.Identity.wallet
+            } as SmsgSendParams,
+            listingItem: listingItemTemplate,
+            market,
+            seller: market.Identity
+        } as ListingItemAddRequest);
+/*
+        // convert the template to message
+        const action: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            listingItem: listingItemTemplate    // can be resources.ListingItem or resources.ListingItemTemplate
+            seller: actionRequest.seller,
+            // cryptoAddress, we could override the payment address here
+            signature
+        } as ListingItemAddMessageCreateParams);
+
+        const marketplaceMessage = {
+            version: ompVersion(),
+            action
+        } as MarketplaceMessage;
+*/
+        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
+
+        // let imageDataSize = 0;
+        // if (action.item.information.images) {
+        //     for (const image of action.item.information.images) {
+        //         imageDataSize = imageDataSize + image.data[0].data.length;
+        //         this.log.debug('imageDataSize: ', image.data[0].data.length);
+        //     }
+        // }
+        const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
+        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize; // - imageDataSize;
+        const fits = spaceLeft > 0;
+
+        return {
+            messageData: messageDataSize,
+            imageData: 0, // imageDataSize,
+            spaceLeft,
+            fits
+        } as MessageSize;
+    }
+
+    /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
+        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
         const signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.listingItem.hash);
-        // this.log.debug('createMessage, signature: ', signature);
+        this.log.debug('createMarketplaceMessage(), signature: ', signature);
 
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
@@ -106,6 +161,7 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        this.log.debug('beforePost()');
         return marketplaceMessage;
     }
 
@@ -119,6 +175,7 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async afterPost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
+        this.log.debug('afterPost()');
         return smsgSendResponse;
     }
 
@@ -136,6 +193,8 @@ export class ListingItemAddActionService extends BaseActionService {
                                 actionDirection: ActionDirection,
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
+
+        this.log.debug('processMessage()');
 
         const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 

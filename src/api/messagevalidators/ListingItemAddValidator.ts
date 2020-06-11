@@ -43,16 +43,13 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
     }
 
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
+
         if (message.action.type !== MPAction.MPA_LISTING_ADD) {
+            this.log.error('Not MPAction.MPA_LISTING_ADD');
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LISTING_ADD]);
         }
 
         const actionMessage = message.action as ListingItemAddMessage;
-
-        if (_.isEmpty(actionMessage.item.seller)) {
-            this.log.error('Missing seller data, likely a message from an old client.');
-            return false;
-        }
 
         // verify that the ListingItemAddMessage was actually sent by the seller
         const verified = await this.verifySellerMessage(actionMessage);
@@ -98,8 +95,19 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             }
         }
 
+        this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
+
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
-        return FV_MPA_LISTING.validate(message as MPM);
+
+        const ompValidated = FV_MPA_LISTING.validate(message as MPM);
+        if (!ompValidated) {
+            this.log.error('FV_MPA_LISTING.validate failed.');
+        }
+
+        this.log.debug('validateMessage(), ompValidated: ', ompValidated);
+
+        return ompValidated;
+
     }
 
     public async validateSequence(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
@@ -112,11 +120,41 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
      * @param listingItemAddMessage
      */
     private async verifySellerMessage(listingItemAddMessage: ListingItemAddMessage): Promise<boolean> {
+
+        if (_.isEmpty(listingItemAddMessage.item.seller)) {
+            this.log.error('Missing seller data, likely a message from an old client.');
+            return false;
+        }
+
+        if (_.isEmpty(listingItemAddMessage.item.seller.address)) {
+            this.log.error('Missing seller address.');
+            return false;
+        }
+
+        if (_.isEmpty(listingItemAddMessage.item.seller.signature)) {
+            this.log.error('Missing seller signature.');
+            return false;
+        }
+
+        if (_.isEmpty(listingItemAddMessage.hash)) {
+            this.log.error('Missing hash.');
+            return false;
+        }
+
         const message = {
             address: listingItemAddMessage.item.seller.address,
             hash: listingItemAddMessage.hash
         } as SellerMessage;
-        return await this.coreRpcService.verifyMessage(listingItemAddMessage.item.seller.address, listingItemAddMessage.item.seller.signature, message);
+
+        this.log.debug('verifySellerMessage(), message: ', JSON.stringify(message, null, 2));
+        this.log.debug('verifySellerMessage(), item.seller.address: ', listingItemAddMessage.item.seller.address);
+        this.log.debug('verifySellerMessage(), item.seller.signature: ', listingItemAddMessage.item.seller.signature);
+
+        const verified = await this.coreRpcService.verifyMessage(listingItemAddMessage.item.seller.address,
+                                                                 listingItemAddMessage.item.seller.signature, message);
+        this.log.debug('verifySellerMessage(), verified: ', verified);
+
+        return verified;
     }
 
 }

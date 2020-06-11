@@ -598,8 +598,17 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest: ListingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
+            // base template
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
+
+            // create market template
+            if (generateParams.soldOnMarketId) {
+                const soldOnMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
+                listingItemTemplateCreateRequest.market = soldOnMarket.receiveAddress;
+                listingItemTemplateCreateRequest.parent_listing_item_template_id = listingItemTemplate.id;
+                listingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest).then(value => value.toJSON());
+            }
 
             // this.log.debug('created listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
             // this.log.debug('created listingItemTemplate, hash: ', listingItemTemplate.hash);

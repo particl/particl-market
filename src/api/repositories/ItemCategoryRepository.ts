@@ -27,37 +27,67 @@ export class ItemCategoryRepository {
         return list as Bookshelf.Collection<ItemCategory>;
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchById(id, withRelated);
+    public async findOne(id: number, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchById(id, withRelated, parentRelations);
     }
 
-    public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchByKeyAndMarket(key, market, withRelated);
+    /**
+     *
+     * @param key
+     * @param market
+     * @param withRelated, return results with relations
+     * @param parentRelations, true (default): return results with multiple levels of parent relations,
+     *                         false: return with multiple child relations, basicly the full category tree
+     */
+    public async findOneByKeyAndMarket(key: string, market: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchByKeyAndMarket(key, market, withRelated, parentRelations);
     }
 
-    public async findOneDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchDefaultByKey(key, withRelated);
+    /**
+     *
+     * @param key
+     * @param withRelated, return results with relations
+     * @param parentRelations, true (default): return results with multiple levels of parent relations,
+     *                         false: return with multiple child relations, basicly the full category tree
+     */
+    public async findOneDefaultByKey(key: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchDefaultByKey(key, withRelated, parentRelations);
     }
 
-    public async findRoot(market?: string): Promise<ItemCategory> {
+    /**
+     *
+     * @param market
+     * @param withRelated, return results with relations
+     * @param parentRelations, true (default): return results with multiple levels of parent relations,
+     *                         false: return with multiple child relations, basicly the full category tree
+     */
+    public async findRoot(market?: string, withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
         if (market) {
-            return await this.ItemCategoryModel.fetchRoot(market);
+            return await this.ItemCategoryModel.fetchRoot(market, withRelated, parentRelations);
         } else {
-            return await this.ItemCategoryModel.fetchDefaultRoot();
+            return await this.ItemCategoryModel.fetchDefaultRoot(withRelated, parentRelations);
         }
     }
 
-    public async findDefaultRoot(): Promise<ItemCategory> {
-        return await this.ItemCategoryModel.fetchDefaultRoot();
+    /**
+     *
+     * @param withRelated, return results with relations
+     * @param parentRelations, true (default): return results with multiple levels of parent relations,
+     *                         false: return with multiple child relations, basicly the full category tree
+     */
+    public async findDefaultRoot(withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
+        return await this.ItemCategoryModel.fetchDefaultRoot(withRelated, parentRelations);
     }
 
     /**
      *
      * @param options
-     * @param withRelated
+     * @param withRelated, return results with relations
+     * @param parentRelations, true (default): return results with multiple levels of parent relations,
+     *                         false: return with multiple child relations, basicly the full category tree
      */
-    public async search(options: ItemCategorySearchParams, withRelated: boolean): Promise<Bookshelf.Collection<ItemCategory>> {
-        return this.ItemCategoryModel.searchBy(options, withRelated);
+    public async search(options: ItemCategorySearchParams, withRelated: boolean, parentRelations: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
+        return this.ItemCategoryModel.searchBy(options, withRelated, parentRelations);
     }
 
     public async create(data: any): Promise<ItemCategory> {

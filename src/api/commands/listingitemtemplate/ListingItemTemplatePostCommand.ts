@@ -64,8 +64,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
-     *  [2]: market: resources.Market
-     *  [3]: estimateFee
+     *  [2]: estimateFee
+     *  [3]: market: resources.Market
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -75,10 +75,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-        const market: resources.Market = data.params[2];
-        const estimateFee: boolean = data.params[3];
+        const estimateFee: boolean = data.params[2];
+        const market: resources.Market = data.params[3];
 
-        this.log.debug('estimateFee:', estimateFee);
+        this.log.debug('execute(), estimateFee:', estimateFee);
 
         // type === MARKETPLACE -> receive + publish keys are the same / private key in wif format
         // type === STOREFRONT -> receive key is private key, publish key is public key / DER hex encoded string
@@ -103,13 +103,20 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
-            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
+            sendParams: {
+                wallet: market.Identity.wallet,
+                fromAddress,
+                toAddress,
+                paidMessage: true,
+                daysRetention,
+                estimateFee
+            } as SmsgSendParams,
             listingItem: listingItemTemplate,
             market, // TODO: remove this? it doesn't seem to be used
             seller: market.Identity
         } as ListingItemAddRequest;
 
-        this.log.debug('postRequest.sendParams:', JSON.stringify(postRequest.sendParams, null, 2));
+        this.log.debug('execute(), posting...');
 
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
@@ -125,21 +132,17 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * data.params[]:
      *  [0]: listingItemTemplateId
      *  [1]: daysRetention
-     *  [2]: marketId
-     *  [3]: estimateFee (optional, default: false)
+     *  [2]: estimateFee (optional, default: false)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('daysRetention');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('marketId');
         }
 
         // make sure the params are of correct type
@@ -147,21 +150,21 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'number') {
             throw new InvalidParamException('daysRetention', 'number');
-        } else if (typeof data.params[2] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
         }
 
         if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
-        if (data.params[3] !== undefined) {
-            if (typeof data.params[3] !== 'boolean') {
+        if (data.params[2] !== undefined) {
+            if (typeof data.params[2] !== 'boolean') {
                 throw new InvalidParamException('estimateFee', 'boolean');
             }
         } else {
-            data.params[3] = false;
+            data.params[2] = false;
         }
+
+        // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         // make sure required data exists and fetch it
         let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
@@ -169,6 +172,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
+
+        // ListingItemTemplate should be a market template
+        if (_.isEmpty(listingItemTemplate.market)) {
+            throw new MessageException('ListingItemTemplate has no market.');
+        }
 
         // make sure the ListingItemTemplate has a paymentAddress and generate and update it, if it doesn't
         // paymentAddress is part of the hash, so it needs to be created before the hash (unless it already exists)
@@ -182,11 +190,15 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             throw new ModelNotFoundException('ItemCategory');
         }
 
-        const market: resources.Market = await this.marketService.findOne(data.params[2])
+        // make sure the Market exists for the Profile
+        const profileId = listingItemTemplate.Profile.id;
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, listingItemTemplate.market)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
             });
+
+        // this.log.debug('market:', JSON.stringify(market, null, 2));
 
         // update the paymentAddress in case it's not generated yet
         if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
@@ -194,27 +206,29 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             listingItemTemplate = await this.updatePaymentAddress(market.Identity, listingItemTemplate);
         }
 
+        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+
         // check size limit
-        const templateMessageDataSize = await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
+        const templateMessageDataSize = await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
         if (!templateMessageDataSize.fits) {
+            this.log.debug('templateMessageDataSize:', JSON.stringify(templateMessageDataSize, null, 2));
             throw new MessageException('ListingItemTemplate information exceeds message size limitations');
         }
 
         data.params[0] = listingItemTemplate;
-        data.params[2] = market;
+        data.params[3] = market;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> [daysRetention] [marketId] ';
+        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - number - The ID of the listing item template that we want to post. \n'
             + '    <daysRetention>               - number - Days the listing will be retained by network.\n'
-            + '    <marketId>                    - number - Market ID. '
             + '    <estimateFee>                 - [optional] boolean, Just estimate the Fee, dont post the Proposal. \n';
     }
 
@@ -223,7 +237,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     public example(): string {
-        return 'template ' + this.getName() + ' 1 1 false';
+        return 'template ' + this.getName() + ' 100 7 false';
     }
 
     private async generateCryptoAddressForEscrowType(identity: resources.Identity, type: EscrowType): Promise<CryptoAddress> {
@@ -270,8 +284,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                         await this.itemPriceService.updatePaymentAddress(listingItemTemplate.PaymentInformation.ItemPrice.id, cryptocurrencyAddress.id);
 
                         // finally, fetch updated ListingItemTemplate
-                        return await this.listingItemTemplateService.findOne(listingItemTemplate.id)
-                            .then(updatedTemplate => updatedTemplate.toJSON()); // throws if not found
+                        return await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(updatedTemplate => updatedTemplate.toJSON());
                     });
             });
     }

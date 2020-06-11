@@ -25,23 +25,23 @@ export class ItemCategoryFactory {
     /**
      *
      * @param fullCategoryPath
-     * @param rootCategory
+     * @param parentCategory
      * @returns ItemCategoryCreateRequest
      */
-    public async getCreateRequest(fullCategoryPath: string[], rootCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
-        const parentCategoryPath = [...fullCategoryPath];
-        parentCategoryPath.pop(); // remove last
+    public async getCreateRequest(fullCategoryPath: string[], parentCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
 
-        const parentCategory: resources.ItemCategory = await this.findChildCategoryByPath(parentCategoryPath, rootCategory);
+        // this.log.debug('getCreateRequest(), fullCategoryPath: ', fullCategoryPath);
+        // this.log.debug('getCreateRequest(), _.last(fullCategoryPath): ', _.last(fullCategoryPath));
 
         const createRequest = {
             parent_item_category_id: parentCategory.id,
-            market: rootCategory.market,
+            market: parentCategory.market,
             key: hash(fullCategoryPath),
             name: _.last(fullCategoryPath),
             description: _.join(fullCategoryPath, ' / ')
         } as ItemCategoryCreateRequest;
 
+        // this.log.debug('getCreateRequest(), createRequest: ', JSON.stringify(createRequest, null, 2));
         return createRequest;
     }
 
@@ -80,25 +80,6 @@ export class ItemCategoryFactory {
         }
     }
 
-    public async findChildCategoryByPath(path: string[], rootCategory: resources.ItemCategory): Promise<resources.ItemCategory> {
-
-        let parentCategory: resources.ItemCategory = JSON.parse(JSON.stringify(rootCategory));
-
-        for (const categoryName of path) { // [root, parentCategoryPath, newOne]
-            const found = _.find(parentCategory.ChildItemCategories, (childCategory) => {
-                return childCategory.name === categoryName;
-            });
-
-            if (!found) {
-                throw new NotFoundException(categoryName);
-            }
-            parentCategory = found;
-
-        }
-
-        return parentCategory;
-    }
-
     /**
      * Converts a category to an array of category names
      * ['rootcatkey', 'subcatkey', ..., 'catkey']
@@ -131,6 +112,4 @@ export class ItemCategoryFactory {
         }
         return categoryArray;
     }
-
-
 }

@@ -19,57 +19,69 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         'ChildItemCategories'
     ];
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemCategory> {
+    public static CHILD_RELATIONS = [
+        'ParentItemCategory',
+        'ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories.ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories.ChildItemCategories.ChildItemCategories'
+    ];
+
+    public static async fetchById(value: number, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
         if (withRelated) {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch({
-                withRelated: this.RELATIONS
+                withRelated: parentRelations ? this.RELATIONS : this.CHILD_RELATIONS
             });
         } else {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch();
         }
     }
 
-    public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true): Promise<ItemCategory> {
+    public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
         const collection: Collection<ItemCategory> = await this.searchBy({
             market,
             key
-        } as ItemCategorySearchParams, withRelated);
+        } as ItemCategorySearchParams, withRelated, parentRelations);
 
         return collection.first();
     }
 
-    public static async fetchDefaultByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+    public static async fetchDefaultByKey(key: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
         const collection: Collection<ItemCategory> = await this.searchBy({
             key,
             isDefault: true
-        } as ItemCategorySearchParams, withRelated);
+        } as ItemCategorySearchParams, withRelated, parentRelations);
 
         return collection.first();
     }
 
-    public static async fetchRoot(market?: string): Promise<ItemCategory> {
+    public static async fetchRoot(market?: string, withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
         const params = {
             market,
             isRoot: true,
             isDefault: !!market
         } as ItemCategorySearchParams;
         // this.log.debug('fetchRoot, params:', JSON.stringify(params, null, 2));
-        const collection: Collection<ItemCategory> = await this.searchBy(params, true);
+
+        // parentRelations = false, returns the child relations, so its easier to build the category tree
+        const collection: Collection<ItemCategory> = await this.searchBy(params, withRelated, parentRelations);
         return collection.first();
     }
 
-    public static async fetchDefaultRoot(): Promise<ItemCategory> {
+    public static async fetchDefaultRoot(withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
         const params = {
             isRoot: true,
             isDefault: true
         } as ItemCategorySearchParams;
         // this.log.debug('fetchDefaultRoot, params:', JSON.stringify(params, null, 2));
 
-        const collection: Collection<ItemCategory> = await this.searchBy(params, true);
+        const collection: Collection<ItemCategory> = await this.searchBy(params, withRelated, parentRelations);
         return collection.first();
     }
 
-    public static async searchBy(options: ItemCategorySearchParams, withRelated: boolean = false): Promise<Collection<ItemCategory>> {
+    public static async searchBy(options: ItemCategorySearchParams,
+                                 withRelated: boolean = false,
+                                 parentRelations: boolean = true): Promise<Collection<ItemCategory>> {
         const collection = ItemCategory.forge<Model<ItemCategory>>()
             .query(qb => {
                 if (options.market) {
@@ -96,12 +108,11 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
         if (withRelated) {
             return await collection.fetchAll({
-                withRelated: this.RELATIONS
+                withRelated: parentRelations ? this.RELATIONS : this.CHILD_RELATIONS
             });
         } else {
             return await collection.fetchAll();
         }
-
     }
 
     public get tableName(): string { return 'item_categories'; }

@@ -80,10 +80,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
         }
 
         // validate message with the messageValidator
-        await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING).catch(reason => {
-            this.log.error('ERROR:', reason);
-            throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
-        });
+        await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING)
+            .catch(reason => {
+                this.log.error('ERROR:', reason);
+                throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
+            });
 
         // TODO: also validate the sequence?
         // await this.validator.validateSequence(marketplaceMessage, ActionDirection.OUTGOING);
@@ -203,8 +204,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
                     // todo: add also target here if its known
                 } as SmsgMessageCreateParams)
                     .then(async createRequest => {
-                        return await this.smsgMessageService.create(createRequest)
-                            .then(value => value.toJSON());
+                        return await this.smsgMessageService.create(createRequest).then(value => value.toJSON());
                     });
             });
     }
