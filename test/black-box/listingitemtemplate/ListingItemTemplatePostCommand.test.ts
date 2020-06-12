@@ -70,7 +70,7 @@ describe('ListingItemTemplatePostCommand', () => {
         // brokenListingItemTemplate = listingItemTemplates[1];
 
     });
-/*
+
     test('Should fail to post because missing listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand]);
         res.expectJson();
@@ -128,7 +128,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
-*/
+
     test('Should post a ListingItem in to the default market', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();

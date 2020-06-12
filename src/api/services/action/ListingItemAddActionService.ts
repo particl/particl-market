@@ -2,44 +2,43 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Targets, Types } from '../../../constants';
-import { SmsgService } from '../SmsgService';
-import { EventEmitter } from 'events';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { BaseActionService } from '../BaseActionService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
-import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ItemCategoryService } from '../model/ItemCategoryService';
-import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
-import { ListingItemService } from '../model/ListingItemService';
-import { ProposalService } from '../model/ProposalService';
-import { FlaggedItemService } from '../model/FlaggedItemService';
-import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
-import { MarketService } from '../model/MarketService';
-import { ActionDirection } from '../../enums/ActionDirection';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
-import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
-import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
-import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
-import { MessageSize } from '../../responses/MessageSize';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {SmsgService} from '../SmsgService';
+import {EventEmitter} from 'events';
+import {MarketplaceMessage} from '../../messages/MarketplaceMessage';
+import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
+import {SmsgMessageService} from '../model/SmsgMessageService';
+import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
+import {BaseActionService} from '../BaseActionService';
+import {SmsgMessageFactory} from '../../factories/model/SmsgMessageFactory';
+import {ListingItemAddRequest} from '../../requests/action/ListingItemAddRequest';
+import {ListingItemAddValidator} from '../../messagevalidators/ListingItemAddValidator';
+import {ompVersion} from 'omp-lib/dist/omp';
+import {ListingItemAddMessageFactory} from '../../factories/message/ListingItemAddMessageFactory';
+import {ListingItemAddMessageCreateParams} from '../../requests/message/ListingItemAddMessageCreateParams';
+import {CoreRpcService} from '../CoreRpcService';
+import {ListingItemCreateParams} from '../../factories/model/ModelCreateParams';
+import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
+import {ItemCategoryService} from '../model/ItemCategoryService';
+import {ListingItemFactory} from '../../factories/model/ListingItemFactory';
+import {FlaggedItemCreateRequest} from '../../requests/model/FlaggedItemCreateRequest';
+import {ListingItemService} from '../model/ListingItemService';
+import {ProposalService} from '../model/ProposalService';
+import {FlaggedItemService} from '../model/FlaggedItemService';
+import {ListingItemTemplateService} from '../model/ListingItemTemplateService';
+import {MarketService} from '../model/MarketService';
+import {ActionDirection} from '../../enums/ActionDirection';
+import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import {NotificationService} from '../NotificationService';
+import {MarketplaceNotification} from '../../messages/MarketplaceNotification';
+import {NotificationType} from '../../enums/NotificationType';
+import {ListingItemNotification} from '../../messages/notification/ListingItemNotification';
+import {ListingItemCreateRequest} from '../../requests/model/ListingItemCreateRequest';
+import {MessageSize} from '../../responses/MessageSize';
+import {SmsgSendParams} from '../../requests/action/SmsgSendParams';
 
 export interface SellerMessage {
     hash: string;               // item hash being added
@@ -196,41 +195,44 @@ export class ListingItemAddActionService extends BaseActionService {
 
         this.log.debug('processMessage()');
 
-        const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
+        if (actionDirection === ActionDirection.INCOMING) {
+            // we're creating the listingitem only when it arrives
+            const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // if ListingItem contains a custom category, create them
-        await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
+            // if ListingItem contains a custom category, create them
+            await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
 
-        // fetch the root category used to create the listingItemCreateRequest
-        const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
+            // fetch the root category used to create the listingItemCreateRequest
+            const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
-        const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
-                msgid: smsgMessage.msgid,
-                market: smsgMessage.to,
-                rootCategory
-            } as ListingItemCreateParams,
-            listingItemAddMessage,
-            smsgMessage);
+            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
+                    msgid: smsgMessage.msgid,
+                    market: smsgMessage.to,
+                    rootCategory
+                } as ListingItemCreateParams,
+                listingItemAddMessage,
+                smsgMessage);
 
-        // - create the ListingItem locally with the listingItemCreateRequest
-        await this.listingItemService.create(listingItemCreateRequest)
-            .then(async value => {
-                const listingItem: resources.ListingItem = value.toJSON();
+            // - create the ListingItem locally with the listingItemCreateRequest
+            await this.listingItemService.create(listingItemCreateRequest)
+                .then(async value => {
+                    const listingItem: resources.ListingItem = value.toJSON();
 
-                // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
-                await this.createFlaggedItemIfNeeded(listingItem);
+                    // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
+                    await this.createFlaggedItemIfNeeded(listingItem);
 
-                // - if there's a matching ListingItemTemplate, create a relation
-                await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
+                    // - if there's a matching ListingItemTemplate, create a relation
+                    await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
 
-                this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                return SmsgMessageStatus.PROCESSED;
+                    this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
+                    return SmsgMessageStatus.PROCESSED;
 
-            })
-            .catch(reason => {
-                this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                return SmsgMessageStatus.PROCESSING_FAILED;
-            });
+                })
+                .catch(reason => {
+                    this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
+                    return SmsgMessageStatus.PROCESSING_FAILED;
+                });
+        }
 
         return smsgMessage;
     }
